@@ -103,6 +103,44 @@ Reassessment:
 
 - Cycle 4 is complete and commit-ready. Remaining gaps are screenshots, public deployment, mobile/browser verification, and repeatable MiniMax quality evidence.
 
+Cycle 5 goal:
+
+- Run one safe MiniMax live smoke through the app API using the repo-external env file, record only provider/mode/fallback/timing metadata, and avoid printing or committing secrets.
+
+Cycle 5 result at 04:43:
+
+- Loaded MiniMax env variables from `C:\Users\22304\ai-portfolio-automation\.codex-local-secrets\minimax.env` without printing values.
+- Started a temporary local dev server on port `3010`, posted one compact founder brief to `/api/generate`, then stopped the server.
+- MiniMax returned successfully with `mode=real`, `provider=minimax`, `usedFallback=false`, `summaryChars=203`, `taskCount=4`, and `elapsedMs=33478`.
+- No secret values, full provider response, or generated long-form content were printed or written to committed files.
+
+Verification:
+
+- Live app-route smoke returned HTTP 200 with no fallback.
+
+Reassessment:
+
+- Cycle 5 is complete and documentation-only commit-ready. This is useful smoke evidence, but repeatable provider quality fixtures/evals are still pending.
+
+Cycle 6 goal:
+
+- Add a standard GitHub Actions quality gate so the public repository shows repeatable lint, test, build, and audit checks on pushes and pull requests.
+
+Cycle 6 result at 04:44:
+
+- Added `.github/workflows/ci.yml` using Node 22, `npm ci`, ESLint, Vitest, Next build, and moderate audit.
+- Added a README CI badge.
+- Updated TASKS and PROJECT_MATURITY to record the CI quality gate.
+
+Verification:
+
+- Existing local `npm run lint -- --max-warnings=0`, `npm run test`, `npm run build`, `npm audit --audit-level=moderate`, no-key HTTP smoke, and secret scan were clean in this run.
+- Cycle 6 is YAML/docs-only; GitHub Actions will run after push.
+
+Reassessment:
+
+- Cycle 6 is complete and commit-ready. Remaining high-value work should move to proof artifacts: screenshots, public deployment, mobile/browser-accessible verification, and repeatable MiniMax quality fixtures.
+
 ## 2026-06-11 23:50 Asia/Shanghai
 
 Phase 1 was started manually for the nightly automation handoff.

@@ -21,6 +21,8 @@
 - [x] Added generation progress UI for longer real-model calls.
 - [x] Added safe provider metadata display without exposing secrets.
 - [x] Added MIT license for clearer GitHub presentation.
+- [x] Ran one MiniMax live app-route smoke with safe metadata only.
+- [x] Added GitHub Actions CI for lint, test, build, and audit.
 
 ## Next Nightly Builder Tasks
 
@@ -34,7 +36,8 @@
 - [x] Add basic loading skeletons for long real-model calls.
 - [x] Add provider usage metadata without exposing secrets.
 - [x] Tune MiniMax request shape and parser for compact JSON responses.
-- [ ] Run repeatable live MiniMax smoke/eval and document quality.
+- [x] Run one live MiniMax smoke and document safe metadata.
+- [ ] Automate repeatable live MiniMax smoke/eval and document quality.
 - [ ] Add repeatable provider quality fixtures/evals for MiniMax outputs.
 
 ## Portfolio-Ready Checklist
@@ -52,3 +55,4 @@
 - [ ] Public deployment URL is available.
 - [x] GitHub history shows incremental nightly progress.
 - [x] Repository includes a license.
+- [x] Repository includes a CI quality gate.
