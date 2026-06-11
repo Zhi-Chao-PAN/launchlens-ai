@@ -21,8 +21,10 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 - Add persistence for edited workspaces.
 - Add export to JSON.
 - Track assumptions and validation evidence.
-- Add sample workspaces for realistic reviewer demos.
+- Add stable example workspaces for realistic reviewer demos.
 - Add tests for provider fallback and API validation.
+- Add loading/progress UX for long real-provider calls.
+- Add provider quality fixtures/evals for MiniMax and OpenAI-compatible outputs.
 
 ## Phase 3: SaaS Shape
 

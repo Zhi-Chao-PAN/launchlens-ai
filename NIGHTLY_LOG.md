@@ -55,10 +55,34 @@ Verification:
 - `npm run lint -- --max-warnings=0` passed.
 - `npm run test` passed with 9 tests.
 - `npm run build` passed.
+- `npm audit --audit-level=moderate` found 0 vulnerabilities.
+- No-key local HTTP smoke on port `3002` returned page 200 and mock `/api/generate` output with `provider=mock`.
+- MiniMax provider smoke loaded env from the repo-external secret file and returned `mode=real`, `provider=minimax`, and no fallback; no secret values were printed or written.
 
 Reassessment:
 
 - Cycle 2 is complete and commit-ready. The strongest remaining proof gap is README screenshots or a hosted demo; Browser localhost verification remains blocked by enterprise policy.
+
+Cycle 3 goal:
+
+- Add generation progress UI and safe provider metadata so long real-model calls communicate state without exposing secrets or upstream details.
+
+Cycle 3 result at 04:37:
+
+- Added an accessible generation progress panel with three visible work steps during long generation.
+- Changed the primary generation button label to `Generating...` while a request is in flight.
+- Added safe generation metadata chips for mode, generated time, and fallback code.
+- Updated README, TASKS, and PROJECT_MATURITY to reflect progress and metadata work.
+
+Verification:
+
+- `npm run lint -- --max-warnings=0` passed.
+- `npm run test` passed with 9 tests.
+- `npm run build` passed.
+
+Reassessment:
+
+- Cycle 3 is complete and commit-ready. Remaining high-value work is proof/presentation: screenshots, deployment, mobile verification, and repeatable MiniMax quality evidence.
 
 ## 2026-06-11 23:50 Asia/Shanghai
 

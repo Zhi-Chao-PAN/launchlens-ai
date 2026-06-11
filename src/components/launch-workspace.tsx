@@ -66,6 +66,14 @@ type WorkspaceListKey =
   | "launchPlan"
   | "assumptions";
 
+type GenerationMeta = {
+  mode: "demo" | "real";
+  provider: LaunchLensWorkspace["provider"];
+  generatedAt: string;
+  usedFallback: boolean;
+  fallbackReason?: string;
+};
+
 const tones = [
   "Practical, crisp, and founder-friendly",
   "Analytical and investor-ready",
@@ -74,6 +82,11 @@ const tones = [
 ];
 
 const LOCAL_WORKSPACE_KEY = "launchlens.currentWorkspace.v1";
+const loadingSteps = [
+  "Reading founder brief",
+  "Structuring GTM workspace",
+  "Checking launch tasks",
+];
 
 type LocalWorkspaceSnapshot = {
   input: LaunchLensInput;
@@ -135,6 +148,19 @@ function splitLines(value: string) {
     .split(/\r?\n/)
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function timeLabel(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Unknown time";
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }
 
 function Section({ title, icon: Icon, children }: SectionProps) {
@@ -213,6 +239,12 @@ export function LaunchWorkspace({
   const [exportText, setExportText] = useState("");
   const [isStorageReady, setIsStorageReady] = useState(false);
   const [persistenceNotice, setPersistenceNotice] = useState("");
+  const [generationMeta, setGenerationMeta] = useState<GenerationMeta>({
+    mode: "demo",
+    provider: initialWorkspace.provider,
+    generatedAt: initialWorkspace.generatedAt,
+    usedFallback: false,
+  });
 
   const providerLabel = useMemo(() => {
     if (workspace.provider === "minimax") {
@@ -227,6 +259,11 @@ export function LaunchWorkspace({
   }, [workspace.provider]);
 
   const saveLabel = isStorageReady ? "Saved locally" : "Preparing save";
+
+  const generationModeLabel =
+    generationMeta.mode === "real" && !generationMeta.usedFallback
+      ? "Real provider"
+      : "Demo mode";
 
   useEffect(() => {
     let cancelled = false;
@@ -245,6 +282,12 @@ export function LaunchWorkspace({
           if (isLocalWorkspaceSnapshot(snapshot)) {
             setInput(snapshot.input);
             setWorkspace(snapshot.workspace);
+            setGenerationMeta({
+              mode: snapshot.workspace.provider === "mock" ? "demo" : "real",
+              provider: snapshot.workspace.provider,
+              generatedAt: snapshot.workspace.generatedAt,
+              usedFallback: false,
+            });
             setPersistenceNotice("Restored local workspace.");
           }
         }
@@ -291,6 +334,12 @@ export function LaunchWorkspace({
   function applyExample(example: ExampleWorkspace) {
     setInput(example.input);
     setWorkspace(example.workspace);
+    setGenerationMeta({
+      mode: "demo",
+      provider: example.workspace.provider,
+      generatedAt: example.workspace.generatedAt,
+      usedFallback: false,
+    });
     setError("");
     setFallbackNotice("");
     setCopyNotice("");
@@ -302,6 +351,12 @@ export function LaunchWorkspace({
   function resetLocalWorkspace() {
     setInput(initialInput);
     setWorkspace(initialWorkspace);
+    setGenerationMeta({
+      mode: "demo",
+      provider: initialWorkspace.provider,
+      generatedAt: initialWorkspace.generatedAt,
+      usedFallback: false,
+    });
     setError("");
     setFallbackNotice("");
     setCopyNotice("");
@@ -332,6 +387,13 @@ export function LaunchWorkspace({
       }
 
       setWorkspace(data.workspace);
+      setGenerationMeta({
+        mode: data.mode ?? "demo",
+        provider: data.workspace.provider,
+        generatedAt: data.workspace.generatedAt,
+        usedFallback: Boolean(data.usedFallback),
+        fallbackReason: data.fallbackReason,
+      });
       setPersistenceNotice("Generated workspace saved locally.");
       setFallbackNotice(
         data.usedFallback
@@ -366,7 +428,10 @@ export function LaunchWorkspace({
   }
 
   return (
-    <main className="min-h-screen bg-[#f6f8f4] text-[#17201d]">
+    <main
+      aria-busy={isGenerating}
+      className="min-h-screen bg-[#f6f8f4] text-[#17201d]"
+    >
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-4 border-b border-[#d8ded4] pb-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
@@ -525,9 +590,34 @@ export function LaunchWorkspace({
                 ) : (
                   <Rocket className="size-4" aria-hidden="true" />
                 )}
-                Generate workspace
+                {isGenerating ? "Generating..." : "Generate workspace"}
               </button>
             </div>
+
+            {isGenerating && (
+              <div
+                role="status"
+                aria-live="polite"
+                className="mt-4 rounded-md border border-[#d8ded4] bg-[#fbfcfa] p-3"
+              >
+                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#17201d]">
+                  <Loader2
+                    className="size-4 animate-spin text-[#138a72]"
+                    aria-hidden="true"
+                  />
+                  Generating workspace
+                </div>
+                <div className="space-y-2">
+                  {loadingSteps.map((step) => (
+                    <div key={step} className="flex items-center gap-3">
+                      <span className="size-2 rounded-full bg-[#138a72]" />
+                      <span className="text-sm text-[#40504a]">{step}</span>
+                      <span className="ml-auto h-2 w-12 animate-pulse rounded-full bg-[#d8ded4]" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {(error || fallbackNotice) && (
               <div
@@ -561,6 +651,17 @@ export function LaunchWorkspace({
                   <span className="rounded-md bg-[#eef0ed] px-3 py-2">
                     {workspace.assumptions.length} assumptions
                   </span>
+                  <span className="rounded-md bg-[#eef0ed] px-3 py-2">
+                    {generationModeLabel}
+                  </span>
+                  <span className="rounded-md bg-[#eef0ed] px-3 py-2">
+                    Generated {timeLabel(generationMeta.generatedAt)}
+                  </span>
+                  {generationMeta.usedFallback && generationMeta.fallbackReason && (
+                    <span className="rounded-md bg-[#fff6f1] px-3 py-2 font-medium text-[#8b3d28]">
+                      Fallback: {generationMeta.fallbackReason}
+                    </span>
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button

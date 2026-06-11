@@ -18,6 +18,8 @@
 - [x] Added accessible labels/status regions for the main editing and feedback controls.
 - [x] Hardened provider parsing for fenced JSON, reasoning tags, and repairable JSON formatting.
 - [x] Added stable example workspace fixtures for repeatable reviewer demos.
+- [x] Added generation progress UI for longer real-model calls.
+- [x] Added safe provider metadata display without exposing secrets.
 
 ## Next Nightly Builder Tasks
 
@@ -28,9 +30,11 @@
 - [x] Add local persistence for edited workspace drafts.
 - [x] Add saved example workspace fixtures.
 - [ ] Add screenshot assets for README.
-- [ ] Add basic loading skeletons for long real-model calls.
-- [ ] Add provider usage metadata without exposing secrets.
-- [ ] Investigate MiniMax live response timeout and tune request shape if needed.
+- [x] Add basic loading skeletons for long real-model calls.
+- [x] Add provider usage metadata without exposing secrets.
+- [x] Tune MiniMax request shape and parser for compact JSON responses.
+- [ ] Run repeatable live MiniMax smoke/eval and document quality.
+- [ ] Add repeatable provider quality fixtures/evals for MiniMax outputs.
 
 ## Portfolio-Ready Checklist
 

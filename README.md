@@ -21,7 +21,8 @@ Current maturity: early-stage, but now beyond a static scaffold. The product loo
 3. Review target users, pain map, MVP scope, feature backlog, launch plan, pricing, risks, assumptions, content calendar, and execution tasks.
 4. Toggle edit mode and refine generated sections.
 5. Keep the current brief and workspace across refreshes through browser-local persistence.
-6. Copy/export the workspace as Markdown for a README, Notion doc, product memo, or launch plan.
+6. Watch generation progress and provider metadata without exposing any secret or upstream response detail.
+7. Copy/export the workspace as Markdown for a README, Notion doc, product memo, or launch plan.
 
 ## Demo Script
 
@@ -58,6 +59,7 @@ LaunchLens AI always runs without secrets.
 - Real provider failures return a safe fallback code and mock output, not upstream response details.
 - Provider calls use HTTPS base URL validation, host allowlists, request timeouts, field caps, body caps, and a lightweight demo rate limit.
 - Provider parsing accepts fenced JSON, strips reasoning tags, repairs minor JSON formatting issues, and falls back safely when core structure is missing.
+- The UI shows safe generation metadata such as mode, generated time, and fallback code, but never provider secrets.
 
 Optional local provider variables:
 
