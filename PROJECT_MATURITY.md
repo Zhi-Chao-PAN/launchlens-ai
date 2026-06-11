@@ -17,9 +17,10 @@ It is not portfolio-ready yet.
 - Assumptions and pricing risks are visible, making AI product judgment easier to review.
 - The current brief and generated workspace are saved in browser-local storage and restored after refresh.
 - MiniMax and OpenAI-compatible provider hooks are optional and guarded by env-based configuration.
-- MiniMax provider behavior has unit coverage and one successful live app-route smoke; repeatable quality fixtures/evals still need a dedicated pass.
+- MiniMax provider behavior has unit coverage and one successful live app-route smoke; persisted real-output regression fixtures still need a dedicated pass.
 - Provider parsing now handles fenced JSON, reasoning tags, minor JSON repair, and safe fallback.
 - Generation progress and safe provider metadata are visible without exposing secrets.
+- Deterministic workspace quality checks now score generated outputs for structural completeness.
 - Documentation now gives nightly automation a clear continuation path.
 - The repository now includes an MIT license.
 - GitHub Actions CI now runs lint, tests, build, and moderate audit on pushes and pull requests.
@@ -29,13 +30,13 @@ It is not portfolio-ready yet.
 
 - Persistence is local-only; there is no server-side workspace history or user-owned account model yet.
 - README still needs actual screenshots or a deployed demo URL.
-- MiniMax live response quality still needs repeatable fixtures/evals beyond one successful smoke.
+- MiniMax live response quality still needs persisted real-output regression fixtures beyond one successful smoke and the deterministic structure evaluator.
 - UX needs more polish on mobile, empty states, screenshots, and a public proof surface.
 
 ## Portfolio Criteria Evidence
 
 1. Product depth: partial pass. The app connects raw idea, audience/pain mapping, MVP scope, backlog, pricing, launch calendar, and tasks.
-2. Agent/LLM depth: partial pass. It has provider orchestration, structured output coercion, mock mode, real-provider env support, safe errors, parser repair, progress UI, safe metadata, and one successful MiniMax live smoke; repeatable quality evidence is still pending.
+2. Agent/LLM depth: partial pass. It has provider orchestration, structured output coercion, mock mode, real-provider env support, safe errors, parser repair, progress UI, safe metadata, deterministic quality scoring, and one successful MiniMax live smoke; persisted live-provider regression evidence is still pending.
 3. Full-stack quality: partial pass. Next.js, TypeScript, Tailwind, tests, editable UI, stable example fixtures, local persistence, and Markdown export exist; server persistence and screenshots are pending.
 4. Verification: partial pass. `lint`, `test`, and `build` pass; Browser verification for localhost was blocked by enterprise policy and is documented in `NIGHTLY_LOG.md`.
 5. Documentation: partial pass. README covers value prop, setup, env vars, demo flow, architecture, AI design, roadmap, and portfolio story; screenshots are still missing.
@@ -53,6 +54,7 @@ It is not portfolio-ready yet.
 - [x] User can export a workspace to Markdown and JSON.
 - [x] User can restore the current workspace from browser-local storage after refresh.
 - [x] Generation progress and safe provider metadata are visible.
+- [x] Deterministic workspace quality scoring is included.
 - [x] At least two realistic sample workspaces are included.
 - [x] Stable example workspace fixtures are included for repeatable reviewer demos.
 - [x] One MiniMax live app-route smoke succeeded without fallback using repo-external secrets.

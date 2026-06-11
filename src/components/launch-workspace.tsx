@@ -29,6 +29,7 @@ import { useEffect, useMemo, useState } from "react";
 import { workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
 import { workspaceToJson } from "@/lib/launchlens/json-export";
 import type { ExampleWorkspace } from "@/lib/launchlens/example-workspaces";
+import { evaluateWorkspaceQuality } from "@/lib/launchlens/workspace-quality";
 import type {
   GenerationResult,
   LaunchLensInput,
@@ -266,6 +267,10 @@ export function LaunchWorkspace({
     generationMeta.mode === "real" && !generationMeta.usedFallback
       ? "Real provider"
       : "Demo mode";
+  const qualityResult = useMemo(
+    () => evaluateWorkspaceQuality(workspace),
+    [workspace],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -674,6 +679,9 @@ export function LaunchWorkspace({
                   </span>
                   <span className="rounded-md bg-[#eef0ed] px-3 py-2">
                     Generated {timeLabel(generationMeta.generatedAt)}
+                  </span>
+                  <span className="rounded-md bg-[#eef0ed] px-3 py-2">
+                    Quality {qualityResult.score}%
                   </span>
                   {generationMeta.usedFallback && generationMeta.fallbackReason && (
                     <span className="rounded-md bg-[#fff6f1] px-3 py-2 font-medium text-[#8b3d28]">

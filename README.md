@@ -62,6 +62,7 @@ LaunchLens AI always runs without secrets.
 - Provider calls use HTTPS base URL validation, host allowlists, request timeouts, field caps, body caps, and a lightweight demo rate limit.
 - Provider parsing accepts fenced JSON, strips reasoning tags, repairs minor JSON formatting issues, and falls back safely when core structure is missing.
 - The UI shows safe generation metadata such as mode, generated time, and fallback code, but never provider secrets.
+- Workspace quality is scored with deterministic checks for summary, users, pains, MVP scope, backlog, landing copy, pricing, launch plan, tasks, and assumptions.
 
 Optional local provider variables:
 

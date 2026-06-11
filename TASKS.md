@@ -25,6 +25,7 @@
 - [x] Added GitHub Actions CI for lint, test, build, and audit.
 - [x] Fixed lockfile sync issue caught by the first CI run.
 - [x] Added JSON export for machine-readable workspace handoff.
+- [x] Added deterministic workspace quality evaluator and UI score.
 
 ## Next Nightly Builder Tasks
 
@@ -41,7 +42,8 @@
 - [x] Tune MiniMax request shape and parser for compact JSON responses.
 - [x] Run one live MiniMax smoke and document safe metadata.
 - [ ] Automate repeatable live MiniMax smoke/eval and document quality.
-- [ ] Add repeatable provider quality fixtures/evals for MiniMax outputs.
+- [x] Add repeatable provider quality fixtures/evals for generated workspaces.
+- [ ] Add persisted MiniMax output fixtures for regression comparison.
 
 ## Portfolio-Ready Checklist
 

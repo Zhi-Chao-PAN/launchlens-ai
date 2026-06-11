@@ -246,6 +246,29 @@ Reassessment:
 
 - Cycle 11 is commit-ready. The product now has real fresh-clone/no-key evidence; next best work is screenshots, public deployment, mobile verification, or repeatable MiniMax quality fixtures.
 
+Cycle 12 goal:
+
+- Add a deterministic workspace quality evaluator so generated outputs can be scored consistently before deeper live-provider regression fixtures exist.
+
+Cycle 12 result at 06:21:
+
+- Added `evaluateWorkspaceQuality` with checks for summary, users, pains, MVP scope, prioritized backlog, landing copy, pricing, launch plan, tasks, and assumptions.
+- Added tests covering stable example workspaces and intentionally incomplete output.
+- Added a `Quality {score}%` chip to the workspace metadata row.
+- Updated README, ROADMAP, TASKS, and PROJECT_MATURITY to record the quality evaluator.
+
+Verification:
+
+- `npm run lint -- --max-warnings=0` passed.
+- `npm run test` passed with 12 tests.
+- `npm run build` passed.
+- `npm audit --audit-level=moderate` found 0 vulnerabilities.
+- No-key local HTTP smoke on port `3002` returned page 200 with `Quality` and mock `/api/generate` output with `provider=mock`.
+
+Reassessment:
+
+- Cycle 12 is commit-ready. The remaining proof gap is visual/public presentation: screenshots, deployment, and mobile/browser-accessible verification.
+
 ## 2026-06-11 23:50 Asia/Shanghai
 
 Phase 1 was started manually for the nightly automation handoff.

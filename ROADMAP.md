@@ -24,7 +24,7 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 - Add stable example workspaces for realistic reviewer demos.
 - Add tests for provider fallback and API validation.
 - Add loading/progress UX for long real-provider calls.
-- Add provider quality fixtures/evals for MiniMax and OpenAI-compatible outputs.
+- Add provider quality scoring, then persist MiniMax and OpenAI-compatible regression fixtures.
 
 ## Phase 3: SaaS Shape
 
