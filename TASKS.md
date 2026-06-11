@@ -23,6 +23,7 @@
 - [x] Added MIT license for clearer GitHub presentation.
 - [x] Ran one MiniMax live app-route smoke with safe metadata only.
 - [x] Added GitHub Actions CI for lint, test, build, and audit.
+- [x] Fixed lockfile sync issue caught by the first CI run.
 
 ## Next Nightly Builder Tasks
 
