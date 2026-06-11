@@ -23,6 +23,7 @@ It is not portfolio-ready yet.
 - Documentation now gives nightly automation a clear continuation path.
 - The repository now includes an MIT license.
 - GitHub Actions CI now runs lint, tests, build, and moderate audit on pushes and pull requests.
+- A fresh clone was verified without API keys using `npm ci`, tests, build, audit, page smoke, and mock `/api/generate`.
 
 ## Current Gaps
 
@@ -45,7 +46,7 @@ It is not portfolio-ready yet.
 
 ## 1-2 Week Portfolio-Ready Acceptance Checklist
 
-- [ ] Fresh clone runs with `npm install`, `npm run dev`, and no API key.
+- [x] Fresh clone runs with `npm ci`, `npm run dev`, and no API key.
 - [x] `npm run lint`, `npm run test`, and `npm run build` pass in documented local verification.
 - [x] Mock provider and real-provider fallback have tests.
 - [x] User can edit key generated sections.

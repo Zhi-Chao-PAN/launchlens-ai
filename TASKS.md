@@ -48,7 +48,7 @@
 - [x] `npm run lint` passes.
 - [x] `npm run test` passes.
 - [x] `npm run build` passes.
-- [ ] Product can run from a fresh clone without API keys.
+- [x] Product can run from a fresh clone without API keys.
 - [ ] README includes screenshots.
 - [x] README includes demo script.
 - [x] README includes architecture notes.
