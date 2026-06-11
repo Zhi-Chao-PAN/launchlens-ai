@@ -17,6 +17,7 @@
 - [x] Added browser-local persistence for the current brief and generated workspace.
 - [x] Added accessible labels/status regions for the main editing and feedback controls.
 - [x] Hardened provider parsing for fenced JSON, reasoning tags, and repairable JSON formatting.
+- [x] Added stable example workspace fixtures for repeatable reviewer demos.
 
 ## Next Nightly Builder Tasks
 
@@ -25,7 +26,7 @@
 - [x] Add editable workspace sections.
 - [x] Add "copy as Markdown" export.
 - [x] Add local persistence for edited workspace drafts.
-- [ ] Add saved example workspace fixtures.
+- [x] Add saved example workspace fixtures.
 - [ ] Add screenshot assets for README.
 - [ ] Add basic loading skeletons for long real-model calls.
 - [ ] Add provider usage metadata without exposing secrets.
@@ -44,4 +45,4 @@
 - [x] Current workspace is restorable from browser-local storage after refresh.
 - [x] API/provider behavior has tests.
 - [ ] Public deployment URL is available.
-- [ ] GitHub history shows incremental nightly progress.
+- [x] GitHub history shows incremental nightly progress.

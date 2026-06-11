@@ -26,8 +26,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import { workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
-import { buildMockWorkspace } from "@/lib/launchlens/mock-provider";
-import type { SampleBrief } from "@/lib/launchlens/sample-briefs";
+import type { ExampleWorkspace } from "@/lib/launchlens/example-workspaces";
 import type {
   GenerationResult,
   LaunchLensInput,
@@ -37,7 +36,7 @@ import type {
 type LaunchWorkspaceProps = {
   initialInput: LaunchLensInput;
   initialWorkspace: LaunchLensWorkspace;
-  sampleBriefs: SampleBrief[];
+  exampleWorkspaces: ExampleWorkspace[];
 };
 
 type SectionProps = {
@@ -202,7 +201,7 @@ function BulletList({ items }: { items: string[] }) {
 export function LaunchWorkspace({
   initialInput,
   initialWorkspace,
-  sampleBriefs,
+  exampleWorkspaces,
 }: LaunchWorkspaceProps) {
   const [input, setInput] = useState(initialInput);
   const [workspace, setWorkspace] = useState(initialWorkspace);
@@ -289,15 +288,15 @@ export function LaunchWorkspace({
     }));
   }
 
-  function applySample(sample: SampleBrief) {
-    setInput(sample.input);
-    setWorkspace(buildMockWorkspace(sample.input));
+  function applyExample(example: ExampleWorkspace) {
+    setInput(example.input);
+    setWorkspace(example.workspace);
     setError("");
     setFallbackNotice("");
     setCopyNotice("");
     setExportText("");
     setIsEditing(false);
-    setPersistenceNotice("Sample loaded and saved locally.");
+    setPersistenceNotice("Example workspace loaded and saved locally.");
   }
 
   function resetLocalWorkspace() {
@@ -412,14 +411,14 @@ export function LaunchWorkspace({
             </div>
 
             <div className="mb-5 grid gap-2">
-              {sampleBriefs.map((sample) => (
+              {exampleWorkspaces.map((example) => (
                 <button
-                  key={sample.id}
+                  key={example.id}
                   type="button"
-                  onClick={() => applySample(sample)}
+                  onClick={() => applyExample(example)}
                   className="flex items-center justify-between rounded-md border border-[#d8ded4] bg-[#fbfcfa] px-3 py-2 text-left text-sm font-medium text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d]"
                 >
-                  {sample.label}
+                  {example.label}
                   <ArrowRight className="size-4" aria-hidden="true" />
                 </button>
               ))}

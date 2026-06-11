@@ -16,7 +16,7 @@ Current maturity: early-stage, but now beyond a static scaffold. The product loo
 
 ## Current Product Flow
 
-1. Choose a realistic sample brief or write a new founder brief.
+1. Choose a stable example workspace or write a new founder brief.
 2. Generate a go-to-market workspace using the mock provider by default.
 3. Review target users, pain map, MVP scope, feature backlog, launch plan, pricing, risks, assumptions, content calendar, and execution tasks.
 4. Toggle edit mode and refine generated sections.
@@ -32,6 +32,10 @@ Current maturity: early-stage, but now beyond a static scaffold. The product loo
 5. Click `Edit`, change one assumption or landing page line, then click `Preview`.
 6. Refresh the page and confirm the local workspace is restored.
 7. Click `Copy Markdown` and inspect the generated export text.
+
+## Stable Demo Fixtures
+
+The app includes deterministic example workspaces for the B2B SaaS activation, clinic admin, and creator commerce scenarios. They give reviewers a repeatable product walkthrough before a hosted deployment or screenshot set exists.
 
 ## Tech Stack
 

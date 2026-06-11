@@ -1,17 +1,14 @@
 import { LaunchWorkspace } from "@/components/launch-workspace";
-import { buildMockWorkspace } from "@/lib/launchlens/mock-provider";
-import { sampleBriefs } from "@/lib/launchlens/sample-briefs";
+import { exampleWorkspaces } from "@/lib/launchlens/example-workspaces";
 
-const initialInput = sampleBriefs[0].input;
+const initialExample = exampleWorkspaces[0];
 
 export default function Home() {
-  const initialWorkspace = buildMockWorkspace(initialInput);
-
   return (
     <LaunchWorkspace
-      initialInput={initialInput}
-      initialWorkspace={initialWorkspace}
-      sampleBriefs={sampleBriefs}
+      initialInput={initialExample.input}
+      initialWorkspace={initialExample.workspace}
+      exampleWorkspaces={exampleWorkspaces}
     />
   );
 }

@@ -39,6 +39,27 @@ Reassessment:
 
 - Cycle 1 is complete and commit-ready. With roughly 4h30m before cutoff, the next safe cycle should prioritize proof artifacts or stable example workspace fixtures rather than a large architecture change.
 
+Cycle 2 goal:
+
+- Add stable example workspace fixtures and a reviewer-facing load path so the demo has repeatable proof artifacts before screenshots/deployment exist.
+
+Cycle 2 result at 04:34:
+
+- Added `exampleWorkspaces` fixtures for the three current reviewer scenarios.
+- Switched the initial workspace and sidebar buttons to load deterministic example workspaces.
+- Added fixture coverage so each sample has a stable mock workspace with fixed `generatedAt` evidence.
+- Updated README, TASKS, and PROJECT_MATURITY to reflect repeatable reviewer demos.
+
+Verification:
+
+- `npm run lint -- --max-warnings=0` passed.
+- `npm run test` passed with 9 tests.
+- `npm run build` passed.
+
+Reassessment:
+
+- Cycle 2 is complete and commit-ready. The strongest remaining proof gap is README screenshots or a hosted demo; Browser localhost verification remains blocked by enterprise policy.
+
 ## 2026-06-11 23:50 Asia/Shanghai
 
 Phase 1 was started manually for the nightly automation handoff.
