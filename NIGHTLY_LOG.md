@@ -149,7 +149,7 @@ Cycle 7 result at 05:02:
 
 - Inspected failed Actions run `27377009512`.
 - Root cause: `npm ci` failed because `package-lock.json` was missing optional Tailwind oxide WASM bundle metadata required by a clean CI install.
-- Ran `npm install --package-lock-only` to sync the lockfile without changing app dependencies.
+- Ran `npm install --package-lock-only` and then added the missing `@emnapi/core` and `@emnapi/runtime` lockfile entries required by Ubuntu `npm ci`.
 
 Verification:
 
