@@ -2,7 +2,7 @@ import { generateLaunchWorkspace } from "@/lib/launchlens/provider";
 import type { LaunchLensInput } from "@/lib/launchlens/types";
 
 export const runtime = "nodejs";
-export const maxDuration = 30;
+export const maxDuration = 65;
 
 const MAX_CONTENT_LENGTH = 10_000;
 const MAX_FIELD_LENGTH = 1_200;

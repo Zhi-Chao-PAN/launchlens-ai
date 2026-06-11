@@ -14,6 +14,9 @@
 - [x] Added Vitest coverage for mock provider, provider fallback, Markdown export, and API validation.
 - [x] Added optional MiniMax Token Plan provider path with env-only secrets.
 - [x] Added route/provider safety guards: field caps, body caps, rate limit, timeout, safe fallback codes, and provider host allowlists.
+- [x] Added browser-local persistence for the current brief and generated workspace.
+- [x] Added accessible labels/status regions for the main editing and feedback controls.
+- [x] Hardened provider parsing for fenced JSON, reasoning tags, and repairable JSON formatting.
 
 ## Next Nightly Builder Tasks
 
@@ -21,6 +24,7 @@
 - [x] Add route handler tests for invalid input and no-key demo mode.
 - [x] Add editable workspace sections.
 - [x] Add "copy as Markdown" export.
+- [x] Add local persistence for edited workspace drafts.
 - [ ] Add saved example workspace fixtures.
 - [ ] Add screenshot assets for README.
 - [ ] Add basic loading skeletons for long real-model calls.
@@ -37,6 +41,7 @@
 - [x] README includes demo script.
 - [x] README includes architecture notes.
 - [x] Generated workspace is editable and exportable.
+- [x] Current workspace is restorable from browser-local storage after refresh.
 - [x] API/provider behavior has tests.
 - [ ] Public deployment URL is available.
 - [ ] GitHub history shows incremental nightly progress.

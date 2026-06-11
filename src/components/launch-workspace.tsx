@@ -15,13 +15,15 @@ import {
   Loader2,
   Megaphone,
   PencilLine,
+  RotateCcw,
   Rocket,
+  Save,
   Sparkles,
   Target,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
 import { buildMockWorkspace } from "@/lib/launchlens/mock-provider";
@@ -45,12 +47,14 @@ type SectionProps = {
 };
 
 type EditableTextProps = {
+  label: string;
   value: string;
   rows?: number;
   onCommit: (value: string) => void;
 };
 
 type EditableLinesProps = {
+  label: string;
   items: string[];
   rows?: number;
   onCommit: (items: string[]) => void;
@@ -69,6 +73,63 @@ const tones = [
   "Warm and community-led",
   "Technical and product-led",
 ];
+
+const LOCAL_WORKSPACE_KEY = "launchlens.currentWorkspace.v1";
+
+type LocalWorkspaceSnapshot = {
+  input: LaunchLensInput;
+  workspace: LaunchLensWorkspace;
+  savedAt: string;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function isLaunchLensInput(value: unknown): value is LaunchLensInput {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return ["idea", "audience", "market", "tone", "constraints"].every(
+    (key) => typeof value[key] === "string",
+  );
+}
+
+function isLaunchLensWorkspace(value: unknown): value is LaunchLensWorkspace {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    (value.provider === "mock" ||
+      value.provider === "openai" ||
+      value.provider === "minimax") &&
+    typeof value.generatedAt === "string" &&
+    typeof value.summary === "string" &&
+    Array.isArray(value.targetUsers) &&
+    Array.isArray(value.pains) &&
+    Array.isArray(value.mvpScope) &&
+    Array.isArray(value.backlog) &&
+    isRecord(value.landingPage) &&
+    isRecord(value.pricing) &&
+    Array.isArray(value.launchPlan) &&
+    Array.isArray(value.contentCalendar) &&
+    Array.isArray(value.tasks) &&
+    Array.isArray(value.assumptions)
+  );
+}
+
+function isLocalWorkspaceSnapshot(
+  value: unknown,
+): value is LocalWorkspaceSnapshot {
+  return (
+    isRecord(value) &&
+    isLaunchLensInput(value.input) &&
+    isLaunchLensWorkspace(value.workspace) &&
+    typeof value.savedAt === "string"
+  );
+}
 
 function splitLines(value: string) {
   return value
@@ -91,9 +152,10 @@ function Section({ title, icon: Icon, children }: SectionProps) {
   );
 }
 
-function EditableText({ value, rows = 3, onCommit }: EditableTextProps) {
+function EditableText({ label, value, rows = 3, onCommit }: EditableTextProps) {
   return (
     <textarea
+      aria-label={label}
       value={value}
       rows={rows}
       onChange={(event) => onCommit(event.target.value)}
@@ -102,9 +164,15 @@ function EditableText({ value, rows = 3, onCommit }: EditableTextProps) {
   );
 }
 
-function EditableLines({ items, rows = 5, onCommit }: EditableLinesProps) {
+function EditableLines({
+  label,
+  items,
+  rows = 5,
+  onCommit,
+}: EditableLinesProps) {
   return (
     <EditableText
+      label={label}
       value={items.join("\n")}
       rows={rows}
       onCommit={(value) => onCommit(splitLines(value))}
@@ -144,6 +212,8 @@ export function LaunchWorkspace({
   const [fallbackNotice, setFallbackNotice] = useState("");
   const [copyNotice, setCopyNotice] = useState("");
   const [exportText, setExportText] = useState("");
+  const [isStorageReady, setIsStorageReady] = useState(false);
+  const [persistenceNotice, setPersistenceNotice] = useState("");
 
   const providerLabel = useMemo(() => {
     if (workspace.provider === "minimax") {
@@ -156,6 +226,61 @@ export function LaunchWorkspace({
 
     return "Demo mock provider";
   }, [workspace.provider]);
+
+  const saveLabel = isStorageReady ? "Saved locally" : "Preparing save";
+
+  useEffect(() => {
+    let cancelled = false;
+
+    window.setTimeout(() => {
+      if (cancelled) {
+        return;
+      }
+
+      try {
+        const rawSnapshot = localStorage.getItem(LOCAL_WORKSPACE_KEY);
+
+        if (rawSnapshot) {
+          const snapshot = JSON.parse(rawSnapshot) as unknown;
+
+          if (isLocalWorkspaceSnapshot(snapshot)) {
+            setInput(snapshot.input);
+            setWorkspace(snapshot.workspace);
+            setPersistenceNotice("Restored local workspace.");
+          }
+        }
+      } catch {
+        setPersistenceNotice("Local save unavailable.");
+      } finally {
+        setIsStorageReady(true);
+      }
+    }, 0);
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isStorageReady) {
+      return;
+    }
+
+    try {
+      const nextSavedAt = new Date().toISOString();
+      const snapshot: LocalWorkspaceSnapshot = {
+        input,
+        workspace,
+        savedAt: nextSavedAt,
+      };
+
+      localStorage.setItem(LOCAL_WORKSPACE_KEY, JSON.stringify(snapshot));
+    } catch {
+      window.setTimeout(() => {
+        setPersistenceNotice("Local save unavailable.");
+      }, 0);
+    }
+  }, [input, isStorageReady, workspace]);
 
   function updateList(key: WorkspaceListKey, items: string[]) {
     setWorkspace((current) => ({
@@ -172,6 +297,18 @@ export function LaunchWorkspace({
     setCopyNotice("");
     setExportText("");
     setIsEditing(false);
+    setPersistenceNotice("Sample loaded and saved locally.");
+  }
+
+  function resetLocalWorkspace() {
+    setInput(initialInput);
+    setWorkspace(initialWorkspace);
+    setError("");
+    setFallbackNotice("");
+    setCopyNotice("");
+    setExportText("");
+    setIsEditing(false);
+    setPersistenceNotice("Reset to starter workspace.");
   }
 
   async function generate() {
@@ -196,6 +333,7 @@ export function LaunchWorkspace({
       }
 
       setWorkspace(data.workspace);
+      setPersistenceNotice("Generated workspace saved locally.");
       setFallbackNotice(
         data.usedFallback
           ? "Real provider failed, so LaunchLens returned the mock workspace."
@@ -244,6 +382,19 @@ export function LaunchWorkspace({
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-sm">
+            <span className="flex items-center gap-2 rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-[#40504a]">
+              <Save className="size-4 text-[#138a72]" aria-hidden="true" />
+              {saveLabel}
+            </span>
+            <button
+              type="button"
+              onClick={resetLocalWorkspace}
+              title="Reset local draft"
+              aria-label="Reset local draft"
+              className="flex size-10 items-center justify-center rounded-md border border-[#d8ded4] bg-white text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d]"
+            >
+              <RotateCcw className="size-4" aria-hidden="true" />
+            </button>
             <span className="rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-[#40504a]">
               {providerLabel}
             </span>
@@ -380,8 +531,20 @@ export function LaunchWorkspace({
             </div>
 
             {(error || fallbackNotice) && (
-              <div className="mt-4 rounded-md border border-[#e7c9bd] bg-[#fff6f1] p-3 text-sm leading-6 text-[#8b3d28]">
+              <div
+                role={error ? "alert" : "status"}
+                className="mt-4 rounded-md border border-[#e7c9bd] bg-[#fff6f1] p-3 text-sm leading-6 text-[#8b3d28]"
+              >
                 {error || fallbackNotice}
+              </div>
+            )}
+
+            {persistenceNotice && (
+              <div
+                role="status"
+                className="mt-4 rounded-md border border-[#d8ded4] bg-[#fbfcfa] p-3 text-sm leading-6 text-[#40504a]"
+              >
+                {persistenceNotice}
               </div>
             )}
           </aside>
@@ -432,6 +595,7 @@ export function LaunchWorkspace({
                   {isEditing ? (
                     <div className="space-y-3">
                       <EditableText
+                        label="Landing page headline"
                         value={workspace.landingPage.headline}
                         rows={2}
                         onCommit={(value) =>
@@ -445,6 +609,7 @@ export function LaunchWorkspace({
                         }
                       />
                       <EditableText
+                        label="Workspace summary"
                         value={workspace.summary}
                         rows={4}
                         onCommit={(value) =>
@@ -472,6 +637,7 @@ export function LaunchWorkspace({
                   </p>
                   {isEditing ? (
                     <EditableText
+                      label="Launch call to action"
                       value={workspace.landingPage.cta}
                       rows={2}
                       onCommit={(value) =>
@@ -497,7 +663,10 @@ export function LaunchWorkspace({
               </div>
 
               {(copyNotice || exportText) && (
-                <div className="mt-5 rounded-lg border border-[#d8ded4] bg-[#fbfcfa] p-4">
+                <div
+                  role="status"
+                  className="mt-5 rounded-lg border border-[#d8ded4] bg-[#fbfcfa] p-4"
+                >
                   <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#17201d]">
                     <FileText className="size-4" aria-hidden="true" />
                     {copyNotice || "Markdown export"}
@@ -518,6 +687,7 @@ export function LaunchWorkspace({
               <Section title="Target users" icon={UsersRound}>
                 {isEditing ? (
                   <EditableLines
+                    label="Target users"
                     items={workspace.targetUsers}
                     onCommit={(items) => updateList("targetUsers", items)}
                   />
@@ -529,6 +699,7 @@ export function LaunchWorkspace({
               <Section title="Pain map" icon={Target}>
                 {isEditing ? (
                   <EditableLines
+                    label="Pain map"
                     items={workspace.pains}
                     onCommit={(items) => updateList("pains", items)}
                   />
@@ -540,6 +711,7 @@ export function LaunchWorkspace({
               <Section title="MVP scope" icon={ClipboardList}>
                 {isEditing ? (
                   <EditableLines
+                    label="MVP scope"
                     items={workspace.mvpScope}
                     onCommit={(items) => updateList("mvpScope", items)}
                   />
@@ -552,6 +724,7 @@ export function LaunchWorkspace({
                 {isEditing ? (
                   <div className="space-y-3">
                     <EditableText
+                      label="Landing page subheadline"
                       value={workspace.landingPage.subheadline}
                       rows={3}
                       onCommit={(value) =>
@@ -566,6 +739,7 @@ export function LaunchWorkspace({
                       }
                     />
                     <EditableLines
+                      label="Landing page proof bullets"
                       items={workspace.landingPage.proofBullets}
                       onCommit={(items) =>
                         setWorkspace((current) => ({
@@ -620,6 +794,7 @@ export function LaunchWorkspace({
                 {isEditing ? (
                   <div className="space-y-3">
                     <EditableText
+                      label="Pricing hypothesis"
                       value={workspace.pricing.hypothesis}
                       rows={4}
                       onCommit={(value) =>
@@ -633,6 +808,7 @@ export function LaunchWorkspace({
                       }
                     />
                     <EditableLines
+                      label="Pricing tiers"
                       items={workspace.pricing.tiers}
                       onCommit={(items) =>
                         setWorkspace((current) => ({
@@ -661,6 +837,7 @@ export function LaunchWorkspace({
               <Section title="Launch plan" icon={Rocket}>
                 {isEditing ? (
                   <EditableLines
+                    label="Launch plan"
                     items={workspace.launchPlan}
                     onCommit={(items) => updateList("launchPlan", items)}
                   />
@@ -674,6 +851,7 @@ export function LaunchWorkspace({
               <Section title="Assumptions to validate" icon={AlertTriangle}>
                 {isEditing ? (
                   <EditableLines
+                    label="Assumptions to validate"
                     items={workspace.assumptions}
                     onCommit={(items) => updateList("assumptions", items)}
                   />
@@ -685,6 +863,7 @@ export function LaunchWorkspace({
               <Section title="Pricing risks" icon={AlertTriangle}>
                 {isEditing ? (
                   <EditableLines
+                    label="Pricing risks"
                     items={workspace.pricing.risks}
                     onCommit={(items) =>
                       setWorkspace((current) => ({

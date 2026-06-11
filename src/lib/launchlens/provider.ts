@@ -1,3 +1,5 @@
+import { jsonrepair } from "jsonrepair";
+
 import { buildMockWorkspace } from "./mock-provider";
 import type {
   BacklogItem,
@@ -13,7 +15,9 @@ const OPENAI_BASE_URL = "https://api.openai.com/v1";
 const DEFAULT_OPENAI_MODEL = "gpt-4.1-mini";
 const MINIMAX_BASE_URL = "https://api.minimaxi.com/v1";
 const DEFAULT_MINIMAX_MODEL = "MiniMax-M3";
-const PROVIDER_TIMEOUT_MS = 25_000;
+const OPENAI_PROVIDER_TIMEOUT_MS = 15_000;
+const MINIMAX_PROVIDER_TIMEOUT_MS = 45_000;
+const MINIMAX_MAX_OUTPUT_TOKENS = 1_600;
 
 type RealProviderName = Exclude<ProviderName, "mock">;
 
@@ -140,38 +144,42 @@ function text(value: unknown, fallback: string) {
 }
 
 function parseJsonObject(content: string): Record<string, unknown> {
-  try {
-    return JSON.parse(content) as Record<string, unknown>;
-  } catch {
-    const start = content.indexOf("{");
-    const end = content.lastIndexOf("}");
+  const withoutThinking = content.replace(/<think>[\s\S]*?<\/think>/gi, "");
+  const fenced = withoutThinking.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  const cleaned = fenced?.[1] ?? withoutThinking.trim();
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
 
-    if (start === -1 || end === -1 || end <= start) {
+  if (start === -1 || end === -1 || end <= start) {
+    throw new ProviderError(
+      "Model response did not contain JSON.",
+      "provider_validation_failed",
+    );
+  }
+
+  const candidate = cleaned.slice(start, end + 1);
+
+  try {
+    return JSON.parse(candidate) as Record<string, unknown>;
+  } catch {
+    try {
+      return JSON.parse(jsonrepair(candidate)) as Record<string, unknown>;
+    } catch {
       throw new ProviderError(
-        "Model response did not contain JSON.",
+        "Model response JSON could not be repaired.",
         "provider_validation_failed",
       );
     }
-
-    return JSON.parse(content.slice(start, end + 1)) as Record<string, unknown>;
   }
 }
 
-function hasRequiredWorkspaceShape(payload: Record<string, unknown>) {
+function hasCoreWorkspaceShape(payload: Record<string, unknown>) {
   return (
     typeof payload.summary === "string" &&
     Array.isArray(payload.targetUsers) &&
     Array.isArray(payload.pains) &&
     Array.isArray(payload.mvpScope) &&
-    Array.isArray(payload.backlog) &&
-    payload.landingPage !== null &&
-    typeof payload.landingPage === "object" &&
-    payload.pricing !== null &&
-    typeof payload.pricing === "object" &&
-    Array.isArray(payload.launchPlan) &&
-    Array.isArray(payload.contentCalendar) &&
-    Array.isArray(payload.tasks) &&
-    Array.isArray(payload.assumptions)
+    Array.isArray(payload.backlog)
   );
 }
 
@@ -213,25 +221,34 @@ function validatedBaseUrl(options: {
 function promptPayload(input: LaunchLensInput) {
   return {
     brief: input,
+    instructions:
+      "Return compact JSON with the exact top-level keys shown. Keep each list to the number of example items shown. Use one sentence per string.",
     schema: {
       summary: "string",
-      targetUsers: ["string"],
-      pains: ["string"],
-      mvpScope: ["string"],
-      backlog: [{ feature: "string", why: "string", priority: "P0|P1|P2" }],
+      targetUsers: ["string", "string", "string"],
+      pains: ["string", "string", "string"],
+      mvpScope: ["string", "string", "string", "string"],
+      backlog: [
+        { feature: "string", why: "string", priority: "P0|P1|P2" },
+        { feature: "string", why: "string", priority: "P0|P1|P2" },
+        { feature: "string", why: "string", priority: "P0|P1|P2" },
+        { feature: "string", why: "string", priority: "P0|P1|P2" },
+      ],
       landingPage: {
         headline: "string",
         subheadline: "string",
         cta: "string",
-        proofBullets: ["string"],
+        proofBullets: ["string", "string", "string"],
       },
       pricing: {
         hypothesis: "string",
-        tiers: ["string"],
-        risks: ["string"],
+        tiers: ["string", "string", "string"],
+        risks: ["string", "string"],
       },
-      launchPlan: ["string"],
+      launchPlan: ["string", "string", "string", "string"],
       contentCalendar: [
+        { channel: "string", angle: "string", cadence: "string" },
+        { channel: "string", angle: "string", cadence: "string" },
         { channel: "string", angle: "string", cadence: "string" },
       ],
       tasks: [
@@ -241,8 +258,26 @@ function promptPayload(input: LaunchLensInput) {
           due: "string",
           outcome: "string",
         },
+        {
+          title: "string",
+          owner: "string",
+          due: "string",
+          outcome: "string",
+        },
+        {
+          title: "string",
+          owner: "string",
+          due: "string",
+          outcome: "string",
+        },
+        {
+          title: "string",
+          owner: "string",
+          due: "string",
+          outcome: "string",
+        },
       ],
-      assumptions: ["string"],
+      assumptions: ["string", "string", "string"],
     },
   };
 }
@@ -358,9 +393,9 @@ async function parseWorkspaceResponse(
 
   const payload = parseJsonObject(content);
 
-  if (!hasRequiredWorkspaceShape(payload)) {
+  if (!hasCoreWorkspaceShape(payload)) {
     throw new ProviderError(
-      "Provider response did not match the workspace schema.",
+      "Provider response did not include enough workspace structure.",
       "provider_validation_failed",
     );
   }
@@ -387,7 +422,7 @@ async function generateWithOpenAI(
   try {
     response = await fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
-      signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+      signal: AbortSignal.timeout(OPENAI_PROVIDER_TIMEOUT_MS),
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
@@ -395,13 +430,13 @@ async function generateWithOpenAI(
       body: JSON.stringify({
         model,
         temperature: 0.4,
-        max_tokens: 1800,
+        max_tokens: 1200,
         response_format: { type: "json_object" },
         messages: [
           {
             role: "system",
             content:
-              "You are LaunchLens AI, a pragmatic SaaS go-to-market planning agent. Return only valid JSON that matches the requested schema. Favor actionable product and launch judgment over generic market theory.",
+              "You are LaunchLens AI, a pragmatic SaaS go-to-market planning agent. Return only valid compact JSON matching the requested schema. Favor actionable product and launch judgment over generic market theory.",
           },
           {
             role: "user",
@@ -442,7 +477,7 @@ async function generateWithMiniMax(
   try {
     response = await fetch(`${baseUrl}/responses`, {
       method: "POST",
-      signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+      signal: AbortSignal.timeout(MINIMAX_PROVIDER_TIMEOUT_MS),
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
@@ -450,13 +485,14 @@ async function generateWithMiniMax(
       body: JSON.stringify({
         model,
         temperature: 0.3,
-        max_output_tokens: 1800,
+        max_output_tokens: MINIMAX_MAX_OUTPUT_TOKENS,
         reasoning: { effort: "none" },
+        response_format: { type: "json_object" },
         input: [
           {
             role: "system",
             content:
-              "You are LaunchLens AI, a pragmatic SaaS go-to-market planning agent. Return only valid JSON that matches the requested schema. Favor actionable product and launch judgment over generic market theory.",
+              "You are LaunchLens AI, a pragmatic SaaS go-to-market planning agent. Return only valid compact JSON matching the requested schema. Favor actionable product and launch judgment over generic market theory.",
           },
           {
             role: "user",

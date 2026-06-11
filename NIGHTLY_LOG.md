@@ -1,5 +1,44 @@
 # Nightly Log
 
+## 2026-06-12 04:11 Asia/Shanghai
+
+Macro plan:
+
+- Current maturity: early-stage product loop with mock mode, optional real providers, editable sections, Markdown export, and tests; not portfolio-ready yet.
+- Top gaps: no persisted workspaces, no README screenshots/public demo URL, MiniMax live behavior still needs tuning evidence, mobile/loading UX needs polish.
+- Tonight's outcome target: ship at least one complete portfolio-visible product increment, verify it, commit and push, then reassess for another safe cycle before the 09:00 cutoff.
+- Time budget: started at 04:11 with roughly 4h49m before the hard stop; avoid large new work after 08:30, cleanup only after 08:45.
+- Planned execution cycles: Cycle 1 local workspace persistence and restore UX; Cycle 2 screenshots/README or loading/provider metadata if Cycle 1 lands cleanly.
+- Useful tools/sub-agents: GitHub CLI for repo state/push, browser verification for meaningful UI change, and one sub-agent for a bounded README/UI readiness review.
+
+Cycle 1 goal:
+
+- Add local saved workspace persistence so reviewers can generate/edit a plan, keep it across reloads, and understand that saved data stays in-browser without secrets.
+
+Cycle 1 result at 04:28:
+
+- Added browser-local persistence for the current founder brief and generated workspace.
+- Added restore/reset UI and local-save status in the header/sidebar.
+- Added accessible labels for edit-mode textareas and status/alert regions for feedback.
+- Hardened provider parsing for fenced JSON, stripped reasoning tags, repairable JSON, and core-shape validation.
+- Updated README, TASKS, and PROJECT_MATURITY with persistence and provider parsing evidence.
+
+Verification:
+
+- `npm run lint -- --max-warnings=0` passed.
+- `npm run test` passed with 8 tests.
+- `npm run build` passed after stopping a stale Next dev server and clearing temporary dev logs.
+- Local HTTP check returned 200 before browser verification.
+- In-app Browser verification was attempted for `http://localhost:3000`, but enterprise network policy blocked localhost access. No alternate browser workaround was used.
+
+Sidecar review:
+
+- Sub-agent review found the strongest remaining gaps are screenshot/public-demo proof artifacts, real-provider quality evidence, saved example workspace fixtures, loading/progress polish, and README presentation.
+
+Reassessment:
+
+- Cycle 1 is complete and commit-ready. With roughly 4h30m before cutoff, the next safe cycle should prioritize proof artifacts or stable example workspace fixtures rather than a large architecture change.
+
 ## 2026-06-11 23:50 Asia/Shanghai
 
 Phase 1 was started manually for the nightly automation handoff.
