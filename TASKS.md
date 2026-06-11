@@ -10,25 +10,33 @@
 - [x] Added optional OpenAI-compatible provider flow.
 - [x] Added planning and maturity documentation.
 - [x] Created the public GitHub repository and pushed `main`.
+- [x] Added sample briefs, editable workspace sections, assumptions/risks, and Markdown export.
+- [x] Added Vitest coverage for mock provider, provider fallback, Markdown export, and API validation.
+- [x] Added optional MiniMax Token Plan provider path with env-only secrets.
+- [x] Added route/provider safety guards: field caps, body caps, rate limit, timeout, safe fallback codes, and provider host allowlists.
 
 ## Next Nightly Builder Tasks
 
-- [ ] Add unit tests for `buildMockWorkspace` and provider fallback.
-- [ ] Add route handler tests for invalid input and no-key demo mode.
-- [ ] Add editable workspace sections.
-- [ ] Add "copy as Markdown" export.
+- [x] Add unit tests for `buildMockWorkspace` and provider fallback.
+- [x] Add route handler tests for invalid input and no-key demo mode.
+- [x] Add editable workspace sections.
+- [x] Add "copy as Markdown" export.
 - [ ] Add saved example workspace fixtures.
 - [ ] Add screenshot assets for README.
 - [ ] Add basic loading skeletons for long real-model calls.
 - [ ] Add provider usage metadata without exposing secrets.
+- [ ] Investigate MiniMax live response timeout and tune request shape if needed.
 
 ## Portfolio-Ready Checklist
 
-- [ ] `npm run lint` passes.
-- [ ] `npm run build` passes.
+- [x] `npm run lint` passes.
+- [x] `npm run test` passes.
+- [x] `npm run build` passes.
 - [ ] Product can run from a fresh clone without API keys.
-- [ ] README includes screenshots, architecture notes, and demo script.
-- [ ] Generated workspace is editable and exportable.
-- [ ] API/provider behavior has tests.
+- [ ] README includes screenshots.
+- [x] README includes demo script.
+- [x] README includes architecture notes.
+- [x] Generated workspace is editable and exportable.
+- [x] API/provider behavior has tests.
 - [ ] Public deployment URL is available.
 - [ ] GitHub history shows incremental nightly progress.

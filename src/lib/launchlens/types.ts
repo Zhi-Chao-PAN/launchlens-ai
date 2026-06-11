@@ -1,4 +1,4 @@
-export type ProviderName = "mock" | "openai";
+export type ProviderName = "mock" | "openai" | "minimax";
 
 export type LaunchLensInput = {
   idea: string;
