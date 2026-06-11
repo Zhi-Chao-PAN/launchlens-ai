@@ -10,6 +10,7 @@ import {
   ClipboardList,
   Compass,
   Copy,
+  Braces,
   Eye,
   FileText,
   Loader2,
@@ -26,6 +27,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import { workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
+import { workspaceToJson } from "@/lib/launchlens/json-export";
 import type { ExampleWorkspace } from "@/lib/launchlens/example-workspaces";
 import type {
   GenerationResult,
@@ -427,6 +429,22 @@ export function LaunchWorkspace({
     }
   }
 
+  async function copyJson() {
+    const json = workspaceToJson(workspace);
+    setExportText(json);
+
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error("Clipboard API is unavailable.");
+      }
+
+      await navigator.clipboard.writeText(json);
+      setCopyNotice("JSON copied.");
+    } catch {
+      setCopyNotice("JSON is ready below.");
+    }
+  }
+
   return (
     <main
       aria-busy={isGenerating}
@@ -683,6 +701,14 @@ export function LaunchWorkspace({
                   >
                     <Copy className="size-4" aria-hidden="true" />
                     Copy Markdown
+                  </button>
+                  <button
+                    type="button"
+                    onClick={copyJson}
+                    className="flex h-10 items-center gap-2 rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm font-semibold text-[#17201d] transition hover:border-[#138a72]"
+                  >
+                    <Braces className="size-4" aria-hidden="true" />
+                    Copy JSON
                   </button>
                 </div>
               </div>

@@ -24,7 +24,7 @@ Current maturity: early-stage, but now beyond a static scaffold. The product loo
 4. Toggle edit mode and refine generated sections.
 5. Keep the current brief and workspace across refreshes through browser-local persistence.
 6. Watch generation progress and provider metadata without exposing any secret or upstream response detail.
-7. Copy/export the workspace as Markdown for a README, Notion doc, product memo, or launch plan.
+7. Copy/export the workspace as Markdown or JSON for a README, Notion doc, product memo, automation, or launch plan.
 
 ## Demo Script
 
@@ -34,7 +34,7 @@ Current maturity: early-stage, but now beyond a static scaffold. The product loo
 4. Review the assumptions and pricing risks to show that the output is not just marketing copy.
 5. Click `Edit`, change one assumption or landing page line, then click `Preview`.
 6. Refresh the page and confirm the local workspace is restored.
-7. Click `Copy Markdown` and inspect the generated export text.
+7. Click `Copy Markdown` or `Copy JSON` and inspect the generated export text.
 
 ## Stable Demo Fixtures
 

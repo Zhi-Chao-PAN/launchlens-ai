@@ -3,7 +3,7 @@
 Status: early-stage
 Completion estimate: 60%
 
-LaunchLens AI is currently in an early product loop stage. It has a real product direction, a running Next.js app, stable example workspace fixtures, a demo workspace interface, editable sections, browser-local persistence, Markdown export, tests, and provider abstraction that supports no-key mock mode plus optional real providers.
+LaunchLens AI is currently in an early product loop stage. It has a real product direction, a running Next.js app, stable example workspace fixtures, a demo workspace interface, editable sections, browser-local persistence, Markdown/JSON export, tests, and provider abstraction that supports no-key mock mode plus optional real providers.
 
 It is not portfolio-ready yet.
 
@@ -13,6 +13,7 @@ It is not portfolio-ready yet.
 - It can run without secrets through a mock provider.
 - The first screen shows a product workflow: founder brief to generated GTM workspace to editing and Markdown export.
 - Stable example fixtures give reviewers repeatable demo outputs before screenshots or deployment exist.
+- Markdown and JSON export support both human-readable review and machine-readable automation handoff.
 - Assumptions and pricing risks are visible, making AI product judgment easier to review.
 - The current brief and generated workspace are saved in browser-local storage and restored after refresh.
 - MiniMax and OpenAI-compatible provider hooks are optional and guarded by env-based configuration.
@@ -48,7 +49,7 @@ It is not portfolio-ready yet.
 - [x] `npm run lint`, `npm run test`, and `npm run build` pass in documented local verification.
 - [x] Mock provider and real-provider fallback have tests.
 - [x] User can edit key generated sections.
-- [x] User can export a workspace to Markdown.
+- [x] User can export a workspace to Markdown and JSON.
 - [x] User can restore the current workspace from browser-local storage after refresh.
 - [x] Generation progress and safe provider metadata are visible.
 - [x] At least two realistic sample workspaces are included.

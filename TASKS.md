@@ -24,6 +24,7 @@
 - [x] Ran one MiniMax live app-route smoke with safe metadata only.
 - [x] Added GitHub Actions CI for lint, test, build, and audit.
 - [x] Fixed lockfile sync issue caught by the first CI run.
+- [x] Added JSON export for machine-readable workspace handoff.
 
 ## Next Nightly Builder Tasks
 
@@ -31,6 +32,7 @@
 - [x] Add route handler tests for invalid input and no-key demo mode.
 - [x] Add editable workspace sections.
 - [x] Add "copy as Markdown" export.
+- [x] Add "copy as JSON" export.
 - [x] Add local persistence for edited workspace drafts.
 - [x] Add saved example workspace fixtures.
 - [ ] Add screenshot assets for README.

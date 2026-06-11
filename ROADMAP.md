@@ -19,7 +19,7 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 
 - Add persistent saved workspaces.
 - Add persistence for edited workspaces.
-- Add export to JSON.
+- Add JSON export and then add export history/share links.
 - Track assumptions and validation evidence.
 - Add stable example workspaces for realistic reviewer demos.
 - Add tests for provider fallback and API validation.

@@ -180,6 +180,28 @@ Reassessment:
 
 - Cycle 8 is commit-ready. Continue only with small CI/proof polish unless the next Actions run fails.
 
+Cycle 9 goal:
+
+- Add machine-readable JSON export so workspaces can be handed to automations, docs, or future persistence layers without scraping Markdown.
+
+Cycle 9 result at 05:31:
+
+- Added a tested `workspaceToJson` helper.
+- Added a `Copy JSON` action beside `Copy Markdown`.
+- Updated README, ROADMAP, TASKS, and PROJECT_MATURITY to record Markdown/JSON export capability.
+
+Verification:
+
+- `npm run lint -- --max-warnings=0` passed.
+- `npm run test` passed with 10 tests.
+- `npm run build` passed.
+- `npm audit --audit-level=moderate` found 0 vulnerabilities.
+- No-key local HTTP smoke on port `3002` returned page 200 with `Copy JSON` and mock `/api/generate` output with `provider=mock`.
+
+Reassessment:
+
+- Cycle 9 is commit-ready. Remaining high-value work is still screenshots, public deployment, mobile/browser-accessible verification, and repeatable provider quality fixtures.
+
 ## 2026-06-11 23:50 Asia/Shanghai
 
 Phase 1 was started manually for the nightly automation handoff.
