@@ -202,6 +202,20 @@ Reassessment:
 
 - Cycle 9 is commit-ready. Remaining high-value work is still screenshots, public deployment, mobile/browser-accessible verification, and repeatable provider quality fixtures.
 
+Cycle 10 goal:
+
+- Remove the remaining GitHub Actions Node 20 deprecation annotation by moving official actions from v4 to current v6 releases.
+
+Cycle 10 result at 05:52:
+
+- Confirmed latest official releases with GitHub API: `actions/checkout@v6.0.3` and `actions/setup-node@v6.4.0`.
+- Updated CI workflow to use `actions/checkout@v6` and `actions/setup-node@v6`.
+- Removed the temporary `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` env override.
+
+Verification:
+
+- Pending for this cycle: push and confirm the next GitHub Actions run.
+
 ## 2026-06-11 23:50 Asia/Shanghai
 
 Phase 1 was started manually for the nightly automation handoff.
