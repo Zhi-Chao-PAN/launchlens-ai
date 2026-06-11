@@ -20,6 +20,7 @@
 - [x] Added stable example workspace fixtures for repeatable reviewer demos.
 - [x] Added generation progress UI for longer real-model calls.
 - [x] Added safe provider metadata display without exposing secrets.
+- [x] Added MIT license for clearer GitHub presentation.
 
 ## Next Nightly Builder Tasks
 
@@ -50,3 +51,4 @@
 - [x] API/provider behavior has tests.
 - [ ] Public deployment URL is available.
 - [x] GitHub history shows incremental nightly progress.
+- [x] Repository includes a license.

@@ -20,6 +20,7 @@ It is not portfolio-ready yet.
 - Provider parsing now handles fenced JSON, reasoning tags, minor JSON repair, and safe fallback.
 - Generation progress and safe provider metadata are visible without exposing secrets.
 - Documentation now gives nightly automation a clear continuation path.
+- The repository now includes an MIT license.
 
 ## Current Gaps
 
@@ -35,7 +36,7 @@ It is not portfolio-ready yet.
 3. Full-stack quality: partial pass. Next.js, TypeScript, Tailwind, tests, editable UI, stable example fixtures, local persistence, and Markdown export exist; server persistence and screenshots are pending.
 4. Verification: partial pass. `lint`, `test`, and `build` pass; Browser verification for localhost was blocked by enterprise policy and is documented in `NIGHTLY_LOG.md`.
 5. Documentation: partial pass. README covers value prop, setup, env vars, demo flow, architecture, AI design, roadmap, and portfolio story; screenshots are still missing.
-6. GitHub presentation: partial pass. Public repo and useful topics exist; license and screenshot/demo presentation still need polish.
+6. GitHub presentation: partial pass. Public repo, useful topics, clear commits, and MIT license exist; screenshot/demo presentation still needs polish.
 7. Portfolio story: partial pass. README explains AI full-stack Solopreneur/TPM positioning for the UTS Master of AI application; the story should become tighter once screenshots and deployment exist.
 8. Maturity: partial pass. Multiple meaningful iterations now exist, but it remains a 1-2 week marathon project rather than finished portfolio work.
 9. Quality review: not yet complete. A final quality pass must still cover UX, accessibility, mobile, docs, secret hygiene, build/test status, and story before completion.
@@ -54,6 +55,7 @@ It is not portfolio-ready yet.
 - [ ] README includes screenshots.
 - [x] README includes architecture diagram and product demo script.
 - [ ] Public deployment URL is linked from README.
+- [x] Repository includes a license.
 - [ ] The app clearly communicates AI product thinking, full-stack skill, and TPM-style prioritization.
 - [x] No secrets, private tokens, or generated local environment files are committed.
 

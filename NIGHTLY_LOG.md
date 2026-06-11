@@ -79,10 +79,29 @@ Verification:
 - `npm run lint -- --max-warnings=0` passed.
 - `npm run test` passed with 9 tests.
 - `npm run build` passed.
+- `npm audit --audit-level=moderate` found 0 vulnerabilities.
+- No-key local HTTP smoke on port `3002` returned page 200 with safe metadata text and mock `/api/generate` output with `provider=mock`.
 
 Reassessment:
 
 - Cycle 3 is complete and commit-ready. Remaining high-value work is proof/presentation: screenshots, deployment, mobile verification, and repeatable MiniMax quality evidence.
+
+Cycle 4 goal:
+
+- Close a small GitHub presentation gap by adding a clear open-source license and recording the repo presentation status.
+
+Cycle 4 result at 04:40:
+
+- Added an MIT `LICENSE`.
+- Updated README, TASKS, and PROJECT_MATURITY to reflect the license and stronger GitHub presentation.
+
+Verification:
+
+- Documentation/license-only change; no code build needed for this cycle.
+
+Reassessment:
+
+- Cycle 4 is complete and commit-ready. Remaining gaps are screenshots, public deployment, mobile/browser verification, and repeatable MiniMax quality evidence.
 
 ## 2026-06-11 23:50 Asia/Shanghai
 

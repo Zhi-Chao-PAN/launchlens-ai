@@ -115,6 +115,10 @@ flowchart LR
 
 This project is built for Zhi-Chao-PAN's UTS Master of Artificial Intelligence application as a high-quality AI SaaS portfolio artifact. It emphasizes AI full-stack product development and technical product management rather than isolated model research.
 
+## License
+
+MIT License. See `LICENSE`.
+
 See:
 
 - `ROADMAP.md`
