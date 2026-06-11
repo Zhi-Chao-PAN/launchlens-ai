@@ -163,6 +163,23 @@ Reassessment:
 
 - Cycle 7 is commit-ready. Push should trigger the CI workflow again; confirm the next run before moving to a larger proof/deployment task.
 
+Cycle 8 goal:
+
+- Remove the GitHub Actions Node 20 deprecation annotation from the new CI workflow by opting JavaScript actions into Node 24.
+
+Cycle 8 result at 05:23:
+
+- Added `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` to `.github/workflows/ci.yml`.
+
+Verification:
+
+- Previous CI run `27378251936` passed all steps after the lockfile fix.
+- This cycle changes workflow metadata only; next push should confirm the annotation is gone or reduced.
+
+Reassessment:
+
+- Cycle 8 is commit-ready. Continue only with small CI/proof polish unless the next Actions run fails.
+
 ## 2026-06-11 23:50 Asia/Shanghai
 
 Phase 1 was started manually for the nightly automation handoff.
