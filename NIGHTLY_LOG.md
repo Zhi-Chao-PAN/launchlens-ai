@@ -404,6 +404,13 @@ Verification:
 - Commit-scope secret scan and fixture temporary-file scan were clean.
 - The normalized fixture is schema v2, contains exactly the three allowlisted scenarios, contains no latency or workspace timestamp noise, and records only real MiniMax/no-fallback cases.
 
+CI follow-up:
+
+- Commit `a52e9ab` deployed successfully to Vercel Production, but GitHub Actions run `27403416627` stopped at `npm ci`.
+- The Windows-generated lockfile had again omitted root `@emnapi/core@1.11.0` and `@emnapi/runtime@1.11.0` entries required by Ubuntu optional WASM resolution.
+- Restored the exact npm registry metadata for both optional packages.
+- `npm ci --dry-run --ignore-scripts --os=linux --cpu=x64` then passed and resolved both packages, providing a local cross-platform lockfile check before the follow-up push.
+
 ## 2026-06-11 23:50 Asia/Shanghai
 
 Phase 1 was started manually for the nightly automation handoff.
