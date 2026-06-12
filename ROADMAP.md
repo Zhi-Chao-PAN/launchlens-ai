@@ -31,7 +31,9 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 
 ## Phase 3: SaaS Shape
 
-- Add authentication and user-owned workspace history.
+- Phase 3A: add anonymous owner-scoped cloud snapshot history, restore, deletion, and opt-in read-only sharing while preserving local-only mode.
+- Activate and verify the Neon-backed flow on the public Vercel deployment.
+- Phase 3B: replace anonymous browser ownership with authentication, account recovery, and user-owned workspace history.
 - Add pricing and usage limits.
 - Add team collaboration primitives.
 - Add prompt versioning, eval fixtures, and generation quality checks.
@@ -46,3 +48,19 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 - Return safe fallback codes instead of exposing provider error details.
 - Keep portfolio evidence visible in code, docs, and demo UX.
 - Prefer clear product judgment over algorithm theater.
+
+## Phase 3A Acceptance
+
+- [x] Cloud storage initializes lazily and does not break a no-database build.
+- [x] Anonymous owner tokens are high entropy and stored server-side only as SHA-256 hashes.
+- [x] Workspace snapshots support owner-scoped list, create, restore, and delete operations.
+- [x] Read-only sharing is off by default and has an explicit enable/disable action.
+- [x] The UI communicates local-only, empty, ready, loading, and failure states.
+- [x] API routes enforce body/schema/UUID validation, record limits, safe errors, and mutation throttling.
+- [x] Request bodies are byte-limited before JSON parsing and normalized into known bounded fields.
+- [x] Schema DDL is isolated in a deployment migration; runtime database code is server-only and DML-only.
+- [x] Per-owner and global snapshot quotas use transaction advisory locks plus a conditional insert.
+- [x] Public share queries use a dedicated projection that never selects founder input.
+- [ ] Neon is provisioned through Vercel Marketplace and the production save/restore/share flow is browser-verified.
+- [ ] Add distributed abuse controls before enabling anonymous cloud writes at meaningful public scale.
+- [ ] Authentication and recoverable account ownership replace the anonymous browser token in Phase 3B.

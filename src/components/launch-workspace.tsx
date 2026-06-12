@@ -26,8 +26,10 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import { CloudWorkspaces } from "@/components/cloud-workspaces";
 import { workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
 import { workspaceToJson } from "@/lib/launchlens/json-export";
+import type { CloudWorkspaceRecord } from "@/lib/launchlens/cloud-workspace";
 import type { ExampleWorkspace } from "@/lib/launchlens/example-workspaces";
 import { formatGeneratedTime } from "@/lib/launchlens/generated-time";
 import { evaluateWorkspaceQuality } from "@/lib/launchlens/workspace-quality";
@@ -36,6 +38,11 @@ import type {
   LaunchLensInput,
   LaunchLensWorkspace,
 } from "@/lib/launchlens/types";
+import {
+  isLaunchLensInput,
+  isLaunchLensWorkspace,
+  isRecord,
+} from "@/lib/launchlens/workspace-validation";
 
 type LaunchWorkspaceProps = {
   initialInput: LaunchLensInput;
@@ -97,44 +104,6 @@ type LocalWorkspaceSnapshot = {
   workspace: LaunchLensWorkspace;
   savedAt: string;
 };
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
-}
-
-function isLaunchLensInput(value: unknown): value is LaunchLensInput {
-  if (!isRecord(value)) {
-    return false;
-  }
-
-  return ["idea", "audience", "market", "tone", "constraints"].every(
-    (key) => typeof value[key] === "string",
-  );
-}
-
-function isLaunchLensWorkspace(value: unknown): value is LaunchLensWorkspace {
-  if (!isRecord(value)) {
-    return false;
-  }
-
-  return (
-    (value.provider === "mock" ||
-      value.provider === "openai" ||
-      value.provider === "minimax") &&
-    typeof value.generatedAt === "string" &&
-    typeof value.summary === "string" &&
-    Array.isArray(value.targetUsers) &&
-    Array.isArray(value.pains) &&
-    Array.isArray(value.mvpScope) &&
-    Array.isArray(value.backlog) &&
-    isRecord(value.landingPage) &&
-    isRecord(value.pricing) &&
-    Array.isArray(value.launchPlan) &&
-    Array.isArray(value.contentCalendar) &&
-    Array.isArray(value.tasks) &&
-    Array.isArray(value.assumptions)
-  );
-}
 
 function isLocalWorkspaceSnapshot(
   value: unknown,
@@ -361,6 +330,24 @@ export function LaunchWorkspace({
     setIsEditing(false);
     setIsBriefOpen(false);
     setPersistenceNotice("Reset to starter workspace.");
+  }
+
+  function restoreCloudWorkspace(record: CloudWorkspaceRecord) {
+    setInput(record.input);
+    setWorkspace(record.workspace);
+    setGenerationMeta({
+      mode: record.workspace.provider === "mock" ? "demo" : "real",
+      provider: record.workspace.provider,
+      generatedAt: record.workspace.generatedAt,
+      usedFallback: false,
+    });
+    setError("");
+    setFallbackNotice("");
+    setCopyNotice("");
+    setExportText("");
+    setIsEditing(false);
+    setIsBriefOpen(false);
+    setPersistenceNotice("Cloud snapshot restored and saved locally.");
   }
 
   async function generate() {
@@ -677,6 +664,12 @@ export function LaunchWorkspace({
           </aside>
 
           <div className="space-y-6">
+            <CloudWorkspaces
+              input={input}
+              workspace={workspace}
+              onRestore={restoreCloudWorkspace}
+            />
+
             <section className="rounded-lg border border-[#d8ded4] bg-white p-5 shadow-sm">
               <div className="mb-5 flex flex-col gap-3 border-b border-[#edf0ea] pb-4 xl:flex-row xl:items-center xl:justify-between">
                 <div className="flex flex-wrap items-center gap-3 text-sm text-[#40504a]">

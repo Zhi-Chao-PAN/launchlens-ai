@@ -14,7 +14,7 @@ Solution: LaunchLens AI converts a founder brief into a workspace that can be ge
 
 Audience: solo founders, tiny SaaS teams, and technical product managers who need sharp execution before overbuilding.
 
-Current maturity: early-stage, but now beyond a static scaffold. The product loop is generate -> edit -> validate assumptions -> save locally -> export.
+Current maturity: early-stage, but now beyond a static scaffold. The product loop is generate -> edit -> validate assumptions -> save locally or as a cloud snapshot -> restore/share -> export.
 
 ## Product Preview
 
@@ -31,8 +31,10 @@ Current maturity: early-stage, but now beyond a static scaffold. The product loo
 3. Review target users, pain map, MVP scope, feature backlog, launch plan, pricing, risks, assumptions, content calendar, and execution tasks.
 4. Toggle edit mode and refine generated sections.
 5. Keep the current brief and workspace across refreshes through browser-local persistence.
-6. Watch generation progress and provider metadata without exposing any secret or upstream response detail.
-7. Copy/export the workspace as Markdown or JSON for a README, Notion doc, product memo, automation, or launch plan.
+6. When `DATABASE_URL` is configured, save decision-point snapshots, restore history, and explicitly enable a read-only share link.
+7. When cloud storage is absent, continue in a clearly labeled local-only mode without losing generation, editing, or export.
+8. Watch generation progress and provider metadata without exposing any secret or upstream response detail.
+9. Copy/export the workspace as Markdown or JSON for a README, Notion doc, product memo, automation, or launch plan.
 
 ## Demo Script
 
@@ -42,7 +44,8 @@ Current maturity: early-stage, but now beyond a static scaffold. The product loo
 4. Review the assumptions and pricing risks to show that the output is not just marketing copy.
 5. Click `Edit`, change one assumption or landing page line, then click `Preview`.
 6. Refresh the page and confirm the local workspace is restored.
-7. Click `Copy Markdown` or `Copy JSON` and inspect the generated export text.
+7. On a database-enabled deployment, click `Save snapshot`, restore it from cloud history, and explicitly enable a read-only share link.
+8. Click `Copy Markdown` or `Copy JSON` and inspect the generated export text.
 
 ## Stable Demo Fixtures
 
@@ -54,7 +57,8 @@ The app includes deterministic example workspaces for the B2B SaaS activation, c
 - TypeScript
 - Tailwind CSS
 - Vitest
-- Server route handler for generation
+- Server route handlers for generation and workspace persistence
+- Optional Neon Postgres cloud history through `@neondatabase/serverless`
 - Mock/demo provider by default
 - Optional OpenAI-compatible provider through server-side environment variables
 - Optional MiniMax Token Plan provider through server-side environment variables
@@ -111,6 +115,29 @@ OPENAI_BASE_URL=https://api.openai.com/v1
 
 Do not commit `.env.local` or any secret values.
 
+## Cloud Workspace Design
+
+Cloud history is optional. A fresh clone and the public demo still render and run in local-only mode when no database is configured.
+
+- The browser creates a 256-bit anonymous owner token and keeps it in local storage.
+- Requests send that token only to same-origin workspace routes.
+- The server stores only the token's SHA-256 hash, never the plaintext token.
+- Each browser identity can keep up to 20 snapshots.
+- A transaction-level global capacity gate prevents an anonymous beta from growing storage without an upper bound.
+- Sharing is disabled by default and must be explicitly enabled per snapshot.
+- Shared pages expose a read-only workspace, not the owner token or founder brief.
+- Streaming body limits, nested field/cardinality limits, known-field normalization, UUID validation, owner-scoped queries, safe error codes, atomic quotas, and mutation throttling protect the public API surface.
+- Losing browser storage loses access to anonymous cloud history. Account-based recovery is intentionally deferred to the authentication phase.
+- Runtime routes use DML only. Schema DDL is isolated in an explicit migration command so production can use a least-privilege runtime role.
+
+Vercel Marketplace Neon injects `DATABASE_URL` automatically. Run the migration once after provisioning:
+
+```bash
+npm run db:migrate
+```
+
+Use `DATABASE_MIGRATION_URL` for an elevated migration role when available, and keep the runtime `DATABASE_URL` limited to table DML.
+
 ## Run Locally
 
 ```bash
@@ -130,6 +157,7 @@ Open `http://localhost:3000`.
 npm run lint
 npm run test
 npm run eval:provider
+npm run db:migrate # only after configuring a database
 npm run build
 npm audit --audit-level=moderate
 ```
@@ -150,6 +178,12 @@ flowchart LR
   E --> I
   I --> J["Browser local storage"]
   I --> K["Markdown export"]
+  I --> L["/api/workspaces"]
+  L --> M{"DATABASE_URL?"}
+  M -->|"configured"| N["Neon snapshot history"]
+  M -->|"absent"| O["Explicit local-only mode"]
+  N --> P["Owner-scoped restore"]
+  N --> Q["Opt-in read-only share page"]
 ```
 
 ## Portfolio Positioning

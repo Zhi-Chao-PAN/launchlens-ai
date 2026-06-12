@@ -33,6 +33,17 @@
 - [x] Persisted a secret-scanned MiniMax fixture for all three public scenarios.
 - [x] Added scenario compliance checks and strict complete-schema validation.
 - [x] Added mock provider eval to GitHub Actions CI.
+- [x] Added a lazy Neon-backed workspace store that remains build-safe without database credentials.
+- [x] Added anonymous owner-scoped cloud snapshot list/create/read/delete APIs.
+- [x] Added explicit read-only share enable/disable and public snapshot pages.
+- [x] Added cloud history, restore, share, delete, empty, error, and local-only UI states.
+- [x] Added complete nested workspace validation, UUID checks, body limits, record limits, mutation throttling, and owner-token hashing.
+- [x] Added focused cloud route, schema, ownership, and fallback tests.
+- [x] Added streaming request limits, nested cardinality limits, field normalization, and unknown-field stripping.
+- [x] Moved schema DDL into `npm run db:migrate` and marked runtime storage as server-only.
+- [x] Added atomic per-owner and global capacity gates for anonymous cloud snapshots.
+- [x] Removed founder brief data from the public share query and public record type.
+- [x] Completed a diff-scoped security review with two candidates fixed and no surviving reportable findings.
 
 ## Next Nightly Builder Tasks
 
@@ -51,6 +62,12 @@
 - [x] Automate repeatable live MiniMax smoke/eval and document quality.
 - [x] Add repeatable provider quality fixtures/evals for generated workspaces.
 - [x] Add persisted MiniMax output fixtures for regression comparison.
+- [x] Add optional server-side workspace snapshot history without breaking no-database demo mode.
+- [x] Add owner-scoped restore/delete and opt-in read-only share links.
+- [ ] Accept Vercel Marketplace Neon terms, provision the production resource, and browser-verify the deployed cloud flow.
+- [ ] Add distributed rate limiting or a managed challenge before scaling anonymous cloud writes.
+- [ ] Verify hosting logs do not retain the owner capability header.
+- [ ] Add account authentication and recoverable ownership after the anonymous-token beta.
 
 ## Portfolio-Ready Checklist
 
@@ -69,3 +86,5 @@
 - [x] Repository includes a license.
 - [x] Repository includes a CI quality gate.
 - [x] Desktop and 390px mobile product flows pass production-mode browser QA.
+- [x] Cloud history APIs and local-only degradation have focused automated coverage.
+- [ ] Production cloud save, restore, share, disable-share, and delete pass browser QA against Neon.

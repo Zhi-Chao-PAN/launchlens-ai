@@ -1,9 +1,9 @@
 # Project Maturity
 
 Status: early-stage
-Completion estimate: 75%
+Completion estimate: 80%
 
-LaunchLens AI is currently in an early product loop stage. It has a real product direction, a public Vercel demo, stable example workspace fixtures, an editable workspace interface, browser-local persistence, Markdown/JSON export, tests, and provider abstraction that supports no-key mock mode plus optional real providers.
+LaunchLens AI is currently in an early SaaS product stage. It has a real product direction, a public Vercel demo, stable example workspace fixtures, an editable workspace interface, browser-local persistence, optional owner-scoped cloud snapshot history, opt-in read-only sharing, Markdown/JSON export, tests, and provider abstraction that supports no-key mock mode plus optional real providers.
 
 It is not portfolio-ready yet.
 
@@ -31,10 +31,21 @@ It is not portfolio-ready yet.
 - Generated timestamps use deterministic UTC formatting so server and browser output hydrate consistently.
 - Provider evals are explicit, prompt-versioned, secret-scanned, scenario-aware, and mock-only in standard CI.
 - The persisted MiniMax fixture covers activation SaaS, clinic administration, and creator commerce with real-provider output, no fallback, 100% structural quality, and passed scenario constraints.
+- A lazy Neon data layer now supports owner-scoped snapshot creation, listing, restore, deletion, and explicit read-only sharing without breaking no-database builds.
+- Anonymous owner tokens are generated in the browser and stored only as SHA-256 hashes server-side; API routes add nested schema validation, UUID checks, limits, safe errors, and mutation throttling.
+- Request byte limits now run before JSON parsing; accepted snapshots are normalized to known fields with bounded strings, arrays, and timestamps.
+- Anonymous snapshot creation uses transaction advisory locks and conditional insertion to enforce atomic per-owner and global capacity gates.
+- Runtime database access is server-only and DML-only by design; schema DDL lives in an explicit migration command.
+- Public share reads use a dedicated projection that does not select or type the private founder brief.
+- The product now renders deliberate local-only, checking, empty-history, busy, success, and cloud-failure states.
+- Cloud persistence has focused route and ownership tests, while local-only production rendering has browser evidence.
+- A diff-scoped security review covered all changed/new source files; two request-body candidates were fixed and no reportable finding survived validation.
 
 ## Current Gaps
 
-- Persistence is local-only; there is no server-side workspace history or user-owned account model yet.
+- Production Neon provisioning is waiting for the Vercel account owner to accept Marketplace legal terms; real deployed save/restore/share evidence is therefore still pending.
+- Cloud ownership is an anonymous browser-token beta, not recoverable account authentication.
+- Mutation throttling is process-local; distributed abuse control and hosting-log header verification remain production activation gates.
 - Provider eval history is currently one snapshot; trend comparison and release thresholds are not automated yet.
 - UX still needs deeper empty/error-state polish and deployed visual regression coverage.
 
@@ -42,7 +53,7 @@ It is not portfolio-ready yet.
 
 1. Product depth: partial pass. The app connects raw idea, audience/pain mapping, MVP scope, backlog, pricing, launch calendar, and tasks.
 2. Agent/LLM depth: strong partial pass. It has provider orchestration, complete-schema validation, mock mode, real-provider env support, safe errors, parser repair, progress UI, safe metadata, prompt-versioned evals, deterministic quality scoring, scenario compliance checks, and persisted MiniMax regression evidence.
-3. Full-stack quality: partial pass. Next.js, TypeScript, Tailwind, tests, editable UI, stable example fixtures, local persistence, Markdown/JSON export, responsive QA, and screenshots exist; server persistence is pending.
+3. Full-stack quality: strong partial pass. Next.js, TypeScript, Tailwind, tests, editable UI, stable examples, local persistence, a Neon-backed snapshot API, owner-scoped history/share UI, Markdown/JSON export, responsive QA, and screenshots exist; production database activation and account auth are pending.
 4. Verification: partial pass. `lint`, `test`, and `build` pass; production-mode Playwright QA now covers desktop/mobile rendering and the core no-key workflow.
 5. Documentation: partial pass. README covers value prop, setup, env vars, demo flow, screenshots, architecture, AI design, roadmap, and portfolio story.
 6. GitHub presentation: partial pass. Public repo, public Vercel demo, desktop/mobile screenshots, useful topics, clear commits, MIT license, and CI quality gate exist.
@@ -70,9 +81,15 @@ It is not portfolio-ready yet.
 - [x] Repository includes a license.
 - [x] Repository includes a CI quality gate.
 - [x] Desktop and 390px mobile layouts pass production-mode browser QA without horizontal overflow or hydration errors.
+- [x] Cloud workspace APIs are build-safe without a database and expose an explicit local-only capability state.
+- [x] Anonymous owner-scoped snapshot history and opt-in read-only sharing are implemented with focused tests.
+- [x] Cloud request streams, nested content, owner quotas, public projections, and migration privileges have security-focused controls and regression evidence.
+- [ ] Production Neon save, restore, share, disable-share, and delete pass end-to-end browser verification.
+- [ ] Distributed abuse protection and owner-header log hygiene are verified on the production host.
+- [ ] Recoverable user authentication replaces anonymous browser ownership.
 - [ ] The app clearly communicates AI product thinking, full-stack skill, and TPM-style prioritization.
 - [x] No secrets, private tokens, or generated local environment files are committed.
 
 ## Maturity Notes
 
-The next nightly cycles should focus on server-side persistence, deployed visual regression coverage, richer empty/error states, and historical provider-eval comparison. The credible portfolio loop now has public visual proof and repeatable real-model evidence, but it still needs production-depth evidence.
+The next cycles should activate production Neon, capture end-to-end cloud evidence, then move from anonymous ownership to recoverable authentication. Deployed visual regression coverage and historical provider-eval comparison remain useful follow-ups. The project now demonstrates the code shape of a durable SaaS workflow, but it should not be called portfolio-ready until the production data path and final quality audit are complete.

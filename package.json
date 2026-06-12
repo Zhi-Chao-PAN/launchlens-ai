@@ -8,14 +8,17 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "eval:provider": "tsx scripts/evaluate-provider.ts"
+    "eval:provider": "tsx scripts/evaluate-provider.ts",
+    "db:migrate": "tsx scripts/migrate-cloud-db.ts"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
     "jsonrepair": "^3.14.0",
     "lucide-react": "^1.17.0",
     "next": "16.2.9",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

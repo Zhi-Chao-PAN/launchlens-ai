@@ -413,6 +413,75 @@ CI follow-up:
 - Follow-up commit `517a160` passed GitHub Actions run `27403568566`: Ubuntu install, lint, 19 tests, mock provider eval, build, and audit all completed successfully.
 - The corresponding Vercel production deployment reached `Ready` and retained the stable public alias.
 
+## 2026-06-12 16:30 Asia/Shanghai - Phase 3A manual continuation
+
+Current maturity:
+
+- Estimated at 75%, early-stage.
+- The product has a credible AI generation/edit/export loop and public model evidence, but durable user-owned data is still the largest SaaS-depth gap.
+
+Phase 3A outcome target:
+
+- Add server-side workspace snapshots, owner-scoped history and restore, explicit read-only sharing, and graceful local-only behavior when a database is not configured.
+- Preserve the no-key mock provider and browser-local draft flow.
+- Use an anonymous high-entropy owner token for this phase; store only its SHA-256 hash server-side.
+
+Acceptance and safety boundaries:
+
+- Work only in the existing `launchlens-ai` repository.
+- Enforce request/body limits, UUID validation, record limits, owner-token validation, and safe public error codes.
+- Never place provider keys, database credentials, or owner tokens in source, logs, screenshots, fixtures, or commits.
+- Initialize Neon lazily so a fresh clone and Vercel build still work without `DATABASE_URL`.
+- Sharing must be off by default and enabled only by an explicit user action.
+
+Planned cycles:
+
+1. Implement the Neon-backed data layer and owner-scoped CRUD/share routes with focused tests.
+2. Add cloud history, restore, share, delete, and local-only capability states to the product UI.
+3. Provision production Neon through Vercel Marketplace, run real browser/API persistence verification, then update maturity evidence and push.
+
+External dependency:
+
+- Vercel Marketplace requires the account owner to accept Neon's legal terms before CLI provisioning can continue. Implementation and local fallback verification can proceed independently; production database activation will be retried after acceptance.
+
+Cycle 16 result at 2026-06-13 03:50 Asia/Shanghai:
+
+- Added a lazy Neon-backed workspace store, owner-scoped list/create/read/delete APIs, explicit share enable/disable, and a read-only share page.
+- Added a browser-generated 256-bit anonymous owner capability; only its SHA-256 hash is persisted server-side.
+- Added cloud history UI for save, restore, copy share link, disable share, delete, loading, empty, error, and explicit local-only states.
+- Preserved browser-local autosave and the no-provider-key mock generation flow.
+- Added streaming body limits before JSON parsing, bounded nested fields/cardinality, ISO timestamp checks, and known-field normalization.
+- Added atomic per-owner and 5,000-record global capacity gates using transaction advisory locks and a conditional insert.
+- Moved schema creation into `npm run db:migrate`; runtime storage is marked server-only and performs DML only.
+- Replaced the public share data shape with a dedicated projection that never selects the founder brief.
+- Updated README, roadmap, task handoff, maturity evidence, env examples, and desktop/mobile screenshots.
+
+Cycle 16 verification:
+
+- `npx tsc --noEmit` passed.
+- `npm run lint -- --max-warnings=0` passed.
+- `npm run test` passed with 38 tests across 15 files.
+- `npm run build` passed and exposed the expected workspace/share dynamic routes.
+- `npm audit --audit-level=moderate` found 0 vulnerabilities.
+- Linux/x64 `npm ci --dry-run --ignore-scripts` resolved the restored root optional WASM dependencies.
+- Secret-pattern scan covered 69 source/artifact files with 0 matches.
+- Desktop and 390px mobile production browser checks showed no console errors or warnings.
+- A real MiniMax browser generation returned 200, real provider mode, no fallback, and 100% structural quality; no secret values were read or printed.
+- A separate no-provider-key production process returned mock generation 200 and explicit `configured:false` cloud capability with no console errors.
+- The database-unavailable share page rendered an explicit safe state.
+- A diff-scoped Codex Security review covered 17 changed/new source files. Two pre-parse body-limit candidates were fixed, validated with regressions, and suppressed; no reportable finding survived.
+
+Cycle 16 blocker and handoff:
+
+- `vercel integration add neon` still returns `integration_terms_acceptance_required`.
+- The Vercel account owner must accept the Neon Marketplace terms before production provisioning can continue.
+- After acceptance: retry the integration install, pull injected env, run `npm run db:migrate` with a migration credential, deploy, and browser-verify save/restore/share/disable/delete against real Neon.
+- Before anonymous cloud writes are considered production-ready, add distributed abuse controls and verify Vercel logs do not retain `x-launchlens-owner`.
+
+Stop rule:
+
+- This is a user-requested daytime manual continuation, so the scheduled 09:00 nightly cutoff does not apply to this run.
+
 ## 2026-06-11 23:50 Asia/Shanghai
 
 Phase 1 was started manually for the nightly automation handoff.
