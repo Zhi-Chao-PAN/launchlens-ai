@@ -26,6 +26,7 @@
 - [x] Fixed lockfile sync issue caught by the first CI run.
 - [x] Added JSON export for machine-readable workspace handoff.
 - [x] Added deterministic workspace quality evaluator and UI score.
+- [x] Published a public Vercel demo and linked it from README.
 
 ## Next Nightly Builder Tasks
 
@@ -57,7 +58,7 @@
 - [x] Generated workspace is editable and exportable.
 - [x] Current workspace is restorable from browser-local storage after refresh.
 - [x] API/provider behavior has tests.
-- [ ] Public deployment URL is available.
+- [x] Public deployment URL is available.
 - [x] GitHub history shows incremental nightly progress.
 - [x] Repository includes a license.
 - [x] Repository includes a CI quality gate.
