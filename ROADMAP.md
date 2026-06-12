@@ -26,6 +26,7 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 - Add loading/progress UX for long real-provider calls.
 - Add provider quality scoring, then persist MiniMax and OpenAI-compatible regression fixtures.
 - Publish a public Vercel demo and keep the no-key mock experience as the default.
+- Capture desktop/mobile product screenshots and maintain responsive browser QA evidence.
 
 ## Phase 3: SaaS Shape
 

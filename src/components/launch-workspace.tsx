@@ -29,6 +29,7 @@ import { useEffect, useMemo, useState } from "react";
 import { workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
 import { workspaceToJson } from "@/lib/launchlens/json-export";
 import type { ExampleWorkspace } from "@/lib/launchlens/example-workspaces";
+import { formatGeneratedTime } from "@/lib/launchlens/generated-time";
 import { evaluateWorkspaceQuality } from "@/lib/launchlens/workspace-quality";
 import type {
   GenerationResult,
@@ -153,19 +154,6 @@ function splitLines(value: string) {
     .filter(Boolean);
 }
 
-function timeLabel(value: string) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Unknown time";
-  }
-
-  return new Intl.DateTimeFormat(undefined, {
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
-
 function Section({ title, icon: Icon, children }: SectionProps) {
   return (
     <section className="rounded-lg border border-[#d8ded4] bg-white p-5 shadow-sm">
@@ -242,6 +230,7 @@ export function LaunchWorkspace({
   const [exportText, setExportText] = useState("");
   const [isStorageReady, setIsStorageReady] = useState(false);
   const [persistenceNotice, setPersistenceNotice] = useState("");
+  const [isBriefOpen, setIsBriefOpen] = useState(false);
   const [generationMeta, setGenerationMeta] = useState<GenerationMeta>({
     mode: "demo",
     provider: initialWorkspace.provider,
@@ -352,6 +341,7 @@ export function LaunchWorkspace({
     setCopyNotice("");
     setExportText("");
     setIsEditing(false);
+    setIsBriefOpen(false);
     setPersistenceNotice("Example workspace loaded and saved locally.");
   }
 
@@ -369,6 +359,7 @@ export function LaunchWorkspace({
     setCopyNotice("");
     setExportText("");
     setIsEditing(false);
+    setIsBriefOpen(false);
     setPersistenceNotice("Reset to starter workspace.");
   }
 
@@ -407,6 +398,7 @@ export function LaunchWorkspace({
           ? "Real provider failed, so LaunchLens returned the mock workspace."
           : "",
       );
+      setIsBriefOpen(false);
     } catch (caught) {
       setError(
         caught instanceof Error
@@ -493,172 +485,195 @@ export function LaunchWorkspace({
 
         <div className="grid gap-6 lg:grid-cols-[370px_1fr]">
           <aside className="rounded-lg border border-[#d8ded4] bg-white p-5 shadow-sm lg:sticky lg:top-6 lg:self-start">
-            <div className="mb-5 flex items-center gap-2">
-              <Sparkles className="size-5 text-[#d85b3f]" aria-hidden="true" />
-              <h2 className="text-lg font-semibold">Founder brief</h2>
-            </div>
-
-            <div className="mb-5 grid gap-2">
-              {exampleWorkspaces.map((example) => (
-                <button
-                  key={example.id}
-                  type="button"
-                  onClick={() => applyExample(example)}
-                  className="flex items-center justify-between rounded-md border border-[#d8ded4] bg-[#fbfcfa] px-3 py-2 text-left text-sm font-medium text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d]"
-                >
-                  {example.label}
-                  <ArrowRight className="size-4" aria-hidden="true" />
-                </button>
-              ))}
-            </div>
-
-            <div className="space-y-4">
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-[#40504a]">
-                  Product idea
-                </span>
-                <textarea
-                  value={input.idea}
-                  onChange={(event) =>
-                    setInput((current) => ({
-                      ...current,
-                      idea: event.target.value,
-                    }))
-                  }
-                  rows={5}
-                  className="w-full resize-none rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
-                />
-              </label>
-
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-[#40504a]">
-                  Target audience
-                </span>
-                <textarea
-                  value={input.audience}
-                  onChange={(event) =>
-                    setInput((current) => ({
-                      ...current,
-                      audience: event.target.value,
-                    }))
-                  }
-                  rows={3}
-                  className="w-full resize-none rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
-                />
-              </label>
-
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-[#40504a]">
-                  Market context
-                </span>
-                <input
-                  value={input.market}
-                  onChange={(event) =>
-                    setInput((current) => ({
-                      ...current,
-                      market: event.target.value,
-                    }))
-                  }
-                  className="w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
-                />
-              </label>
-
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-[#40504a]">
-                  Voice
-                </span>
-                <select
-                  value={input.tone}
-                  onChange={(event) =>
-                    setInput((current) => ({
-                      ...current,
-                      tone: event.target.value,
-                    }))
-                  }
-                  className="w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
-                >
-                  {tones.map((tone) => (
-                    <option key={tone} value={tone}>
-                      {tone}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-[#40504a]">
-                  Constraints
-                </span>
-                <textarea
-                  value={input.constraints}
-                  onChange={(event) =>
-                    setInput((current) => ({
-                      ...current,
-                      constraints: event.target.value,
-                    }))
-                  }
-                  rows={4}
-                  className="w-full resize-none rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
-                />
-              </label>
-
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="size-5 text-[#d85b3f]" aria-hidden="true" />
+                <h2 className="text-lg font-semibold">Founder brief</h2>
+              </div>
               <button
                 type="button"
-                onClick={generate}
-                disabled={isGenerating}
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-[#17201d] px-4 text-sm font-semibold text-white transition hover:bg-[#24312d] disabled:cursor-not-allowed disabled:bg-[#7c8781]"
+                aria-controls="founder-brief-controls"
+                aria-expanded={isBriefOpen}
+                onClick={() => setIsBriefOpen((current) => !current)}
+                className="flex h-9 items-center gap-2 rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm font-semibold text-[#17201d] transition hover:border-[#138a72] lg:hidden"
               >
-                {isGenerating ? (
-                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                ) : (
-                  <Rocket className="size-4" aria-hidden="true" />
-                )}
-                {isGenerating ? "Generating..." : "Generate workspace"}
+                <PencilLine className="size-4" aria-hidden="true" />
+                {isBriefOpen ? "Hide brief" : "Edit brief"}
               </button>
             </div>
 
-            {isGenerating && (
-              <div
-                role="status"
-                aria-live="polite"
-                className="mt-4 rounded-md border border-[#d8ded4] bg-[#fbfcfa] p-3"
-              >
-                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#17201d]">
-                  <Loader2
-                    className="size-4 animate-spin text-[#138a72]"
-                    aria-hidden="true"
+            {!isBriefOpen && (
+              <p className="mt-3 line-clamp-2 text-sm leading-6 text-[#40504a] lg:hidden">
+                {input.idea}
+              </p>
+            )}
+
+            <div
+              id="founder-brief-controls"
+              className={`${isBriefOpen ? "mt-5 block" : "hidden"} lg:mt-5 lg:block`}
+            >
+              <div className="mb-5 grid gap-2">
+                {exampleWorkspaces.map((example) => (
+                  <button
+                    key={example.id}
+                    type="button"
+                    onClick={() => applyExample(example)}
+                    className="flex items-center justify-between rounded-md border border-[#d8ded4] bg-[#fbfcfa] px-3 py-2 text-left text-sm font-medium text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d]"
+                  >
+                    {example.label}
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-4">
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-[#40504a]">
+                    Product idea
+                  </span>
+                  <textarea
+                    value={input.idea}
+                    onChange={(event) =>
+                      setInput((current) => ({
+                        ...current,
+                        idea: event.target.value,
+                      }))
+                    }
+                    rows={5}
+                    className="w-full resize-none rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
                   />
-                  Generating workspace
-                </div>
-                <div className="space-y-2">
-                  {loadingSteps.map((step) => (
-                    <div key={step} className="flex items-center gap-3">
-                      <span className="size-2 rounded-full bg-[#138a72]" />
-                      <span className="text-sm text-[#40504a]">{step}</span>
-                      <span className="ml-auto h-2 w-12 animate-pulse rounded-full bg-[#d8ded4]" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                </label>
 
-            {(error || fallbackNotice) && (
-              <div
-                role={error ? "alert" : "status"}
-                className="mt-4 rounded-md border border-[#e7c9bd] bg-[#fff6f1] p-3 text-sm leading-6 text-[#8b3d28]"
-              >
-                {error || fallbackNotice}
-              </div>
-            )}
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-[#40504a]">
+                    Target audience
+                  </span>
+                  <textarea
+                    value={input.audience}
+                    onChange={(event) =>
+                      setInput((current) => ({
+                        ...current,
+                        audience: event.target.value,
+                      }))
+                    }
+                    rows={3}
+                    className="w-full resize-none rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                  />
+                </label>
 
-            {persistenceNotice && (
-              <div
-                role="status"
-                className="mt-4 rounded-md border border-[#d8ded4] bg-[#fbfcfa] p-3 text-sm leading-6 text-[#40504a]"
-              >
-                {persistenceNotice}
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-[#40504a]">
+                    Market context
+                  </span>
+                  <input
+                    value={input.market}
+                    onChange={(event) =>
+                      setInput((current) => ({
+                        ...current,
+                        market: event.target.value,
+                      }))
+                    }
+                    className="w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-[#40504a]">
+                    Voice
+                  </span>
+                  <select
+                    value={input.tone}
+                    onChange={(event) =>
+                      setInput((current) => ({
+                        ...current,
+                        tone: event.target.value,
+                      }))
+                    }
+                    className="w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                  >
+                    {tones.map((tone) => (
+                      <option key={tone} value={tone}>
+                        {tone}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-[#40504a]">
+                    Constraints
+                  </span>
+                  <textarea
+                    value={input.constraints}
+                    onChange={(event) =>
+                      setInput((current) => ({
+                        ...current,
+                        constraints: event.target.value,
+                      }))
+                    }
+                    rows={4}
+                    className="w-full resize-none rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  onClick={generate}
+                  disabled={isGenerating}
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-[#17201d] px-4 text-sm font-semibold text-white transition hover:bg-[#24312d] disabled:cursor-not-allowed disabled:bg-[#7c8781]"
+                >
+                  {isGenerating ? (
+                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <Rocket className="size-4" aria-hidden="true" />
+                  )}
+                  {isGenerating ? "Generating..." : "Generate workspace"}
+                </button>
               </div>
-            )}
+
+              {isGenerating && (
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className="mt-4 rounded-md border border-[#d8ded4] bg-[#fbfcfa] p-3"
+                >
+                  <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#17201d]">
+                    <Loader2
+                      className="size-4 animate-spin text-[#138a72]"
+                      aria-hidden="true"
+                    />
+                    Generating workspace
+                  </div>
+                  <div className="space-y-2">
+                    {loadingSteps.map((step) => (
+                      <div key={step} className="flex items-center gap-3">
+                        <span className="size-2 rounded-full bg-[#138a72]" />
+                        <span className="text-sm text-[#40504a]">{step}</span>
+                        <span className="ml-auto h-2 w-12 animate-pulse rounded-full bg-[#d8ded4]" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(error || fallbackNotice) && (
+                <div
+                  role={error ? "alert" : "status"}
+                  className="mt-4 rounded-md border border-[#e7c9bd] bg-[#fff6f1] p-3 text-sm leading-6 text-[#8b3d28]"
+                >
+                  {error || fallbackNotice}
+                </div>
+              )}
+
+              {persistenceNotice && (
+                <div
+                  role="status"
+                  className="mt-4 rounded-md border border-[#d8ded4] bg-[#fbfcfa] p-3 text-sm leading-6 text-[#40504a]"
+                >
+                  {persistenceNotice}
+                </div>
+              )}
+            </div>
           </aside>
 
           <div className="space-y-6">
@@ -678,7 +693,7 @@ export function LaunchWorkspace({
                     {generationModeLabel}
                   </span>
                   <span className="rounded-md bg-[#eef0ed] px-3 py-2">
-                    Generated {timeLabel(generationMeta.generatedAt)}
+                    Generated {formatGeneratedTime(generationMeta.generatedAt)}
                   </span>
                   <span className="rounded-md bg-[#eef0ed] px-3 py-2">
                     Quality {qualityResult.score}%

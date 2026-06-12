@@ -299,6 +299,52 @@ Closeout note at 09:54:
 - The user then explicitly instructed this thread to continue and finish the current round.
 - Work after that confirmation was limited to validation, documentation, commit/push, and CI confirmation; no new product cycle was opened.
 
+## 2026-06-12 15:13 Asia/Shanghai - Manual continuation
+
+Run context:
+
+- The user explicitly requested execution after the scheduled 09:00 boundary, so this is a manually authorized daytime continuation rather than an automatic nightly quota run.
+- Current maturity: early-stage at 65%, with the public deployment live and the largest portfolio gap now being visual proof and responsive browser validation.
+- Outcome target: complete one bounded Cycle 14 covering deployed desktop/mobile QA, README screenshot assets, any high-priority responsive fix found, verification, commit/push, and CI confirmation.
+- Planned tools: persistent Playwright browser automation, local lint/test/build, GitHub CLI, and Vercel deployment metadata.
+- MiniMax is not planned for this cycle because the work is visual and presentation-focused.
+
+Cycle 14 goal:
+
+- Validate the public product workflow at desktop and mobile widths, capture durable portfolio screenshots, fix any material UI defect found, and close the README screenshot checklist item.
+
+Cycle 14 result at 15:34:
+
+- Opened the public Vercel deployment at 1440px desktop and 390px mobile viewports.
+- Found a production React hydration text mismatch caused by environment-dependent generated-time formatting.
+- Added deterministic UTC generated-time formatting and two regression tests.
+- Changed the mobile Founder brief into an accessible collapsed summary with an `Edit brief` control, while keeping the full desktop brief visible.
+- Automatically collapse the mobile brief after loading an example, resetting, or completing generation so the workspace returns to focus.
+- Captured `public/screenshots/launchlens-desktop.png` and `public/screenshots/launchlens-mobile.png`.
+- Added both screenshots to README and updated ROADMAP, TASKS, and PROJECT_MATURITY.
+- Raised the evidence-based maturity estimate from 65% to 70%; the project remains early-stage.
+
+Browser verification:
+
+- Production-mode desktop QA passed editing, preview, local persistence after reload, reset, export rendering, and mock generation.
+- Production-mode mobile QA passed brief expand/collapse, example loading, editing, local persistence, mock generation, and control-boundary checks.
+- The final no-key `/api/generate` response returned HTTP 200 with `mode=demo`, `provider=mock`, and no fallback.
+- Desktop and 390px mobile pages had no horizontal overflow, page errors, console errors, or hydration mismatch.
+- A first local production server inherited ambient MiniMax environment variables and entered the real-provider path; it was stopped after the request exceeded the QA timeout. No secret value or provider response was printed. Final browser QA restarted with provider variables explicitly cleared.
+
+Verification:
+
+- `npm run lint -- --max-warnings=0` passed.
+- `npm run test` passed with 14 tests.
+- `npm run build` passed.
+- `npm audit --audit-level=moderate` found 0 vulnerabilities.
+- Commit-scope secret scan was clean.
+
+Reassessment:
+
+- Cycle 14 is complete and commit-ready. Visual proof, mobile first-viewport usability, and hydration stability are materially stronger.
+- Next priorities are server-side workspace history/auth, deployed visual regression automation, richer empty/error states, and persisted MiniMax output fixtures.
+
 ## 2026-06-11 23:50 Asia/Shanghai
 
 Phase 1 was started manually for the nightly automation handoff.

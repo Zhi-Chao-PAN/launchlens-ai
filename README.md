@@ -16,6 +16,14 @@ Audience: solo founders, tiny SaaS teams, and technical product managers who nee
 
 Current maturity: early-stage, but now beyond a static scaffold. The product loop is generate -> edit -> validate assumptions -> save locally -> export.
 
+## Product Preview
+
+![LaunchLens AI desktop go-to-market workspace](public/screenshots/launchlens-desktop.png)
+
+<p align="center">
+  <img src="public/screenshots/launchlens-mobile.png" alt="LaunchLens AI mobile workspace" width="390" />
+</p>
+
 ## Current Product Flow
 
 1. Choose a stable example workspace or write a new founder brief.
@@ -38,7 +46,7 @@ Current maturity: early-stage, but now beyond a static scaffold. The product loo
 
 ## Stable Demo Fixtures
 
-The app includes deterministic example workspaces for the B2B SaaS activation, clinic admin, and creator commerce scenarios. They give reviewers a repeatable product walkthrough before a hosted deployment or screenshot set exists.
+The app includes deterministic example workspaces for the B2B SaaS activation, clinic admin, and creator commerce scenarios. They give reviewers a repeatable product walkthrough alongside the hosted demo and screenshot set.
 
 ## Tech Stack
 

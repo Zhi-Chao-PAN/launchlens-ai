@@ -27,6 +27,8 @@
 - [x] Added JSON export for machine-readable workspace handoff.
 - [x] Added deterministic workspace quality evaluator and UI score.
 - [x] Published a public Vercel demo and linked it from README.
+- [x] Added desktop/mobile screenshots and responsive browser evidence.
+- [x] Fixed deterministic generated-time rendering to prevent hydration mismatch.
 
 ## Next Nightly Builder Tasks
 
@@ -37,7 +39,7 @@
 - [x] Add "copy as JSON" export.
 - [x] Add local persistence for edited workspace drafts.
 - [x] Add saved example workspace fixtures.
-- [ ] Add screenshot assets for README.
+- [x] Add screenshot assets for README.
 - [x] Add basic loading skeletons for long real-model calls.
 - [x] Add provider usage metadata without exposing secrets.
 - [x] Tune MiniMax request shape and parser for compact JSON responses.
@@ -52,7 +54,7 @@
 - [x] `npm run test` passes.
 - [x] `npm run build` passes.
 - [x] Product can run from a fresh clone without API keys.
-- [ ] README includes screenshots.
+- [x] README includes screenshots.
 - [x] README includes demo script.
 - [x] README includes architecture notes.
 - [x] Generated workspace is editable and exportable.
@@ -62,3 +64,4 @@
 - [x] GitHub history shows incremental nightly progress.
 - [x] Repository includes a license.
 - [x] Repository includes a CI quality gate.
+- [x] Desktop and 390px mobile product flows pass production-mode browser QA.
