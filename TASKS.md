@@ -29,6 +29,10 @@
 - [x] Published a public Vercel demo and linked it from README.
 - [x] Added desktop/mobile screenshots and responsive browser evidence.
 - [x] Fixed deterministic generated-time rendering to prevent hydration mismatch.
+- [x] Added repeatable mock/live provider eval CLI with explicit live opt-in.
+- [x] Persisted a secret-scanned MiniMax fixture for all three public scenarios.
+- [x] Added scenario compliance checks and strict complete-schema validation.
+- [x] Added mock provider eval to GitHub Actions CI.
 
 ## Next Nightly Builder Tasks
 
@@ -44,9 +48,9 @@
 - [x] Add provider usage metadata without exposing secrets.
 - [x] Tune MiniMax request shape and parser for compact JSON responses.
 - [x] Run one live MiniMax smoke and document safe metadata.
-- [ ] Automate repeatable live MiniMax smoke/eval and document quality.
+- [x] Automate repeatable live MiniMax smoke/eval and document quality.
 - [x] Add repeatable provider quality fixtures/evals for generated workspaces.
-- [ ] Add persisted MiniMax output fixtures for regression comparison.
+- [x] Add persisted MiniMax output fixtures for regression comparison.
 
 ## Portfolio-Ready Checklist
 

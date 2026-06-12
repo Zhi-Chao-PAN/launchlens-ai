@@ -33,6 +33,9 @@ jobs:
       - name: Test
         run: npm run test
 
+      - name: Provider eval (mock, no secrets)
+        run: npm run eval:provider
+
       - name: Build
         run: npm run build
 

@@ -1,0 +1,456 @@
+{
+  "schemaVersion": 2,
+  "promptVersion": "launchlens-workspace-v1",
+  "provider": "minimax",
+  "model": "MiniMax-M3",
+  "evaluatedAt": "2026-06-12T08:03:15.798Z",
+  "source": "live-public-samples",
+  "scenarioIds": [
+    "activation-analyst",
+    "clinic-admin",
+    "creator-commerce"
+  ],
+  "cases": [
+    {
+      "id": "activation-analyst",
+      "mode": "real",
+      "provider": "minimax",
+      "usedFallback": false,
+      "qualityScore": 100,
+      "passedChecks": 10,
+      "totalChecks": 10,
+      "scenarioChecks": [
+        {
+          "label": "Preserves activation/onboarding focus",
+          "passed": true
+        },
+        {
+          "label": "Includes evidence-driven product fixes",
+          "passed": true
+        }
+      ],
+      "sectionCounts": {
+        "targetUsers": 3,
+        "pains": 3,
+        "mvpScope": 4,
+        "backlog": 4,
+        "launchPlan": 4,
+        "contentCalendar": 3,
+        "tasks": 4,
+        "assumptions": 3
+      },
+      "workspace": {
+        "provider": "minimax",
+        "summary": "AI activation analyst for seed-stage B2B SaaS teams that ingests onboarding tickets, session notes, and churn reasons to deliver a weekly, prioritized backlog of product fixes without requiring a data warehouse.",
+        "targetUsers": [
+          "Seed-stage B2B SaaS founders juggling product, support, and growth",
+          "Product managers at sub-50-person SaaS companies who own activation metrics",
+          "Customer success leads who manually review support notes and churn feedback each week"
+        ],
+        "pains": [
+          "Support tickets and churn reasons pile up in spreadsheets, Notion, and Intercom with no synthesis into product actions",
+          "Small teams cannot justify hiring a growth analyst but still need weekly activation insight",
+          "Product fixes get prioritized by loudest voice instead of recurring customer signals"
+        ],
+        "mvpScope": [
+          "CSV and paste-text ingestion for support tickets, session notes, and churn reasons with column mapping",
+          "LLM clustering that groups inputs into activation friction themes with frequency and severity scores",
+          "Weekly generated fix backlog with suggested owners, expected impact, and supporting quote snippets",
+          "Lightweight dashboard with shareable weekly summary view and export to Linear, Jira, or Notion"
+        ],
+        "backlog": [
+          {
+            "feature": "Theme clustering engine with adjustable sensitivity and manual merge controls",
+            "why": "Ensures the weekly output reflects how small teams actually think about activation friction",
+            "priority": "P0"
+          },
+          {
+            "feature": "One-click Linear and Notion sync for the generated fix backlog",
+            "why": "Removes the copy-paste step that breaks adoption for busy founders and PMs",
+            "priority": "P0"
+          },
+          {
+            "feature": "Demo seed library with three anonymized SaaS datasets for instant first-value",
+            "why": "Lets prospects see a credible weekly fix plan in the first demo without uploading sensitive data",
+            "priority": "P0"
+          },
+          {
+            "feature": "Slack digest that posts the weekly top three fixes to a chosen channel",
+            "why": "Meets teams where they already discuss product decisions and drives habit formation",
+            "priority": "P1"
+          }
+        ],
+        "landingPage": {
+          "headline": "Turn your support tickets into this week's product fixes",
+          "subheadline": "An AI activation analyst built for seed-stage B2B SaaS teams that do not have a growth hire.",
+          "cta": "Get your first weekly fix plan free",
+          "proofBullets": [
+            "Drop in a CSV of support tickets and see a prioritized fix backlog in under five minutes",
+            "Built for two-person teams with no data warehouse, only CSV uploads and pasted notes",
+            "Every recommendation links to the exact customer quotes that inspired it"
+          ]
+        },
+        "pricing": {
+          "hypothesis": "Charge a flat per-team monthly fee under the cost of a junior analyst to make approval effortless for founders.",
+          "tiers": [
+            "Starter at $79 per month for one workspace and weekly digests",
+            "Growth at $199 per month with Slack delivery and Linear sync",
+            "Team at $399 per month for up to three products and custom theme taxonomies"
+          ],
+          "risks": [
+            "Free demos and CSV uploads may let teams get value without converting to paid plans",
+            "Per-seat expectations from CS-led buyers could pressure flat pricing and compress margins"
+          ]
+        },
+        "launchPlan": [
+          "Publish a public 'State of SaaS Activation' report analyzing 200 anonymized support ticket datasets to earn SEO and credibility",
+          "Run a 30-day partner sprint with four seed-stage communities and two micro-influencer PMs for case studies and referrals",
+          "Ship a Product Hunt launch with a demo dataset, founder-led Loom walkthrough, and a 'fix your activation in 10 minutes' landing challenge",
+          "Activate a founder-led outbound sequence to 100 recent YC, Techstars, and IndieHackers teams offering free weekly digests in exchange for testimonials"
+        ],
+        "contentCalendar": [
+          {
+            "channel": "X and LinkedIn",
+            "angle": "Weekly 'Activation Autopsy' teardowns of one real SaaS funnel from public reviews and support threads",
+            "cadence": "Three posts per week"
+          },
+          {
+            "channel": "IndieHackers and Reddit r/SaaS",
+            "angle": "Long-form breakdowns of how small teams prioritized their last ten product fixes",
+            "cadence": "One post per week"
+          },
+          {
+            "channel": "Newsletter and YouTube short",
+            "angle": "Five-minute walkthroughs turning messy CSV uploads into a clean weekly fix plan",
+            "cadence": "Bi-weekly"
+          }
+        ],
+        "tasks": [
+          {
+            "title": "Build CSV ingestion and column mapping",
+            "owner": "Founding engineer",
+            "due": "Week 2",
+            "outcome": "User can upload support, notes, and churn CSVs in under three minutes with field confirmation"
+          },
+          {
+            "title": "Ship theme clustering MVP with weekly digest view",
+            "owner": "Founding engineer",
+            "due": "Week 4",
+            "outcome": "Demo dataset produces a credible fix backlog with quote-backed themes"
+          },
+          {
+            "title": "Recruit 10 design partners from seed communities",
+            "owner": "Founder",
+            "due": "Week 3",
+            "outcome": "Five paid pilots and three public testimonials ready for launch"
+          },
+          {
+            "title": "Launch landing page with demo dataset and Product Hunt assets",
+            "owner": "Founder",
+            "due": "Week 6",
+            "outcome": "Live page converts demo visitors to signups at above ten percent"
+          }
+        ],
+        "assumptions": [
+          "Seed-stage SaaS teams receive enough support volume and churn signal to generate three to five meaningful weekly themes",
+          "Founders and PMs will act on a weekly AI-generated backlog if each item includes supporting customer quotes and an effort estimate",
+          "Flat per-team pricing under $400 per month is below the approval threshold for founders even without finance review"
+        ]
+      }
+    },
+    {
+      "id": "clinic-admin",
+      "mode": "real",
+      "provider": "minimax",
+      "usedFallback": false,
+      "qualityScore": 100,
+      "passedChecks": 10,
+      "totalChecks": 10,
+      "scenarioChecks": [
+        {
+          "label": "Requires human approval",
+          "passed": true
+        },
+        {
+          "label": "Addresses privacy or auditability",
+          "passed": true
+        }
+      ],
+      "sectionCounts": {
+        "targetUsers": 3,
+        "pains": 3,
+        "mvpScope": 4,
+        "backlog": 4,
+        "launchPlan": 4,
+        "contentCalendar": 3,
+        "tasks": 4,
+        "assumptions": 3
+      },
+      "workspace": {
+        "provider": "minimax",
+        "summary": "Clinic-side AI copilot that drafts patient follow-ups, flags appointment bottlenecks, and prescribes no-show reduction tasks with mandatory human approval for small allied health clinics.",
+        "targetUsers": [
+          "Solo and multi-location physiotherapy clinic owners managing 2-10 practitioners and 1,000-8,000 monthly visits.",
+          "Dental practice managers at single-chair or two-chair clinics struggling with admin-heavy recall and rebook workflows.",
+          "Allied health operations leads at small multidisciplinary clinics coordinating across podiatry, chiro, dietetics, or speech therapy."
+        ],
+        "pains": [
+          "Front desk staff lose 2-3 hours daily writing follow-up messages and chasing missed appointments, reducing patient-facing capacity.",
+          "No-show rates of 12-20% silently erode revenue because root causes like time-of-day patterns are invisible without analytics.",
+          "Managers lack audit-safe tools to standardize patient communications while still meeting privacy and consent requirements."
+        ],
+        "mvpScope": [
+          "Browser-based dashboard that ingests appointment data via CSV or one PMS connector and visualizes no-show and bottleneck KPIs.",
+          "LLM-powered draft generator for follow-up, recall, and rebook messages with editable templates and required staff approval before send.",
+          "Action queue that suggests no-show reduction tasks (e.g., confirm 24h SMS, reschedule slot blocks) assignable to specific roles.",
+          "Immutable audit log capturing every draft, edit, approval, and send event for compliance review."
+        ],
+        "backlog": [
+          {
+            "feature": "PMS connectors for Cliniko, Halaxy, and Dentally with daily sync",
+            "why": "Removes manual CSV uploads and unlocks the workflow inside the systems clinics already use",
+            "priority": "P0"
+          },
+          {
+            "feature": "Approval-gated message composer with tone presets and PHI redaction",
+            "why": "Ensures human-in-the-loop control and reduces privacy risk before any patient contact",
+            "priority": "P0"
+          },
+          {
+            "feature": "Bottleneck analytics for clinician utilization, late arrivals, and waitlist aging",
+            "why": "Surfaces the operational insights the persona needs to defend the tool's ROI monthly",
+            "priority": "P1"
+          },
+          {
+            "feature": "No-show intervention playbook A/B testing confirm channels and timing",
+            "why": "Turns the copilot from a drafter into a measurable revenue recovery engine",
+            "priority": "P1"
+          }
+        ],
+        "landingPage": {
+          "headline": "Cut clinic admin hours by 40% with an AI copilot your front desk actually trusts.",
+          "subheadline": "Draft patient follow-ups, surface appointment bottlenecks, and run no-show reduction plays, all with human approval and a full audit trail.",
+          "cta": "Book a 20-minute admin audit",
+          "proofBullets": [
+            "Drafts 80% of routine patient messages in under 10 seconds with mandatory staff review.",
+            "Reduces no-shows by 15-25% through targeted confirm and rebook workflows.",
+            "Built for privacy, with PHI redaction, role-based access, and immutable audit logs."
+          ]
+        },
+        "pricing": {
+          "hypothesis": "A per-clinic seat with usage included fits how small practices budget and avoids per-message sticker shock during pilot conversion.",
+          "tiers": [
+            "Starter: $149 per clinic per month, 1 location, up to 2 users, 1,000 AI-drafted messages.",
+            "Growth: $349 per clinic per month, up to 3 locations, 5 users, unlimited drafts, bottleneck analytics.",
+            "Scale: $699 per clinic per month, 10 locations, SSO, advanced no-show playbooks, priority support."
+          ],
+          "risks": [
+            "Cheap per-message competitors could undercut on price if we do not anchor on ROI and auditability.",
+            "PMS integration delays and data export friction could stall onboarding and inflate CAC."
+          ]
+        },
+        "launchPlan": [
+          "Recruit 8-12 design partner clinics across physio, dental, and allied health for a 60-day paid pilot with weekly feedback loops.",
+          "Publish 2 case studies and a benchmark report on no-show rates and admin hours saved for outbound credibility.",
+          "Run a targeted LinkedIn and clinic-owner community campaign with a free admin audit offer to book demos.",
+          "Ship a self-serve trial with one PMS connector and a template library to convert inbound interest within 14 days."
+        ],
+        "contentCalendar": [
+          {
+            "channel": "LinkedIn founder posts",
+            "angle": "Weekly breakdowns of clinic admin bottlenecks with anonymized before-and-after numbers",
+            "cadence": "2x per week"
+          },
+          {
+            "channel": "Practice management newsletter ads",
+            "angle": "ROI calculators and no-show cost calculators targeting clinic owners and practice managers",
+            "cadence": "Monthly"
+          },
+          {
+            "channel": "Allied health podcast guest spots",
+            "angle": "Operational interviews on reducing admin load without adding headcount",
+            "cadence": "Bi-weekly"
+          }
+        ],
+        "tasks": [
+          {
+            "title": "Sign 5 design partner clinics and complete integration scoping",
+            "owner": "Founder",
+            "due": "Week 4",
+            "outcome": "Validated pilot pipeline and signed data processing agreements"
+          },
+          {
+            "title": "Ship MVP with Cliniko connector, approval-gated composer, and audit log",
+            "owner": "Engineering lead",
+            "due": "Week 10",
+            "outcome": "Production-ready copilot usable in 3 live clinics"
+          },
+          {
+            "title": "Launch landing page, admin audit offer, and 3 content assets",
+            "owner": "Marketing lead",
+            "due": "Week 8",
+            "outcome": "Live funnel with at least 20 booked audits"
+          },
+          {
+            "title": "Define pricing tiers, ROI calculator, and security one-pager",
+            "owner": "Founder",
+            "due": "Week 6",
+            "outcome": "Investor- and buyer-ready commercial and trust package"
+          }
+        ],
+        "assumptions": [
+          "Small allied health clinics will pay $150-700 per month for admin automation if ROI is provable within 60 days.",
+          "Practice managers, not clinicians, are the economic buyer and will champion procurement internally.",
+          "Approval-gated AI workflows are sufficient to address privacy and compliance objections in Australia, the UK, and Canada."
+        ]
+      }
+    },
+    {
+      "id": "creator-commerce",
+      "mode": "real",
+      "provider": "minimax",
+      "usedFallback": false,
+      "qualityScore": 100,
+      "passedChecks": 10,
+      "totalChecks": 10,
+      "scenarioChecks": [
+        {
+          "label": "Preserves audience-comment input",
+          "passed": true
+        },
+        {
+          "label": "Preserves the 10-day launch constraint",
+          "passed": true
+        }
+      ],
+      "sectionCounts": {
+        "targetUsers": 3,
+        "pains": 3,
+        "mvpScope": 4,
+        "backlog": 4,
+        "launchPlan": 4,
+        "contentCalendar": 3,
+        "tasks": 4,
+        "assumptions": 3
+      },
+      "workspace": {
+        "provider": "minimax",
+        "summary": "LaunchLens AI turns audience comments into shippable micro-products, landing pages, and weekly launch experiments so creators can earn from their first paying customer within 10 days.",
+        "targetUsers": [
+          "Newsletter writers with engaged subscriber lists under 10k",
+          "Course creators validating a new offer or bonus module",
+          "Creator-operators juggling content, community, and commerce solo"
+        ],
+        "pains": [
+          "Comments reveal product ideas but converting them into a real offer takes weeks of copywriting, design, and tech setup.",
+          "Most creator tools are built for analytics, not for shipping a paid experiment fast enough to learn this month.",
+          "Writers can draft words but struggle to assemble checkout pages, pricing, and launch emails without a developer."
+        ],
+        "mvpScope": [
+          "Comment-to-offer generator that clusters replies and drafts three product angles with names, promises, and prices.",
+          "No-code landing page builder with one-click Stripe checkout, testimonial block, and AI-written hero copy.",
+          "Weekly experiment board that suggests the next launch test, tracks conversions, and emails a Friday recap.",
+          "Pre-written launch sequence (5 emails, 3 social posts) editable inside the app for immediate publishing."
+        ],
+        "backlog": [
+          {
+            "feature": "Comment importer from Substack, Beehiiv, YouTube, and X",
+            "why": "Creators already collect signal where they publish; ingestion is the entry point to the product.",
+            "priority": "P0"
+          },
+          {
+            "feature": "AI offer brief with headline, bullet promise, and 3-tier price ladder",
+            "why": "Removes the blank-page problem and gives a publish-ready artifact in under five minutes.",
+            "priority": "P0"
+          },
+          {
+            "feature": "One-page hosted checkout with Stripe and a no-code editor",
+            "why": "The fastest path to a first paid transaction without leaving the tool.",
+            "priority": "P0"
+          },
+          {
+            "feature": "Weekly experiment recommender with conversion tracking",
+            "why": "Builds the retention loop and justifies a subscription over a one-off purchase.",
+            "priority": "P1"
+          }
+        ],
+        "landingPage": {
+          "headline": "Turn the comments you already get into a paid product this Friday.",
+          "subheadline": "LaunchLens AI reads your audience replies, drafts the offer, builds the page, and sends the launch emails so you can earn from your first customer within 10 days.",
+          "cta": "Start my first launch free",
+          "proofBullets": [
+            "Built for creators with audiences under 10k who need revenue, not vanity metrics.",
+            "Generates a publish-ready landing page, checkout, and email sequence in one session.",
+            "Designed by creator-operators who shipped a paid product in 10 days flat."
+          ]
+        },
+        "pricing": {
+          "hypothesis": "Charge a $19/month Creator tier for the full experiment loop and a $49/month Operator tier that adds team seats and advanced analytics, with a 14-day free trial tied to a shipped landing page.",
+          "tiers": [
+            "Starter: free for the first launched page, then $19/month Creator with unlimited experiments.",
+            "Pro: $49/month Operator with 3 seats, A/B testing, and Substack/Beehiiv integrations.",
+            "Studio: $129/month for teams running multiple creator brands under one workspace."
+          ],
+          "risks": [
+            "Creators churn after one launch if the weekly experiment loop feels like busywork rather than insight.",
+            "Comment scraping API costs can compress margins on the lowest tier."
+          ]
+        },
+        "launchPlan": [
+          "Days 1-3: Recruit 15 creator beta users from your network and run three live onboarding calls to capture voice-of-customer.",
+          "Days 4-7: Ship MVP comment importer, offer generator, and hosted checkout with a public changelog.",
+          "Days 8-10: Publish a public Build in Public case study, open the $19/month tier, and announce the first 10 founders.",
+          "Day 10 onward: Run a weekly Friday demo, share experiment results, and double down on the channel that drove the first paid signups."
+        ],
+        "contentCalendar": [
+          {
+            "channel": "X (Twitter) Build in Public thread",
+            "angle": "Show the comment-to-offer pipeline turning a real creator's replies into a live landing page",
+            "cadence": "Three threads per week, Tuesday, Thursday, and Saturday morning"
+          },
+          {
+            "channel": "Newsletter guest swaps with 5 creator-friends",
+            "angle": "Co-write a 48-hour sprint where each newsletter mines the other's audience for product ideas",
+            "cadence": "One swap per week for five weeks"
+          },
+          {
+            "channel": "YouTube Shorts and TikTok",
+            "angle": "Screen-recording the 10-minute path from a comment thread to a paid checkout notification",
+            "cadence": "Two shorts per week with a pinned link to the free starter plan"
+          }
+        ],
+        "tasks": [
+          {
+            "title": "Design comment importer schema and connect Substack and X APIs",
+            "owner": "Founding engineer",
+            "due": "Day 3",
+            "outcome": "Working ingestion for two source platforms with sample dataset loaded"
+          },
+          {
+            "title": "Build offer-brief generator and landing page editor",
+            "owner": "Founding engineer",
+            "due": "Day 6",
+            "outcome": "Creator can publish a hosted checkout page end-to-end in one session"
+          },
+          {
+            "title": "Write launch copy kit: 5 emails, 3 social posts, and changelog template",
+            "owner": "Founder",
+            "due": "Day 5",
+            "outcome": "All assets ready to ship inside the app and as public marketing"
+          },
+          {
+            "title": "Recruit 15 beta creators and run 3 live onboarding calls",
+            "owner": "Founder",
+            "due": "Day 4",
+            "outcome": "Recorded sessions and a prioritized fix list committed to the roadmap"
+          }
+        ],
+        "assumptions": [
+          "Creators with engaged audiences will pay $19/month once they ship a first paid product inside the tool.",
+          "Comment-mining produces a usable product angle in under five minutes for at least 60 percent of imported threads.",
+          "A 10-day time-to-revenue promise is sharp enough to drive trial signups and short enough to deliver with current MVP scope."
+        ]
+      }
+    }
+  ]
+}

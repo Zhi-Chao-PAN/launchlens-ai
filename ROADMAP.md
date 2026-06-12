@@ -25,6 +25,7 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 - Add tests for provider fallback and API validation.
 - Add loading/progress UX for long real-provider calls.
 - Add provider quality scoring, then persist MiniMax and OpenAI-compatible regression fixtures.
+- Add explicit live-provider evals with prompt versions, scenario compliance checks, secret-safe fixtures, and mock-only CI.
 - Publish a public Vercel demo and keep the no-key mock experience as the default.
 - Capture desktop/mobile product screenshots and maintain responsive browser QA evidence.
 
@@ -34,6 +35,7 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 - Add pricing and usage limits.
 - Add team collaboration primitives.
 - Add prompt versioning, eval fixtures, and generation quality checks.
+- Add historical eval comparison and release thresholds for provider latency, structure, and scenario compliance.
 - Harden the public demo with a polished README, screenshots, and production observability.
 
 ## Product Principles

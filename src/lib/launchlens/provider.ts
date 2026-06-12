@@ -15,9 +15,10 @@ const OPENAI_BASE_URL = "https://api.openai.com/v1";
 const DEFAULT_OPENAI_MODEL = "gpt-4.1-mini";
 const MINIMAX_BASE_URL = "https://api.minimaxi.com/v1";
 const DEFAULT_MINIMAX_MODEL = "MiniMax-M3";
+export const LAUNCHLENS_PROMPT_VERSION = "launchlens-workspace-v1";
 const OPENAI_PROVIDER_TIMEOUT_MS = 15_000;
-const MINIMAX_PROVIDER_TIMEOUT_MS = 45_000;
-const MINIMAX_MAX_OUTPUT_TOKENS = 1_600;
+const MINIMAX_PROVIDER_TIMEOUT_MS = 55_000;
+const MINIMAX_MAX_OUTPUT_TOKENS = 2_400;
 
 type RealProviderName = Exclude<ProviderName, "mock">;
 
@@ -173,13 +174,35 @@ function parseJsonObject(content: string): Record<string, unknown> {
   }
 }
 
-function hasCoreWorkspaceShape(payload: Record<string, unknown>) {
+function hasCompleteWorkspaceShape(payload: Record<string, unknown>) {
+  const landingPage =
+    payload.landingPage && typeof payload.landingPage === "object"
+      ? (payload.landingPage as Record<string, unknown>)
+      : null;
+  const pricing =
+    payload.pricing && typeof payload.pricing === "object"
+      ? (payload.pricing as Record<string, unknown>)
+      : null;
+
   return (
     typeof payload.summary === "string" &&
     Array.isArray(payload.targetUsers) &&
     Array.isArray(payload.pains) &&
     Array.isArray(payload.mvpScope) &&
-    Array.isArray(payload.backlog)
+    Array.isArray(payload.backlog) &&
+    landingPage !== null &&
+    typeof landingPage.headline === "string" &&
+    typeof landingPage.subheadline === "string" &&
+    typeof landingPage.cta === "string" &&
+    Array.isArray(landingPage.proofBullets) &&
+    pricing !== null &&
+    typeof pricing.hypothesis === "string" &&
+    Array.isArray(pricing.tiers) &&
+    Array.isArray(pricing.risks) &&
+    Array.isArray(payload.launchPlan) &&
+    Array.isArray(payload.contentCalendar) &&
+    Array.isArray(payload.tasks) &&
+    Array.isArray(payload.assumptions)
   );
 }
 
@@ -382,9 +405,31 @@ async function parseWorkspaceResponse(
     );
   }
 
-  const data = (await response.json()) as {
+  let data: {
     choices?: Array<{ message?: { content?: string } }>;
+    status?: "completed" | "incomplete" | "failed";
   };
+
+  try {
+    data = (await response.json()) as typeof data;
+  } catch {
+    throw new ProviderError(
+      "Provider response was not valid JSON.",
+      "provider_validation_failed",
+    );
+  }
+
+  if (data.status === "incomplete") {
+    throw new ProviderError(
+      "Provider response was incomplete.",
+      "provider_validation_failed",
+    );
+  }
+
+  if (data.status === "failed") {
+    throw new ProviderError("Provider response failed.", "provider_failed");
+  }
+
   const content = data.choices?.[0]?.message?.content ?? responsesApiText(data);
 
   if (!content) {
@@ -393,7 +438,7 @@ async function parseWorkspaceResponse(
 
   const payload = parseJsonObject(content);
 
-  if (!hasCoreWorkspaceShape(payload)) {
+  if (!hasCompleteWorkspaceShape(payload)) {
     throw new ProviderError(
       "Provider response did not include enough workspace structure.",
       "provider_validation_failed",
@@ -484,21 +529,12 @@ async function generateWithMiniMax(
       },
       body: JSON.stringify({
         model,
-        temperature: 0.3,
+        temperature: 0.2,
         max_output_tokens: MINIMAX_MAX_OUTPUT_TOKENS,
         reasoning: { effort: "none" },
-        response_format: { type: "json_object" },
-        input: [
-          {
-            role: "system",
-            content:
-              "You are LaunchLens AI, a pragmatic SaaS go-to-market planning agent. Return only valid compact JSON matching the requested schema. Favor actionable product and launch judgment over generic market theory.",
-          },
-          {
-            role: "user",
-            content: JSON.stringify(promptPayload(input)),
-          },
-        ],
+        instructions:
+          "You are LaunchLens AI, a pragmatic SaaS go-to-market planning agent. Return only valid compact JSON matching the requested schema. Do not wrap it in Markdown. Favor actionable product and launch judgment over generic market theory.",
+        input: JSON.stringify(promptPayload(input)),
       }),
     });
   } catch (error) {
@@ -537,10 +573,7 @@ export async function generateLaunchWorkspace(
     const code =
       error instanceof ProviderError ? error.publicCode : "provider_failed";
 
-    console.warn("[LaunchLens provider fallback]", {
-      code,
-      message: error instanceof Error ? error.message : "Unknown provider error.",
-    });
+    console.warn("[LaunchLens provider fallback]", { code });
 
     return {
       workspace: buildMockWorkspace(input),

@@ -351,6 +351,59 @@ Reassessment:
 - Visual proof, mobile first-viewport usability, and hydration stability are materially stronger.
 - Next priorities are server-side workspace history/auth, deployed visual regression automation, richer empty/error states, and persisted MiniMax output fixtures.
 
+## 2026-06-12 15:39 Asia/Shanghai - Manual continuation
+
+Cycle 15 goal:
+
+- Turn the one-off MiniMax smoke into a repeatable provider evaluation workflow with deterministic quality metrics, explicit live opt-in, secret-safe output, and persisted public-sample regression fixtures.
+
+Execution boundaries:
+
+- Default eval mode must force mock behavior even if the parent shell contains provider variables.
+- Real MiniMax calls require an explicit `--live` flag and a configured repo-external environment.
+- Console output must contain metrics only, never API keys, authorization headers, raw upstream responses, or full generated workspaces.
+- Fixtures may contain generated workspaces only for the repository's public sample briefs and must pass secret-pattern and configured-key checks before writing.
+
+Cycle 15 result at 16:02:
+
+- Added `npm run eval:provider`, which forces mock mode by clearing provider variables unless `--live` is explicitly passed.
+- Added three fixed public eval scenarios and scenario-specific checks for activation evidence, clinic human approval/privacy, and creator 10-day launch constraints.
+- Added complete-schema provider validation so incomplete real output falls back rather than receiving a quality score inflated by mock-filled sections.
+- Added prompt version metadata, normalized schema-v2 fixtures, recursive secret-pattern checks, configured-key checks, and atomic fixture writes.
+- Added safe provider error parsing and reduced fallback logging to the public code only.
+- Added mock provider eval to GitHub Actions; standard CI rejects live eval unless a separate explicit override exists.
+- Added a persisted MiniMax fixture at `fixtures/providers/minimax-m3-public-samples.json`.
+- Updated the MiniMax Responses request to the current official request shape using top-level `instructions`, text input, disabled reasoning, and a 2,400-token output allowance.
+
+Live eval evidence:
+
+- The first strict attempt exposed one 45-second timeout; the MiniMax timeout was adjusted to 55 seconds while remaining below the route's 65-second maximum.
+- A second strict attempt exposed one incomplete/invalid activation response; no fixture was written.
+- After aligning the request with official Responses API fields and increasing the output allowance, all three public scenarios passed.
+- Final result: 3/3 `mode=real`, `provider=minimax`, `usedFallback=false`, structural quality 100%, and all scenario checks passed.
+- Only metrics were printed. No API key, authorization header, raw upstream response, or full generated workspace was written to logs.
+
+Review input:
+
+- A bounded read-only sub-agent review identified risks around raw response logging, mock-inflated quality, accidental live scripts, CI behavior, fixture stability, public-sample boundaries, secret scanning, and shallow quality checks.
+- The implementation incorporated the material findings before final verification.
+
+Reassessment:
+
+- Cycle 15 closes the persisted MiniMax regression-fixture gap and materially improves the AI engineering story.
+- Maturity is now estimated at 75%, still early-stage because server-side workspace history/auth and deeper production-state UX remain open.
+
+Verification:
+
+- `npm ci` passed from the updated lockfile.
+- `npm run lint -- --max-warnings=0` passed.
+- `npm run test` passed with 19 tests across 10 files.
+- `npm run eval:provider` passed all three mock scenarios with 100% structural quality and all scenario checks.
+- `npm run build` passed.
+- `npm audit --audit-level=moderate` found 0 vulnerabilities.
+- Commit-scope secret scan and fixture temporary-file scan were clean.
+- The normalized fixture is schema v2, contains exactly the three allowlisted scenarios, contains no latency or workspace timestamp noise, and records only real MiniMax/no-fallback cases.
+
 ## 2026-06-11 23:50 Asia/Shanghai
 
 Phase 1 was started manually for the nightly automation handoff.

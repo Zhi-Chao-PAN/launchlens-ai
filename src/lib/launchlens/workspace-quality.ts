@@ -16,7 +16,24 @@ function hasText(value: string) {
 }
 
 function hasItems(items: unknown[], count: number) {
-  return items.length >= count;
+  if (items.length < count) {
+    return false;
+  }
+
+  const strings = items.filter(
+    (item): item is string => typeof item === "string",
+  );
+
+  if (strings.length === items.length) {
+    const normalized = strings.map((item) => item.trim().toLowerCase());
+
+    return (
+      normalized.every((item) => item.length >= 8) &&
+      new Set(normalized).size === normalized.length
+    );
+  }
+
+  return true;
 }
 
 export function evaluateWorkspaceQuality(
@@ -48,6 +65,12 @@ export function evaluateWorkspaceQuality(
       label: "Prioritized backlog",
       passed:
         hasItems(workspace.backlog, 3) &&
+        workspace.backlog.every(
+          (item) =>
+            hasText(item.feature) &&
+            hasText(item.why) &&
+            ["P0", "P1", "P2"].includes(item.priority),
+        ) &&
         workspace.backlog.some((item) => item.priority === "P0"),
     },
     {
@@ -76,7 +99,15 @@ export function evaluateWorkspaceQuality(
     {
       id: "tasks",
       label: "Execution tasks",
-      passed: hasItems(workspace.tasks, 3),
+      passed:
+        hasItems(workspace.tasks, 3) &&
+        workspace.tasks.every(
+          (task) =>
+            task.title.trim().length >= 8 &&
+            task.owner.trim().length >= 3 &&
+            task.due.trim().length >= 3 &&
+            task.outcome.trim().length >= 8,
+        ),
     },
     {
       id: "assumptions",

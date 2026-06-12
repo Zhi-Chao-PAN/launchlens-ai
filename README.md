@@ -69,8 +69,33 @@ LaunchLens AI always runs without secrets.
 - Real provider failures return a safe fallback code and mock output, not upstream response details.
 - Provider calls use HTTPS base URL validation, host allowlists, request timeouts, field caps, body caps, and a lightweight demo rate limit.
 - Provider parsing accepts fenced JSON, strips reasoning tags, repairs minor JSON formatting issues, and falls back safely when core structure is missing.
+- Real provider output must include the complete workspace schema; incomplete output falls back instead of receiving a misleading mock-filled quality score.
 - The UI shows safe generation metadata such as mode, generated time, and fallback code, but never provider secrets.
 - Workspace quality is scored with deterministic checks for summary, users, pains, MVP scope, backlog, landing copy, pricing, launch plan, tasks, and assumptions.
+
+## Provider Evaluation
+
+The repository includes a repeatable provider eval over three public scenarios:
+
+- B2B SaaS activation
+- Clinic administration with privacy and human-approval constraints
+- Creator commerce with a 10-day launch constraint
+
+The default command always clears provider variables and evaluates mock mode:
+
+```bash
+npm run eval:provider
+```
+
+Live MiniMax evaluation is deliberately explicit:
+
+```bash
+npm run eval:provider -- --live --write-fixture
+```
+
+The live command requires server-side `MINIMAX_*` variables. It prints metrics only, rejects fallback or incomplete schemas, checks scenario compliance, scans for secret-like values, and atomically writes `fixtures/providers/minimax-m3-public-samples.json`. Standard CI runs only the no-secret mock eval.
+
+The MiniMax integration follows the official [Responses API](https://platform.minimaxi.com/docs/api-reference/responses-create) request fields.
 
 Optional local provider variables:
 
@@ -104,6 +129,7 @@ Open `http://localhost:3000`.
 ```bash
 npm run lint
 npm run test
+npm run eval:provider
 npm run build
 npm audit --audit-level=moderate
 ```
