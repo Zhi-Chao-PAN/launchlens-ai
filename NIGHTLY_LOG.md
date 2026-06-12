@@ -410,6 +410,8 @@ CI follow-up:
 - The Windows-generated lockfile had again omitted root `@emnapi/core@1.11.0` and `@emnapi/runtime@1.11.0` entries required by Ubuntu optional WASM resolution.
 - Restored the exact npm registry metadata for both optional packages.
 - `npm ci --dry-run --ignore-scripts --os=linux --cpu=x64` then passed and resolved both packages, providing a local cross-platform lockfile check before the follow-up push.
+- Follow-up commit `517a160` passed GitHub Actions run `27403568566`: Ubuntu install, lint, 19 tests, mock provider eval, build, and audit all completed successfully.
+- The corresponding Vercel production deployment reached `Ready` and retained the stable public alias.
 
 ## 2026-06-11 23:50 Asia/Shanghai
 
