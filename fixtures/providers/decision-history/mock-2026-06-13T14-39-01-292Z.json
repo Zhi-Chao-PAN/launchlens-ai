@@ -1,0 +1,32 @@
+{
+  "evaluatedAt": "2026-06-13T14:39:01.292Z",
+  "runMode": "mock",
+  "passed": true,
+  "qualityScore": 100,
+  "perCase": [
+    {
+      "id": "activation-analyst",
+      "qualityScore": 100,
+      "passedChecks": 9,
+      "totalChecks": 9,
+      "recommendation": "proceed",
+      "evidenceStrength": "directional"
+    },
+    {
+      "id": "clinic-admin",
+      "qualityScore": 100,
+      "passedChecks": 9,
+      "totalChecks": 9,
+      "recommendation": "pause",
+      "evidenceStrength": "insufficient"
+    },
+    {
+      "id": "creator-commerce",
+      "qualityScore": 100,
+      "passedChecks": 9,
+      "totalChecks": 9,
+      "recommendation": "pivot",
+      "evidenceStrength": "directional"
+    }
+  ]
+}

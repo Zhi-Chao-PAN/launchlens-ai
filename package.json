@@ -11,7 +11,9 @@
     "eval:provider": "tsx scripts/evaluate-provider.ts",
     "eval:decision": "tsx scripts/evaluate-decision.ts",
     "db:migrate": "tsx scripts/migrate-cloud-db.ts",
-    "smoke:cloud": "tsx scripts/smoke-cloud-workspace.ts"
+    "smoke:cloud": "tsx scripts/smoke-cloud-workspace.ts",
+    "visual:regression": "tsx scripts/visual-regression.ts",
+    "decision:history": "tsx scripts/decision-history.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
@@ -25,10 +27,13 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pngjs": "^6.0.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "playwright": "^1.60.0",
+    "pngjs": "^7.0.0",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",
     "typescript": "^5",

@@ -46,3 +46,4 @@ Future commercial features still exist, but none are required to demonstrate the
 - Automated deployed visual regression and production observability integrations.
 
 These are commercial expansion paths, not missing evidence for the current portfolio release.
+

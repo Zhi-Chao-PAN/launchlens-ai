@@ -1,0 +1,27 @@
+{
+  "baseUrl": "http://127.0.0.1:3011",
+  "tolerance": 0.01,
+  "generatedAt": "2026-06-13T14:36:57.753Z",
+  "updatedBaseline": false,
+  "results": [
+    {
+      "viewport": "desktop",
+      "width": 1440,
+      "height": 900,
+      "baseline": "C:\\Users\\22304\\ai-portfolio-automation\\launchlens-ai\\public\\screenshots\\launchlens-desktop.png",
+      "captured": "C:\\Users\\22304\\ai-portfolio-automation\\launchlens-ai\\.visual-regression\\launchlens-desktop.png",
+      "diffRatio": 0.0071,
+      "identical": true
+    },
+    {
+      "viewport": "mobile",
+      "width": 390,
+      "height": 844,
+      "baseline": "C:\\Users\\22304\\ai-portfolio-automation\\launchlens-ai\\public\\screenshots\\launchlens-mobile.png",
+      "captured": "C:\\Users\\22304\\ai-portfolio-automation\\launchlens-ai\\.visual-regression\\launchlens-mobile.png",
+      "diffRatio": 0.01249,
+      "identical": false
+    }
+  ],
+  "passed": false
+}

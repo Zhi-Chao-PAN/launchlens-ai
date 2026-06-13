@@ -29,9 +29,14 @@ async function main() {
   const args = new Set(process.argv.slice(2));
   const isLive = args.has("--live");
   const shouldWriteFixture = args.has("--write-fixture");
+  const shouldWriteHistory = args.has("--write-history");
   const fixturePath = resolve(
     process.cwd(),
     "fixtures/providers/minimax-m3-decision-samples.json",
+  );
+  const historyDir = resolve(
+    process.cwd(),
+    "fixtures/providers/decision-history",
   );
 
   if (shouldWriteFixture && !isLive) {
@@ -139,18 +144,45 @@ async function main() {
     await rename(temporaryPath, fixturePath);
   }
 
-  console.log(
-    JSON.stringify(
-      {
-        runMode: isLive ? "live" : "mock",
-        passed: process.exitCode !== 1,
-        fixtureWritten: shouldWriteFixture && process.exitCode !== 1,
-        cases: cases.map(decisionEvalSummary),
-      },
-      null,
-      2,
-    ),
-  );
+  const summary = {
+    runMode: isLive ? "live" : "mock",
+    passed: process.exitCode !== 1,
+    fixtureWritten: shouldWriteFixture && process.exitCode !== 1,
+    cases: cases.map(decisionEvalSummary),
+  };
+
+  console.log(JSON.stringify(summary, null, 2));
+
+  if (shouldWriteHistory && process.exitCode !== 1) {
+    await mkdir(historyDir, { recursive: true });
+    const totalScore = cases.reduce(
+      (sum, current) => sum + current.qualityScore,
+      0,
+    );
+    const qualityScore = cases.length
+      ? Math.round(totalScore / cases.length)
+      : 0;
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const historyEntry = {
+      evaluatedAt: new Date().toISOString(),
+      runMode: summary.runMode,
+      passed: summary.passed,
+      qualityScore,
+      perCase: cases.map((evalCase) => ({
+        id: evalCase.id,
+        qualityScore: evalCase.qualityScore,
+        passedChecks: evalCase.passedChecks,
+        totalChecks: evalCase.totalChecks,
+        recommendation: evalCase.recommendation,
+        evidenceStrength: evalCase.evidenceStrength,
+      })),
+    };
+    const target = resolve(historyDir, `${summary.runMode}-${stamp}.json`);
+    await writeFile(target, `${JSON.stringify(historyEntry, null, 2)}\n`, "utf8");
+    process.stdout.write(
+      `\nHistory entry written: ${target.replace(process.cwd(), ".")}\n`,
+    );
+  }
 }
 
 main().catch((error: unknown) => {

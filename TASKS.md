@@ -65,6 +65,11 @@
 - [x] Added `npm run smoke:cloud` for repeatable cloud save/restore/share/privacy/delete verification.
 - [x] Verified the cloud flow against a production-env server connected to Neon.
 
+## Done in Phase 6
+
+- [x] Added Playwright-hosted visual regression with committed PNG baselines and dedicated pixel-comparator tests.
+- [x] Added a decision-eval history feed and a trend-comparison command, and wired both into CI.
+- [x] Added a hosted visual regression GitHub Actions workflow that builds, runs the production server, and uploads the report artifact.
 ## Next Nightly Builder Tasks
 
 - [x] Add unit tests for `buildMockWorkspace` and provider fallback.
@@ -131,3 +136,4 @@
 - [ ] Add team roles, comments, and collaborative workspace ownership.
 - [ ] Add longitudinal provider/decision eval dashboards and latency drift thresholds.
 - [ ] Add automated deployed visual-regression snapshots.
+

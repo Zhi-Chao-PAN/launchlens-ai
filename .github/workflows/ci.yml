@@ -37,7 +37,10 @@ jobs:
         run: npm run eval:provider
 
       - name: Decision eval (mock, no secrets)
-        run: npm run eval:decision
+        run: npm run eval:decision -- --write-history
+
+      - name: Decision trend comparison
+        run: npm run decision:history -- --compare
 
       - name: Build
         run: npm run build

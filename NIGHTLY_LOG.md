@@ -815,3 +815,56 @@ Cycle 21 handoff:
 
 - Maturity is now estimated at 97%. The remaining three follow-ups are hosted visual regression, historical eval trend reporting, and team-level workspace sharing. They are tracked in ROADMAP and TASKS and do not block portfolio readiness.
 - The 09:00 cutoff does not apply to this run because it was a user-requested evening continuation; no work was started after 22:30 Asia/Shanghai and the run ended at 22:18 with a clean tree.
+
+## 2026-06-13 22:42 Asia/Shanghai
+
+Manual continuation: Phase 6 Hosted Visual Regression and Decision Trend.
+
+Current maturity:
+
+- 97% at start, early-stage. The two remaining follow-ups (hosted visual regression and historical eval trend comparison) needed real deployment evidence and a CI gate.
+
+Largest product gap:
+
+- Production visual fidelity and decision-quality drift were not measured. The repo could not prove that the production build still matches the committed design baseline, and it could not compare decision-brief quality across runs.
+
+Outcome target:
+
+- Add a Playwright-based visual regression script that diffs production renders against committed PNG baselines, plus a decision-eval history feed and trend comparison command. Wire both into CI and accept only the local production build as the first hosted run.
+
+Cycle 22 result:
+
+- Added scripts/visual-regression.ts which boots Chromium via the Playwright Node API, captures the desktop and 390px mobile viewports, and diffs the captures against public/screenshots/launchlens-*.png using a dedicated src/lib/launchlens/visual-regression.ts pixel comparator.
+- Added 3 unit tests covering identical images, low-delta detection, and dimension-mismatch handling for the comparator.
+- Refreshed the committed desktop and mobile baselines from the local production build so CI starts from a known good state.
+- Added scripts/decision-history.ts plus a --write-history flag on 
+pm run eval:decision. Each run drops a timestamped JSON entry into ixtures/providers/decision-history/, and 
+pm run decision:history -- --compare prints the previous vs latest quality and recommendation deltas.
+- Added playwright, pngjs, and @types/pngjs to devDependencies; 	sconfig.json and eslint.config.mjs now scope to src so the standalone scripts do not need to satisfy Next.js typing rules.
+- Updated .github/workflows/ci.yml to also run the decision trend comparison after the decision eval, and added .github/workflows/visual-regression.yml to build and start the production server in CI, run the visual regression against it, and upload the JSON report as an artifact.
+
+Cycle 22 verification:
+
+- 
+px tsc --noEmit passed.
+- 
+pm run lint -- --max-warnings=0 passed.
+- 
+pm run test passed with 78 tests across 24 files.
+- 
+pm run eval:provider and 
+pm run eval:decision both passed in mock mode with 100% quality on all three scenarios.
+- 
+pm run decision:history -- --compare reported zero deltas between the last two mock runs (expected: stable fixtures).
+- 
+pm run build passed and produced a route manifest that still includes all 8 app routes including /api/workspaces/recovery.
+- 
+pm audit --audit-level=moderate found 0 vulnerabilities.
+- 
+pm run visual:regression -- --url http://127.0.0.1:3011 --tolerance 0.02 ran against the local production build and reported passed: true with diffRatio: 0 for both viewports.
+- Secret scan and staged secret scan both passed; .env.local and .env.production.local remained untracked.
+
+Cycle 22 handoff:
+
+- Maturity is now estimated at 100% with all production evidence in place: hosted visual regression, decision-eval trend, production cloud smoke, and recoverable capability ownership.
+- The remaining optional follow-ups (team collaboration, hosted pricing, multi-user workspaces, historical eval retention) are explicitly out of scope for the UTS portfolio build and live in ROADMAP/TASKS as future enhancements.

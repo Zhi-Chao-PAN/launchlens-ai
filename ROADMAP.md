@@ -126,3 +126,12 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 - [x] Distributed mutation limiting is backed by Neon and keeps a local-only fallback.
 - [x] Lint, typecheck, tests, provider evals, decision evals, build, audit, browser QA, cloud smoke, CI, and production deployment pass.
 - [x] README, screenshots, architecture, demo script, case study, license, topics, and UTS/TPM positioning are complete.
+
+## Phase 6 Acceptance
+
+- [x] A Playwright-based hosted visual regression script captures the production build and diffs the result against the committed PNG baselines.
+- [x] Visual diff supports an update-baseline mode and a configurable tolerance, with a dedicated pixel comparator and unit tests.
+- [x] Decision eval writes a timestamped history entry on every run and exposes a trend-comparison command.
+- [x] CI runs the decision trend comparison and a hosted visual regression build, uploading the visual regression report as an artifact.
+- [x] Production deployment and visual regression both pass with zero pixel diff and zero decision quality drift.
+

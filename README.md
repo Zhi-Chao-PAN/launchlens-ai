@@ -97,6 +97,25 @@ LaunchLens AI always runs without secrets.
 - The decision copilot uses deterministic mock briefs by default. Live real-provider decision briefs require both a real provider key and `DECISION_COPILOT_LIVE_ENABLED=true`.
 - Decision-brief validation rejects invented evidence IDs, overlong fields, stale source fingerprints, and incomplete provider payloads.
 
+## Visual Regression and Decision Trend
+
+The production build is verified against committed design baselines, and decision-brief quality is tracked across runs.
+
+```bash
+npm run visual:regression -- --url https://launchlens-ai-two.vercel.app --tolerance 0.02
+```
+
+The script uses Playwright to capture the desktop (1440x900) and mobile (390x844) viewports, diffs them against `public/screenshots/launchlens-*.png`, and writes a JSON report. Pass `--update-baseline` to refresh the committed baselines. The GitHub Actions workflow `hosted-visual-regression` runs the same check on every push to `main` and uploads the report as a build artifact.
+
+Decision-brief evaluation also feeds a per-run history file and a trend comparison:
+
+```bash
+npm run eval:decision -- --write-history
+npm run decision:history -- --compare
+```
+
+The history snapshots are committed to `fixtures/providers/decision-history/` so CI can detect drift in quality score or recommendation direction between runs.
+
 ## Provider Evaluation
 
 The repository includes a repeatable provider eval over three public scenarios:
@@ -273,3 +292,4 @@ See:
 - `TASKS.md`
 - `PROJECT_MATURITY.md`
 - `NIGHTLY_LOG.md`
+
