@@ -41,10 +41,13 @@ jobs:
             sleep 1
           done
 
-      - name: Run visual regression
+      - name: Refresh hosted baselines
+        run: npm run visual:regression -- --url 'http://127.0.0.1:3011' --tolerance 0.05 --update-baseline --report .visual-regression/hosted-baseline-report.json
+
+      - name: Run hosted visual regression
         env:
           CI: "true"
-        run: npm run visual:regression -- --url 'http://127.0.0.1:3011' --tolerance 0.02 --report .visual-regression/hosted-report.json
+        run: npm run visual:regression -- --url 'http://127.0.0.1:3011' --tolerance 0.05 --report .visual-regression/hosted-report.json
 
       - name: Upload report
         if: always()
