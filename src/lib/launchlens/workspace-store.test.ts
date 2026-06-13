@@ -22,6 +22,11 @@ describe("workspace store boundaries", () => {
     expect(cloudStorageConfigured()).toBe(true);
   });
 
+  it("accepts quoted Vercel env-file values", () => {
+    process.env["DATABASE_URL"] = ["\"", "example", "\""].join("");
+    expect(cloudStorageConfigured()).toBe(true);
+  });
+
   it("accepts high-entropy-shaped owner tokens and hashes them", () => {
     expect(validateOwnerToken(validToken)).toBe(true);
     const hash = hashOwnerToken(validToken);

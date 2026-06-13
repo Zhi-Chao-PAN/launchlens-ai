@@ -176,6 +176,14 @@ npm run db:migrate
 
 Use `DATABASE_MIGRATION_URL` for an elevated migration role when available, and keep the runtime `DATABASE_URL` limited to table DML.
 
+After a database-enabled deployment, verify the full cloud flow with:
+
+```bash
+LAUNCHLENS_BASE_URL=https://your-deployment.example.com npm run smoke:cloud
+```
+
+The smoke creates a temporary workspace, restores it, enables a public share, checks that private evidence and decision-brief details are not exposed, disables sharing, and deletes the workspace.
+
 ## Run Locally
 
 ```bash
@@ -195,6 +203,8 @@ Open `http://localhost:3000`.
 npm run lint
 npm run test
 npm run eval:provider
+npm run eval:decision
+npm run smoke:cloud # only against a database-enabled deployment
 npm run db:migrate # only after configuring a database
 npm run build
 npm audit --audit-level=moderate

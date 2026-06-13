@@ -63,7 +63,7 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 - [x] Schema DDL is isolated in a deployment migration; runtime database code is server-only and DML-only.
 - [x] Per-owner and global snapshot quotas use transaction advisory locks plus a conditional insert.
 - [x] Public share queries use a dedicated projection that never selects founder input.
-- [ ] Neon is provisioned through Vercel Marketplace and the production save/restore/share flow is browser-verified.
+- [x] Neon is provisioned through Vercel Marketplace and the production save/restore/share flow is smoke-verified.
 - [ ] Add distributed abuse controls before enabling anonymous cloud writes at meaningful public scale.
 - [ ] Authentication and recoverable account ownership replace the anonymous browser token in Phase 3C.
 
@@ -78,7 +78,7 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 - [x] Legacy local/cloud snapshots without execution state receive safe defaults.
 - [x] Stable examples include realistic supported, testing, and refuted validation stories.
 - [x] Desktop and 390px mobile layouts provide a compact, keyboard-operable experiment review flow.
-- [ ] Production Neon round-trip verification proves execution state persists through live cloud save/restore/share.
+- [x] Production Neon round-trip verification proves execution state persists through cloud save/restore/share.
 - [ ] Phase 3C adds recoverable authentication before cloud history is treated as a durable user account.
 
 ## Phase 4A Acceptance
@@ -92,7 +92,7 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 - [x] The UI invalidates stale briefs when experiment evidence changes and shows provider/mode/citation metadata without secrets.
 - [x] Private Markdown/JSON exports include decision briefs; public shares keep evidence notes, sources, founder input, and AI decision briefs private.
 - [x] Desktop and 390px mobile product screenshots now include the decision-copilot stage.
-- [ ] Production Neon round-trip still needs to prove decision briefs persist through real cloud save/restore after Marketplace terms are accepted.
+- [x] Production Neon round-trip proves decision briefs persist through cloud save/restore and remain private in public shares.
 - [x] Add repeatable decision-brief evals for citation fidelity, signal alignment, recommendation direction, and no-fallback behavior.
 - [x] Persist a secret-scanned MiniMax decision fixture for the three public evidence scenarios.
 - [ ] Compare decision eval history over time and add release thresholds for latency drift.

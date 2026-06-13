@@ -709,3 +709,42 @@ Cycle 19 handoff:
 - Current maturity is now 90%, still early-stage rather than portfolio-ready.
 - The next unblockable infrastructure stage remains production Neon activation, recoverable authentication, distributed abuse control, and production cloud round-trip QA.
 - If Neon terms remain blocked, the next safe stage is historical eval comparison, deployed visual regression, and a final portfolio case-study polish pass.
+
+## 2026-06-13 19:06 Asia/Shanghai
+
+Manual continuation: Phase 5A Production Cloud Persistence Activation.
+
+Current maturity:
+
+- 90% at start, early-stage. Product, validation, decision copilot, provider evals, and live demo were strong, but production cloud persistence was still blocked by Vercel Marketplace Neon terms.
+
+Largest product gap:
+
+- Anonymous cloud history existed in code, but the production deployment had no real database resource and `/api/workspaces` reported `configured: false`.
+
+Outcome target:
+
+- Provision Vercel Marketplace Neon, run the production migration, fix any activation blockers, add a repeatable cloud smoke, and verify save/restore/share/privacy/delete against Neon.
+
+Cycle 20 result:
+
+- Confirmed the linked Vercel project `launchlens-ai` had no resources or env vars before activation.
+- Installed the Neon Marketplace integration after terms were accepted and connected `neon-almond-lighthouse` to the Vercel project.
+- Pulled development and production env files locally; both are covered by `.gitignore` and were not committed.
+- Fixed `scripts/migrate-cloud-db.ts` so `npm run db:migrate` works under the current `tsx` CJS transform.
+- Added env quote cleanup and sanitized migration error output to avoid leaking connection strings.
+- Ran the production Neon migration successfully.
+- Added runtime env quote cleanup in `workspace-store.ts` for Vercel-pulled env files used outside Next's native loader.
+- Added `npm run smoke:cloud`, which creates a temporary workspace, restores it, enables a public share, checks private evidence/decision data does not appear in the public page, disables sharing, and deletes the workspace.
+
+Cycle 20 verification:
+
+- `npm run db:migrate` completed against the production Neon connection.
+- Local production server on port 3007, loaded with production Neon env, passed `npm run smoke:cloud`.
+- Cloud smoke result: configured, created, restored, shared, private share boundary, disabled share, and deleted all passed.
+- Final full validation and live deployment smoke are still pending before commit/push completion.
+
+Cycle 20 handoff:
+
+- Maturity is now estimated at 93%, still early-stage because anonymous ownership, process-local rate limiting, and hosting-log header hygiene remain production risks.
+- Next major stage should be Phase 3C/5B authentication and recoverable account ownership, followed by distributed abuse controls.

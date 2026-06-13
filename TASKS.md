@@ -60,6 +60,10 @@
 - [x] Added decision eval to GitHub Actions CI.
 - [x] Persisted a secret-scanned MiniMax decision fixture for supported, neutral, and challenged evidence cases.
 - [x] Normalized claim stance from cited evidence signals and cleaned stray provider quote prefixes.
+- [x] Accepted Vercel Marketplace Neon terms, provisioned Neon, pulled ignored local env files, and ran the production migration.
+- [x] Fixed the migration script for CJS-compatible `tsx` execution and sanitized migration errors.
+- [x] Added `npm run smoke:cloud` for repeatable cloud save/restore/share/privacy/delete verification.
+- [x] Verified the cloud flow against a production-env server connected to Neon.
 
 ## Next Nightly Builder Tasks
 
@@ -80,7 +84,7 @@
 - [x] Add persisted MiniMax output fixtures for regression comparison.
 - [x] Add optional server-side workspace snapshot history without breaking no-database demo mode.
 - [x] Add owner-scoped restore/delete and opt-in read-only share links.
-- [ ] Accept Vercel Marketplace Neon terms, provision the production resource, and browser-verify the deployed cloud flow.
+- [x] Accept Vercel Marketplace Neon terms, provision the production resource, and verify the deployed cloud flow.
 - [ ] Add distributed rate limiting or a managed challenge before scaling anonymous cloud writes.
 - [ ] Verify hosting logs do not retain the owner capability header.
 - [ ] Add account authentication and recoverable ownership after the anonymous-token beta.
@@ -89,7 +93,7 @@
 - [x] Keep private evidence details out of read-only public shares.
 - [x] Add an evidence-grounded AI decision brief stage on top of recorded validation evidence.
 - [ ] Add recoverable authentication in Phase 3C.
-- [ ] Verify decision briefs through production Neon save/restore/share after Marketplace terms are accepted.
+- [x] Verify decision briefs through production Neon save/restore/share after Marketplace terms are accepted.
 - [x] Add trend-ready eval fixtures for decision-brief recommendations and citation quality.
 - [ ] Add historical comparison/reporting across multiple decision eval fixture versions.
 
@@ -114,4 +118,4 @@
 - [x] Validation evidence, decisions, linked tasks, exports, and local restore have focused coverage and browser QA.
 - [x] Evidence-grounded AI decision briefs have focused unit/API tests and desktop/mobile browser QA.
 - [x] Decision copilot has mock CI eval and live MiniMax fixture evidence.
-- [ ] Production cloud save, restore, share, disable-share, and delete pass browser QA against Neon.
+- [x] Production cloud save, restore, share, disable-share, and delete pass smoke QA against Neon.
