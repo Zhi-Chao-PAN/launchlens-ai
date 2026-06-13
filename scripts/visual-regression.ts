@@ -11,6 +11,7 @@ type Viewport = { name: string; width: number; height: number };
 const VIEWPORTS: Viewport[] = [
   { name: "desktop", width: 1440, height: 900 },
   { name: "mobile", width: 390, height: 844 },
+  { name: "pricing", width: 1280, height: 800 },
 ];
 
 const DEFAULT_TOLERANCE = 0.01;
@@ -33,6 +34,7 @@ async function captureScreenshot(
   baseUrl: string,
   viewport: Viewport,
   outputPath: string,
+  path: string = "/",
 ): Promise<void> {
   const browser = await chromium.launch();
   try {
@@ -41,7 +43,9 @@ async function captureScreenshot(
       reducedMotion: "reduce",
     });
     const page = await context.newPage();
-    await page.goto(baseUrl, { waitUntil: "networkidle" });
+    await page.goto(new URL(path, baseUrl).toString(), {
+      waitUntil: "networkidle",
+    });
     await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(500);
     await page.screenshot({ path: outputPath, fullPage: false });
@@ -76,20 +80,33 @@ async function main() {
   const captureDir = resolve(".visual-regression");
   mkdirSync(captureDir, { recursive: true });
 
+  const pages: Array<{ viewport: string; suffix: string; path: string }> = [
+    { viewport: "desktop", suffix: "desktop", path: "/" },
+    { viewport: "mobile", suffix: "mobile", path: "/" },
+    { viewport: "pricing", suffix: "pricing", path: "/pricing" },
+  ];
+
   const results: Array<{
     viewport: string;
     width: number;
     height: number;
     baseline: string;
     captured: string;
+    path: string;
     diffRatio: number;
     identical: boolean;
   }> = [];
 
   for (const viewport of VIEWPORTS) {
-    const baseline = resolve(baselinesDir, `launchlens-${viewport.name}.png`);
-    const captured = resolve(captureDir, `launchlens-${viewport.name}.png`);
-    await captureScreenshot(baseUrl, viewport, captured);
+    const page =
+      pages.find((entry) => entry.viewport === viewport.name) ?? {
+        viewport: viewport.name,
+        suffix: viewport.name,
+        path: "/",
+      };
+    const baseline = resolve(baselinesDir, `launchlens-${page.suffix}.png`);
+    const captured = resolve(captureDir, `launchlens-${page.suffix}.png`);
+    await captureScreenshot(baseUrl, viewport, captured, page.path);
     if (updateBaseline) {
       copyFileSync(captured, baseline);
     }
@@ -100,6 +117,7 @@ async function main() {
       height: comparison.height,
       baseline,
       captured,
+      path: page.path,
       diffRatio: Number(comparison.diffRatio.toFixed(5)),
       identical: comparison.identical,
     });
@@ -131,6 +149,3 @@ main().catch((error) => {
   );
   process.exitCode = 1;
 });
-
-
-
