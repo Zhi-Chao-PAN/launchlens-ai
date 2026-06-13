@@ -976,3 +976,47 @@ Cycle 24 handoff:
 
 - The P0 item on the deliberate-non-blocking list is now done as an honest, no-billing page. The Solo and Team tiers use mailto links by design so the page never pretends to collect payment.
 - P1, P2, and P3 remain as documented in PROJECT_MATURITY.md. This cycle closes P0 honestly and does not reclassify the rest.
+
+## 2026-06-14 00:20 Asia/Shanghai
+
+Manual continuation: P1 longitudinal decision eval retention and drift gate.
+
+Current maturity:
+
+- 100% portfolio-ready, with the P0 hosted pricing page just landed. The next deferred item, P1, was unstarted: there was no retention policy, no sliding-window drift gate, and no static dashboard.
+
+Largest product gap:
+
+- A reviewer could see that the eval ran on three mock cases at 100% quality, but could not see how it changed over time or how the project would catch a slow drift in quality or recommendation direction. The history directory existed but had no aggregation, no retention, and no CI gate beyond a one-shot compare.
+
+Outcome target:
+
+- Turn the per-run history into a real retention store with a sliding-window drift gate and a static dashboard that the team can read without running scripts.
+
+Cycle 25 result:
+
+- Added src/lib/launchlens/decision-history-core.ts that owns filtering, pruning, and the window report. Pulled the logic out of the script so the vitest suite covers the same code path.
+- Replaced the one-shot --compare flow in scripts/decision-history.ts with three real subcommands: --window --size N --drift-threshold K (sliding-window quality and recommendation-direction drift), --dashboard (renders a static HTML dashboard with per-scenario tables and a notes block), and --prune --max-age-days N --min-keep K (retention with a minimum-keep floor).
+- Added 3 vitest cases covering insufficient history, downward drift detection, and retention with a minimum-keep floor.
+- Wired the window gate and the dashboard into the standard GitHub Actions CI workflow. The window is the new release gate; the dashboard is regenerated and uploaded as a build artifact on every push.
+- Updated README.md, PROJECT_MATURITY.md (P1 marked done), and ROADMAP.md to match.
+
+Cycle 25 verification:
+
+- 
+px tsc --noEmit passed.
+- 
+pm run lint -- --max-warnings=0 passed.
+- 
+pm run test passed with 81 tests across 25 files.
+- 
+pm run build passed.
+- 
+pm run decision:history -- --window --size 5 --drift-threshold 5 reported passed: true, meanLast: 100, drift: 0 on the current history.
+- 
+pm run decision:history -- --dashboard produced docs/decision-dashboard.html with all three scenarios rendered and zero drift notes.
+- CI run 27472230915 (Lint, test, build) passed all 12 steps including the new Decision trend gate and Decision eval dashboard jobs.
+
+Cycle 25 handoff:
+
+- P1 is done. The next deferred items are P2 (team roles and collaboration primitives) and P3 (multi-tenant workspaces, billing, real hosted pricing). P0 is documented as done; the rest of the list still matches PROJECT_MATURITY.md.
