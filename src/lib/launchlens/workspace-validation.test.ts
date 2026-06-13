@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { exampleWorkspaces } from "./example-workspaces";
+import { createExecutionState } from "./execution";
 import {
   isLaunchLensWorkspace,
   isUuid,
@@ -22,6 +23,7 @@ describe("workspace validation", () => {
       title: "Activation workspace",
       input: example.input,
       workspace: example.workspace,
+      execution: createExecutionState(example.workspace),
     });
   });
 

@@ -13,6 +13,10 @@ import {
 } from "./cloud-workspace";
 import type { WorkspaceSnapshotPayload } from "./workspace-validation";
 import {
+  normalizeExecutionState,
+  normalizeSharedExecutionState,
+} from "./execution";
+import {
   isLaunchLensInput,
   isLaunchLensWorkspace,
 } from "./workspace-validation";
@@ -25,12 +29,15 @@ type WorkspaceRow = {
   title: string;
   input: unknown;
   workspace: unknown;
+  execution: unknown;
   is_public: boolean;
   created_at: string | Date;
   updated_at: string | Date;
 };
 
-type SharedWorkspaceRow = Omit<WorkspaceRow, "input">;
+type SharedWorkspaceRow = Omit<WorkspaceRow, "input" | "execution"> & {
+  execution_summary: unknown;
+};
 
 let sqlClient: ReturnType<typeof neon> | null = null;
 
@@ -115,10 +122,21 @@ function toRecord(row: WorkspaceRow): CloudWorkspaceRecord {
     );
   }
 
+  const execution = normalizeExecutionState(row.execution, row.workspace);
+
+  if (!execution) {
+    throw new WorkspaceStoreError(
+      "invalid_workspace_data",
+      500,
+      "The stored execution state is invalid.",
+    );
+  }
+
   return {
     ...toSummary(row),
     input: row.input,
     workspace: row.workspace,
+    execution,
   };
 }
 
@@ -131,9 +149,23 @@ function toSharedRecord(row: SharedWorkspaceRow): SharedCloudWorkspaceRecord {
     );
   }
 
+  const execution = normalizeSharedExecutionState(
+    row.execution_summary,
+    row.workspace,
+  );
+
+  if (!execution) {
+    throw new WorkspaceStoreError(
+      "invalid_workspace_data",
+      500,
+      "The stored execution state is invalid.",
+    );
+  }
+
   return {
     ...toSummary(row),
     workspace: row.workspace,
+    execution,
   };
 }
 
@@ -170,14 +202,15 @@ export async function createWorkspace(
     `,
     transaction`
       INSERT INTO launchlens_workspaces (
-        id, owner_hash, title, input, workspace
+        id, owner_hash, title, input, workspace, execution
       )
       SELECT
         ${id},
         ${ownerHash},
         ${title},
         ${JSON.stringify(payload.input)}::jsonb,
-        ${JSON.stringify(payload.workspace)}::jsonb
+        ${JSON.stringify(payload.workspace)}::jsonb,
+        ${JSON.stringify(payload.execution)}::jsonb
       WHERE
         (SELECT COUNT(*) FROM launchlens_workspaces) < ${MAX_TOTAL_CLOUD_WORKSPACES}
         AND
@@ -186,7 +219,7 @@ export async function createWorkspace(
           FROM launchlens_workspaces
           WHERE owner_hash = ${ownerHash}
         ) < ${MAX_CLOUD_WORKSPACES}
-      RETURNING id, title, input, workspace, is_public, created_at, updated_at
+      RETURNING id, title, input, workspace, execution, is_public, created_at, updated_at
     `,
   ]);
   const row = firstRow<WorkspaceRow>(rows);
@@ -206,7 +239,7 @@ export async function getOwnedWorkspace(ownerToken: string, id: string) {
   const ownerHash = hashOwnerToken(ownerToken);
   const sql = getSql();
   const rows = await sql`
-    SELECT id, title, input, workspace, is_public, created_at, updated_at
+    SELECT id, title, input, workspace, execution, is_public, created_at, updated_at
     FROM launchlens_workspaces
     WHERE id = ${id} AND owner_hash = ${ownerHash}
     LIMIT 1
@@ -239,7 +272,7 @@ export async function setWorkspaceSharing(
     UPDATE launchlens_workspaces
     SET is_public = ${enabled}, updated_at = NOW()
     WHERE id = ${id} AND owner_hash = ${ownerHash}
-    RETURNING id, title, input, workspace, is_public, created_at, updated_at
+    RETURNING id, title, input, workspace, execution, is_public, created_at, updated_at
   `;
   const row = firstRow<WorkspaceRow>(rows);
 
@@ -249,7 +282,40 @@ export async function setWorkspaceSharing(
 export async function getSharedWorkspace(id: string) {
   const sql = getSql();
   const rows = await sql`
-    SELECT id, title, workspace, is_public, created_at, updated_at
+    SELECT
+      id,
+      title,
+      workspace,
+      jsonb_build_object(
+        'updatedAt', execution -> 'updatedAt',
+        'experiments',
+        COALESCE(
+          (
+            SELECT jsonb_agg(
+              jsonb_build_object(
+                'id', experiment -> 'id',
+                'assumption', experiment -> 'assumption',
+                'status', experiment -> 'status',
+                'confidence', experiment -> 'confidence',
+                'decision', experiment -> 'decision',
+                'nextAction', experiment -> 'nextAction',
+                'linkedTaskId', experiment -> 'linkedTaskId',
+                'evidenceCount',
+                jsonb_array_length(
+                  COALESCE(experiment -> 'evidence', '[]'::jsonb)
+                )
+              )
+            )
+            FROM jsonb_array_elements(
+              COALESCE(execution -> 'experiments', '[]'::jsonb)
+            ) AS items(experiment)
+          ),
+          '[]'::jsonb
+        )
+      ) AS execution_summary,
+      is_public,
+      created_at,
+      updated_at
     FROM launchlens_workspaces
     WHERE id = ${id} AND is_public = TRUE
     LIMIT 1

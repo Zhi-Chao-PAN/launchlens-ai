@@ -1,10 +1,17 @@
 import type { LaunchLensWorkspace } from "./types";
+import {
+  taskIdentity,
+  type WorkspaceExecutionState,
+} from "./execution";
 
 function bullets(items: string[]) {
   return items.map((item) => `- ${item}`).join("\n");
 }
 
-export function workspaceToMarkdown(workspace: LaunchLensWorkspace) {
+export function workspaceToMarkdown(
+  workspace: LaunchLensWorkspace,
+  execution?: WorkspaceExecutionState,
+) {
   const backlog = workspace.backlog
     .map((item) => `- **${item.priority} ${item.feature}**: ${item.why}`)
     .join("\n");
@@ -20,6 +27,35 @@ export function workspaceToMarkdown(workspace: LaunchLensWorkspace) {
         `- **${task.title}** | ${task.owner} | ${task.due} | ${task.outcome}`,
     )
     .join("\n");
+  const validation = execution
+    ? execution.experiments
+        .map((experiment, index) => {
+          const linkedTask = workspace.tasks.find(
+            (task, taskIndex) =>
+              taskIdentity(task, taskIndex) === experiment.linkedTaskId,
+          );
+          const evidence =
+            experiment.evidence.length > 0
+              ? experiment.evidence
+                  .map(
+                    (item) =>
+                      `  - ${item.signal}: ${item.note} (${item.source}, ${item.observedAt})`,
+                  )
+                  .join("\n")
+              : "  - No evidence recorded";
+
+          return `### H${index + 1}: ${experiment.assumption}
+
+- Status: ${experiment.status}
+- Confidence: ${experiment.confidence}
+- Decision: ${experiment.decision || "Pending"}
+- Next action: ${experiment.nextAction || "Pending"}
+- Linked task: ${linkedTask?.title ?? "None"}
+- Evidence:
+${evidence}`;
+        })
+        .join("\n\n")
+    : "";
 
   return `# ${workspace.landingPage.headline}
 
@@ -78,5 +114,7 @@ ${tasks}
 ## Assumptions To Validate
 
 ${bullets(workspace.assumptions)}
+
+${validation ? `## Validation Decisions\n\n${validation}\n` : ""}
 `;
 }

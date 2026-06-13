@@ -1,4 +1,8 @@
 import type { LaunchLensInput, LaunchLensWorkspace } from "./types";
+import {
+  normalizeExecutionState,
+  type WorkspaceExecutionState,
+} from "./execution";
 
 const PROVIDERS = new Set(["mock", "openai", "minimax"]);
 const PRIORITIES = new Set(["P0", "P1", "P2"]);
@@ -205,6 +209,7 @@ export type WorkspaceSnapshotPayload = {
   title: string;
   input: LaunchLensInput;
   workspace: LaunchLensWorkspace;
+  execution: WorkspaceExecutionState;
 };
 
 export function parseWorkspaceSnapshot(
@@ -221,6 +226,12 @@ export function parseWorkspaceSnapshot(
     return null;
   }
 
+  const execution = normalizeExecutionState(value.execution, workspace);
+
+  if (!execution) {
+    return null;
+  }
+
   const requestedTitle = normalizedString(value.title, 120)?.trim() ?? "";
   const payload = {
     title:
@@ -229,6 +240,7 @@ export function parseWorkspaceSnapshot(
       "Untitled workspace",
     input,
     workspace,
+    execution,
   };
 
   return JSON.stringify(payload).length <= MAX_NORMALIZED_SNAPSHOT_CHARS

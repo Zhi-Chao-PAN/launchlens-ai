@@ -537,3 +537,67 @@ Handoff:
 - Investigate MiniMax live timeout with a smaller prompt or provider-specific request shape.
 - Add screenshots or a public deployment URL next.
 - Add persistence for edited workspaces.
+
+## 2026-06-13 04:06 Asia/Shanghai
+
+Phase 3B start: Evidence-Driven Execution Loop.
+
+Current maturity:
+
+- 80%, early-stage. Phase 3A code is deployed and CI-verified, while production Neon activation remains gated by Marketplace terms.
+
+Largest product gap:
+
+- LaunchLens can generate and edit a strong GTM plan, but assumptions are still static text. Reviewers cannot yet see how evidence changes confidence, decisions, and next actions.
+
+Outcome target:
+
+- Add a complete assumption -> evidence -> decision -> linked task loop that works in no-key, no-database mode and travels with local saves, cloud snapshots, exports, and read-only shares.
+
+Time budget and stop rule:
+
+- Start: 04:06 Asia/Shanghai.
+- 09:00 is the hard stop. Do not begin large work after 08:30; cleanup only after 08:45; minimum safe log/push only after 08:55.
+
+Planned cycles:
+
+1. Define a backward-compatible execution-state model, normalization, progress scoring, and tests without changing the LLM provider schema.
+2. Build an accessible responsive validation board and connect it to local/cloud persistence, exports, and shared views.
+3. Run a bounded architecture/product review, full automated checks, production browser QA, documentation updates, commit/push, CI, and Vercel verification.
+
+Tools:
+
+- Next.js and React best-practice guidance.
+- One bounded read-only sub-agent for product/data-model critique.
+- Playwright for desktop/mobile core-flow verification.
+- GitHub CLI and Vercel CLI for publication checks.
+
+Cycle 17 result:
+
+- Added a provider-independent execution model that converts generated assumptions into stable validation experiments.
+- Added bounded evidence records with source, support/challenge/neutral signals, confidence, status, decisions, next actions, and stable task links.
+- Added deterministic validation progress separate from generated-workspace quality.
+- Added a compact responsive validation board with one expanded experiment at a time.
+- Added supported, testing, and refuted stories to the three stable reviewer examples.
+- Persisted execution state through browser-local restore, cloud snapshot payloads, Markdown, and JSON exports.
+- Added a database migration for execution state with backward-compatible defaults for older snapshots.
+- Added a public SQL projection and type that expose decisions and evidence counts while excluding evidence notes/sources and founder input.
+- Added explicit privacy confirmation before enabling a public share.
+
+Cycle 17 review and verification:
+
+- One bounded read-only sub-agent reviewed data identity, privacy, capacity, UX, and test risks.
+- The review caught position-based evidence inheritance, unstable title links, oversized evidence bounds, and share privacy ambiguity; all were corrected before publication.
+- `npx tsc --noEmit` passed.
+- `npm run lint -- --max-warnings=0` passed.
+- `npm run test` passed with 47 tests across 16 files.
+- Local no-provider/no-database browser QA completed the add-evidence, confidence, decision, next-action, linked-task, refresh-restore, and Markdown export flow.
+- Desktop and 390px mobile layouts had no horizontal overflow; console checks reported 0 errors and 0 warnings.
+
+Cycle 17 handoff:
+
+- Fresh production-mode screenshots were captured for desktop and 390px mobile.
+- Final `npx tsc --noEmit`, zero-warning lint, 48-test suite, provider eval, production build, moderate audit, and secret scan passed.
+- A Phase 3B diff-scoped Codex Security review closed all 18 changed/new source files with no technically plausible candidate and no reportable finding.
+- The 15:28 Asia/Shanghai continuation was manually requested by the user after the nightly cutoff and treated as a separate daytime delivery pass.
+- Production Neon round-trip and header-log hygiene remain external activation gates.

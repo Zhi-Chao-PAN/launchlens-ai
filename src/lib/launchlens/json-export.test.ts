@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { workspaceToJson } from "./json-export";
 import { buildMockWorkspace } from "./mock-provider";
+import { createExecutionState } from "./execution";
 import type { LaunchLensInput } from "./types";
 
 const input: LaunchLensInput = {
@@ -21,5 +22,16 @@ describe("workspaceToJson", () => {
     expect(parsed.summary).toBe(workspace.summary);
     expect(parsed.backlog).toHaveLength(workspace.backlog.length);
     expect(parsed.tasks).toHaveLength(workspace.tasks.length);
+  });
+
+  it("exports the complete execution handoff when supplied", () => {
+    const workspace = buildMockWorkspace(input);
+    const execution = createExecutionState(workspace);
+    const parsed = JSON.parse(workspaceToJson(workspace, execution));
+
+    expect(parsed.workspace.summary).toBe(workspace.summary);
+    expect(parsed.execution.experiments).toHaveLength(
+      workspace.assumptions.length,
+    );
   });
 });

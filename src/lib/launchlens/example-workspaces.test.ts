@@ -13,6 +13,19 @@ describe("exampleWorkspaces", () => {
       expect(example.workspace.summary).toContain(example.input.idea.slice(0, 40));
       expect(example.workspace.backlog.length).toBeGreaterThan(0);
       expect(example.workspace.tasks.length).toBeGreaterThan(0);
+      expect(example.execution.experiments).toHaveLength(
+        example.workspace.assumptions.length,
+      );
+    }
+  });
+
+  it("includes reviewer-ready evidence in each stable example", () => {
+    for (const example of exampleWorkspaces) {
+      expect(
+        example.execution.experiments.some(
+          (experiment) => experiment.evidence.length > 0,
+        ),
+      ).toBe(true);
     }
   });
 });

@@ -18,10 +18,17 @@ await sql`
     title VARCHAR(120) NOT NULL,
     input JSONB NOT NULL,
     workspace JSONB NOT NULL,
+    execution JSONB NOT NULL DEFAULT '{"experiments":[],"updatedAt":"1970-01-01T00:00:00.000Z"}'::jsonb,
     is_public BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   )
+`;
+
+await sql`
+  ALTER TABLE launchlens_workspaces
+  ADD COLUMN IF NOT EXISTS execution JSONB NOT NULL
+  DEFAULT '{"experiments":[],"updatedAt":"1970-01-01T00:00:00.000Z"}'::jsonb
 `;
 
 await sql`

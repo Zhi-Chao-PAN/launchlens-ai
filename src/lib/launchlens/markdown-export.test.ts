@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { workspaceToMarkdown } from "./markdown-export";
 import { buildMockWorkspace } from "./mock-provider";
+import { createExecutionState } from "./execution";
 import type { LaunchLensInput } from "./types";
 
 const input: LaunchLensInput = {
@@ -21,5 +22,31 @@ describe("workspaceToMarkdown", () => {
     expect(markdown).toContain("## Pricing Risks");
     expect(markdown).toContain("## Assumptions To Validate");
     expect(markdown).toContain("Generated with mock provider");
+  });
+
+  it("includes evidence-backed decisions when execution state is supplied", () => {
+    const workspace = buildMockWorkspace(input);
+    const execution = createExecutionState(workspace);
+    execution.experiments[0] = {
+      ...execution.experiments[0],
+      status: "supported",
+      confidence: "high",
+      decision: "Keep weekly activation fixes in MVP scope.",
+      evidence: [
+        {
+          id: "evidence-1",
+          note: "Four of five founders ranked activation fixes first.",
+          source: "Founder interviews",
+          signal: "supports",
+          observedAt: "2026-06-13T01:00:00.000Z",
+        },
+      ],
+    };
+
+    const markdown = workspaceToMarkdown(workspace, execution);
+
+    expect(markdown).toContain("## Validation Decisions");
+    expect(markdown).toContain("Keep weekly activation fixes in MVP scope.");
+    expect(markdown).toContain("Founder interviews");
   });
 });

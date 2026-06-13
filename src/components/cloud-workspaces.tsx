@@ -22,6 +22,7 @@ import type {
   CloudWorkspaceSummary,
 } from "@/lib/launchlens/cloud-workspace";
 import { MAX_CLOUD_WORKSPACES } from "@/lib/launchlens/cloud-workspace";
+import type { WorkspaceExecutionState } from "@/lib/launchlens/execution";
 import type {
   LaunchLensInput,
   LaunchLensWorkspace,
@@ -33,6 +34,7 @@ const OWNER_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
 type CloudWorkspacesProps = {
   input: LaunchLensInput;
   workspace: LaunchLensWorkspace;
+  execution: WorkspaceExecutionState;
   onRestore: (record: CloudWorkspaceRecord) => void;
 };
 
@@ -60,6 +62,7 @@ function formatSnapshotTime(value: string) {
 export function CloudWorkspaces({
   input,
   workspace,
+  execution,
   onRestore,
 }: CloudWorkspacesProps) {
   const [ownerToken, setOwnerToken] = useState("");
@@ -175,6 +178,7 @@ export function CloudWorkspaces({
           title: workspace.landingPage.headline,
           input,
           workspace,
+          execution,
         }),
       });
       setNotice("Cloud snapshot saved.");
@@ -208,6 +212,15 @@ export function CloudWorkspaces({
   }
 
   async function toggleShare(item: CloudWorkspaceSummary) {
+    if (
+      !item.isPublic &&
+      !window.confirm(
+        "Enable a public read-only link? Validation decisions and evidence counts will be visible, while evidence notes, sources, and the founder brief stay private.",
+      )
+    ) {
+      return;
+    }
+
     setBusyAction(`share:${item.id}`);
     setNotice("");
 

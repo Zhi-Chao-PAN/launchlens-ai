@@ -27,9 +27,16 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import { CloudWorkspaces } from "@/components/cloud-workspaces";
+import { ValidationBoard } from "@/components/validation-board";
 import { workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
 import { workspaceToJson } from "@/lib/launchlens/json-export";
 import type { CloudWorkspaceRecord } from "@/lib/launchlens/cloud-workspace";
+import {
+  createExecutionState,
+  evaluateExecutionProgress,
+  normalizeExecutionState,
+  type WorkspaceExecutionState,
+} from "@/lib/launchlens/execution";
 import type { ExampleWorkspace } from "@/lib/launchlens/example-workspaces";
 import { formatGeneratedTime } from "@/lib/launchlens/generated-time";
 import { evaluateWorkspaceQuality } from "@/lib/launchlens/workspace-quality";
@@ -47,6 +54,7 @@ import {
 type LaunchWorkspaceProps = {
   initialInput: LaunchLensInput;
   initialWorkspace: LaunchLensWorkspace;
+  initialExecution: WorkspaceExecutionState;
   exampleWorkspaces: ExampleWorkspace[];
 };
 
@@ -74,8 +82,7 @@ type WorkspaceListKey =
   | "targetUsers"
   | "pains"
   | "mvpScope"
-  | "launchPlan"
-  | "assumptions";
+  | "launchPlan";
 
 type GenerationMeta = {
   mode: "demo" | "real";
@@ -102,18 +109,32 @@ const loadingSteps = [
 type LocalWorkspaceSnapshot = {
   input: LaunchLensInput;
   workspace: LaunchLensWorkspace;
+  execution: WorkspaceExecutionState;
   savedAt: string;
 };
 
-function isLocalWorkspaceSnapshot(
+function parseLocalWorkspaceSnapshot(
   value: unknown,
-): value is LocalWorkspaceSnapshot {
-  return (
-    isRecord(value) &&
-    isLaunchLensInput(value.input) &&
-    isLaunchLensWorkspace(value.workspace) &&
-    typeof value.savedAt === "string"
-  );
+): LocalWorkspaceSnapshot | null {
+  if (
+    !isRecord(value) ||
+    !isLaunchLensInput(value.input) ||
+    !isLaunchLensWorkspace(value.workspace) ||
+    typeof value.savedAt !== "string"
+  ) {
+    return null;
+  }
+
+  const execution = normalizeExecutionState(value.execution, value.workspace);
+
+  return execution
+    ? {
+        input: value.input,
+        workspace: value.workspace,
+        execution,
+        savedAt: value.savedAt,
+      }
+    : null;
 }
 
 function splitLines(value: string) {
@@ -187,10 +208,12 @@ function BulletList({ items }: { items: string[] }) {
 export function LaunchWorkspace({
   initialInput,
   initialWorkspace,
+  initialExecution,
   exampleWorkspaces,
 }: LaunchWorkspaceProps) {
   const [input, setInput] = useState(initialInput);
   const [workspace, setWorkspace] = useState(initialWorkspace);
+  const [execution, setExecution] = useState(initialExecution);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState("");
@@ -229,6 +252,10 @@ export function LaunchWorkspace({
     () => evaluateWorkspaceQuality(workspace),
     [workspace],
   );
+  const executionProgress = useMemo(
+    () => evaluateExecutionProgress(execution),
+    [execution],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -242,11 +269,14 @@ export function LaunchWorkspace({
         const rawSnapshot = localStorage.getItem(LOCAL_WORKSPACE_KEY);
 
         if (rawSnapshot) {
-          const snapshot = JSON.parse(rawSnapshot) as unknown;
+          const snapshot = parseLocalWorkspaceSnapshot(
+            JSON.parse(rawSnapshot) as unknown,
+          );
 
-          if (isLocalWorkspaceSnapshot(snapshot)) {
+          if (snapshot) {
             setInput(snapshot.input);
             setWorkspace(snapshot.workspace);
+            setExecution(snapshot.execution);
             setGenerationMeta({
               mode: snapshot.workspace.provider === "mock" ? "demo" : "real",
               provider: snapshot.workspace.provider,
@@ -278,6 +308,7 @@ export function LaunchWorkspace({
       const snapshot: LocalWorkspaceSnapshot = {
         input,
         workspace,
+        execution,
         savedAt: nextSavedAt,
       };
 
@@ -287,7 +318,7 @@ export function LaunchWorkspace({
         setPersistenceNotice("Local save unavailable.");
       }, 0);
     }
-  }, [input, isStorageReady, workspace]);
+  }, [execution, input, isStorageReady, workspace]);
 
   function updateList(key: WorkspaceListKey, items: string[]) {
     setWorkspace((current) => ({
@@ -299,6 +330,7 @@ export function LaunchWorkspace({
   function applyExample(example: ExampleWorkspace) {
     setInput(example.input);
     setWorkspace(example.workspace);
+    setExecution(example.execution);
     setGenerationMeta({
       mode: "demo",
       provider: example.workspace.provider,
@@ -317,6 +349,7 @@ export function LaunchWorkspace({
   function resetLocalWorkspace() {
     setInput(initialInput);
     setWorkspace(initialWorkspace);
+    setExecution(initialExecution);
     setGenerationMeta({
       mode: "demo",
       provider: initialWorkspace.provider,
@@ -335,6 +368,7 @@ export function LaunchWorkspace({
   function restoreCloudWorkspace(record: CloudWorkspaceRecord) {
     setInput(record.input);
     setWorkspace(record.workspace);
+    setExecution(record.execution);
     setGenerationMeta({
       mode: record.workspace.provider === "mock" ? "demo" : "real",
       provider: record.workspace.provider,
@@ -372,6 +406,7 @@ export function LaunchWorkspace({
       }
 
       setWorkspace(data.workspace);
+      setExecution(createExecutionState(data.workspace));
       setGenerationMeta({
         mode: data.mode ?? "demo",
         provider: data.workspace.provider,
@@ -398,7 +433,7 @@ export function LaunchWorkspace({
   }
 
   async function copyMarkdown() {
-    const markdown = workspaceToMarkdown(workspace);
+    const markdown = workspaceToMarkdown(workspace, execution);
     setExportText(markdown);
 
     try {
@@ -414,7 +449,7 @@ export function LaunchWorkspace({
   }
 
   async function copyJson() {
-    const json = workspaceToJson(workspace);
+    const json = workspaceToJson(workspace, execution);
     setExportText(json);
 
     try {
@@ -667,6 +702,7 @@ export function LaunchWorkspace({
             <CloudWorkspaces
               input={input}
               workspace={workspace}
+              execution={execution}
               onRestore={restoreCloudWorkspace}
             />
 
@@ -690,6 +726,9 @@ export function LaunchWorkspace({
                   </span>
                   <span className="rounded-md bg-[#eef0ed] px-3 py-2">
                     Quality {qualityResult.score}%
+                  </span>
+                  <span className="rounded-md bg-[#fff0eb] px-3 py-2 text-[#8b3d28]">
+                    Validation {executionProgress.score}%
                   </span>
                   {generationMeta.usedFallback && generationMeta.fallbackReason && (
                     <span className="rounded-md bg-[#fff6f1] px-3 py-2 font-medium text-[#8b3d28]">
@@ -824,6 +863,12 @@ export function LaunchWorkspace({
                 </div>
               )}
             </section>
+
+            <ValidationBoard
+              execution={execution}
+              tasks={workspace.tasks}
+              onChange={setExecution}
+            />
 
             <div className="grid gap-6 xl:grid-cols-2">
               <Section title="Target users" icon={UsersRound}>
@@ -991,15 +1036,12 @@ export function LaunchWorkspace({
 
             <div className="grid gap-6 xl:grid-cols-2">
               <Section title="Assumptions to validate" icon={AlertTriangle}>
-                {isEditing ? (
-                  <EditableLines
-                    label="Assumptions to validate"
-                    items={workspace.assumptions}
-                    onCommit={(items) => updateList("assumptions", items)}
-                  />
-                ) : (
-                  <BulletList items={workspace.assumptions} />
-                )}
+                <BulletList items={workspace.assumptions} />
+                <p className="mt-4 text-xs leading-5 text-[#607069]">
+                  Assumptions remain anchored to the generated plan. Track
+                  evidence, confidence, decisions, and linked work in the
+                  validation loop above.
+                </p>
               </Section>
 
               <Section title="Pricing risks" icon={AlertTriangle}>

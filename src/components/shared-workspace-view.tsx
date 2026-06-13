@@ -5,6 +5,7 @@ import {
   ClipboardCheck,
   ClipboardList,
   Compass,
+  FlaskConical,
   Megaphone,
   Target,
   UsersRound,
@@ -13,6 +14,7 @@ import {
 
 import type { SharedCloudWorkspaceRecord } from "@/lib/launchlens/cloud-workspace";
 import { formatGeneratedTime } from "@/lib/launchlens/generated-time";
+import { taskIdentity } from "@/lib/launchlens/execution";
 
 type ReadOnlySectionProps = {
   title: string;
@@ -161,6 +163,70 @@ export function SharedWorkspaceView({
                   </p>
                 </article>
               ))}
+            </div>
+          </ReadOnlySection>
+        </div>
+
+        <div className="mt-6">
+          <ReadOnlySection title="Validation decisions" icon={FlaskConical}>
+            <p className="mb-4 text-sm leading-6 text-[#607069]">
+              Evidence notes and sources remain private. This shared view shows
+              decision state and evidence counts only.
+            </p>
+            <div className="divide-y divide-[#dfe5dd]">
+              {record.execution.experiments.map((experiment, index) => {
+                const linkedTask = workspace.tasks.find(
+                  (task, taskIndex) =>
+                    taskIdentity(task, taskIndex) === experiment.linkedTaskId,
+                );
+
+                return (
+                  <article key={experiment.id} className="py-4 first:pt-0 last:pb-0">
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <span className="font-mono font-semibold text-[#d85b3f]">
+                        H{index + 1}
+                      </span>
+                      <span className="rounded-md bg-[#eef0ed] px-2 py-1 font-semibold capitalize text-[#40504a]">
+                        {experiment.status}
+                      </span>
+                      <span className="text-[#607069]">
+                        {experiment.evidenceCount} evidence item
+                        {experiment.evidenceCount === 1 ? "" : "s"}
+                      </span>
+                      <span className="text-[#607069]">
+                        {experiment.confidence} confidence
+                      </span>
+                    </div>
+                    <h3 className="mt-2 text-sm font-semibold leading-6">
+                      {experiment.assumption}
+                    </h3>
+                    <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
+                      <div>
+                        <dt className="font-semibold text-[#17201d]">Decision</dt>
+                        <dd className="mt-1 leading-6 text-[#40504a]">
+                          {experiment.decision || "Pending"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold text-[#17201d]">
+                          Next action
+                        </dt>
+                        <dd className="mt-1 leading-6 text-[#40504a]">
+                          {experiment.nextAction || "Pending"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold text-[#17201d]">
+                          Linked task
+                        </dt>
+                        <dd className="mt-1 leading-6 text-[#40504a]">
+                          {linkedTask?.title ?? "None"}
+                        </dd>
+                      </div>
+                    </dl>
+                  </article>
+                );
+              })}
             </div>
           </ReadOnlySection>
         </div>

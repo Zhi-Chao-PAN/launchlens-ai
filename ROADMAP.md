@@ -33,7 +33,8 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 
 - Phase 3A: add anonymous owner-scoped cloud snapshot history, restore, deletion, and opt-in read-only sharing while preserving local-only mode.
 - Activate and verify the Neon-backed flow on the public Vercel deployment.
-- Phase 3B: replace anonymous browser ownership with authentication, account recovery, and user-owned workspace history.
+- Phase 3B: turn generated assumptions into an evidence-driven execution loop with confidence, decisions, next actions, and linked tasks.
+- Phase 3C: replace anonymous browser ownership with authentication, account recovery, and user-owned workspace history.
 - Add pricing and usage limits.
 - Add team collaboration primitives.
 - Add prompt versioning, eval fixtures, and generation quality checks.
@@ -63,4 +64,18 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 - [x] Public share queries use a dedicated projection that never selects founder input.
 - [ ] Neon is provisioned through Vercel Marketplace and the production save/restore/share flow is browser-verified.
 - [ ] Add distributed abuse controls before enabling anonymous cloud writes at meaningful public scale.
-- [ ] Authentication and recoverable account ownership replace the anonymous browser token in Phase 3B.
+- [ ] Authentication and recoverable account ownership replace the anonymous browser token in Phase 3C.
+
+## Phase 3B Acceptance
+
+- [x] Every generated assumption becomes a stable validation experiment outside the provider schema.
+- [x] Users can record bounded evidence with source, signal, and observed time.
+- [x] Experiments track validation status, confidence, decision, next action, and a stable linked task ID.
+- [x] Evidence state survives browser refresh and travels with cloud snapshots.
+- [x] Markdown and JSON exports include the complete private validation record.
+- [x] Public shares expose decision state and evidence counts but exclude evidence notes, sources, and founder input.
+- [x] Legacy local/cloud snapshots without execution state receive safe defaults.
+- [x] Stable examples include realistic supported, testing, and refuted validation stories.
+- [x] Desktop and 390px mobile layouts provide a compact, keyboard-operable experiment review flow.
+- [ ] Production Neon round-trip verification proves execution state persists through live cloud save/restore/share.
+- [ ] Phase 3C adds recoverable authentication before cloud history is treated as a durable user account.

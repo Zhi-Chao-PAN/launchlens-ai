@@ -1,4 +1,6 @@
 import type { LaunchLensInput, LaunchLensWorkspace } from "./types";
+import type { WorkspaceExecutionState } from "./execution";
+import type { SharedExecutionState } from "./execution";
 
 export const MAX_CLOUD_WORKSPACES = 20;
 export const MAX_TOTAL_CLOUD_WORKSPACES = 5_000;
@@ -14,10 +16,12 @@ export type CloudWorkspaceSummary = {
 export type CloudWorkspaceRecord = CloudWorkspaceSummary & {
   input: LaunchLensInput;
   workspace: LaunchLensWorkspace;
+  execution: WorkspaceExecutionState;
 };
 
 export type SharedCloudWorkspaceRecord = CloudWorkspaceSummary & {
   workspace: LaunchLensWorkspace;
+  execution: SharedExecutionState;
 };
 
 export type CloudWorkspaceListResponse = {

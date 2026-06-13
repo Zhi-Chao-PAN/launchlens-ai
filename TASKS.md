@@ -44,6 +44,13 @@
 - [x] Added atomic per-owner and global capacity gates for anonymous cloud snapshots.
 - [x] Removed founder brief data from the public share query and public record type.
 - [x] Completed a diff-scoped security review with two candidates fixed and no surviving reportable findings.
+- [x] Added a post-generation validation model without changing provider output contracts.
+- [x] Added evidence signals, confidence, decision, next-action, and stable task-link workflows.
+- [x] Persisted execution state through local drafts, cloud snapshots, Markdown, and JSON exports.
+- [x] Added a privacy-safe public execution projection that excludes evidence notes and sources.
+- [x] Added realistic supported/testing/refuted evidence stories to stable examples.
+- [x] Added compact responsive experiment review controls and execution progress scoring.
+- [x] Completed a Phase 3B diff-scoped security review with 18/18 source-file receipts and no reportable finding.
 
 ## Next Nightly Builder Tasks
 
@@ -68,6 +75,10 @@
 - [ ] Add distributed rate limiting or a managed challenge before scaling anonymous cloud writes.
 - [ ] Verify hosting logs do not retain the owner capability header.
 - [ ] Add account authentication and recoverable ownership after the anonymous-token beta.
+- [x] Add an assumption-to-evidence-to-decision execution loop.
+- [x] Keep execution state backward-compatible with existing snapshots and provider fixtures.
+- [x] Keep private evidence details out of read-only public shares.
+- [ ] Add recoverable authentication in Phase 3C.
 
 ## Portfolio-Ready Checklist
 
@@ -87,4 +98,5 @@
 - [x] Repository includes a CI quality gate.
 - [x] Desktop and 390px mobile product flows pass production-mode browser QA.
 - [x] Cloud history APIs and local-only degradation have focused automated coverage.
+- [x] Validation evidence, decisions, linked tasks, exports, and local restore have focused coverage and browser QA.
 - [ ] Production cloud save, restore, share, disable-share, and delete pass browser QA against Neon.

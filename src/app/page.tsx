@@ -8,6 +8,7 @@ export default function Home() {
     <LaunchWorkspace
       initialInput={initialExample.input}
       initialWorkspace={initialExample.workspace}
+      initialExecution={initialExample.execution}
       exampleWorkspaces={exampleWorkspaces}
     />
   );

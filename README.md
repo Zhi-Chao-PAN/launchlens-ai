@@ -10,11 +10,11 @@ The portfolio goal is to show full-stack AI product judgment: product strategy, 
 
 Problem: early founders often have many product ideas but no coherent path from concept to target user, MVP scope, pricing, launch content, and execution tasks.
 
-Solution: LaunchLens AI converts a founder brief into a workspace that can be generated, edited, reviewed for assumptions/risks, and exported as Markdown.
+Solution: LaunchLens AI converts a founder brief into a workspace that can be generated, edited, and then operated as an evidence loop: assumption -> observation -> confidence -> decision -> next action.
 
 Audience: solo founders, tiny SaaS teams, and technical product managers who need sharp execution before overbuilding.
 
-Current maturity: early-stage, but now beyond a static scaffold. The product loop is generate -> edit -> validate assumptions -> save locally or as a cloud snapshot -> restore/share -> export.
+Current maturity: early-stage, but now beyond a static scaffold. The product loop is generate -> edit -> collect evidence -> make decisions -> link execution -> save/restore/share -> export.
 
 ## Product Preview
 
@@ -29,27 +29,37 @@ Current maturity: early-stage, but now beyond a static scaffold. The product loo
 1. Choose a stable example workspace or write a new founder brief.
 2. Generate a go-to-market workspace using the mock provider by default.
 3. Review target users, pain map, MVP scope, feature backlog, launch plan, pricing, risks, assumptions, content calendar, and execution tasks.
-4. Toggle edit mode and refine generated sections.
-5. Keep the current brief and workspace across refreshes through browser-local persistence.
-6. When `DATABASE_URL` is configured, save decision-point snapshots, restore history, and explicitly enable a read-only share link.
-7. When cloud storage is absent, continue in a clearly labeled local-only mode without losing generation, editing, or export.
-8. Watch generation progress and provider metadata without exposing any secret or upstream response detail.
-9. Copy/export the workspace as Markdown or JSON for a README, Notion doc, product memo, automation, or launch plan.
+4. Review each assumption as a validation experiment, add evidence, set confidence, record a decision, and link the next execution task.
+5. Toggle edit mode and refine generated sections.
+6. Keep the current brief, workspace, and private validation record across refreshes through browser-local persistence.
+7. When `DATABASE_URL` is configured, save decision-point snapshots, restore history, and explicitly enable a privacy-safe read-only share link.
+8. When cloud storage is absent, continue in a clearly labeled local-only mode without losing generation, validation, editing, or export.
+9. Watch generation progress and provider metadata without exposing any secret or upstream response detail.
+10. Copy/export the private workspace and evidence record as Markdown or JSON.
 
 ## Demo Script
 
 1. Start the app with `npm run dev`.
 2. Select the `B2B SaaS activation` sample brief.
 3. Click `Generate workspace`.
-4. Review the assumptions and pricing risks to show that the output is not just marketing copy.
-5. Click `Edit`, change one assumption or landing page line, then click `Preview`.
-6. Refresh the page and confirm the local workspace is restored.
-7. On a database-enabled deployment, click `Save snapshot`, restore it from cloud history, and explicitly enable a read-only share link.
-8. Click `Copy Markdown` or `Copy JSON` and inspect the generated export text.
+4. In `Validation loop`, review the first evidence-backed hypothesis and its product decision.
+5. Add evidence to another hypothesis, set confidence, record a decision/next action, and link an execution task.
+6. Refresh the page and confirm the private evidence record is restored.
+7. Click `Copy Markdown` or `Copy JSON` and inspect the complete execution handoff.
+8. On a database-enabled deployment, save/restore a snapshot and explicitly confirm a read-only share that excludes evidence notes and sources.
 
 ## Stable Demo Fixtures
 
-The app includes deterministic example workspaces for the B2B SaaS activation, clinic admin, and creator commerce scenarios. They give reviewers a repeatable product walkthrough alongside the hosted demo and screenshot set.
+The app includes deterministic example workspaces for B2B SaaS activation, clinic admin, and creator commerce. Their validation stories intentionally cover supported, testing, and refuted hypotheses so reviewers can inspect product judgment immediately.
+
+## Evidence Loop Design
+
+- Provider output stays focused on the generated GTM schema; evidence is post-generation user state rather than invented model evidence.
+- Assumptions and tasks use stable identities so reorder/insert operations cannot silently move evidence to another hypothesis.
+- Validation progress is distinct from generated-workspace quality.
+- Evidence records are bounded by item count, field length, and total normalized snapshot size.
+- Private local/cloud snapshots and Markdown/JSON exports include evidence details.
+- Public shares include status, confidence, decisions, next actions, linked tasks, and evidence counts only.
 
 ## Tech Stack
 
@@ -125,7 +135,7 @@ Cloud history is optional. A fresh clone and the public demo still render and ru
 - Each browser identity can keep up to 20 snapshots.
 - A transaction-level global capacity gate prevents an anonymous beta from growing storage without an upper bound.
 - Sharing is disabled by default and must be explicitly enabled per snapshot.
-- Shared pages expose a read-only workspace, not the owner token or founder brief.
+- Shared pages expose a read-only workspace and validation summary, not the owner token, founder brief, evidence notes, or evidence sources.
 - Streaming body limits, nested field/cardinality limits, known-field normalization, UUID validation, owner-scoped queries, safe error codes, atomic quotas, and mutation throttling protect the public API surface.
 - Losing browser storage loses access to anonymous cloud history. Account-based recovery is intentionally deferred to the authentication phase.
 - Runtime routes use DML only. Schema DDL is isolated in an explicit migration command so production can use a least-privilege runtime role.
@@ -176,14 +186,16 @@ flowchart LR
   G --> H
   H --> I["Editable GTM workspace"]
   E --> I
-  I --> J["Browser local storage"]
-  I --> K["Markdown export"]
-  I --> L["/api/workspaces"]
-  L --> M{"DATABASE_URL?"}
-  M -->|"configured"| N["Neon snapshot history"]
-  M -->|"absent"| O["Explicit local-only mode"]
-  N --> P["Owner-scoped restore"]
-  N --> Q["Opt-in read-only share page"]
+  I --> J["Assumptions"]
+  J --> K["Evidence and confidence"]
+  K --> L["Decision and linked task"]
+  L --> M["Browser local storage / private export"]
+  L --> N["/api/workspaces"]
+  N --> O{"DATABASE_URL?"}
+  O -->|"configured"| P["Neon snapshot history"]
+  O -->|"absent"| Q["Explicit local-only mode"]
+  P --> R["Owner-scoped restore"]
+  P --> S["Privacy-safe read-only share"]
 ```
 
 ## Portfolio Positioning
