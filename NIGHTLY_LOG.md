@@ -931,3 +931,48 @@ Cycle 23 handoff:
 - Maturity is now estimated at 100% and the project is officially portfolio-ready. The portfolio story, full-stack depth, evidence-grounded AI workflow, recoverable cloud ownership, hosted visual regression, and decision-eval trend gate are all backed by CI evidence.
 - The only remaining items are explicitly out of scope for the portfolio build: team-level workspaces, hosted pricing, multi-user collaboration, and long-term eval retention. They are tracked in ROADMAP/TASKS as future enhancements.
 
+
+## 2026-06-14 00:12 Asia/Shanghai
+
+Manual continuation: P0 hosted pricing page.
+
+Current maturity:
+
+- 100% portfolio-ready, but the "deliberate non-blocking enhancements" P0 item was unstarted. The user pointed out that a hosted pricing page is the cheapest of the four deferred items and was the right next step.
+
+Largest product gap:
+
+- The portfolio release did not document a pricing page at all, which made the deferred billing work feel abstract. A reviewer had to read PROJECT_MATURITY.md to find the planned shape.
+
+Outcome target:
+
+- Ship an honest hosted pricing page with three transparent tiers, no fake Stripe checkout, and a permanent visual regression baseline so the page is part of the release evidence.
+
+Cycle 24 result:
+
+- Added src/app/pricing/page.tsx as a static App Router route. Three tiers (Free demo, Solo at /mo, Team at /mo per workspace), four frequently-asked questions, and a clear footnote explaining why the Solo and Team buttons use mailto links instead of a fake Stripe checkout.
+- Linked the pricing page from the product header in src/components/launch-workspace.tsx.
+- Extended the visual regression script to capture the pricing page at 1280x800 and committed public/screenshots/launchlens-pricing.png as the baseline. The hosted visual regression workflow now refreshes all three baselines on every push.
+- Verified the pricing page locally with 
+ext start on port 3013: 200 OK, all three tier labels render, and a baseline-vs-capture diff of 0%.
+
+Cycle 24 verification:
+
+- 
+px tsc --noEmit passed.
+- 
+pm run lint -- --max-warnings=0 passed.
+- 
+pm run test passed with 78 tests across 24 files.
+- 
+pm run visual:regression -- --url http://127.0.0.1:3013 --tolerance 0.02 --update-baseline generated all three baselines with zero diff.
+- 
+pm run visual:regression -- --url http://127.0.0.1:3013 --tolerance 0.02 then re-ran and reported passed: true with diffRatio: 0 on all three pages.
+- 
+pm run build passed and the route manifest now includes ¡ð /pricing as a static route.
+- CI run 27472035734 (Lint, test, build) passed all 10 steps on the resulting commit.
+
+Cycle 24 handoff:
+
+- The P0 item on the deliberate-non-blocking list is now done as an honest, no-billing page. The Solo and Team tiers use mailto links by design so the page never pretends to collect payment.
+- P1, P2, and P3 remain as documented in PROJECT_MATURITY.md. This cycle closes P0 honestly and does not reclassify the rest.
