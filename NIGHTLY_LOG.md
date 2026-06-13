@@ -660,3 +660,52 @@ Cycle 18 handoff:
 
 - Production Neon remains blocked by Vercel Marketplace terms acceptance, so Phase 3C/auth and production cloud round-trip verification should remain next-stage infrastructure work.
 - After this commit, the next nightly run should prioritize production Neon activation if terms are accepted; otherwise add auth planning, distributed abuse controls, decision-brief eval trends, and deployed visual checks that do not depend on Neon.
+
+## 2026-06-13 18:54 Asia/Shanghai
+
+Manual continuation: Phase 4B Decision Quality Gates.
+
+Current maturity:
+
+- 88% at start, early-stage. The app had an evidence-grounded decision copilot, but decision quality was not yet evaluated as a separate release gate.
+
+Largest product gap:
+
+- Workspace generation had mock/live provider evals, while decision briefs only had unit/API tests and browser smoke coverage. A reviewer could see the feature, but not a repeatable evidence-quality standard.
+
+Outcome target:
+
+- Finish a trend-ready decision eval stage with no-secret mock CI, explicit live MiniMax fixture writing, citation fidelity checks, recommendation-direction checks, and handoff docs.
+
+Planned cycle:
+
+1. Add decision eval library, CLI, CI step, tests, live fixture, docs, validation, commit, push, and deployment checks.
+
+Cycle 19 result:
+
+- Added `decision-eval.ts` to score decision briefs for prompt version, source fingerprint, citation fidelity, evidence coverage, recommendation direction, evidence-strength direction, actionable risks/actions, and no-fallback behavior.
+- Added scenario checks for supported activation evidence, neutral clinic evidence, and challenged creator evidence.
+- Added `npm run eval:decision` for no-secret mock evaluation and wired it into GitHub Actions CI.
+- Added explicit live MiniMax decision eval with `--live --write-fixture`, CI live opt-out, fixture safety scanning, and one retry for live provider flakiness.
+- Persisted `fixtures/providers/minimax-m3-decision-samples.json` with three public MiniMax real-provider cases, all 100% quality, no final fallback, and no secret-like values.
+- Tightened claim integrity by normalizing claim stance from cited evidence signals.
+- Added provider text cleanup for stray quote prefixes in structured decision text.
+
+Cycle 19 verification:
+
+- A first live eval caught a real quality issue: MiniMax could cite the right evidence while assigning an unstable claim stance. The code now derives stance from cited evidence signals instead of trusting that label.
+- `npx tsc --noEmit` passed after the eval script and provider changes.
+- `npm run lint -- --max-warnings=0` passed.
+- `npm run test` passed with 68 tests across 20 files.
+- `npm run eval:provider` passed three no-secret mock workspace scenarios at 100%.
+- `npm run eval:decision` passed all three no-secret mock scenarios at 100%.
+- Live MiniMax decision eval loaded secrets only from the repo-external env file and wrote a safe public fixture with three real cases.
+- `npm run build` passed and kept `/api/decision` in the production route manifest.
+- `npm audit --audit-level=moderate` found 0 vulnerabilities.
+- `git diff --check`, focused dangerous-sink scan, and secret scan passed.
+
+Cycle 19 handoff:
+
+- Current maturity is now 90%, still early-stage rather than portfolio-ready.
+- The next unblockable infrastructure stage remains production Neon activation, recoverable authentication, distributed abuse control, and production cloud round-trip QA.
+- If Neon terms remain blocked, the next safe stage is historical eval comparison, deployed visual regression, and a final portfolio case-study polish pass.

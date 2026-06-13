@@ -119,6 +119,24 @@ The live command requires server-side `MINIMAX_*` variables. It prints metrics o
 
 The MiniMax integration follows the official [Responses API](https://platform.minimaxi.com/docs/api-reference/responses-create) request fields.
 
+## Decision Copilot Evaluation
+
+Decision briefs have their own repeatable eval gate because the product risk is different from workspace generation. The eval checks citation fidelity, evidence-signal alignment, recommendation direction, evidence strength, no-fallback behavior, and scenario-specific behavior across supported, neutral, and challenged evidence.
+
+The default command always clears provider variables and evaluates deterministic mock mode:
+
+```bash
+npm run eval:decision
+```
+
+Live MiniMax decision evaluation is explicit and can update the public fixture:
+
+```bash
+npm run eval:decision -- --live --write-fixture
+```
+
+The persisted fixture lives at `fixtures/providers/minimax-m3-decision-samples.json`. It contains public sample evidence, safe metadata, and MiniMax decision outputs only; it is scanned for secret-like values before writing. Standard CI runs only the no-secret mock decision eval.
+
 Optional local provider variables:
 
 ```bash

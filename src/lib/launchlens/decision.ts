@@ -115,7 +115,22 @@ function boundedString(value: unknown, maxChars: number) {
     return null;
   }
 
-  const normalized = value.trim();
+  let normalized = value.trim();
+  const firstCharacter = normalized[0];
+
+  if (
+    normalized.length >= 2 &&
+    (firstCharacter === "\"" || firstCharacter === "'") &&
+    normalized.endsWith(firstCharacter)
+  ) {
+    normalized = normalized.slice(1, -1).trim();
+  } else if (
+    normalized.length >= 2 &&
+    (firstCharacter === "\"" || firstCharacter === "'")
+  ) {
+    normalized = normalized.slice(1).trim();
+  }
+
   return normalized.length > 0 && normalized.length <= maxChars
     ? normalized
     : null;
@@ -284,6 +299,7 @@ export function normalizeDecisionBrief(
   const unresolvedRisks = boundedList(value.unresolvedRisks, { min: 1 });
   const nextActions = boundedList(value.nextActions, { min: 1 });
   const availableEvidenceIds = new Set(source.evidence.map((item) => item.id));
+  const evidenceById = new Map(source.evidence.map((item) => [item.id, item]));
   const claims =
     Array.isArray(value.claims) &&
     value.claims.length >= 1 &&
@@ -312,6 +328,20 @@ export function normalizeDecisionBrief(
           }
 
           const normalizedIds = evidenceIds as string[];
+          const citedSignals = normalizedIds.map(
+            (id) => evidenceById.get(id)?.signal,
+          );
+
+          if (
+            (citedSignals.every((signal) => signal === "supports") &&
+              stance !== "supports") ||
+            (citedSignals.every((signal) => signal === "challenges") &&
+              stance !== "challenges") ||
+            (citedSignals.every((signal) => signal === "neutral") &&
+              stance !== "context")
+          ) {
+            return null;
+          }
 
           if (new Set(normalizedIds).size !== normalizedIds.length) {
             return null;

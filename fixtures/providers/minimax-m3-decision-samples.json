@@ -1,0 +1,256 @@
+{
+  "schemaVersion": 1,
+  "promptVersion": "launchlens-decision-v1",
+  "provider": "minimax",
+  "model": "MiniMax-M3",
+  "evaluatedAt": "2026-06-13T10:57:06.544Z",
+  "source": "live-decision-samples",
+  "scenarioIds": [
+    "activation-analyst",
+    "clinic-admin",
+    "creator-commerce"
+  ],
+  "cases": [
+    {
+      "id": "activation-analyst",
+      "mode": "real",
+      "provider": "minimax",
+      "usedFallback": false,
+      "qualityScore": 100,
+      "passedChecks": 9,
+      "totalChecks": 9,
+      "scenarioChecks": [
+        {
+          "label": "Positive activation evidence does not recommend pivot or pause",
+          "passed": true
+        },
+        {
+          "label": "All activation evidence is cited",
+          "passed": true
+        }
+      ],
+      "recommendation": "proceed",
+      "evidenceStrength": "directional",
+      "claimCount": 3,
+      "citedEvidenceIds": 2,
+      "source": {
+        "experimentId": "assumption-1dd8a93",
+        "assumption": "The buyer values speed from idea to action more than perfect market research depth.",
+        "status": "supported",
+        "confidence": "high",
+        "decision": "Keep weekly activation-fix recommendations in the MVP and defer predictive churn scoring.",
+        "nextAction": "Test whether founders will upload support notes before connecting a help-desk integration.",
+        "evidence": [
+          {
+            "id": "activation-interviews",
+            "source": "5 founder interviews",
+            "signal": "supports",
+            "observedAt": "2026-06-12T05:10:00.000Z",
+            "note": "Four founders preferred a weekly prioritized fix list over another analytics dashboard."
+          },
+          {
+            "id": "activation-prototype",
+            "source": "Prototype walkthrough",
+            "signal": "supports",
+            "observedAt": "2026-06-12T05:25:00.000Z",
+            "note": "Three founders identified a real onboarding change within ten minutes."
+          }
+        ]
+      },
+      "brief": {
+        "schemaVersion": 1,
+        "provider": "minimax",
+        "promptVersion": "launchlens-decision-v1",
+        "mode": "real",
+        "usedFallback": false,
+        "sourceFingerprint": "decision-axfhln",
+        "recommendation": "proceed",
+        "evidenceStrength": "directional",
+        "headline": "Weekly activation-fix recommendations are supported by founder preference, but evidence base is small and short on depth metrics.",
+        "claims": [
+          {
+            "text": "Founders preferred a weekly prioritized fix list over an additional analytics dashboard.",
+            "stance": "supports",
+            "evidenceIds": [
+              "activation-interviews"
+            ]
+          },
+          {
+            "text": "During a prototype walkthrough, founders could identify a real onboarding change within ten minutes, indicating low time-to-action.",
+            "stance": "supports",
+            "evidenceIds": [
+              "activation-prototype"
+            ]
+          },
+          {
+            "text": "Only five founders were interviewed and no quantitative depth-vs-speed tradeoff data was collected, so the assumption is directionally but not yet strongly supported.",
+            "stance": "supports",
+            "evidenceIds": [
+              "activation-interviews",
+              "activation-prototype"
+            ]
+          }
+        ],
+        "unresolvedRisks": [
+          "Sample size is limited to five founders, raising generalizability concerns.",
+          "No direct comparison measured time-to-action against depth of market research insight.",
+          "Founders were observed with the team's own prototype, which may bias positive feedback.",
+          "Whether founders will upload support notes before integrating a help-desk tool is untested and could break the recommended-fix workflow."
+        ],
+        "nextActions": [
+          "Run a small A/B test exposing some founders to a research-depth-heavy view to quantify the speed-vs-depth tradeoff before full commitment.",
+          "Recruit at least 10-15 additional founders outside the initial five to validate preference patterns.",
+          "Test the unvalidated workflow: can founders reliably upload support notes before connecting a help-desk integration?",
+          "Add an instrumentation hook to measure time-to-first-actionable-fix as a leading indicator for the assumption."
+        ]
+      }
+    },
+    {
+      "id": "clinic-admin",
+      "mode": "real",
+      "provider": "minimax",
+      "usedFallback": false,
+      "qualityScore": 100,
+      "passedChecks": 9,
+      "totalChecks": 9,
+      "scenarioChecks": [
+        {
+          "label": "Neutral clinic evidence does not overclaim proceed",
+          "passed": true
+        },
+        {
+          "label": "Clinic brief keeps weak evidence marked insufficient",
+          "passed": true
+        }
+      ],
+      "recommendation": "iterate",
+      "evidenceStrength": "insufficient",
+      "claimCount": 1,
+      "citedEvidenceIds": 1,
+      "source": {
+        "experimentId": "assumption-1dd8a93",
+        "assumption": "The buyer values speed from idea to action more than perfect market research depth.",
+        "status": "testing",
+        "confidence": "medium",
+        "decision": "",
+        "nextAction": "Run two privacy-reviewed shadow sessions with clinic administrators.",
+        "evidence": [
+          {
+            "id": "clinic-shadowing",
+            "source": "Clinic workflow shadowing",
+            "signal": "neutral",
+            "observedAt": "2026-06-12T05:20:00.000Z",
+            "note": "Administrators valued draft assistance but required explicit human approval before any schedule change."
+          }
+        ]
+      },
+      "brief": {
+        "schemaVersion": 1,
+        "provider": "minimax",
+        "promptVersion": "launchlens-decision-v1",
+        "mode": "real",
+        "usedFallback": false,
+        "sourceFingerprint": "decision-zsrp1p",
+        "recommendation": "iterate",
+        "evidenceStrength": "insufficient",
+        "headline": "Speed-over-depth preference is plausible but unconfirmed; current shadow evidence is neutral and limited",
+        "claims": [
+          {
+            "text": "Clinic administrators valued draft assistance but required explicit human approval before any schedule change, which is a neutral signal on whether they value speed over research depth.",
+            "stance": "context",
+            "evidenceIds": [
+              "clinic-shadowing"
+            ]
+          }
+        ],
+        "unresolvedRisks": [
+          "Only a single neutral evidence point exists; no direct signal on speed-vs-depth trade-off from buyers.",
+          "Sample size of one shadowing session is too small to generalize about administrator preferences.",
+          "Administrators' human-approval requirement may slow execution and partially contradict a speed-first stance."
+        ],
+        "nextActions": [
+          "Run the two planned privacy-reviewed shadow sessions with clinic administrators to gather direct signal on speed vs. depth preference.",
+          "Include explicit questions or scenarios comparing fast AI-assisted drafts against deeper, slower market-research-backed options.",
+          "Capture approval latency and override rates as quantitative proxies for speed tolerance."
+        ]
+      }
+    },
+    {
+      "id": "creator-commerce",
+      "mode": "real",
+      "provider": "minimax",
+      "usedFallback": false,
+      "qualityScore": 100,
+      "passedChecks": 9,
+      "totalChecks": 9,
+      "scenarioChecks": [
+        {
+          "label": "Challenge-only creator evidence does not recommend proceed",
+          "passed": true
+        },
+        {
+          "label": "Creator challenge is represented in grounded claims",
+          "passed": true
+        }
+      ],
+      "recommendation": "iterate",
+      "evidenceStrength": "directional",
+      "claimCount": 2,
+      "citedEvidenceIds": 1,
+      "source": {
+        "experimentId": "assumption-1dd8a93",
+        "assumption": "The buyer values speed from idea to action more than perfect market research depth.",
+        "status": "refuted",
+        "confidence": "medium",
+        "decision": "Drop automated campaign generation from the first release and focus on offer validation.",
+        "nextAction": "Test three offer-positioning variants with a ten-creator waitlist.",
+        "evidence": [
+          {
+            "id": "creator-message-test",
+            "source": "Landing-page message test",
+            "signal": "challenges",
+            "observedAt": "2026-06-12T05:30:00.000Z",
+            "note": "Creators clicked the offer-validation message twice as often as the automated-campaign message."
+          }
+        ]
+      },
+      "brief": {
+        "schemaVersion": 1,
+        "provider": "minimax",
+        "promptVersion": "launchlens-decision-v1",
+        "mode": "real",
+        "usedFallback": false,
+        "sourceFingerprint": "decision-uh8jyv",
+        "recommendation": "iterate",
+        "evidenceStrength": "directional",
+        "headline": "Speed-to-action assumption is refuted; redirect first release toward offer validation.",
+        "claims": [
+          {
+            "text": "Creators preferred the offer-validation message over the automated-campaign message on the landing page, directly challenging the speed-over-research assumption.",
+            "stance": "challenges",
+            "evidenceIds": [
+              "creator-message-test"
+            ]
+          },
+          {
+            "text": "The single available evidence point is a landing-page message test, which is suggestive of preference but not a validated measure of willingness to pay or activation behavior.",
+            "stance": "challenges",
+            "evidenceIds": [
+              "creator-message-test"
+            ]
+          }
+        ],
+        "unresolvedRisks": [
+          "Only one data source and one signal type; no activation, retention, or revenue evidence yet.",
+          "Landing-page click preference may not translate to actual product usage of an offer-validation workflow.",
+          "Confidence in the refutation is medium, not high, so reversal is possible with stronger evidence."
+        ],
+        "nextActions": [
+          "Run the planned waitlist test of three offer-positioning variants with ten creators as stated in nextAction, and pre-register pass/fail criteria before launch.",
+          "Add at least one behavioral or outcome metric (e.g., offer completion, waitlist-to-action conversion) alongside click-through to strengthen the next decision.",
+          "Treat the automated-campaign generation feature as deferred to a later release rather than dropped, pending a second test that re-examines the speed assumption with a more committed user segment."
+        ]
+      }
+    }
+  ]
+}

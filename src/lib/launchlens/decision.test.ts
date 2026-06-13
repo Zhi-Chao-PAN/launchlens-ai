@@ -50,6 +50,43 @@ describe("decision brief", () => {
     ).toBeNull();
   });
 
+  it("rejects claim stances that contradict cited evidence signals", () => {
+    const brief = buildMockDecisionBrief(source);
+
+    expect(
+      normalizeDecisionBrief(
+        {
+          ...brief,
+          claims: [
+            {
+              text: "The cited supporting evidence was framed as a challenge.",
+              stance: "challenges",
+              evidenceIds: [source.evidence[0].id],
+            },
+          ],
+        },
+        source,
+      ),
+    ).toBeNull();
+  });
+
+  it("normalizes stray provider quote prefixes in generated text", () => {
+    const brief = buildMockDecisionBrief(source);
+    const normalized = normalizeDecisionBrief(
+      {
+        ...brief,
+        headline: "\"Proceed with the cited evidence.",
+        unresolvedRisks: ["\"The evidence base is still small."],
+      },
+      source,
+    );
+
+    expect(normalized?.headline).toBe("Proceed with the cited evidence.");
+    expect(normalized?.unresolvedRisks[0]).toBe(
+      "The evidence base is still small.",
+    );
+  });
+
   it("derives the mock recommendation from evidence, not human status", () => {
     const refutedByHuman = {
       ...source,

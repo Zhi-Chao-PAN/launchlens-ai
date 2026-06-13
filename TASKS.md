@@ -56,6 +56,10 @@
 - [x] Added optional live decision-provider support behind `DECISION_COPILOT_LIVE_ENABLED=true`.
 - [x] Added per-claim evidence citations, source fingerprints, stale-brief invalidation, and private export support.
 - [x] Refactored real-provider request/parsing code into a shared provider runtime.
+- [x] Added `npm run eval:decision` with no-secret mock scoring and explicit live MiniMax fixture writing.
+- [x] Added decision eval to GitHub Actions CI.
+- [x] Persisted a secret-scanned MiniMax decision fixture for supported, neutral, and challenged evidence cases.
+- [x] Normalized claim stance from cited evidence signals and cleaned stray provider quote prefixes.
 
 ## Next Nightly Builder Tasks
 
@@ -86,7 +90,8 @@
 - [x] Add an evidence-grounded AI decision brief stage on top of recorded validation evidence.
 - [ ] Add recoverable authentication in Phase 3C.
 - [ ] Verify decision briefs through production Neon save/restore/share after Marketplace terms are accepted.
-- [ ] Add trend evals for decision-brief recommendations and citation quality.
+- [x] Add trend-ready eval fixtures for decision-brief recommendations and citation quality.
+- [ ] Add historical comparison/reporting across multiple decision eval fixture versions.
 
 ## Portfolio-Ready Checklist
 
@@ -108,4 +113,5 @@
 - [x] Cloud history APIs and local-only degradation have focused automated coverage.
 - [x] Validation evidence, decisions, linked tasks, exports, and local restore have focused coverage and browser QA.
 - [x] Evidence-grounded AI decision briefs have focused unit/API tests and desktop/mobile browser QA.
+- [x] Decision copilot has mock CI eval and live MiniMax fixture evidence.
 - [ ] Production cloud save, restore, share, disable-share, and delete pass browser QA against Neon.

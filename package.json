@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "eval:provider": "tsx scripts/evaluate-provider.ts",
+    "eval:decision": "tsx scripts/evaluate-decision.ts",
     "db:migrate": "tsx scripts/migrate-cloud-db.ts"
   },
   "dependencies": {

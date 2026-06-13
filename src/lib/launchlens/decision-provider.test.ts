@@ -85,6 +85,41 @@ describe("generateDecisionBrief", () => {
     ]);
   });
 
+  it("normalizes claim stance from cited evidence signals", async () => {
+    process.env.MINIMAX_API_KEY = "test-key";
+    process.env.DECISION_COPILOT_LIVE_ENABLED = "true";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              output_text: JSON.stringify({
+                recommendation: "proceed",
+                evidenceStrength: "directional",
+                headline: "Proceed with the evidence-backed activation wedge.",
+                claims: [
+                  {
+                    text: "Founder interviews support prioritized activation fixes.",
+                    stance: "context",
+                    evidenceIds: [source.evidence[0].id],
+                  },
+                ],
+                unresolvedRisks: ["The sample is still concentrated."],
+                nextActions: ["Run a second segment test."],
+              }),
+            }),
+            { status: 200 },
+          ),
+      ),
+    );
+
+    const result = await generateDecisionBrief(source);
+
+    expect(result.mode).toBe("real");
+    expect(result.brief.claims[0].stance).toBe("supports");
+  });
+
   it("falls back when a provider invents a citation", async () => {
     process.env.MINIMAX_API_KEY = "test-key";
     process.env.DECISION_COPILOT_LIVE_ENABLED = "true";

@@ -93,4 +93,17 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 - [x] Private Markdown/JSON exports include decision briefs; public shares keep evidence notes, sources, founder input, and AI decision briefs private.
 - [x] Desktop and 390px mobile product screenshots now include the decision-copilot stage.
 - [ ] Production Neon round-trip still needs to prove decision briefs persist through real cloud save/restore after Marketplace terms are accepted.
-- [ ] Add historical decision-brief evals and compare mock/live recommendation quality over time.
+- [x] Add repeatable decision-brief evals for citation fidelity, signal alignment, recommendation direction, and no-fallback behavior.
+- [x] Persist a secret-scanned MiniMax decision fixture for the three public evidence scenarios.
+- [ ] Compare decision eval history over time and add release thresholds for latency drift.
+
+## Phase 4B Acceptance
+
+- [x] `npm run eval:decision` evaluates the decision copilot in no-secret mock mode.
+- [x] Standard CI runs the mock decision eval alongside lint, tests, provider eval, build, and audit.
+- [x] Live MiniMax decision eval is explicit through `npm run eval:decision -- --live --write-fixture`.
+- [x] The live eval fixture records public supported, neutral, and challenged evidence scenarios without secrets.
+- [x] Eval scoring checks all supplied evidence is cited, citations point to supplied evidence only, source fingerprints match, recommendation direction follows evidence, and no fallback was required.
+- [x] Claim stance is normalized from cited evidence signals so UI labels cannot drift from the underlying evidence.
+- [x] Provider text normalization removes stray generated quote prefixes from persisted decision briefs.
+- [ ] Add longitudinal trend comparison across multiple fixture versions before final portfolio-ready sign-off.
