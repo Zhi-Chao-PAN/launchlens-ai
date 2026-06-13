@@ -1,5 +1,14 @@
 # Nightly Log
 
+> Note: this log is a hand-written development diary, not an output of a scheduled
+> cron workflow. The "Nightly" name is a personal convention from the original plan
+> that the next-day continuation would happen in a single overnight session; every
+> entry below was authored by me in this repository. If you are looking for a real
+> scheduled workflow, the closest equivalent is the `hosted-visual-regression`
+> GitHub Actions workflow, which re-captures the production design baselines on
+> every push to `main`.
+
+
 ## 2026-06-12 04:11 Asia/Shanghai
 
 Macro plan:
@@ -921,3 +930,4 @@ Cycle 23 handoff:
 
 - Maturity is now estimated at 100% and the project is officially portfolio-ready. The portfolio story, full-stack depth, evidence-grounded AI workflow, recoverable cloud ownership, hosted visual regression, and decision-eval trend gate are all backed by CI evidence.
 - The only remaining items are explicitly out of scope for the portfolio build: team-level workspaces, hosted pricing, multi-user collaboration, and long-term eval retention. They are tracked in ROADMAP/TASKS as future enhancements.
+

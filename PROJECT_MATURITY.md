@@ -38,12 +38,40 @@ Future commercial features still exist, but none are required to demonstrate the
 - [x] No secrets or local environment files are committed.
 - [x] Product story clearly supports AI full-stack Solopreneur, TPM, and UTS Master of AI positioning.
 
+
 ## Deliberate Non-Blocking Enhancements
 
-- Optional OAuth/passkey identity for conventional team accounts.
-- Team roles, comments, billing, and collaboration.
-- Longitudinal provider/decision eval dashboards and latency drift alerts.
-- Automated deployed visual regression and production observability integrations.
+These are commercial expansion paths, not missing evidence for the current portfolio release. They are ranked from cheapest to most expensive, with the cheapest items deliberately left for a future "pricing and evaluation polish" pass because they are not portfolio blockers.
 
-These are commercial expansion paths, not missing evidence for the current portfolio release.
+### P0 - Hosted pricing page and self-serve onboarding
+- Pure frontend pricing page with Stripe Checkout links.
+- Estimated effort: 1 evening.
+- Why it is not in the portfolio release: this artifact is positioning for a Master of AI application, not selling a SaaS, and a pricing page without real billing would be theatre.
 
+### P1 - Longitudinal provider/decision eval retention and drift alerts
+- Persist the per-run eval history with timestamps, surface a trend dashboard in the repo or in a static artifact, and add a CI gate that fails when the recommended direction or evidence strength drifts.
+- Estimated effort: 1 to 2 days of work plus a hosted dashboard.
+- Why it is not in the portfolio release: a single decision fixture is enough evidence of a repeatable eval gate, and a real trend dashboard needs retention and querying choices that are themselves a design exercise.
+
+### P2 - Team roles, comments, and collaboration primitives
+- Owner + editor + viewer roles, comment threads on experiments, per-workspace invitations.
+- Estimated effort: 1 to 2 weeks including the RBAC matrix, the share-token rotation logic, and the migration of existing single-owner workspaces to multi-owner rows.
+- Why it is not in the portfolio release: this is a real product surface, not a portfolio differentiator, and the current single-owner story is a deliberate, defensible scope for a solo-founder workflow.
+
+### P3 - Multi-tenant workspaces, billing, and hosted pricing as a real product
+- Tenant isolation, quota, billing, and a hosted pricing page that charges money.
+- Estimated effort: this is a separate project. The current code has a single owner_hash per row; tenant isolation requires schema migration, per-tenant quotas, and a billing webhook.
+- Why it is not in the portfolio release: see the re-entry cost note below.
+
+## Re-entry cost to convert this into a real commercial SaaS
+
+This is a written-for-the-future-me note, not a deferred task. If someone (me, three months from now, or a successor) wants to turn LaunchLens into a paying product, the items above are not equally cheap. The re-entry cost is dominated by the P3 items, and converting P3 first blocks P2 and P1 because billing and tenant isolation change the meaning of every row in the existing schema.
+
+Honest scope estimate from a code review in mid-2026:
+
+- Tenant isolation, billing, hosted pricing: 4 to 6 weeks of refactoring on top of the current code base. The current owner_hash becomes a tenant key plus a workspace key, every route gets a tenant guard, and the recovery-key account model is replaced or wrapped by a real identity provider.
+- Hosted pricing page, real billing: 1 to 2 weeks on top of the tenant refactor.
+- Team roles and collaboration: 1 to 2 weeks.
+- Eval retention and drift alerts: 1 to 2 days.
+
+Total re-entry estimate: 6 to 10 weeks for a small team to convert this portfolio release into a real commercial SaaS. The current code is intentionally designed to make that re-entry tractable (server-only DML, schema in a migration, owner-scoped queries, capability account on a single column) but it has not been built with billing in mind. The bar for portfolio-ready is met; the bar for ship to paying teams is not, and the difference is documented here so that the next reader does not mistake one for the other.

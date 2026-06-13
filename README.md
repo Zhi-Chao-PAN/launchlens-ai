@@ -4,6 +4,9 @@
 
 LaunchLens AI is an AI-powered SaaS workspace that turns a raw product idea into an editable go-to-market plan for indie founders, solo builders, and small product teams.
 
+If you only have five minutes, read `ARCHITECTURE.md` and the "How this was built" section below. If you have twenty minutes, read `README.md` end-to-end. If you want the full design history, read `ROADMAP.md`, `TASKS.md`, `PROJECT_MATURITY.md`, and `NIGHTLY_LOG.md` in that order.
+
+
 The portfolio goal is to show full-stack AI product judgment: product strategy, UX workflow, provider abstraction, secure environment handling, tests, and a path from mock demo to real LLM-backed SaaS. It is not a pure algorithm or notebook project.
 
 ## Case Study Snapshot
@@ -282,14 +285,57 @@ flowchart LR
 
 This project is built for Zhi-Chao-PAN's UTS Master of Artificial Intelligence application as a high-quality AI SaaS portfolio artifact. It emphasizes AI full-stack product development and technical product management rather than isolated model research.
 
+
+## How this was built
+
+This is a single-author portfolio build that took three evening sessions over three Asia/Shanghai days, with the work split between product phases and CI hardening.
+
+- Total human time on this repository: approximately 8 to 10 hours of focused authoring plus the time spent reviewing Playwright traces, Vercel deployment logs, and the local Neon production smoke.
+- Total commits: 38. Roughly two thirds of the commits are real product, security, or evaluation work; the rest are CI and lockfile fixes that came from running the standard pipeline against a fresh clone on a different OS/Node version than the dev machine.
+- The eleven CI and lockfile commits are not pad commits. They came from three real environment crossings: a first GitHub Actions run that discovered lockfile drift, a Playwright install on Ubuntu that introduced optional native `@emnapi/*` deps requiring a lockfile regeneration, and a Chromium rendering mismatch between the Windows-captured baselines and the hosted CI renderer. Each commit message names the underlying cause so the trail is readable.
+- I chose to scope this portfolio release around a single founder workflow with a registration-free capability account. A full OAuth identity, team workspaces, billing, and a hosted pricing page were considered and intentionally deferred. See the re-entry cost note in `PROJECT_MATURITY.md` for what the conversion to a real commercial SaaS would require.
+- Reviewers who want a quick read of the engineering signals behind the project can scan the Phase coverage table below; reviewers who want the design intent can read `ARCHITECTURE.md`; reviewers who want the build diary can read `NIGHTLY_LOG.md`.
+
+## Phase coverage
+
+| What this project is meant to demonstrate | Where the evidence lives |
+| --- | --- |
+| LLM product integration beyond prompt-and-pray | Phase 1 mock + OpenAI-compatible + MiniMax Responses API with host allowlists, body caps, timeouts, and parser repair (`src/lib/launchlens/provider*.ts`, `src/lib/launchlens/provider-runtime.ts`) |
+| LLM output controllability and anti-hallucination | Phase 4A evidence-grounded decision copilot + Phase 4B decision eval that checks citation fidelity, source fingerprint match, recommendation direction, and no-fallback behavior (`src/lib/launchlens/decision-eval.ts`, `scripts/evaluate-decision.ts`) |
+| Security, authorization, multi-tenant awareness | Phase 5B capability account migration with advisory locks, Phase 5A owner-scoped Neon SQL, rate limits, public-share projection, and a security review pass documented in `NIGHTLY_LOG.md` |
+| Production engineering (CI, lockfile, cross-platform) | Phase 6 hosted visual regression workflow, decision trend gate, and the eleven real CI/lockfile commits that close the gap between a Windows dev machine and the GitHub Ubuntu runner |
+| Decision traceability, not black-box AI | Phase 3B evidence + linked task trail, Phase 4A per-claim citation validation, Phase 4B history snapshots and trend diff (`fixtures/providers/decision-history/`) |
+| Data persistence with graceful degradation | Phase 5A Neon cloud history + Phase 3A local-only fallback, both behind one capability account; quota-safe atomic migration in `src/lib/launchlens/workspace-store.ts` |
+
+## Architecture
+
+A separate `ARCHITECTURE.md` collects the product, persistence, and security diagrams in one place. The short version:
+
+```
+[Brief] -> [Workspace] -> [Evidence Loop] -> [Decision Copilot] -> [Decision Brief]
+                                  |                  |
+                                  v                  v
+                          [Provider Eval]      [Decision Eval]
+                                  |                  |
+                                  +--------+---------+
+                                           v
+                              [Cloud Persistence + Recovery]
+```
+
+See `ARCHITECTURE.md` for the full set of data-flow, gate, and security diagrams.
+
 ## License
 
 MIT License. See `LICENSE`.
 
 See:
 
+- `ARCHITECTURE.md`
 - `ROADMAP.md`
 - `TASKS.md`
 - `PROJECT_MATURITY.md`
 - `NIGHTLY_LOG.md`
+
+
+
 
