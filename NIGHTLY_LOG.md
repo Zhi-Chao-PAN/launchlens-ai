@@ -601,3 +601,62 @@ Cycle 17 handoff:
 - A Phase 3B diff-scoped Codex Security review closed all 18 changed/new source files with no technically plausible candidate and no reportable finding.
 - The 15:28 Asia/Shanghai continuation was manually requested by the user after the nightly cutoff and treated as a separate daytime delivery pass.
 - Production Neon round-trip and header-log hygiene remain external activation gates.
+
+## 2026-06-13 18:31 Asia/Shanghai
+
+Manual continuation: Phase 4A Evidence-Grounded AI Decision Copilot.
+
+Current maturity:
+
+- 84% at start, early-stage. The product had generation, validation evidence, local/cloud persistence scaffolding, and public deployment, but still needed a stronger third AI workflow stage after evidence collection.
+
+Largest product gap:
+
+- The validation loop let users record evidence and founder decisions, but AI was not yet helping synthesize that evidence into a cautious, cited product recommendation.
+
+Outcome target:
+
+- Add an evidence-grounded decision copilot that turns one experiment's recorded evidence into a recommendation, evidence strength, grounded claims, unresolved risks, and next actions without inventing sources.
+
+Time budget and stop rule:
+
+- Start: 18:31 Asia/Shanghai as a user-requested daytime continuation, outside the scheduled 04:10-09:00 nightly window.
+- The 09:00 hard stop remains respected because this was not a scheduled overnight run and no work crossed the protected cutoff.
+
+Planned cycle:
+
+1. Finish Phase 4A code, UI, screenshots, docs, verification, commit, push, and deployment checks.
+
+Tools:
+
+- Playwright CLI for production-mode desktop/mobile browser QA and screenshot refresh.
+- One bounded read-only architecture sub-agent for decision-copilot data/model/security critique.
+- GitHub CLI for status, commit, push, CI checks, and repository verification.
+- Local tests, build, audit, provider eval, and focused secret/security scans.
+
+Cycle 18 result:
+
+- Added a dedicated `DecisionBrief` model with prompt version, provider metadata, source fingerprint, recommendation, evidence strength, per-claim evidence citations, unresolved risks, and next actions.
+- Added `/api/decision` with byte-limited JSON parsing, bounded source normalization, no-store responses, per-client demo rate limits, and safe fallback behavior.
+- Added deterministic mock decision briefs by default; live provider calls require `DECISION_COPILOT_LIVE_ENABLED=true` plus a configured real provider key.
+- Refactored shared real-provider request/parsing logic into `provider-runtime.ts` for the workspace generator and decision copilot.
+- Added a responsive `AI decision copilot` UI that selects evidence-backed hypotheses, generates/regenerates briefs, shows citation counts, and invalidates stale briefs when evidence changes.
+- Extended local/cloud execution normalization and private Markdown/JSON exports to preserve current decision briefs while public shares continue to exclude raw evidence, founder input, and private AI briefs.
+- Updated screenshots so README evidence shows the third connected workflow stage.
+
+Cycle 18 verification:
+
+- Production-mode no-key browser QA on port 3005 confirmed the decision copilot renders with `1/3 current briefs`, no stale error state, successful `Regenerate brief`, and no horizontal overflow on 1440px desktop or 390px mobile.
+- Live MiniMax decision smoke loaded secrets only from the repo-external env file and returned safe metadata: `mode=real`, `provider=minimax`, no fallback, 3 grounded claims, and 2 cited evidence IDs.
+- `npx tsc --noEmit` passed.
+- `npm run lint -- --max-warnings=0` passed.
+- `npm run test` passed with 62 tests across 19 files.
+- `npm run build` passed and included `/api/decision` in the route manifest.
+- `npm run eval:provider` passed three no-key mock scenarios with 100% structural quality and no fallback.
+- `npm audit --audit-level=moderate` found 0 vulnerabilities.
+- `git diff --check`, focused dangerous-sink scan, and secret scan passed; secret scan excluded only explicit test placeholders such as `test-key` and `example.invalid`.
+
+Cycle 18 handoff:
+
+- Production Neon remains blocked by Vercel Marketplace terms acceptance, so Phase 3C/auth and production cloud round-trip verification should remain next-stage infrastructure work.
+- After this commit, the next nightly run should prioritize production Neon activation if terms are accepted; otherwise add auth planning, distributed abuse controls, decision-brief eval trends, and deployed visual checks that do not depend on Neon.

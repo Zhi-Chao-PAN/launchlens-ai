@@ -1,9 +1,9 @@
 # Project Maturity
 
 Status: early-stage
-Completion estimate: 84%
+Completion estimate: 88%
 
-LaunchLens AI is currently in an early SaaS product stage. It has a real product direction, a public Vercel demo, stable evidence-backed examples, an editable workspace interface, an assumption-to-decision validation loop, browser-local persistence, optional owner-scoped cloud snapshot history, privacy-safe read-only sharing, Markdown/JSON export, tests, and provider abstraction that supports no-key mock mode plus optional real providers.
+LaunchLens AI is currently in an early SaaS product stage. It has a real product direction, a public Vercel demo, stable evidence-backed examples, an editable workspace interface, an assumption-to-decision validation loop, an evidence-grounded AI decision copilot, browser-local persistence, optional owner-scoped cloud snapshot history, privacy-safe read-only sharing, Markdown/JSON export, tests, and provider abstraction that supports no-key mock mode plus optional real providers.
 
 It is not portfolio-ready yet.
 
@@ -16,6 +16,10 @@ It is not portfolio-ready yet.
 - Markdown and JSON export support both human-readable review and machine-readable automation handoff.
 - Assumptions and pricing risks are visible, making AI product judgment easier to review.
 - Assumptions now become interactive experiments with evidence signals, confidence, decisions, next actions, and stable links to execution tasks.
+- The evidence-grounded AI decision copilot adds a third connected AI workflow stage after generation and validation.
+- Decision briefs cite exact evidence IDs, track source fingerprints, and are invalidated when evidence changes.
+- Decision-brief generation defaults to deterministic mock mode and uses real providers only with explicit live opt-in.
+- Private Markdown/JSON exports include decision briefs while public shares keep briefs and raw evidence private.
 - Validation progress is measured separately from generated-workspace quality, avoiding a misleading single AI score.
 - Stable examples demonstrate supported, testing, and refuted hypotheses instead of presenting only empty controls.
 - The current brief and generated workspace are saved in browser-local storage and restored after refresh.
@@ -41,6 +45,7 @@ It is not portfolio-ready yet.
 - Runtime database access is server-only and DML-only by design; schema DDL lives in an explicit migration command.
 - Public share reads use a dedicated projection that does not select or type the private founder brief.
 - Public execution projections expose only decision state and evidence counts; evidence notes and sources remain private.
+- Public projections also exclude private AI decision briefs.
 - Legacy snapshots without execution state receive deterministic default experiments, while private execution state round-trips through local/cloud persistence and exports.
 - The product now renders deliberate local-only, checking, empty-history, busy, success, and cloud-failure states.
 - Cloud persistence has focused route and ownership tests, while local-only production rendering has browser evidence.
@@ -55,11 +60,13 @@ It is not portfolio-ready yet.
 - Provider eval history is currently one snapshot; trend comparison and release thresholds are not automated yet.
 - UX still needs deeper empty/error-state polish and deployed visual regression coverage.
 - Production Neon has not yet proven the new execution state through a real cloud round trip.
+- Production Neon has not yet proven decision briefs through a real cloud save/restore round trip.
+- Decision-brief eval history is not yet trended across multiple live-provider runs.
 
 ## Portfolio Criteria Evidence
 
-1. Product depth: strong partial pass. The app connects raw idea, audience/pain mapping, MVP scope, backlog, pricing, launch calendar, assumptions, evidence, decisions, and linked tasks.
-2. Agent/LLM depth: strong partial pass. It has provider orchestration, complete-schema validation, mock mode, real-provider env support, safe errors, parser repair, progress UI, safe metadata, prompt-versioned evals, deterministic quality scoring, scenario compliance checks, and persisted MiniMax regression evidence.
+1. Product depth: strong partial pass. The app connects raw idea, audience/pain mapping, MVP scope, backlog, pricing, launch calendar, assumptions, evidence, AI decision briefs, founder decisions, and linked tasks.
+2. Agent/LLM depth: strong partial pass. It has provider orchestration, complete-schema validation, mock mode, real-provider env support, safe errors, parser repair, progress UI, safe metadata, prompt-versioned evals, deterministic quality scoring, scenario compliance checks, persisted MiniMax regression evidence, and evidence-grounded decision synthesis with per-claim citations.
 3. Full-stack quality: strong partial pass. Next.js, TypeScript, Tailwind, tests, editable UI, stable evidence fixtures, local persistence, a Neon-backed snapshot API, owner-scoped history/share UI, private/public execution projections, Markdown/JSON export, responsive QA, and screenshots exist; production database activation and account auth are pending.
 4. Verification: partial pass. `lint`, `test`, and `build` pass; production-mode Playwright QA now covers desktop/mobile rendering and the core no-key workflow.
 5. Documentation: partial pass. README covers value prop, setup, env vars, demo flow, screenshots, architecture, AI design, roadmap, and portfolio story.
@@ -94,6 +101,8 @@ It is not portfolio-ready yet.
 - [x] Assumptions can collect evidence, confidence, decisions, next actions, and stable task links.
 - [x] Validation state survives local restore and is included in private Markdown/JSON handoff.
 - [x] Public sharing excludes evidence notes/sources and communicates the privacy boundary.
+- [x] AI decision briefs cite recorded evidence only, invalidate stale evidence, and remain private in public shares.
+- [x] The decision-copilot UI passes desktop and 390px mobile production-mode browser QA.
 - [ ] Production Neon save, restore, share, disable-share, and delete pass end-to-end browser verification.
 - [ ] Distributed abuse protection and owner-header log hygiene are verified on the production host.
 - [ ] Recoverable user authentication replaces anonymous browser ownership.
@@ -102,4 +111,4 @@ It is not portfolio-ready yet.
 
 ## Maturity Notes
 
-The next cycles should activate production Neon, prove the complete workspace plus execution-state round trip, then move from anonymous ownership to recoverable authentication in Phase 3C. Deployed visual regression coverage and historical provider-eval comparison remain useful follow-ups. The project now demonstrates an AI plan-to-learning workflow rather than a text generator, but it should not be called portfolio-ready until the production data path and final quality audit are complete.
+The next cycles should activate production Neon, prove the complete workspace plus execution-state and decision-brief round trip, then move from anonymous ownership to recoverable authentication in Phase 3C. Deployed visual regression coverage and historical provider/decision eval comparison remain useful follow-ups. The project now demonstrates an AI plan-to-learning-to-decision workflow rather than a text generator, but it should not be called portfolio-ready until the production data path and final quality audit are complete.

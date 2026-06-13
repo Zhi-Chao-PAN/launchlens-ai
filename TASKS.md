@@ -51,6 +51,11 @@
 - [x] Added realistic supported/testing/refuted evidence stories to stable examples.
 - [x] Added compact responsive experiment review controls and execution progress scoring.
 - [x] Completed a Phase 3B diff-scoped security review with 18/18 source-file receipts and no reportable finding.
+- [x] Added an evidence-grounded AI decision copilot as the third connected workflow stage.
+- [x] Added `/api/decision` with byte limits, bounded input validation, no-store responses, rate limiting, and deterministic mock mode.
+- [x] Added optional live decision-provider support behind `DECISION_COPILOT_LIVE_ENABLED=true`.
+- [x] Added per-claim evidence citations, source fingerprints, stale-brief invalidation, and private export support.
+- [x] Refactored real-provider request/parsing code into a shared provider runtime.
 
 ## Next Nightly Builder Tasks
 
@@ -78,7 +83,10 @@
 - [x] Add an assumption-to-evidence-to-decision execution loop.
 - [x] Keep execution state backward-compatible with existing snapshots and provider fixtures.
 - [x] Keep private evidence details out of read-only public shares.
+- [x] Add an evidence-grounded AI decision brief stage on top of recorded validation evidence.
 - [ ] Add recoverable authentication in Phase 3C.
+- [ ] Verify decision briefs through production Neon save/restore/share after Marketplace terms are accepted.
+- [ ] Add trend evals for decision-brief recommendations and citation quality.
 
 ## Portfolio-Ready Checklist
 
@@ -99,4 +107,5 @@
 - [x] Desktop and 390px mobile product flows pass production-mode browser QA.
 - [x] Cloud history APIs and local-only degradation have focused automated coverage.
 - [x] Validation evidence, decisions, linked tasks, exports, and local restore have focused coverage and browser QA.
+- [x] Evidence-grounded AI decision briefs have focused unit/API tests and desktop/mobile browser QA.
 - [ ] Production cloud save, restore, share, disable-share, and delete pass browser QA against Neon.

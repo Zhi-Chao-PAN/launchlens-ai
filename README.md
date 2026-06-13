@@ -14,7 +14,7 @@ Solution: LaunchLens AI converts a founder brief into a workspace that can be ge
 
 Audience: solo founders, tiny SaaS teams, and technical product managers who need sharp execution before overbuilding.
 
-Current maturity: early-stage, but now beyond a static scaffold. The product loop is generate -> edit -> collect evidence -> make decisions -> link execution -> save/restore/share -> export.
+Current maturity: early-stage, but now beyond a static scaffold. The product loop is generate -> edit -> collect evidence -> synthesize an evidence-grounded AI decision brief -> link execution -> save/restore/share -> export.
 
 ## Product Preview
 
@@ -30,12 +30,13 @@ Current maturity: early-stage, but now beyond a static scaffold. The product loo
 2. Generate a go-to-market workspace using the mock provider by default.
 3. Review target users, pain map, MVP scope, feature backlog, launch plan, pricing, risks, assumptions, content calendar, and execution tasks.
 4. Review each assumption as a validation experiment, add evidence, set confidence, record a decision, and link the next execution task.
-5. Toggle edit mode and refine generated sections.
-6. Keep the current brief, workspace, and private validation record across refreshes through browser-local persistence.
-7. When `DATABASE_URL` is configured, save decision-point snapshots, restore history, and explicitly enable a privacy-safe read-only share link.
-8. When cloud storage is absent, continue in a clearly labeled local-only mode without losing generation, validation, editing, or export.
-9. Watch generation progress and provider metadata without exposing any secret or upstream response detail.
-10. Copy/export the private workspace and evidence record as Markdown or JSON.
+5. Generate an AI decision brief that cites only recorded evidence and separates recommendation, evidence strength, grounded claims, unresolved risks, and next actions.
+6. Toggle edit mode and refine generated sections.
+7. Keep the current brief, workspace, and private validation record across refreshes through browser-local persistence.
+8. When `DATABASE_URL` is configured, save decision-point snapshots, restore history, and explicitly enable a privacy-safe read-only share link.
+9. When cloud storage is absent, continue in a clearly labeled local-only mode without losing generation, validation, editing, or export.
+10. Watch generation progress and provider metadata without exposing any secret or upstream response detail.
+11. Copy/export the private workspace, evidence record, and current decision briefs as Markdown or JSON.
 
 ## Demo Script
 
@@ -43,10 +44,12 @@ Current maturity: early-stage, but now beyond a static scaffold. The product loo
 2. Select the `B2B SaaS activation` sample brief.
 3. Click `Generate workspace`.
 4. In `Validation loop`, review the first evidence-backed hypothesis and its product decision.
-5. Add evidence to another hypothesis, set confidence, record a decision/next action, and link an execution task.
-6. Refresh the page and confirm the private evidence record is restored.
-7. Click `Copy Markdown` or `Copy JSON` and inspect the complete execution handoff.
-8. On a database-enabled deployment, save/restore a snapshot and explicitly confirm a read-only share that excludes evidence notes and sources.
+5. In `AI decision copilot`, inspect the evidence-bound recommendation and grounded claims.
+6. Click `Regenerate brief` and confirm the brief is saved without exposing provider internals.
+7. Add evidence to another hypothesis, set confidence, record a decision/next action, and link an execution task.
+8. Refresh the page and confirm the private evidence record is restored.
+9. Click `Copy Markdown` or `Copy JSON` and inspect the complete execution handoff.
+10. On a database-enabled deployment, save/restore a snapshot and explicitly confirm a read-only share that excludes evidence notes, sources, and private AI decision briefs.
 
 ## Stable Demo Fixtures
 
@@ -59,7 +62,10 @@ The app includes deterministic example workspaces for B2B SaaS activation, clini
 - Validation progress is distinct from generated-workspace quality.
 - Evidence records are bounded by item count, field length, and total normalized snapshot size.
 - Private local/cloud snapshots and Markdown/JSON exports include evidence details.
-- Public shares include status, confidence, decisions, next actions, linked tasks, and evidence counts only.
+- The AI decision copilot consumes evidence as untrusted data and every generated claim must cite exact evidence IDs.
+- Decision briefs are invalidated when the underlying experiment evidence changes.
+- Private local/cloud snapshots and Markdown/JSON exports include current decision briefs.
+- Public shares include status, confidence, decisions, next actions, linked tasks, and evidence counts only; evidence notes, sources, founder input, and AI decision briefs remain private.
 
 ## Tech Stack
 
@@ -67,7 +73,7 @@ The app includes deterministic example workspaces for B2B SaaS activation, clini
 - TypeScript
 - Tailwind CSS
 - Vitest
-- Server route handlers for generation and workspace persistence
+- Server route handlers for generation, decision synthesis, and workspace persistence
 - Optional Neon Postgres cloud history through `@neondatabase/serverless`
 - Mock/demo provider by default
 - Optional OpenAI-compatible provider through server-side environment variables
@@ -86,6 +92,8 @@ LaunchLens AI always runs without secrets.
 - Real provider output must include the complete workspace schema; incomplete output falls back instead of receiving a misleading mock-filled quality score.
 - The UI shows safe generation metadata such as mode, generated time, and fallback code, but never provider secrets.
 - Workspace quality is scored with deterministic checks for summary, users, pains, MVP scope, backlog, landing copy, pricing, launch plan, tasks, and assumptions.
+- The decision copilot uses deterministic mock briefs by default. Live real-provider decision briefs require both a real provider key and `DECISION_COPILOT_LIVE_ENABLED=true`.
+- Decision-brief validation rejects invented evidence IDs, overlong fields, stale source fingerprints, and incomplete provider payloads.
 
 ## Provider Evaluation
 
@@ -117,6 +125,8 @@ Optional local provider variables:
 MINIMAX_API_KEY=
 MINIMAX_MODEL=MiniMax-M3
 MINIMAX_BASE_URL=https://api.minimaxi.com/v1
+
+DECISION_COPILOT_LIVE_ENABLED=true
 
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4.1-mini
@@ -188,9 +198,15 @@ flowchart LR
   E --> I
   I --> J["Assumptions"]
   J --> K["Evidence and confidence"]
-  K --> L["Decision and linked task"]
-  L --> M["Browser local storage / private export"]
-  L --> N["/api/workspaces"]
+  K --> L["/api/decision"]
+  L --> T{"Live decision enabled?"}
+  T -->|"false"| U["Evidence-bound mock brief"]
+  T -->|"true + provider key"| V["Real provider decision brief"]
+  U --> W["Per-claim citation validation"]
+  V --> W
+  W --> X["Decision and linked task"]
+  X --> M["Browser local storage / private export"]
+  X --> N["/api/workspaces"]
   N --> O{"DATABASE_URL?"}
   O -->|"configured"| P["Neon snapshot history"]
   O -->|"absent"| Q["Explicit local-only mode"]

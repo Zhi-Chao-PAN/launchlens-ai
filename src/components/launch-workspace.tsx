@@ -27,6 +27,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import { CloudWorkspaces } from "@/components/cloud-workspaces";
+import { DecisionCopilot } from "@/components/decision-copilot";
 import { ValidationBoard } from "@/components/validation-board";
 import { workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
 import { workspaceToJson } from "@/lib/launchlens/json-export";
@@ -867,6 +868,11 @@ export function LaunchWorkspace({
             <ValidationBoard
               execution={execution}
               tasks={workspace.tasks}
+              onChange={setExecution}
+            />
+
+            <DecisionCopilot
+              execution={execution}
               onChange={setExecution}
             />
 

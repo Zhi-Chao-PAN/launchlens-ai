@@ -1,6 +1,10 @@
-import { jsonrepair } from "jsonrepair";
-
 import { buildMockWorkspace } from "./mock-provider";
+import {
+  configuredRealProvider,
+  ProviderError,
+  requestStructuredJson,
+  type RealProviderName,
+} from "./provider-runtime";
 import type {
   BacklogItem,
   ContentItem,
@@ -8,33 +12,10 @@ import type {
   LaunchLensInput,
   LaunchLensWorkspace,
   LaunchTask,
-  ProviderName,
 } from "./types";
 
-const OPENAI_BASE_URL = "https://api.openai.com/v1";
-const DEFAULT_OPENAI_MODEL = "gpt-4.1-mini";
-const MINIMAX_BASE_URL = "https://api.minimaxi.com/v1";
-const DEFAULT_MINIMAX_MODEL = "MiniMax-M3";
 export const LAUNCHLENS_PROMPT_VERSION = "launchlens-workspace-v1";
-const OPENAI_PROVIDER_TIMEOUT_MS = 15_000;
-const MINIMAX_PROVIDER_TIMEOUT_MS = 55_000;
 const MINIMAX_MAX_OUTPUT_TOKENS = 2_400;
-
-type RealProviderName = Exclude<ProviderName, "mock">;
-
-class ProviderError extends Error {
-  constructor(
-    message: string,
-    readonly publicCode:
-      | "provider_failed"
-      | "provider_timeout"
-      | "provider_misconfigured"
-      | "provider_validation_failed" = "provider_failed",
-  ) {
-    super(message);
-    this.name = "ProviderError";
-  }
-}
 
 function list(value: unknown, fallback: string[]): string[] {
   if (!Array.isArray(value)) {
@@ -144,36 +125,6 @@ function text(value: unknown, fallback: string) {
     : fallback;
 }
 
-function parseJsonObject(content: string): Record<string, unknown> {
-  const withoutThinking = content.replace(/<think>[\s\S]*?<\/think>/gi, "");
-  const fenced = withoutThinking.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-  const cleaned = fenced?.[1] ?? withoutThinking.trim();
-  const start = cleaned.indexOf("{");
-  const end = cleaned.lastIndexOf("}");
-
-  if (start === -1 || end === -1 || end <= start) {
-    throw new ProviderError(
-      "Model response did not contain JSON.",
-      "provider_validation_failed",
-    );
-  }
-
-  const candidate = cleaned.slice(start, end + 1);
-
-  try {
-    return JSON.parse(candidate) as Record<string, unknown>;
-  } catch {
-    try {
-      return JSON.parse(jsonrepair(candidate)) as Record<string, unknown>;
-    } catch {
-      throw new ProviderError(
-        "Model response JSON could not be repaired.",
-        "provider_validation_failed",
-      );
-    }
-  }
-}
-
 function hasCompleteWorkspaceShape(payload: Record<string, unknown>) {
   const landingPage =
     payload.landingPage && typeof payload.landingPage === "object"
@@ -204,41 +155,6 @@ function hasCompleteWorkspaceShape(payload: Record<string, unknown>) {
     Array.isArray(payload.tasks) &&
     Array.isArray(payload.assumptions)
   );
-}
-
-function validatedBaseUrl(options: {
-  rawBaseUrl: string;
-  allowedHosts: string;
-}) {
-  const { rawBaseUrl, allowedHosts } = options;
-  let url: URL;
-
-  try {
-    url = new URL(rawBaseUrl);
-  } catch {
-    throw new ProviderError("Invalid provider base URL.", "provider_misconfigured");
-  }
-
-  if (url.protocol !== "https:") {
-    throw new ProviderError(
-      "Provider base URL must use HTTPS.",
-      "provider_misconfigured",
-    );
-  }
-
-  const allowed = allowedHosts
-    .split(",")
-    .map((host) => host.trim().toLowerCase())
-    .filter(Boolean);
-
-  if (!allowed.includes(url.hostname.toLowerCase())) {
-    throw new ProviderError(
-      "Provider base URL host is not allowlisted.",
-      "provider_misconfigured",
-    );
-  }
-
-  return url.toString().replace(/\/$/, "");
 }
 
 function promptPayload(input: LaunchLensInput) {
@@ -352,92 +268,11 @@ function coerceWorkspace(
   };
 }
 
-function responsesApiText(data: unknown): string {
-  if (!data || typeof data !== "object") {
-    return "";
-  }
-
-  const record = data as Record<string, unknown>;
-
-  if (typeof record.output_text === "string") {
-    return record.output_text;
-  }
-
-  if (!Array.isArray(record.output)) {
-    return "";
-  }
-
-  return record.output
-    .flatMap((item) => {
-      if (!item || typeof item !== "object") {
-        return [];
-      }
-
-      const contentParts = (item as Record<string, unknown>).content;
-
-      if (!Array.isArray(contentParts)) {
-        return [];
-      }
-
-      return contentParts
-        .map((part) => {
-          if (!part || typeof part !== "object") {
-            return "";
-          }
-
-          const textValue = (part as Record<string, unknown>).text;
-          return typeof textValue === "string" ? textValue : "";
-        })
-        .filter(Boolean);
-    })
-    .join("\n");
-}
-
-async function parseWorkspaceResponse(
-  response: Response,
+function parseWorkspacePayload(
+  payload: Record<string, unknown>,
   input: LaunchLensInput,
   provider: RealProviderName,
 ) {
-  if (!response.ok) {
-    throw new ProviderError(
-      `Provider returned HTTP ${response.status}.`,
-      "provider_failed",
-    );
-  }
-
-  let data: {
-    choices?: Array<{ message?: { content?: string } }>;
-    status?: "completed" | "incomplete" | "failed";
-  };
-
-  try {
-    data = (await response.json()) as typeof data;
-  } catch {
-    throw new ProviderError(
-      "Provider response was not valid JSON.",
-      "provider_validation_failed",
-    );
-  }
-
-  if (data.status === "incomplete") {
-    throw new ProviderError(
-      "Provider response was incomplete.",
-      "provider_validation_failed",
-    );
-  }
-
-  if (data.status === "failed") {
-    throw new ProviderError("Provider response failed.", "provider_failed");
-  }
-
-  const content = data.choices?.[0]?.message?.content ?? responsesApiText(data);
-
-  if (!content) {
-    throw new ProviderError("Provider returned an empty message.", "provider_failed");
-  }
-
-  const payload = parseJsonObject(content);
-
   if (!hasCompleteWorkspaceShape(payload)) {
     throw new ProviderError(
       "Provider response did not include enough workspace structure.",
@@ -448,110 +283,28 @@ async function parseWorkspaceResponse(
   return coerceWorkspace(payload, input, provider);
 }
 
-async function generateWithOpenAI(
+async function generateWithRealProvider(
   input: LaunchLensInput,
+  provider: RealProviderName,
 ): Promise<LaunchLensWorkspace> {
-  const apiKey = process.env.OPENAI_API_KEY;
-
-  if (!apiKey) {
-    throw new Error("OPENAI_API_KEY is not configured.");
-  }
-
-  const baseUrl = validatedBaseUrl({
-    rawBaseUrl: process.env.OPENAI_BASE_URL ?? OPENAI_BASE_URL,
-    allowedHosts: process.env.OPENAI_ALLOWED_BASE_URL_HOSTS ?? "api.openai.com",
+  const payload = await requestStructuredJson({
+    provider,
+    system:
+      "You are LaunchLens AI, a pragmatic SaaS go-to-market planning agent. Return only valid compact JSON matching the requested schema. Favor actionable product and launch judgment over generic market theory.",
+    payload: promptPayload(input),
+    openAiMaxTokens: 1_200,
+    miniMaxMaxOutputTokens: MINIMAX_MAX_OUTPUT_TOKENS,
   });
-  const model = process.env.OPENAI_MODEL ?? DEFAULT_OPENAI_MODEL;
-  let response: Response;
 
-  try {
-    response = await fetch(`${baseUrl}/chat/completions`, {
-      method: "POST",
-      signal: AbortSignal.timeout(OPENAI_PROVIDER_TIMEOUT_MS),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0.4,
-        max_tokens: 1200,
-        response_format: { type: "json_object" },
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are LaunchLens AI, a pragmatic SaaS go-to-market planning agent. Return only valid compact JSON matching the requested schema. Favor actionable product and launch judgment over generic market theory.",
-          },
-          {
-            role: "user",
-            content: JSON.stringify(promptPayload(input)),
-          },
-        ],
-      }),
-    });
-  } catch (error) {
-    if (error instanceof DOMException && error.name === "TimeoutError") {
-      throw new ProviderError("Provider request timed out.", "provider_timeout");
-    }
-
-    throw new ProviderError("Provider request failed.", "provider_failed");
-  }
-
-  return parseWorkspaceResponse(response, input, "openai");
-}
-
-async function generateWithMiniMax(
-  input: LaunchLensInput,
-): Promise<LaunchLensWorkspace> {
-  const apiKey = process.env.MINIMAX_API_KEY;
-
-  if (!apiKey) {
-    throw new Error("MINIMAX_API_KEY is not configured.");
-  }
-
-  const baseUrl = validatedBaseUrl({
-    rawBaseUrl: process.env.MINIMAX_BASE_URL ?? MINIMAX_BASE_URL,
-    allowedHosts:
-      process.env.MINIMAX_ALLOWED_BASE_URL_HOSTS ??
-      "api.minimaxi.com,api.minimax.io",
-  });
-  const model = process.env.MINIMAX_MODEL ?? DEFAULT_MINIMAX_MODEL;
-  let response: Response;
-
-  try {
-    response = await fetch(`${baseUrl}/responses`, {
-      method: "POST",
-      signal: AbortSignal.timeout(MINIMAX_PROVIDER_TIMEOUT_MS),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0.2,
-        max_output_tokens: MINIMAX_MAX_OUTPUT_TOKENS,
-        reasoning: { effort: "none" },
-        instructions:
-          "You are LaunchLens AI, a pragmatic SaaS go-to-market planning agent. Return only valid compact JSON matching the requested schema. Do not wrap it in Markdown. Favor actionable product and launch judgment over generic market theory.",
-        input: JSON.stringify(promptPayload(input)),
-      }),
-    });
-  } catch (error) {
-    if (error instanceof DOMException && error.name === "TimeoutError") {
-      throw new ProviderError("Provider request timed out.", "provider_timeout");
-    }
-
-    throw new ProviderError("Provider request failed.", "provider_failed");
-  }
-
-  return parseWorkspaceResponse(response, input, "minimax");
+  return parseWorkspacePayload(payload, input, provider);
 }
 
 export async function generateLaunchWorkspace(
   input: LaunchLensInput,
 ): Promise<GenerationResult> {
-  if (!process.env.MINIMAX_API_KEY && !process.env.OPENAI_API_KEY) {
+  const provider = configuredRealProvider();
+
+  if (!provider) {
     return {
       workspace: buildMockWorkspace(input),
       mode: "demo",
@@ -560,9 +313,7 @@ export async function generateLaunchWorkspace(
   }
 
   try {
-    const workspace = process.env.MINIMAX_API_KEY
-      ? await generateWithMiniMax(input)
-      : await generateWithOpenAI(input);
+    const workspace = await generateWithRealProvider(input, provider);
 
     return {
       workspace,

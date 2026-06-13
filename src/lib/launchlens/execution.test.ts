@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { exampleWorkspaces } from "./example-workspaces";
 import {
+  buildMockDecisionBrief,
+  decisionSourceFromExperiment,
+} from "./decision";
+import {
   createExecutionState,
   evaluateExecutionProgress,
   normalizeExecutionState,
@@ -143,6 +147,9 @@ describe("workspace execution state", () => {
       signal: "supports",
       observedAt: "2026-06-13T01:00:00.000Z",
     });
+    execution.experiments[0].decisionBrief = buildMockDecisionBrief(
+      decisionSourceFromExperiment(execution.experiments[0]),
+    );
 
     const summary = summarizeExecutionState(execution);
     const serialized = JSON.stringify(summary);
@@ -150,6 +157,28 @@ describe("workspace execution state", () => {
     expect(summary.experiments[0].evidenceCount).toBe(1);
     expect(serialized).not.toContain("Private interview note");
     expect(serialized).not.toContain("Private founder call");
+    expect(serialized).not.toContain("decisionBrief");
+    expect(serialized).not.toContain("Evidence synthesis");
     expect(normalizeSharedExecutionState(summary, workspace)).toEqual(summary);
+  });
+
+  it("strips stale decision briefs when restoring execution state", () => {
+    const execution = createExecutionState(workspace);
+    execution.experiments[0].evidence.push({
+      id: "evidence-current",
+      note: "Current evidence",
+      source: "Interview",
+      signal: "supports",
+      observedAt: "2026-06-13T01:00:00.000Z",
+    });
+    execution.experiments[0].decisionBrief = buildMockDecisionBrief(
+      decisionSourceFromExperiment(execution.experiments[0]),
+    );
+    execution.experiments[0].evidence[0].note = "Evidence changed later";
+
+    const normalized = normalizeExecutionState(execution, workspace);
+
+    expect(normalized).not.toBeNull();
+    expect(normalized?.experiments[0].decisionBrief).toBeUndefined();
   });
 });

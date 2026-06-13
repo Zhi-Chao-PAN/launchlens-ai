@@ -26,6 +26,11 @@ describe("exampleWorkspaces", () => {
           (experiment) => experiment.evidence.length > 0,
         ),
       ).toBe(true);
+      expect(
+        example.execution.experiments.some(
+          (experiment) => experiment.decisionBrief,
+        ),
+      ).toBe(true);
     }
   });
 });

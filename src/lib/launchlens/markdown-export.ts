@@ -43,6 +43,19 @@ export function workspaceToMarkdown(
                   )
                   .join("\n")
               : "  - No evidence recorded";
+          const decisionBrief = experiment.decisionBrief
+            ? `
+- AI recommendation: ${experiment.decisionBrief.recommendation}
+- AI evidence strength: ${experiment.decisionBrief.evidenceStrength}
+- AI headline: ${experiment.decisionBrief.headline}
+- AI mode: ${experiment.decisionBrief.mode}${experiment.decisionBrief.usedFallback ? ` (fallback: ${experiment.decisionBrief.fallbackReason})` : ""}
+- AI grounded claims:
+${experiment.decisionBrief.claims.map((claim) => `  - [${claim.stance}] ${claim.text} (evidence: ${claim.evidenceIds.join(", ")})`).join("\n")}
+- AI unresolved risks:
+${experiment.decisionBrief.unresolvedRisks.map((item) => `  - ${item}`).join("\n")}
+- AI next actions:
+${experiment.decisionBrief.nextActions.map((item) => `  - ${item}`).join("\n")}`
+            : "";
 
           return `### H${index + 1}: ${experiment.assumption}
 
@@ -52,7 +65,7 @@ export function workspaceToMarkdown(
 - Next action: ${experiment.nextAction || "Pending"}
 - Linked task: ${linkedTask?.title ?? "None"}
 - Evidence:
-${evidence}`;
+${evidence}${decisionBrief}`;
         })
         .join("\n\n")
     : "";

@@ -3,6 +3,10 @@ import {
   createExecutionState,
   type WorkspaceExecutionState,
 } from "./execution";
+import {
+  buildMockDecisionBrief,
+  decisionSourceFromExperiment,
+} from "./decision";
 import { sampleBriefs } from "./sample-briefs";
 import type { LaunchLensInput, LaunchLensWorkspace } from "./types";
 
@@ -94,6 +98,17 @@ export const exampleWorkspaces: ExampleWorkspace[] = sampleBriefs.map(
           },
         ],
       };
+    }
+
+    const evidencedExperiment = execution.experiments.find(
+      (experiment) => experiment.evidence.length > 0,
+    );
+
+    if (evidencedExperiment) {
+      evidencedExperiment.decisionBrief = buildMockDecisionBrief(
+        decisionSourceFromExperiment(evidencedExperiment),
+        workspace.generatedAt,
+      );
     }
 
     return {

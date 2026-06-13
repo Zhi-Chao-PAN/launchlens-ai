@@ -3,6 +3,10 @@ import { describe, expect, it } from "vitest";
 import { workspaceToMarkdown } from "./markdown-export";
 import { buildMockWorkspace } from "./mock-provider";
 import { createExecutionState } from "./execution";
+import {
+  buildMockDecisionBrief,
+  decisionSourceFromExperiment,
+} from "./decision";
 import type { LaunchLensInput } from "./types";
 
 const input: LaunchLensInput = {
@@ -42,11 +46,18 @@ describe("workspaceToMarkdown", () => {
         },
       ],
     };
+    execution.experiments[0].decisionBrief = buildMockDecisionBrief(
+      decisionSourceFromExperiment(execution.experiments[0]),
+      "2026-06-13T01:05:00.000Z",
+    );
 
     const markdown = workspaceToMarkdown(workspace, execution);
 
     expect(markdown).toContain("## Validation Decisions");
     expect(markdown).toContain("Keep weekly activation fixes in MVP scope.");
     expect(markdown).toContain("Founder interviews");
+    expect(markdown).toContain("AI recommendation:");
+    expect(markdown).toContain("AI grounded claims:");
+    expect(markdown).toContain("AI unresolved risks:");
   });
 });

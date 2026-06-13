@@ -1,4 +1,9 @@
 import type { LaunchLensWorkspace, LaunchTask } from "./types";
+import {
+  decisionSourceFromExperiment,
+  normalizeDecisionBrief,
+  type DecisionBrief,
+} from "./decision";
 
 export type EvidenceSignal = "supports" | "challenges" | "neutral";
 export type ExperimentStatus =
@@ -25,6 +30,7 @@ export type ValidationExperiment = {
   nextAction: string;
   linkedTaskId: string;
   evidence: ValidationEvidence[];
+  decisionBrief?: DecisionBrief;
 };
 
 export type WorkspaceExecutionState = {
@@ -42,7 +48,7 @@ export type ExecutionProgress = {
 
 export type SharedValidationExperiment = Omit<
   ValidationExperiment,
-  "evidence"
+  "evidence" | "decisionBrief"
 > & {
   evidenceCount: number;
 };
@@ -199,7 +205,7 @@ function normalizeExperiment(
     return null;
   }
 
-  return {
+  const experiment = {
     id: id || fallback.id,
     assumption,
     status,
@@ -208,6 +214,15 @@ function normalizeExperiment(
     nextAction,
     linkedTaskId: taskIds.has(linkedTaskId) ? linkedTaskId : "",
     evidence: evidence as ValidationEvidence[],
+  };
+  const decisionBrief = normalizeDecisionBrief(
+    value.decisionBrief,
+    decisionSourceFromExperiment(experiment),
+  );
+
+  return {
+    ...experiment,
+    ...(decisionBrief ? { decisionBrief } : {}),
   };
 }
 
@@ -367,12 +382,16 @@ export function summarizeExecutionState(
   execution: WorkspaceExecutionState,
 ): SharedExecutionState {
   return {
-    experiments: execution.experiments.map(
-      ({ evidence, ...experiment }) => ({
-        ...experiment,
-        evidenceCount: evidence.length,
-      }),
-    ),
+    experiments: execution.experiments.map((experiment) => ({
+      id: experiment.id,
+      assumption: experiment.assumption,
+      status: experiment.status,
+      confidence: experiment.confidence,
+      decision: experiment.decision,
+      nextAction: experiment.nextAction,
+      linkedTaskId: experiment.linkedTaskId,
+      evidenceCount: experiment.evidence.length,
+    })),
     updatedAt: execution.updatedAt,
   };
 }

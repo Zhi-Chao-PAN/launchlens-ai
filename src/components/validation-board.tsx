@@ -102,7 +102,9 @@ export function ValidationBoard({
   ) {
     onChange({
       experiments: execution.experiments.map((experiment) =>
-        experiment.id === experimentId ? update(experiment) : experiment,
+        experiment.id === experimentId
+          ? { ...update(experiment), decisionBrief: undefined }
+          : experiment,
       ),
       updatedAt: new Date().toISOString(),
     });
