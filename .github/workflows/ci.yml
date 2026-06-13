@@ -38,11 +38,22 @@ jobs:
       - name: Decision eval (mock, no secrets)
         run: npm run eval:decision -- --write-history
 
-      - name: Decision trend comparison
-        run: npm run decision:history -- --compare
+      - name: Decision trend gate (5-run window, no drift beyond 5 points)
+        run: npm run decision:history -- --window --size 5 --drift-threshold 5
+
+      - name: Decision eval dashboard
+        run: npm run decision:history -- --dashboard
 
       - name: Build
         run: npm run build
 
       - name: Audit
         run: npm audit --audit-level=moderate
+
+      - name: Upload decision dashboard
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: decision-dashboard
+          path: docs/decision-dashboard.html
+          if-no-files-found: warn

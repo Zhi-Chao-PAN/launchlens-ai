@@ -105,19 +105,20 @@ LaunchLens AI always runs without secrets.
 The production build is verified against committed design baselines, and decision-brief quality is tracked across runs.
 
 ```bash
-npm run visual:regression -- --url https://launchlens-ai-two.vercel.app --tolerance 0.02
+npm run visual:regression -- --url https://launchlens-ai-two.vercel.app --tolerance 0.05
 ```
 
-The script uses Playwright to capture the desktop (1440x900) and mobile (390x844) viewports, diffs them against `public/screenshots/launchlens-*.png`, and writes a JSON report. Pass `--update-baseline` to refresh the committed baselines. The GitHub Actions workflow `hosted-visual-regression` runs the same check on every push to `main` and uploads the report as a build artifact.
+The script uses Playwright to capture the desktop (1440x900), mobile (390x844), and pricing (1280x800) viewports, diffs them against `public/screenshots/launchlens-*.png`, and writes a JSON report. Pass `--update-baseline` to refresh the committed baselines. The GitHub Actions workflow `hosted-visual-regression` runs the same check on every push to `main` and uploads the report as a build artifact.
 
-Decision-brief evaluation also feeds a per-run history file and a trend comparison:
+Decision-brief evaluation feeds a per-run history file, a sliding-window drift gate, and a static dashboard:
 
 ```bash
 npm run eval:decision -- --write-history
-npm run decision:history -- --compare
+npm run decision:history -- --window --size 5 --drift-threshold 5
+npm run decision:history -- --dashboard
 ```
 
-The history snapshots are committed to `fixtures/providers/decision-history/` so CI can detect drift in quality score or recommendation direction between runs.
+The history snapshots are committed to `fixtures/providers/decision-history/`, the dashboard is rendered to `docs/decision-dashboard.html`, and the GitHub Actions workflow `CI` runs the 5-run window as a release gate (any scenario whose quality drifts down by more than 5 points fails the build) and uploads the latest dashboard as a build artifact. The `--prune` flag keeps the history directory at 90 days of retention with at least 10 entries preserved.
 
 ## Provider Evaluation
 

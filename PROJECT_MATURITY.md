@@ -49,8 +49,7 @@ These are commercial expansion paths, not missing evidence for the current portf
 - Why it is not in the portfolio release: this artifact is positioning for a Master of AI application, not selling a SaaS, and a pricing page without real billing would be theatre.
 
 ### P1 - Longitudinal provider/decision eval retention and drift alerts
-- Persist the per-run eval history with timestamps, surface a trend dashboard in the repo or in a static artifact, and add a CI gate that fails when the recommended direction or evidence strength drifts.
-- Estimated effort: 1 to 2 days of work plus a hosted dashboard.
+- Done. `fixtures/providers/decision-history/` keeps committed per-run history, `npm run decision:history -- --window --size 5 --drift-threshold 5` is wired into CI as a release gate, and `docs/decision-dashboard.html` is regenerated and uploaded as a build artifact on every push to `main`. A 90-day retention policy with a 10-entry minimum is enforced by `npm run decision:history -- --prune`.
 - Why it is not in the portfolio release: a single decision fixture is enough evidence of a repeatable eval gate, and a real trend dashboard needs retention and querying choices that are themselves a design exercise.
 
 ### P2 - Team roles, comments, and collaboration primitives
