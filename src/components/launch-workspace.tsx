@@ -503,6 +503,12 @@ export function LaunchWorkspace({
             <span className="rounded-md bg-[#f6df8f] px-3 py-2 font-medium text-[#493b08]">
               Portfolio-ready build
             </span>
+            <a
+              href="/pricing"
+              className="rounded-md border border-[#cfd8d1] bg-white px-3 py-2 text-[#17201d] transition hover:border-[#138a72]"
+            >
+              Pricing
+            </a>
           </div>
         </header>
 
@@ -1125,3 +1131,4 @@ export function LaunchWorkspace({
     </main>
   );
 }
+
