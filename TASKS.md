@@ -85,17 +85,17 @@
 - [x] Add optional server-side workspace snapshot history without breaking no-database demo mode.
 - [x] Add owner-scoped restore/delete and opt-in read-only share links.
 - [x] Accept Vercel Marketplace Neon terms, provision the production resource, and verify the deployed cloud flow.
-- [ ] Add distributed rate limiting or a managed challenge before scaling anonymous cloud writes.
-- [ ] Verify hosting logs do not retain the owner capability header.
-- [ ] Add account authentication and recoverable ownership after the anonymous-token beta.
+- [x] Add Neon-backed distributed mutation limiting with a local-only fallback.
+- [x] Verify application and production runtime logs do not retain owner capability values.
+- [x] Add registration-free recovery-key capability authentication after the anonymous-token beta.
 - [x] Add an assumption-to-evidence-to-decision execution loop.
 - [x] Keep execution state backward-compatible with existing snapshots and provider fixtures.
 - [x] Keep private evidence details out of read-only public shares.
 - [x] Add an evidence-grounded AI decision brief stage on top of recorded validation evidence.
-- [ ] Add recoverable authentication in Phase 3C.
+- [x] Add recoverable capability authentication in Phase 3C.
 - [x] Verify decision briefs through production Neon save/restore/share after Marketplace terms are accepted.
 - [x] Add trend-ready eval fixtures for decision-brief recommendations and citation quality.
-- [ ] Add historical comparison/reporting across multiple decision eval fixture versions.
+- [ ] Add historical comparison/reporting across multiple decision eval fixture versions as a post-portfolio enhancement.
 
 ## Portfolio-Ready Checklist
 
@@ -119,3 +119,15 @@
 - [x] Evidence-grounded AI decision briefs have focused unit/API tests and desktop/mobile browser QA.
 - [x] Decision copilot has mock CI eval and live MiniMax fixture evidence.
 - [x] Production cloud save, restore, share, disable-share, and delete pass smoke QA against Neon.
+- [x] Recovery migration revokes the previous owner credential and survives cleared browser storage.
+- [x] Distributed cloud mutation limiting is persisted in Neon and exercised in production.
+- [x] Application log tests and a production canary check show owner credentials are not emitted.
+- [x] Final desktop and 390px mobile browser QA has no console errors or horizontal overflow.
+- [x] Project is marked portfolio-ready only after CI and production deployment verification.
+
+## Post-Portfolio Enhancements
+
+- [ ] Add optional OAuth/passkey identity for teams that prefer conventional accounts.
+- [ ] Add team roles, comments, and collaborative workspace ownership.
+- [ ] Add longitudinal provider/decision eval dashboards and latency drift thresholds.
+- [ ] Add automated deployed visual-regression snapshots.

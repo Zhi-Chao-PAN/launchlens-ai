@@ -70,6 +70,20 @@ async function main() {
     ON launchlens_workspaces (owner_hash, updated_at DESC)
   `;
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS launchlens_rate_limits (
+      bucket_key CHAR(64) PRIMARY KEY,
+      window_started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      request_count INTEGER NOT NULL DEFAULT 1
+        CHECK (request_count > 0)
+    )
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS launchlens_rate_limits_window_idx
+    ON launchlens_rate_limits (window_started_at)
+  `;
+
   console.log("LaunchLens cloud database migration completed.");
 }
 

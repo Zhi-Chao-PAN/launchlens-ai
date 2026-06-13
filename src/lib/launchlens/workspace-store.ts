@@ -272,6 +272,112 @@ export async function deleteWorkspace(ownerToken: string, id: string) {
   return Boolean(rows[0]);
 }
 
+export async function migrateWorkspaceOwner(
+  currentOwnerToken: string,
+  recoveryOwnerToken: string,
+) {
+  const currentOwnerHash = hashOwnerToken(currentOwnerToken);
+  const recoveryOwnerHash = hashOwnerToken(recoveryOwnerToken);
+
+  if (currentOwnerHash === recoveryOwnerHash) {
+    return { migrated: 0 };
+  }
+
+  const sql = getSql();
+  const [firstHash, secondHash] = [
+    currentOwnerHash,
+    recoveryOwnerHash,
+  ].sort();
+  const [, countRows, migratedRows] = await sql.transaction((transaction) => [
+    transaction`
+      SELECT pg_advisory_xact_lock(hashtextextended(${firstHash}, 0)),
+             pg_advisory_xact_lock(hashtextextended(${secondHash}, 0))
+    `,
+    transaction`
+      SELECT
+        (
+          SELECT COUNT(*)::int
+          FROM launchlens_workspaces
+          WHERE owner_hash = ${currentOwnerHash}
+        ) AS current_count,
+        (
+          SELECT COUNT(*)::int
+          FROM launchlens_workspaces
+          WHERE owner_hash = ${recoveryOwnerHash}
+        ) AS recovery_count
+    `,
+    transaction`
+      UPDATE launchlens_workspaces
+      SET owner_hash = ${recoveryOwnerHash}, updated_at = NOW()
+      WHERE owner_hash = ${currentOwnerHash}
+        AND (
+          SELECT COUNT(*)
+          FROM launchlens_workspaces
+          WHERE owner_hash IN (${currentOwnerHash}, ${recoveryOwnerHash})
+        ) <= ${MAX_CLOUD_WORKSPACES}
+      RETURNING id
+    `,
+  ]);
+  const counts = firstRow<{
+    current_count: number;
+    recovery_count: number;
+  }>(countRows);
+
+  if (
+    counts &&
+    Number(counts.current_count) + Number(counts.recovery_count) >
+      MAX_CLOUD_WORKSPACES
+  ) {
+    throw new WorkspaceStoreError(
+      "workspace_limit_reached",
+      409,
+      "Cloud history is too full to link these recovery credentials.",
+    );
+  }
+
+  const rows = migratedRows as unknown as Array<{ id: string }>;
+
+  return { migrated: rows.length };
+}
+
+export async function consumeWorkspaceMutationSlot(
+  bucketKey: string,
+  limit: number,
+  windowMs: number,
+) {
+  const sql = getSql();
+  const [, rows] = await sql.transaction((transaction) => [
+    transaction`
+      DELETE FROM launchlens_rate_limits
+      WHERE window_started_at < NOW() - INTERVAL '1 day'
+    `,
+    transaction`
+      INSERT INTO launchlens_rate_limits (
+        bucket_key, window_started_at, request_count
+      )
+      VALUES (${bucketKey}, NOW(), 1)
+      ON CONFLICT (bucket_key) DO UPDATE
+      SET
+        request_count = CASE
+          WHEN launchlens_rate_limits.window_started_at
+            <= NOW() - (${windowMs} * INTERVAL '1 millisecond')
+          THEN 1
+          ELSE launchlens_rate_limits.request_count + 1
+        END,
+        window_started_at = CASE
+          WHEN launchlens_rate_limits.window_started_at
+            <= NOW() - (${windowMs} * INTERVAL '1 millisecond')
+          THEN NOW()
+          ELSE launchlens_rate_limits.window_started_at
+        END
+      RETURNING request_count
+    `,
+  ]);
+  const row = firstRow<{ request_count: number }>(rows);
+
+  return Boolean(row && Number(row.request_count) <= limit);
+}
+
 export async function setWorkspaceSharing(
   ownerToken: string,
   id: string,

@@ -5,7 +5,8 @@ import { exampleWorkspaces } from "../src/lib/launchlens/example-workspaces";
 const baseUrl = (
   process.env.LAUNCHLENS_BASE_URL ?? "http://127.0.0.1:3000"
 ).replace(/\/$/, "");
-const ownerToken = `owner_${randomBytes(48).toString("base64url")}`;
+let ownerToken = `owner_${randomBytes(48).toString("base64url")}`;
+const recoveryOwnerToken = `acct_${randomBytes(48).toString("base64url")}`;
 
 type JsonRecord = Record<string, unknown>;
 
@@ -56,6 +57,7 @@ function workspaceId(value: unknown) {
 }
 
 async function main() {
+  const originalOwnerToken = ownerToken;
   const example = exampleWorkspaces[0];
   const title = `Cloud smoke ${new Date().toISOString()}`;
   const payload = {
@@ -90,6 +92,32 @@ async function main() {
   assert(
     JSON.stringify(restored.body).includes("decisionBrief"),
     "Restored workspace did not include private decision brief state.",
+  );
+
+  const recovery = await requestJson("/api/workspaces/recovery", {
+    method: "POST",
+    body: JSON.stringify({ recoveryOwnerToken }),
+  });
+
+  assert(recovery.response.status === 200, "Recovery owner migration failed.");
+  ownerToken = recoveryOwnerToken;
+
+  const legacyOwnerList = await requestJson("/api/workspaces", {
+    headers: { "x-launchlens-owner": originalOwnerToken },
+  });
+
+  assert(
+    legacyOwnerList.response.status === 200 &&
+      !JSON.stringify(legacyOwnerList.body).includes(id),
+    "Original owner token retained access after recovery migration.",
+  );
+
+  const recoveredList = await requestJson("/api/workspaces");
+
+  assert(
+    recoveredList.response.status === 200 &&
+      JSON.stringify(recoveredList.body).includes(id),
+    "Recovered owner token could not list the migrated workspace.",
   );
 
   const shareOn = await requestJson(`/api/workspaces/${id}/share`, {
@@ -143,6 +171,8 @@ async function main() {
         configured: true,
         created: true,
         restored: true,
+        recovered: true,
+        previousOwnerRevoked: true,
         shared: true,
         privateShareBoundary: true,
         disabledShare: true,

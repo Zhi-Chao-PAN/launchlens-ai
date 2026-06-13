@@ -31,7 +31,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!allowWorkspaceMutation(request)) {
+  if (!(await allowWorkspaceMutation(request))) {
     return rateLimitResponse();
   }
 

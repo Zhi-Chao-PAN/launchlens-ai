@@ -48,7 +48,7 @@ export async function GET(request: Request, context: RouteContext) {
 }
 
 export async function DELETE(request: Request, context: RouteContext) {
-  if (!allowWorkspaceMutation(request)) {
+  if (!(await allowWorkspaceMutation(request))) {
     return rateLimitResponse();
   }
 

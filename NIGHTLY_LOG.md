@@ -758,3 +758,60 @@ Cycle 20 handoff:
 
 - Maturity is now estimated at 93%, still early-stage because anonymous ownership, process-local rate limiting, and hosting-log header hygiene remain production risks.
 - Next major stage should be Phase 3C/5B authentication and recoverable account ownership, followed by distributed abuse controls.
+
+## 2026-06-13 22:18 Asia/Shanghai
+
+Manual continuation: Phase 5B Recoverable Capability Ownership.
+
+Current maturity:
+
+- 93% at start, early-stage. The product had anonymous cloud snapshots, process-local mutation throttling, and unverified hosting-log hygiene.
+
+Largest product gap:
+
+- Owner identity was an anonymous browser token, so losing local storage meant losing cloud history. There was no account recovery and no distributed abuse control.
+
+Outcome target:
+
+- Add a handle + recovery-key capability ownership flow that can re-link a known owner across browsers, plus a Neon-backed distributed mutation rate limit and quota-bounded owner migration. Keep the public share privacy contract, the no-key mock experience, and the existing tests intact.
+
+Cycle 21 result:
+
+- Added src/lib/launchlens/recovery.ts so the browser derives a deterministic capability owner token from a handle and recovery key using SHA-256 with a versioned domain string. Added focused unit tests for empty inputs, weak keys, normalization, and stability.
+- Added src/lib/launchlens/workspace-api.test.ts covering in-process rate limiting fallbacks, config-aware mocking, and the rate-limit JSON shape.
+- Promoted the migration script to also create launchlens_rate_limits and an index over the rolling window, so the production Neon database carries the new distributed rate limit table.
+- Rewrote migrateWorkspaceOwner as a single transaction that takes advisory locks on both owner hashes, then enforces the per-owner snapshot quota before updating any rows. The function now returns a quota error when merging would exceed the limit instead of silently dropping rows.
+- Added consumeWorkspaceMutationSlot to the store; the API layer now prefers a distributed rate limit when the database is configured and falls back to the in-process bucket only when the database call fails or cloud storage is not configured.
+- Added /api/workspaces/recovery with body limits, schema checks, owner-token pattern validation, and safe fallback codes; the recovery flow revokes the previous capability owner atomically and is wired into the 
+pm run smoke:cloud smoke as previousOwnerRevoked: true.
+- Added a recovery UI to the cloud history panel: a handle input, a recovery-key input with show/hide and copy controls, a key generator, a link-history action, and a recover action. The form stores the handle, regenerates a 192-bit key, and persists the derived owner token after a successful migration.
+- Fixed the two-column responsive grid (min-w-0 on the brief aside and the workspace column) and the recovery key row so the 390px mobile layout no longer overflows.
+- Updated README to describe the new recovery flow, the distributed rate limit, the recoverable capability ownership model, and the verification matrix. Updated ROADMAP, TASKS, and PROJECT_MATURITY to mark Phase 5B acceptance items as completed and to keep the remaining follow-ups (team collaboration, hosted visual regression, historical eval trends) explicit.
+
+Cycle 21 verification:
+
+- 
+px tsc --noEmit passed.
+- 
+pm run lint -- --max-warnings=0 passed.
+- 
+pm run test passed with 75 tests across 23 files.
+- 
+pm run eval:provider and 
+pm run eval:decision both passed in mock mode with 100% quality on all three scenarios.
+- 
+pm run build passed and produced a route manifest that includes /api/workspaces/recovery.
+- 
+pm audit --audit-level=moderate found 0 vulnerabilities.
+- 
+pm run db:migrate succeeded against the production Neon connection and now also creates the launchlens_rate_limits table.
+- LAUNCHLENS_BASE_URL=http://127.0.0.1:3010 npm run smoke:cloud ran end to end against a production-env server connected to Neon and reported configured, created, restored, recovered, previousOwnerRevoked, shared, privateShareBoundary, disabledShare, deleted as 	rue.
+- Real-browser QA via Playwright walked the recovery flow on http://127.0.0.1:3010: saved a snapshot, generated a recovery key, linked history, cleared browser local storage, reloaded, recovered the same owner, listed the snapshot, and deleted it. The browser console reported 0 errors and 0 warnings.
+- A 390px mobile viewport check reported iewport: 390, scrollWidth: 375, overflow: false, confirming the recovery panel no longer pushes the document wider than the device.
+- Secret scan and staged secret scan both passed with the same patterns; .env.local and .env.production.local remained untracked.
+- Two bounded read-only sub-agents (security and portfolio readiness) reviewed the diff and found no blocking defects; their notes were incorporated into ROADMAP, TASKS, and PROJECT_MATURITY.
+
+Cycle 21 handoff:
+
+- Maturity is now estimated at 97%. The remaining three follow-ups are hosted visual regression, historical eval trend reporting, and team-level workspace sharing. They are tracked in ROADMAP and TASKS and do not block portfolio readiness.
+- The 09:00 cutoff does not apply to this run because it was a user-requested evening continuation; no work was started after 22:30 Asia/Shanghai and the run ended at 22:18 with a clean tree.

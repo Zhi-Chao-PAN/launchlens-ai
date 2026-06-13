@@ -1,4 +1,10 @@
-import { WorkspaceStoreError } from "./workspace-store";
+import { createHash } from "node:crypto";
+
+import {
+  cloudStorageConfigured,
+  consumeWorkspaceMutationSlot,
+  WorkspaceStoreError,
+} from "./workspace-store";
 
 export const OWNER_HEADER = "x-launchlens-owner";
 export const MAX_WORKSPACE_BODY_BYTES = 160_000;
@@ -91,12 +97,7 @@ export async function readLimitedJson(request: Request, maxBytes: number) {
   }
 }
 
-export function allowWorkspaceMutation(request: Request) {
-  const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0];
-  const key =
-    forwardedFor?.trim() ||
-    request.headers.get("x-real-ip") ||
-    "local-cloud-client";
+function inProcessMutationSlot(key: string) {
   const now = Date.now();
   const recent = (mutationBuckets.get(key) ?? []).filter(
     (timestamp) => now - timestamp < RATE_LIMIT_WINDOW_MS,
@@ -114,6 +115,36 @@ export function allowWorkspaceMutation(request: Request) {
   recent.push(now);
   mutationBuckets.set(key, recent);
   return true;
+}
+
+export async function allowWorkspaceMutation(request: Request) {
+  const forwardedFor = (
+    request.headers.get("x-vercel-forwarded-for") ||
+    request.headers.get("x-forwarded-for")
+  )?.split(",")[0];
+  const clientAddress =
+    forwardedFor?.trim() ||
+    request.headers.get("x-real-ip")?.trim() ||
+    "local-cloud-client";
+  const bucketKey = createHash("sha256")
+    .update(`workspace-mutation-v1\u0000${clientAddress}`, "utf8")
+    .digest("hex");
+
+  if (cloudStorageConfigured()) {
+    try {
+      return await consumeWorkspaceMutationSlot(
+        bucketKey,
+        RATE_LIMIT_MAX,
+        RATE_LIMIT_WINDOW_MS,
+      );
+    } catch {
+      console.error(
+        "[launchlens:workspace-rate-limit] distributed_limit_unavailable",
+      );
+    }
+  }
+
+  return inProcessMutationSlot(bucketKey);
 }
 
 export function rateLimitResponse() {

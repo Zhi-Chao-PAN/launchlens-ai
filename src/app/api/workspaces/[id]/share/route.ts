@@ -18,7 +18,7 @@ type RouteContext = {
 };
 
 export async function POST(request: Request, context: RouteContext) {
-  if (!allowWorkspaceMutation(request)) {
+  if (!(await allowWorkspaceMutation(request))) {
     return rateLimitResponse();
   }
 

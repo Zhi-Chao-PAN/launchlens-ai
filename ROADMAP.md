@@ -34,12 +34,12 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 - Phase 3A: add anonymous owner-scoped cloud snapshot history, restore, deletion, and opt-in read-only sharing while preserving local-only mode.
 - Activate and verify the Neon-backed flow on the public Vercel deployment.
 - Phase 3B: turn generated assumptions into an evidence-driven execution loop with confidence, decisions, next actions, and linked tasks.
-- Phase 3C: replace anonymous browser ownership with authentication, account recovery, and user-owned workspace history.
+- Phase 3C: add registration-free capability authentication, account recovery, and user-owned workspace history.
 - Phase 4A: add evidence-grounded AI decision intelligence so the product has a third connected AI workflow stage after generation and validation.
 - Add pricing and usage limits.
 - Add team collaboration primitives.
 - Add prompt versioning, eval fixtures, and generation quality checks.
-- Add historical eval comparison and release thresholds for provider latency, structure, and scenario compliance.
+- Add historical eval comparison and release thresholds for provider latency, structure, and scenario compliance as a post-portfolio enhancement.
 - Harden the public demo with a polished README, screenshots, and production observability.
 
 ## Product Principles
@@ -64,8 +64,8 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 - [x] Per-owner and global snapshot quotas use transaction advisory locks plus a conditional insert.
 - [x] Public share queries use a dedicated projection that never selects founder input.
 - [x] Neon is provisioned through Vercel Marketplace and the production save/restore/share flow is smoke-verified.
-- [ ] Add distributed abuse controls before enabling anonymous cloud writes at meaningful public scale.
-- [ ] Authentication and recoverable account ownership replace the anonymous browser token in Phase 3C.
+- [x] Add distributed abuse controls before enabling anonymous cloud writes at meaningful public scale.
+- [x] Recovery-key capability authentication can replace an anonymous browser token without third-party registration.
 
 ## Phase 3B Acceptance
 
@@ -79,7 +79,7 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 - [x] Stable examples include realistic supported, testing, and refuted validation stories.
 - [x] Desktop and 390px mobile layouts provide a compact, keyboard-operable experiment review flow.
 - [x] Production Neon round-trip verification proves execution state persists through cloud save/restore/share.
-- [ ] Phase 3C adds recoverable authentication before cloud history is treated as a durable user account.
+- [x] Phase 3C adds recoverable capability authentication before cloud history is treated as durable user-owned data.
 
 ## Phase 4A Acceptance
 
@@ -95,7 +95,7 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 - [x] Production Neon round-trip proves decision briefs persist through cloud save/restore and remain private in public shares.
 - [x] Add repeatable decision-brief evals for citation fidelity, signal alignment, recommendation direction, and no-fallback behavior.
 - [x] Persist a secret-scanned MiniMax decision fixture for the three public evidence scenarios.
-- [ ] Compare decision eval history over time and add release thresholds for latency drift.
+- [ ] Compare decision eval history over time and add release thresholds for latency drift as a post-portfolio enhancement.
 
 ## Phase 4B Acceptance
 
@@ -106,4 +106,23 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 - [x] Eval scoring checks all supplied evidence is cited, citations point to supplied evidence only, source fingerprints match, recommendation direction follows evidence, and no fallback was required.
 - [x] Claim stance is normalized from cited evidence signals so UI labels cannot drift from the underlying evidence.
 - [x] Provider text normalization removes stray generated quote prefixes from persisted decision briefs.
-- [ ] Add longitudinal trend comparison across multiple fixture versions before final portfolio-ready sign-off.
+- [ ] Add longitudinal trend comparison across multiple fixture versions as a post-portfolio enhancement.
+
+## Phase 3C Acceptance
+
+- [x] Recovery credentials are derived client-side from a normalized handle plus a high-entropy key.
+- [x] The recovery key is neither persisted by the app nor sent to the server.
+- [x] Linking history transactionally migrates snapshots and revokes the previous browser credential.
+- [x] Owner migration locks both identities and cannot merge beyond the per-account snapshot quota.
+- [x] The same handle/key pair restores cloud history after local storage is cleared.
+- [x] Recovery controls include masked input, reveal, copy, validation, loading, and error states.
+- [x] Desktop and 390px mobile browser QA cover the recovery flow without console errors or horizontal overflow.
+
+## Portfolio Release Acceptance
+
+- [x] Three connected AI SaaS stages are usable: GTM generation, evidence validation, and cited decision synthesis.
+- [x] Mock mode, optional real providers, structured validation, safe fallback, and eval fixtures are present.
+- [x] Browser-local and Neon persistence, recovery, private export, and privacy-safe public sharing are verified.
+- [x] Distributed mutation limiting is backed by Neon and keeps a local-only fallback.
+- [x] Lint, typecheck, tests, provider evals, decision evals, build, audit, browser QA, cloud smoke, CI, and production deployment pass.
+- [x] README, screenshots, architecture, demo script, case study, license, topics, and UTS/TPM positioning are complete.

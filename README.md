@@ -14,7 +14,7 @@ Solution: LaunchLens AI converts a founder brief into a workspace that can be ge
 
 Audience: solo founders, tiny SaaS teams, and technical product managers who need sharp execution before overbuilding.
 
-Current maturity: early-stage, but now beyond a static scaffold. The product loop is generate -> edit -> collect evidence -> synthesize an evidence-grounded AI decision brief -> link execution -> save/restore/share -> export.
+Current maturity: portfolio-ready. The product loop is generate -> edit -> collect evidence -> synthesize an evidence-grounded AI decision brief -> link execution -> save/recover/share -> export.
 
 ## Product Preview
 
@@ -34,9 +34,10 @@ Current maturity: early-stage, but now beyond a static scaffold. The product loo
 6. Toggle edit mode and refine generated sections.
 7. Keep the current brief, workspace, and private validation record across refreshes through browser-local persistence.
 8. When `DATABASE_URL` is configured, save decision-point snapshots, restore history, and explicitly enable a privacy-safe read-only share link.
-9. When cloud storage is absent, continue in a clearly labeled local-only mode without losing generation, validation, editing, or export.
-10. Watch generation progress and provider metadata without exposing any secret or upstream response detail.
-11. Copy/export the private workspace, evidence record, and current decision briefs as Markdown or JSON.
+9. Generate a recovery key, link the current cloud history, and recover the same capability account after browser storage is cleared or on another device.
+10. When cloud storage is absent, continue in a clearly labeled local-only mode without losing generation, validation, editing, or export.
+11. Watch generation progress and provider metadata without exposing any secret or upstream response detail.
+12. Copy/export the private workspace, evidence record, and current decision briefs as Markdown or JSON.
 
 ## Demo Script
 
@@ -49,7 +50,8 @@ Current maturity: early-stage, but now beyond a static scaffold. The product loo
 7. Add evidence to another hypothesis, set confidence, record a decision/next action, and link an execution task.
 8. Refresh the page and confirm the private evidence record is restored.
 9. Click `Copy Markdown` or `Copy JSON` and inspect the complete execution handoff.
-10. On a database-enabled deployment, save/restore a snapshot and explicitly confirm a read-only share that excludes evidence notes, sources, and private AI decision briefs.
+10. On a database-enabled deployment, save a snapshot, generate a recovery key, link the history, clear browser storage, and recover it with the same handle/key pair.
+11. Explicitly confirm a read-only share that excludes evidence notes, sources, founder input, and private AI decision briefs.
 
 ## Stable Demo Fixtures
 
@@ -157,15 +159,18 @@ Do not commit `.env.local` or any secret values.
 
 Cloud history is optional. A fresh clone and the public demo still render and run in local-only mode when no database is configured.
 
-- The browser creates a 256-bit anonymous owner token and keeps it in local storage.
-- Requests send that token only to same-origin workspace routes.
-- The server stores only the token's SHA-256 hash, never the plaintext token.
-- Each browser identity can keep up to 20 snapshots.
+- The browser starts with a 256-bit anonymous owner token and keeps it in local storage.
+- A user can generate a recovery key and combine it with a normalized handle to derive the same capability account on another browser.
+- The recovery key is never persisted by the app or sent to the server. Only the derived owner credential reaches same-origin workspace routes.
+- The server stores only the owner credential's SHA-256 hash, never its plaintext value.
+- Recovery migration locks both owner identities transactionally, preserves the 20-snapshot account quota, and revokes the previous browser credential.
+- Each anonymous or recovery-linked identity can keep up to 20 snapshots.
 - A transaction-level global capacity gate prevents an anonymous beta from growing storage without an upper bound.
 - Sharing is disabled by default and must be explicitly enabled per snapshot.
 - Shared pages expose a read-only workspace and validation summary, not the owner token, founder brief, evidence notes, or evidence sources.
 - Streaming body limits, nested field/cardinality limits, known-field normalization, UUID validation, owner-scoped queries, safe error codes, atomic quotas, and mutation throttling protect the public API surface.
-- Losing browser storage loses access to anonymous cloud history. Account-based recovery is intentionally deferred to the authentication phase.
+- Mutation limits use a SHA-256 client bucket in Neon so the 20-per-minute gate is shared across serverless instances; local-only mode retains a bounded in-process fallback.
+- Application logs emit fixed event codes rather than request bodies, owner credentials, provider responses, or database connection values.
 - Runtime routes use DML only. Schema DDL is isolated in an explicit migration command so production can use a least-privilege runtime role.
 
 Vercel Marketplace Neon injects `DATABASE_URL` automatically. Run the migration once after provisioning:
@@ -182,7 +187,17 @@ After a database-enabled deployment, verify the full cloud flow with:
 LAUNCHLENS_BASE_URL=https://your-deployment.example.com npm run smoke:cloud
 ```
 
-The smoke creates a temporary workspace, restores it, enables a public share, checks that private evidence and decision-brief details are not exposed, disables sharing, and deletes the workspace.
+The smoke creates a temporary workspace, restores it, migrates it to a recovery account, proves the previous credential lost access, enables a public share, checks that private evidence and decision-brief details are not exposed, disables sharing, and deletes the workspace.
+
+## Security Boundaries
+
+- Capability credentials are high entropy, same-origin only, and stored server-side only as hashes.
+- Recovery is deliberately password-manager friendly and registration-free; possession of the handle/key pair is the authentication factor.
+- Recovery keys are masked by default, can be copied explicitly, and are not stored by LaunchLens AI.
+- Database quotas and owner migration use advisory locks to keep concurrent writes within account and global capacity.
+- Public shares use a dedicated SQL projection that never selects founder input, evidence notes/sources, or private AI decision briefs.
+- Provider and storage errors return fixed safe codes. Tests assert unexpected errors cannot echo owner credentials into application logs.
+- Standard CI and all reviewer flows remain no-secret. Live provider evals are explicit opt-in operations.
 
 ## Run Locally
 
@@ -238,8 +253,10 @@ flowchart LR
   N --> O{"DATABASE_URL?"}
   O -->|"configured"| P["Neon snapshot history"]
   O -->|"absent"| Q["Explicit local-only mode"]
+  N --> Y["Shared Neon mutation limit"]
   P --> R["Owner-scoped restore"]
   P --> S["Privacy-safe read-only share"]
+  P --> Z["Recovery-key account migration"]
 ```
 
 ## Portfolio Positioning

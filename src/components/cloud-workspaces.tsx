@@ -4,7 +4,10 @@ import {
   Cloud,
   CloudOff,
   Copy,
+  Eye,
+  EyeOff,
   History,
+  KeyRound,
   Loader2,
   RefreshCw,
   Share2,
@@ -23,13 +26,18 @@ import type {
 } from "@/lib/launchlens/cloud-workspace";
 import { MAX_CLOUD_WORKSPACES } from "@/lib/launchlens/cloud-workspace";
 import type { WorkspaceExecutionState } from "@/lib/launchlens/execution";
+import {
+  createRecoveryKey,
+  deriveRecoveryOwnerToken,
+} from "@/lib/launchlens/recovery";
 import type {
   LaunchLensInput,
   LaunchLensWorkspace,
 } from "@/lib/launchlens/types";
 
 const OWNER_TOKEN_KEY = "launchlens.ownerToken.v1";
-const OWNER_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
+const RECOVERY_LABEL_KEY = "launchlens.recoveryLabel.v1";
+const OWNER_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43,128}$/;
 
 type CloudWorkspacesProps = {
   input: LaunchLensInput;
@@ -70,6 +78,9 @@ export function CloudWorkspaces({
   const [workspaces, setWorkspaces] = useState<CloudWorkspaceSummary[]>([]);
   const [busyAction, setBusyAction] = useState("");
   const [notice, setNotice] = useState("");
+  const [recoveryLabel, setRecoveryLabel] = useState("");
+  const [recoveryKey, setRecoveryKey] = useState("");
+  const [showRecoveryKey, setShowRecoveryKey] = useState(false);
 
   async function cloudRequest<T>(path: string, init?: RequestInit) {
     const headers = new Headers(init?.headers);
@@ -153,6 +164,7 @@ export function CloudWorkspaces({
           ? storedToken
           : createOwnerToken();
         localStorage.setItem(OWNER_TOKEN_KEY, token);
+        setRecoveryLabel(localStorage.getItem(RECOVERY_LABEL_KEY) ?? "");
         setOwnerToken(token);
         void refresh(token);
       } catch {
@@ -286,7 +298,73 @@ export function CloudWorkspaces({
     }
   }
 
+  function generateRecoveryKey() {
+    setRecoveryKey(createRecoveryKey());
+    setShowRecoveryKey(true);
+    setNotice("Recovery key generated. Keep it somewhere private.");
+  }
+
+  async function copyRecoveryKey() {
+    try {
+      await navigator.clipboard.writeText(recoveryKey);
+      setNotice("Recovery key copied. Store it in a password manager.");
+    } catch {
+      setNotice("Copy failed. Select the recovery key and store it safely.");
+    }
+  }
+
+  async function linkRecoveryOwner() {
+    setBusyAction("recovery");
+    setNotice("");
+
+    try {
+      const recoveryOwnerToken = await deriveRecoveryOwnerToken(
+        recoveryLabel,
+        recoveryKey,
+      );
+      await cloudRequest<{ migrated: number }>("/api/workspaces/recovery", {
+        method: "POST",
+        body: JSON.stringify({ recoveryOwnerToken }),
+      });
+
+      localStorage.setItem(OWNER_TOKEN_KEY, recoveryOwnerToken);
+      localStorage.setItem(RECOVERY_LABEL_KEY, recoveryLabel.trim());
+      setOwnerToken(recoveryOwnerToken);
+      setNotice("Cloud history linked to the recovery key.");
+      await refresh(recoveryOwnerToken);
+    } catch {
+      setNotice("Recovery link failed. Check the handle and recovery key.");
+    } finally {
+      setBusyAction("");
+    }
+  }
+
+  async function recoverOwner() {
+    setBusyAction("recovery");
+    setNotice("");
+
+    try {
+      const recoveryOwnerToken = await deriveRecoveryOwnerToken(
+        recoveryLabel,
+        recoveryKey,
+      );
+
+      localStorage.setItem(OWNER_TOKEN_KEY, recoveryOwnerToken);
+      localStorage.setItem(RECOVERY_LABEL_KEY, recoveryLabel.trim());
+      setOwnerToken(recoveryOwnerToken);
+      setNotice("Recovery key loaded.");
+      await refresh(recoveryOwnerToken);
+    } catch {
+      setNotice("Recovery failed. Check the handle and recovery key.");
+    } finally {
+      setBusyAction("");
+    }
+  }
+
   const isBusy = Boolean(busyAction);
+  const ownerScope = ownerToken.startsWith("acct_")
+    ? "Recovery-linked"
+    : "This browser";
 
   return (
     <section className="rounded-lg border border-[#d8ded4] bg-white p-5 shadow-sm">
@@ -305,7 +383,7 @@ export function CloudWorkspaces({
             </h2>
             <p className="mt-0.5 text-sm text-[#607069]">
               {cloudState === "ready"
-                ? `This browser, ${workspaces.length} of ${MAX_CLOUD_WORKSPACES} snapshots`
+                ? `${ownerScope}, ${workspaces.length} of ${MAX_CLOUD_WORKSPACES} snapshots`
                 : cloudState === "unavailable"
                   ? "Local-only mode"
                   : cloudState === "checking"
@@ -369,6 +447,115 @@ export function CloudWorkspaces({
             No cloud snapshots yet. Save the current workspace when it reaches
             a useful decision point.
           </p>
+        </div>
+      )}
+
+      {cloudState === "ready" && (
+        <div className="mt-4 rounded-md border border-[#d8ded4] bg-[#fbfcfa] p-4">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md bg-white text-[#40504a]">
+              <KeyRound className="size-4" aria-hidden="true" />
+            </span>
+            <form
+              className="min-w-0 flex-1"
+              onSubmit={(event) => event.preventDefault()}
+            >
+              <h3 className="text-sm font-semibold text-[#17201d]">
+                Account recovery
+              </h3>
+              <p className="mt-1 text-xs leading-5 text-[#607069]">
+                Save this key privately. Possession grants access to cloud
+                history.
+              </p>
+              <div className="mt-3 grid min-w-0 gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+                <label className="block min-w-0">
+                  <span className="mb-1 block text-xs font-semibold uppercase text-[#607069]">
+                    Handle
+                  </span>
+                  <input
+                    value={recoveryLabel}
+                    onChange={(event) => setRecoveryLabel(event.target.value)}
+                    placeholder="founder@example.com"
+                    className="h-10 w-full rounded-md border border-[#cfd8d1] bg-white px-3 text-sm text-[#17201d] outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                  />
+                </label>
+                <div className="min-w-0">
+                  <span className="mb-1 block text-xs font-semibold uppercase text-[#607069]">
+                    Recovery key
+                  </span>
+                  <div className="flex min-w-0 gap-1">
+                    <input
+                      aria-label="Recovery key"
+                      type={showRecoveryKey ? "text" : "password"}
+                      autoComplete="off"
+                      spellCheck={false}
+                      value={recoveryKey}
+                      onChange={(event) => setRecoveryKey(event.target.value)}
+                      className="h-10 min-w-0 flex-1 rounded-md border border-[#cfd8d1] bg-white px-3 font-mono text-sm text-[#17201d] outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowRecoveryKey((value) => !value)}
+                      title={
+                        showRecoveryKey
+                          ? "Hide recovery key"
+                          : "Show recovery key"
+                      }
+                      aria-label={
+                        showRecoveryKey
+                          ? "Hide recovery key"
+                          : "Show recovery key"
+                      }
+                      className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfd8d1] bg-white text-[#40504a] transition hover:border-[#138a72]"
+                    >
+                      {showRecoveryKey ? (
+                        <EyeOff className="size-4" aria-hidden="true" />
+                      ) : (
+                        <Eye className="size-4" aria-hidden="true" />
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={copyRecoveryKey}
+                      disabled={!recoveryKey}
+                      title="Copy recovery key"
+                      aria-label="Copy recovery key"
+                      className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfd8d1] bg-white text-[#40504a] transition hover:border-[#138a72] disabled:opacity-50"
+                    >
+                      <Copy className="size-4" aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={generateRecoveryKey}
+                  disabled={isBusy}
+                  className="flex h-9 items-center gap-2 rounded-md border border-[#cfd8d1] bg-white px-3 text-sm font-semibold text-[#40504a] transition hover:border-[#138a72] disabled:opacity-50"
+                >
+                  <KeyRound className="size-4" aria-hidden="true" />
+                  Generate key
+                </button>
+                <button
+                  type="button"
+                  onClick={linkRecoveryOwner}
+                  disabled={isBusy || !recoveryLabel || !recoveryKey}
+                  className="h-9 rounded-md bg-[#17201d] px-3 text-sm font-semibold text-white transition hover:bg-[#24312d] disabled:cursor-not-allowed disabled:bg-[#89938f]"
+                >
+                  Link history
+                </button>
+                <button
+                  type="button"
+                  onClick={recoverOwner}
+                  disabled={isBusy || !recoveryLabel || !recoveryKey}
+                  className="h-9 rounded-md border border-[#cfd8d1] bg-white px-3 text-sm font-semibold text-[#40504a] transition hover:border-[#138a72] disabled:opacity-50"
+                >
+                  Recover
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
