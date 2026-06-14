@@ -1,4 +1,5 @@
 export const REQUEST_ID_HEADER = "x-request-id";
+export const RESPONSE_TIME_HEADER = "x-response-time";
 
 import {
   ERROR_BODY_TOO_LARGE,
@@ -204,11 +205,27 @@ export function generateRequestId(): string {
   return `ll-${timestamp}-${random}`;
 }
 
-export function noStoreJson(body: unknown, init?: ResponseInit, requestId?: string) {
+
+// High-resolution response timer.
+// Returns a stop function that returns elapsed milliseconds.
+export function startTimer(): () => number {
+  const start = performance.now();
+  return () => Math.round(performance.now() - start);
+}
+
+export function noStoreJson(
+  body: unknown,
+  init?: ResponseInit,
+  requestId?: string,
+  responseTimeMs?: number,
+) {
   const headers = new Headers(init?.headers);
   headers.set("Cache-Control", "no-store");
   if (requestId) {
     headers.set(REQUEST_ID_HEADER, requestId);
+  }
+  if (responseTimeMs !== undefined) {
+    headers.set(RESPONSE_TIME_HEADER, String(responseTimeMs));
   }
 
   return Response.json(body, { ...init, headers });

@@ -1485,3 +1485,50 @@ pm run build -> success, all routes compile cleanly.
 - Error code system is fully standardized across the API surface.
 - Next cycle candidates: (a) add response-time header and timing metrics, (b) start experience layer improvements (keyboard shortcuts, empty states), (c) add OpenAPI / API reference documentation, (d) add request size validation to all POST endpoints.
 
+### Cycle 40 - Response timing instrumentation
+
+Cycle target: Add x-response-time header and timing utilities across core API routes.
+
+#### Execution
+
+- Added RESPONSE_TIME_HEADER constant (x-response-time) to workspace-api.ts.
+- Added startTimer() high-resolution timing utility (returns a stop function that returns ms).
+- Enhanced 
+oStoreJson(), workspaceApiError(), and ateLimitResponse() to accept optional esponseTimeMs parameter and set the header.
+- Added response timing to /api/generate (all 5 response paths: 413, 429, 400 JSON, 400 validation, 200 success).
+- Added response timing to /api/decision (all 4 response paths: 429, catch block, 422, 200 success).
+- Enhanced /api/status endpoint with esponseTimeMs field in the response body.
+- Switched status endpoint's DB ping to use the shared startTimer utility instead of raw performance.now().
+- Every API response now carries both x-request-id and x-response-time headers for observability.
+
+#### Verification
+
+- 
+pm test -> 34 files, 118 tests, all passing.
+- 
+pm run build -> success, all routes compile cleanly.
+
+### Cycle 41 - API documentation skeleton
+
+Cycle target: Create comprehensive API reference documentation.
+
+#### Execution
+
+- Created docs/API.md with full API reference covering all 11 API routes.
+- Documented common headers, error response format, and 20+ error codes with HTTP status mapping.
+- Documented each route: method, path, request body, response, rate limits, error codes.
+- Covered generation, decision, status, workspaces CRUD, sharing, members, invites, recovery, tenants, auth.
+- Added response format notes explaining local-only vs cloud-backed mode behavior.
+- First official documentation of the full API surface.
+
+#### Verification
+
+- 
+pm run build -> success.
+- Documentation file renders correctly as Markdown.
+
+#### Cycle 41 handoff
+
+- API reference v1 is complete. Future cycles can add OpenAPI spec generation, interactive docs, or request/response examples.
+- Next cycle candidates: (a) add response timing to workspace/tenant routes, (b) add keyboard shortcuts to workspace UI, (c) add empty state designs, (d) add OpenAPI JSON schema generation.
+

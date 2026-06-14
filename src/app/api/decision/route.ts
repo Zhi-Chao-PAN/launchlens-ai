@@ -4,6 +4,7 @@ import {
   generateRequestId,
   noStoreJson,
   readLimitedJson,
+  startTimer,
   WorkspaceRequestError,
 } from "@/lib/launchlens/workspace-api";
 import {
@@ -54,11 +55,13 @@ function rateLimit(request: Request) {
 
 export async function POST(request: Request) {
   const requestId = generateRequestId();
+  const timer = startTimer();
   if (!rateLimit(request)) {
     return noStoreJson(
       { code: ERROR_RATE_LIMITED, error: "Too many decision requests. Please try again in a minute." },
       { status: 429 },
       requestId,
+      timer(),
     );
   }
 
@@ -96,10 +99,11 @@ export async function POST(request: Request) {
       },
       { status: 422 },
       requestId,
+      timer(),
     );
   }
 
-  return noStoreJson(await generateDecisionBrief(source), {}, requestId);
+  return noStoreJson(await generateDecisionBrief(source), {}, requestId, timer());
 }
 
 export function resetDecisionRateLimitsForTests() {

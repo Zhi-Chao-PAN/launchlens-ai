@@ -1,6 +1,6 @@
 ﻿import { generateLaunchWorkspace } from "@/lib/launchlens/provider";
 import type { LaunchLensInput } from "@/lib/launchlens/types";
-import { generateRequestId, noStoreJson } from "@/lib/launchlens/workspace-api";
+import { generateRequestId, noStoreJson, startTimer } from "@/lib/launchlens/workspace-api";
 import {
   ERROR_BODY_TOO_LARGE,
   ERROR_RATE_LIMITED,
@@ -96,6 +96,7 @@ function rateLimit(request: Request) {
 
 export async function POST(request: Request) {
   const requestId = generateRequestId();
+  const timer = startTimer();
   const contentLength = Number(request.headers.get("content-length") ?? 0);
 
   if (contentLength > MAX_CONTENT_LENGTH) {
@@ -103,6 +104,7 @@ export async function POST(request: Request) {
       { code: ERROR_BODY_TOO_LARGE, error: "Request body is too large for the demo endpoint." },
       { status: 413 },
       requestId,
+      timer(),
     );
   }
 
@@ -111,6 +113,7 @@ export async function POST(request: Request) {
       { code: ERROR_RATE_LIMITED, error: "Too many generation requests. Please try again in a minute." },
       { status: 429 },
       requestId,
+      timer(),
     );
   }
 
@@ -119,7 +122,7 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return noStoreJson({ code: ERROR_INVALID_JSON, error: "Invalid JSON payload." }, { status: 400 }, requestId);
+    return noStoreJson({ code: ERROR_INVALID_JSON, error: "Invalid JSON payload." }, { status: 400 }, requestId, timer());
   }
 
   const input = normalize(body);
@@ -130,11 +133,12 @@ export async function POST(request: Request) {
       { code: validation.code, error: validation.error },
       { status: 400 },
       requestId,
+      timer(),
     );
   }
 
   const result = await generateLaunchWorkspace(input);
-  return noStoreJson(result, {}, requestId);
+  return noStoreJson(result, {}, requestId, timer());
 }
 
 

@@ -3,7 +3,7 @@ import {
   cloudStorageConfigured,
   pingCloudStorage,
 } from "@/lib/launchlens/workspace-store";
-import { noStoreJson } from "@/lib/launchlens/workspace-api";
+import { noStoreJson, startTimer } from "@/lib/launchlens/workspace-api";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,20 +11,21 @@ export const dynamic = "force-dynamic";
 const startTime = Date.now();
 
 export async function GET() {
+  const totalTimer = startTimer();
   const provider = configuredRealProvider();
   const dbConfigured = cloudStorageConfigured();
 
   let dbHealthy = false;
   let dbLatencyMs: number | null = null;
 
+  const dbTimer = startTimer();
   if (dbConfigured) {
-    const start = performance.now();
     try {
       dbHealthy = await pingCloudStorage();
     } catch {
       dbHealthy = false;
     } finally {
-      dbLatencyMs = Math.round(performance.now() - start);
+      dbLatencyMs = dbTimer();
     }
   }
 
@@ -40,7 +41,8 @@ export async function GET() {
     vercelEnv: process.env.VERCEL_ENV ?? "development",
     uptimeSec: Math.floor((Date.now() - startTime) / 1000),
     gitSha: process.env.VERCEL_GIT_COMMIT_SHA ?? "dev",
+    responseTimeMs: totalTimer(),
   };
 
-  return noStoreJson(body, { status: 200 });
+  return noStoreJson(body, { status: 200 }, undefined, totalTimer());
 }
