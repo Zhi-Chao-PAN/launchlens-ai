@@ -17,6 +17,10 @@ export const metadata: Metadata = {
   description:
     "AI-powered go-to-market workspace for indie founders and small teams.",
   applicationName: "LaunchLens AI",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    "https://launchlens-ai-two.vercel.app",
+  ),
   keywords: [
     "AI SaaS",
     "go-to-market",

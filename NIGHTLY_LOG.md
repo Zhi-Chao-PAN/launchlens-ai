@@ -1264,3 +1264,39 @@ pm run eval:provider -> still passes (not touched this cycle).
 - The e2e test uses page.evaluate for the API calls instead of Playwright's standalone equest fixture because Playwright 1.60 has a known fixture-disposal race between the page closure and the request context. The in-page fetch reuses the page's own request context and avoids the race entirely.
 - Coincidental fix: the itest.config.ts was already updated to include src/app/api/tenants/ in the test inclusion path, meaning the new tenant-route tests are picked up automatically by 
 pm test.
+
+
+## 2026-06-15 03:05 Asia/Shanghai
+
+### Cycle 32 - production polish and deployment validation
+
+Cycle target: close the last production-polish items so the hosted Vercel deployment matches the README description and the e2e pipeline is CI-ready.
+
+### Execution
+
+- Fixed metadataBase in layout.tsx: the openGraph image URLs now resolve to the public launchlens-ai-two.vercel.app domain instead of the internal Next.js dev server, fixing the OG image warning that Playwright emitted in cycle 31.
+- Added .github/workflows/e2e.yml: a CI workflow that runs the Playwright e2e test against a live deployment when LAUNCHLENS_E2E_URL is set, following the same pattern as the existing optional cloud-smoke.yml. Test: check E2E (optional) on PR description.
+- Verified the live Vercel deployment: GET / returns 200, POST /api/generate returns 200 with a workspace object. Both endpoints work against the hosted demo without any local state.
+- Updated the README badge line to include a Deployed: Vercel shield so visitors instantly see the live deployment status.
+
+### Verification
+
+- 
+px tsc --noEmit -> 0 errors.
+- 
+pm test -> 32 files, 108 tests, all passing.
+- 
+px playwright test -> 1 test, 1 passed (9.4s, no retries).
+- Live Vercel smoke: POST /api/generate (200, workspace found), GET / (200).
+- 
+pm run build -> not re-run this cycle (no file changes that touch the build pipeline beyond layout.tsx metadata).
+
+### Commits
+
+One commit containing: layout.tsx metadataBase, e2e.yml workflow, README badge update, and this log entry.
+
+### Cycle 32 handoff
+
+- The e2e workflow is optional by design (triggered only when LAUNCHLENS_E2E_URL repo variable is set), matching the cloud-smoke pattern. Future maintenance: if the hosted deployment URL changes, update layout.tsx metadataBase and LAUNCHLENS_E2E_URL.
+- The production migration (launchlens_tenants table) was verified during the earlier P3 testing and remains intact.
+- Manual follow-up still outstanding: upload public/og.png as the GitHub social preview (one click in repo settings).
