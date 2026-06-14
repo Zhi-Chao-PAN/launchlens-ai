@@ -13,6 +13,7 @@
     "db:migrate": "tsx scripts/migrate-cloud-db.ts",
     "smoke:cloud": "tsx scripts/smoke-cloud-workspace.ts",
     "smoke:rbac": "tsx scripts/smoke-rbac.ts",
+    "smoke:tenant": "tsx scripts/smoke-tenant.ts",
     "visual:regression": "tsx scripts/visual-regression.ts",
     "decision:history": "tsx scripts/decision-history.ts"
   },
@@ -45,4 +46,5 @@
     "postcss": "^8.5.15"
   }
 }
+
 

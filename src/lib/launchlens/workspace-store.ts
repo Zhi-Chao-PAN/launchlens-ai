@@ -253,14 +253,22 @@ export async function createWorkspace(
   const sql = getSql();
   const id = randomUUID();
   const title = payload.title.slice(0, 120);
-  const [, rows] = await sql.transaction((transaction) => [
+  const results = await sql.transaction((transaction) => [
     transaction`
       SELECT pg_advisory_xact_lock(${GLOBAL_QUOTA_LOCK}),
              pg_advisory_xact_lock(hashtextextended(${ownerHash}, 0))
     `,
     transaction`
+      INSERT INTO launchlens_tenants (id, name, owner_hash)
+      SELECT gen_random_uuid(), 'Default', ${ownerHash}
+      WHERE NOT EXISTS (SELECT 1 FROM launchlens_tenants WHERE owner_hash = ${ownerHash})
+    `,
+    transaction`
+      SELECT id FROM launchlens_tenants WHERE owner_hash = ${ownerHash} ORDER BY created_at ASC LIMIT 1
+    `,
+    transaction`
       INSERT INTO launchlens_workspaces (
-        id, owner_hash, title, input, workspace, execution
+        id, owner_hash, title, input, workspace, execution, tenant_id
       )
       SELECT
         ${id},
@@ -268,7 +276,8 @@ export async function createWorkspace(
         ${title},
         ${JSON.stringify(payload.input)}::jsonb,
         ${JSON.stringify(payload.workspace)}::jsonb,
-        ${JSON.stringify(payload.execution)}::jsonb
+        ${JSON.stringify(payload.execution)}::jsonb,
+        (SELECT id FROM launchlens_tenants WHERE owner_hash = ${ownerHash} ORDER BY created_at ASC LIMIT 1)
       WHERE
         (SELECT COUNT(*) FROM launchlens_workspaces) < ${MAX_TOTAL_CLOUD_WORKSPACES}
         AND (
@@ -284,7 +293,7 @@ export async function createWorkspace(
       ON CONFLICT (workspace_id, member_hash) DO NOTHING
     `,
   ]);
-  const row = firstRow<WorkspaceRow>(rows);
+  const row = firstRow<WorkspaceRow>(results[3]); // index 3 = workspace INSERT result
 
   if (!row) {
     throw new WorkspaceStoreError(

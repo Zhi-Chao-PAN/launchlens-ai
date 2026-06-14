@@ -123,6 +123,46 @@ async function main() {
     ON CONFLICT (workspace_id, member_hash) DO NOTHING
   `;
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS launchlens_tenants (
+      id UUID PRIMARY KEY,
+      name VARCHAR(80) NOT NULL,
+      owner_hash CHAR(64) NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+
+  await sql`
+    ALTER TABLE launchlens_workspaces
+    ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES launchlens_tenants(id) ON DELETE CASCADE
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS launchlens_workspaces_tenant_idx
+    ON launchlens_workspaces (tenant_id, updated_at DESC)
+  `;
+
+  await sql`
+    INSERT INTO launchlens_tenants (id, name, owner_hash)
+    SELECT gen_random_uuid(), 'Default tenant', owner_hash
+    FROM (
+      SELECT DISTINCT owner_hash FROM launchlens_workspaces
+    ) AS distinct_owners
+    ON CONFLICT DO NOTHING
+  `;
+
+  await sql`
+    UPDATE launchlens_workspaces AS ws
+    SET tenant_id = t.id
+    FROM launchlens_tenants AS t
+    WHERE ws.owner_hash = t.owner_hash AND ws.tenant_id IS NULL
+  `;
+
+  await sql`
+    ALTER TABLE launchlens_workspaces
+    ALTER COLUMN tenant_id SET NOT NULL
+  `;
+
   console.log("LaunchLens cloud database migration completed.");
 }
 
