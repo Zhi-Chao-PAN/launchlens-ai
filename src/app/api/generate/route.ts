@@ -1,5 +1,6 @@
-import { generateLaunchWorkspace } from "@/lib/launchlens/provider";
+﻿import { generateLaunchWorkspace } from "@/lib/launchlens/provider";
 import type { LaunchLensInput } from "@/lib/launchlens/types";
+import { generateRequestId, noStoreJson, REQUEST_ID_HEADER } from "@/lib/launchlens/workspace-api";
 
 export const runtime = "nodejs";
 export const maxDuration = 65;
@@ -8,6 +9,7 @@ const MAX_CONTENT_LENGTH = 10_000;
 const MAX_FIELD_LENGTH = 1_200;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 12;
+const MAX_RATE_LIMIT_BUCKETS = 5_000;
 const rateLimitBuckets = new Map<string, number[]>();
 
 function field(value: unknown) {
@@ -63,25 +65,32 @@ function rateLimit(request: Request) {
     return false;
   }
 
+  if (rateLimitBuckets.size >= MAX_RATE_LIMIT_BUCKETS) {
+    rateLimitBuckets.clear();
+  }
+
   recent.push(now);
   rateLimitBuckets.set(key, recent);
   return true;
 }
 
 export async function POST(request: Request) {
+  const requestId = generateRequestId();
   const contentLength = Number(request.headers.get("content-length") ?? 0);
 
   if (contentLength > MAX_CONTENT_LENGTH) {
-    return Response.json(
+    return noStoreJson(
       { error: "Request body is too large for the demo endpoint." },
       { status: 413 },
+      requestId,
     );
   }
 
   if (!rateLimit(request)) {
-    return Response.json(
+    return noStoreJson(
       { error: "Too many generation requests. Please try again in a minute." },
       { status: 429 },
+      requestId,
     );
   }
 
@@ -90,16 +99,22 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return Response.json({ error: "Invalid JSON payload." }, { status: 400 });
+    return noStoreJson({ error: "Invalid JSON payload." }, { status: 400 }, requestId);
   }
 
   const input = normalize(body);
   const inputError = validateInput(input);
 
   if (inputError) {
-    return Response.json({ error: inputError }, { status: 400 });
+    return noStoreJson({ error: inputError }, { status: 400 }, requestId);
   }
 
   const result = await generateLaunchWorkspace(input);
-  return Response.json(result);
+  return noStoreJson(result, {}, requestId);
 }
+
+
+export function resetGenerateRateLimitsForTests() {
+  rateLimitBuckets.clear();
+}
+

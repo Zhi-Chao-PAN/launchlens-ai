@@ -1,4 +1,5 @@
 import {
+  generateRequestId,
   noStoreJson,
   ownerTokenFromRequest,
   workspaceApiError,
@@ -16,6 +17,7 @@ type RouteContext = {
 export async function GET(request: Request, context: RouteContext) {
   const { id } = await context.params;
 
+  const requestId = generateRequestId();
   if (!isUuid(id)) {
     return noStoreJson(
       { code: "invalid_tenant_id", error: "Tenant ID is invalid." },
@@ -33,6 +35,6 @@ export async function GET(request: Request, context: RouteContext) {
     }
     return noStoreJson({ tenant });
   } catch (error) {
-    return workspaceApiError(error);
+    return workspaceApiError(error, requestId);
   }
 }

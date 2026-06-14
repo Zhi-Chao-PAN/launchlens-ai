@@ -1,9 +1,10 @@
 import {
-  cloudStorageConfigured,
+  
+cloudStorageConfigured,
   createWorkspace,
-  listWorkspacesForMember,
+  listWorkspacesForMember
 } from "@/lib/launchlens/workspace-store";
-import {
+import { generateRequestId,
   allowWorkspaceMutation,
   MAX_WORKSPACE_BODY_BYTES,
   noStoreJson,
@@ -18,6 +19,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  const requestId = generateRequestId();
   if (!cloudStorageConfigured()) {
     return noStoreJson({ configured: false, workspaces: [] });
   }
@@ -28,13 +30,14 @@ export async function GET(request: Request) {
     );
     return noStoreJson({ configured: true, workspaces });
   } catch (error) {
-    return workspaceApiError(error);
+    return workspaceApiError(error, requestId);
   }
 }
 
 export async function POST(request: Request) {
+  const requestId = generateRequestId();
   if (!(await allowWorkspaceMutation(request))) {
-    return rateLimitResponse();
+    return rateLimitResponse(requestId);
   }
 
   let body: unknown;
@@ -42,7 +45,7 @@ export async function POST(request: Request) {
   try {
     body = await readLimitedJson(request, MAX_WORKSPACE_BODY_BYTES);
   } catch (error) {
-    return workspaceApiError(error);
+    return workspaceApiError(error, requestId);
   }
 
   const payload = parseWorkspaceSnapshot(body);
@@ -64,6 +67,6 @@ export async function POST(request: Request) {
     );
     return noStoreJson({ workspace }, { status: 201 });
   } catch (error) {
-    return workspaceApiError(error);
+    return workspaceApiError(error, requestId);
   }
 }

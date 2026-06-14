@@ -38,6 +38,7 @@ describe("workspace API safeguards", () => {
     expect(response.status).toBe(503);
     expect(errorSpy).toHaveBeenCalledWith(
       "[launchlens:workspace-store] request_failed",
+      { requestId: undefined },
     );
     expect(JSON.stringify(errorSpy.mock.calls)).not.toContain(ownerCapability);
     errorSpy.mockRestore();

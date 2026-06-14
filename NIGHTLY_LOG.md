@@ -1,4 +1,4 @@
-# Nightly Log
+﻿# Nightly Log
 
 > Note: this log is a hand-written development diary, not an output of a scheduled
 > cron workflow. The "Nightly" name is a personal convention from the original plan
@@ -969,7 +969,7 @@ pm run visual:regression -- --url http://127.0.0.1:3013 --tolerance 0.02 --updat
 - 
 pm run visual:regression -- --url http://127.0.0.1:3013 --tolerance 0.02 then re-ran and reported passed: true with diffRatio: 0 on all three pages.
 - 
-pm run build passed and the route manifest now includes �� /pricing as a static route.
+pm run build passed and the route manifest now includes ○ /pricing as a static route.
 - CI run 27472035734 (Lint, test, build) passed all 10 steps on the resulting commit.
 
 Cycle 24 handoff:
@@ -1070,13 +1070,13 @@ Cycle 26 handoff:
 
 - P2 is done. The remaining deferred items are P3 (multi-tenant workspaces, billing, real hosted pricing as a paid product) and the post-portfolio eval retention work, which are explicitly out of scope for this build.
 
-## 2026-06-14 Cycle 27 — P3 Multi-Tenant Workspace Isolation
+## 2026-06-14 Cycle 27 鈥?P3 Multi-Tenant Workspace Isolation
 
 Cycle target: Implement and verify launchlens_tenants table, auto-create default tenants, tenant-scoped API routes, and cross-tenant/cross-owner isolation smoke.
 
 ### Execution
 
-- Fixed workspace-store.ts destructure bug: transaction array grew from 3 to 5 steps (advisory locks, auto-create tenant, tenant lookup, workspace INSERT, member INSERT). The old const [, rows] = ... was reading the wrong element — changed to const results = ... with esults[3] targeting the workspace INSERT.
+- Fixed workspace-store.ts destructure bug: transaction array grew from 3 to 5 steps (advisory locks, auto-create tenant, tenant lookup, workspace INSERT, member INSERT). The old const [, rows] = ... was reading the wrong element 鈥?changed to const results = ... with esults[3] targeting the workspace INSERT.
 - Applied tenant_id patch: auto-create default tenant via INSERT ... WHERE NOT EXISTS, then SELECT tenant id for new workspace.
 - Added /api/tenants, /api/tenants/[id], /api/tenants/[id]/workspaces routes.
 - Wrote 	enant-store.ts with list, create, get, listWorkspacesInTenant, getWorkspaceInTenant, createWorkspaceInTenant.
@@ -1304,7 +1304,7 @@ One commit containing: layout.tsx metadataBase, e2e.yml workflow, README badge u
 
 ## 2026-06-15 03:10 Asia/Shanghai
 
-### Cycle 33 — onboarding wizard for first-time reviewers
+### Cycle 33 鈥?onboarding wizard for first-time reviewers
 
 Cycle target: when a reviewer visits the live Vercel deployment for the first time, they see a quick-start overlay before the workspace loads. The overlay is self-dismissing, stores completion in localStorage, and does not block the product underneath.
 
@@ -1333,3 +1333,72 @@ One commit with onboarding-wizard.tsx and its integration into page.tsx.
 
 - The onboarding text is deliberately product-neutral and does not spoil the sample brief content. A future cycle could localize it or add a "Skip" affordance that counts as a dismissal.
 - The e2e test does not cover the wizard because the test runs on a clean page load already; the wizard only shows on the very first visit.
+
+## 2026-06-15 05:35 Asia/Shanghai
+
+### Cycle 34 - Type safety + API error types + db health check
+
+Cycle target: Strengthen type safety, add standard API error types, and add deep health check capability.
+
+#### Execution
+
+- Fixed 4 eslint errors in [...nextauth]/route.ts by using proper module augmentation for User, Session, and JWT interfaces instead of s any casts.
+- Added ApiError, ApiSuccess<T>, ApiFailure, and ApiResult<T> types to src/lib/launchlens/types.ts for standardized API response contracts.
+- Added REQUEST_ID_HEADER constant and generateRequestId() function to workspace-api.ts, and enhanced 
+oStoreJson(), workspaceApiError(), and ateLimitResponse() to accept and propagate a equestId parameter.
+- Added pingCloudStorage() to workspace-store.ts for deep database health checking (SELECT 1 probe with latency measurement).
+- Enhanced /api/status endpoint to include dbHealthy, dbLatencyMs, and version from NEXT_PUBLIC_APP_VERSION env var.
+- Updated /api/generate and /api/decision routes to generate and propagate request IDs across all response paths.
+- Added memory leak protection (bucket cap) to generate route rate limiter (matching decision route pattern).
+- Expanded status route tests with db health fields, version env var, and gitSha/buildTime assertions.
+- Updated workspace-api test assertion for the new structured error log format.
+
+#### Verification
+
+- 
+px tsc --noEmit -> 0 errors.
+- 
+pm test -> 33 files, 113 tests, all passing.
+- 
+pm run build -> success, all routes compile cleanly.
+
+#### Commit
+
+One commit with all cycle-34 changes.
+
+### Cycle 35 - Full requestId coverage across workspace/tenant routes
+
+Cycle target: Propagate request IDs across all workspace and tenant API routes for end-to-end request tracing.
+
+#### Execution
+
+- Added equestId generation to all 9 workspace/tenant routes:
+  - GET/POST /api/workspaces
+  - GET/DELETE /api/workspaces/[id]
+  - GET/POST /api/workspaces/[id]/share
+  - GET/POST /api/workspaces/[id]/members
+  - POST /api/workspaces/invites/accept
+  - POST /api/workspaces/recovery
+  - GET/POST /api/tenants
+  - GET /api/tenants/[id]
+  - GET/POST /api/tenants/[id]/workspaces
+- All workspaceApiError() and ateLimitResponse() calls now pass equestId for correlated error logging.
+- Every API response (success and error paths) now carries x-request-id header for client-side debugging.
+- Server error logs include { requestId } context for production debugging.
+
+#### Verification
+
+- 
+pm test -> 33 files, 113 tests, all passing.
+- 
+pm run build -> success, all 11 API routes compile cleanly.
+
+#### Commit
+
+One commit with all cycle-35 changes.
+
+### Cycle 35 handoff
+
+- 113 tests all pass, build is green, requestId coverage is complete across all API routes.
+- Next cycle candidates: (a) standardize success responses to { success: true, data } shape for consistency, (b) add input validation schemas for all POST/PUT bodies, (c) add request timing metrics to status endpoint, (d) improve accessibility of workspace UI components.
+

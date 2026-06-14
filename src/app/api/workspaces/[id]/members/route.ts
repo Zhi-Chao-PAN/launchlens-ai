@@ -1,4 +1,5 @@
 import {
+  generateRequestId,
   allowWorkspaceMutation,
   MAX_MEMBER_BODY_BYTES,
   noStoreJson,
@@ -23,6 +24,7 @@ type RouteContext = {
 export async function GET(request: Request, context: RouteContext) {
   const { id } = await context.params;
 
+  const requestId = generateRequestId();
   if (!isUuid(id)) {
     return noStoreJson(
       { code: "invalid_workspace_id", error: "Workspace ID is invalid." },
@@ -45,13 +47,14 @@ export async function GET(request: Request, context: RouteContext) {
 
     return noStoreJson({ members });
   } catch (error) {
-    return workspaceApiError(error);
+    return workspaceApiError(error, requestId);
   }
 }
 
 export async function POST(request: Request, context: RouteContext) {
+  const requestId = generateRequestId();
   if (!(await allowWorkspaceMutation(request))) {
-    return rateLimitResponse();
+    return rateLimitResponse(requestId);
   }
 
   const { id } = await context.params;
@@ -68,7 +71,7 @@ export async function POST(request: Request, context: RouteContext) {
   try {
     body = await readLimitedJson(request, MAX_MEMBER_BODY_BYTES);
   } catch (error) {
-    return workspaceApiError(error);
+    return workspaceApiError(error, requestId);
   }
 
   if (
@@ -97,6 +100,6 @@ export async function POST(request: Request, context: RouteContext) {
 
     return noStoreJson({ invite });
   } catch (error) {
-    return workspaceApiError(error);
+    return workspaceApiError(error, requestId);
   }
 }

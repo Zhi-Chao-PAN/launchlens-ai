@@ -1,3 +1,4 @@
+export const REQUEST_ID_HEADER = "x-request-id";
 import { createHash } from "node:crypto";
 
 import {
@@ -150,21 +151,23 @@ export async function allowWorkspaceMutation(request: Request) {
   return inProcessMutationSlot(bucketKey);
 }
 
-export function rateLimitResponse() {
+export function rateLimitResponse(requestId?: string) {
   return noStoreJson(
     {
       code: "cloud_rate_limited",
       error: "Too many cloud workspace changes. Please try again in a minute.",
     },
     { status: 429 },
+    requestId,
   );
 }
 
-export function workspaceApiError(error: unknown) {
+export function workspaceApiError(error: unknown, requestId?: string) {
   if (error instanceof WorkspaceRequestError) {
     return noStoreJson(
       { code: error.code, error: error.message },
       { status: error.status },
+      requestId,
     );
   }
 
@@ -172,22 +175,34 @@ export function workspaceApiError(error: unknown) {
     return noStoreJson(
       { code: error.code, error: error.message },
       { status: error.status },
+      requestId,
     );
   }
 
-  console.error("[launchlens:workspace-store] request_failed");
+  console.error("[launchlens:workspace-store] request_failed", { requestId });
   return noStoreJson(
     {
       code: "cloud_request_failed",
       error: "Cloud workspace storage is temporarily unavailable.",
     },
     { status: 503 },
+    requestId,
   );
 }
 
-export function noStoreJson(body: unknown, init?: ResponseInit) {
+
+export function generateRequestId(): string {
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).slice(2, 10);
+  return `ll-${timestamp}-${random}`;
+}
+
+export function noStoreJson(body: unknown, init?: ResponseInit, requestId?: string) {
   const headers = new Headers(init?.headers);
   headers.set("Cache-Control", "no-store");
+  if (requestId) {
+    headers.set(REQUEST_ID_HEADER, requestId);
+  }
 
   return Response.json(body, { ...init, headers });
 }

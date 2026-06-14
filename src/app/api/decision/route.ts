@@ -1,6 +1,7 @@
 import { generateDecisionBrief } from "@/lib/launchlens/decision-provider";
 import { normalizeDecisionSource } from "@/lib/launchlens/decision";
 import {
+  generateRequestId,
   noStoreJson,
   readLimitedJson,
   WorkspaceRequestError,
@@ -46,10 +47,12 @@ function rateLimit(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const requestId = generateRequestId();
   if (!rateLimit(request)) {
     return noStoreJson(
       { error: "Too many decision requests. Please try again in a minute." },
       { status: 429 },
+      requestId,
     );
   }
 
@@ -67,10 +70,11 @@ export async function POST(request: Request) {
               : "Invalid JSON payload.",
         },
         { status: error.status },
+        requestId,
       );
     }
 
-    return noStoreJson({ error: "Invalid JSON payload." }, { status: 400 });
+    return noStoreJson({ error: "Invalid JSON payload." }, { status: 400 }, requestId);
   }
 
   const record =
@@ -84,10 +88,11 @@ export async function POST(request: Request) {
           "Add at least one valid evidence item before generating a decision brief.",
       },
       { status: 422 },
+      requestId,
     );
   }
 
-  return noStoreJson(await generateDecisionBrief(source));
+  return noStoreJson(await generateDecisionBrief(source), {}, requestId);
 }
 
 export function resetDecisionRateLimitsForTests() {

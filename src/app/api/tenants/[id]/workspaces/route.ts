@@ -1,4 +1,5 @@
 import {
+  generateRequestId,
   allowWorkspaceMutation,
   MAX_WORKSPACE_BODY_BYTES,
   noStoreJson,
@@ -24,6 +25,7 @@ type RouteContext = {
 export async function GET(request: Request, context: RouteContext) {
   const { id } = await context.params;
 
+  const requestId = generateRequestId();
   try {
     const workspaces = await listWorkspacesInTenant(
       ownerTokenFromRequest(request),
@@ -37,13 +39,14 @@ export async function GET(request: Request, context: RouteContext) {
     }
     return noStoreJson({ workspaces });
   } catch (error) {
-    return workspaceApiError(error);
+    return workspaceApiError(error, requestId);
   }
 }
 
 export async function POST(request: Request, context: RouteContext) {
+  const requestId = generateRequestId();
   if (!(await allowWorkspaceMutation(request))) {
-    return rateLimitResponse();
+    return rateLimitResponse(requestId);
   }
 
   const { id } = await context.params;
@@ -53,7 +56,7 @@ export async function POST(request: Request, context: RouteContext) {
   try {
     body = await readLimitedJson(request, MAX_WORKSPACE_BODY_BYTES);
   } catch (error) {
-    return workspaceApiError(error);
+    return workspaceApiError(error, requestId);
   }
 
   const payload = parseWorkspaceSnapshot(body);
@@ -88,6 +91,6 @@ export async function POST(request: Request, context: RouteContext) {
         { status: error.status },
       );
     }
-    return workspaceApiError(error);
+    return workspaceApiError(error, requestId);
   }
 }

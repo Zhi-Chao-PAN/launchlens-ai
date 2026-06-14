@@ -1,4 +1,5 @@
 import {
+  generateRequestId,
   allowWorkspaceMutation,
   noStoreJson,
   ownerTokenFromRequest,
@@ -20,8 +21,9 @@ export const dynamic = "force-dynamic";
 const MAX_RECOVERY_BODY_BYTES = 2_048;
 
 export async function POST(request: Request) {
+  const requestId = generateRequestId();
   if (!(await allowWorkspaceMutation(request))) {
-    return rateLimitResponse();
+    return rateLimitResponse(requestId);
   }
 
   if (!cloudStorageConfigured()) {
@@ -39,7 +41,7 @@ export async function POST(request: Request) {
   try {
     body = await readLimitedJson(request, MAX_RECOVERY_BODY_BYTES);
   } catch (error) {
-    return workspaceApiError(error);
+    return workspaceApiError(error, requestId);
   }
 
   if (!isRecord(body) || typeof body.recoveryOwnerToken !== "string") {
@@ -73,6 +75,6 @@ export async function POST(request: Request) {
       await migrateWorkspaceOwner(currentOwnerToken, recoveryOwnerToken),
     );
   } catch (error) {
-    return workspaceApiError(error);
+    return workspaceApiError(error, requestId);
   }
 }

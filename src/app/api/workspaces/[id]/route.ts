@@ -1,8 +1,9 @@
 import {
-  deleteWorkspaceForMember,
-  getWorkspaceForMember,
+  
+deleteWorkspaceForMember,
+  getWorkspaceForMember
 } from "@/lib/launchlens/workspace-store";
-import {
+import { generateRequestId,
   allowWorkspaceMutation,
   noStoreJson,
   ownerTokenFromRequest,
@@ -21,6 +22,7 @@ type RouteContext = {
 export async function GET(request: Request, context: RouteContext) {
   const { id } = await context.params;
 
+  const requestId = generateRequestId();
   if (!isUuid(id)) {
     return noStoreJson(
       { code: "invalid_workspace_id", error: "Workspace ID is invalid." },
@@ -43,13 +45,14 @@ export async function GET(request: Request, context: RouteContext) {
 
     return noStoreJson({ workspace: access.record, role: access.role });
   } catch (error) {
-    return workspaceApiError(error);
+    return workspaceApiError(error, requestId);
   }
 }
 
 export async function DELETE(request: Request, context: RouteContext) {
+  const requestId = generateRequestId();
   if (!(await allowWorkspaceMutation(request))) {
-    return rateLimitResponse();
+    return rateLimitResponse(requestId);
   }
 
   const { id } = await context.params;
@@ -79,6 +82,6 @@ export async function DELETE(request: Request, context: RouteContext) {
       headers: { "Cache-Control": "no-store" },
     });
   } catch (error) {
-    return workspaceApiError(error);
+    return workspaceApiError(error, requestId);
   }
 }

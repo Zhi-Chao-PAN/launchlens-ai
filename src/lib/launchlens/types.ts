@@ -58,3 +58,21 @@ export type GenerationResult = {
   usedFallback: boolean;
   fallbackReason?: string;
 };
+
+export type ApiError = {
+  code?: string;
+  error: string;
+};
+
+export type ApiSuccess<T> = {
+  success: true;
+  data: T;
+};
+
+export type ApiFailure = {
+  success: false;
+  error: ApiError;
+  status: number;
+};
+
+export type ApiResult<T> = ApiSuccess<T> | ApiFailure;

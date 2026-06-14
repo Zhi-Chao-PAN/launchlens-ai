@@ -1,4 +1,5 @@
 import {
+  generateRequestId,
   allowWorkspaceMutation,
   MAX_SHARE_BODY_BYTES,
   noStoreJson,
@@ -18,8 +19,9 @@ type RouteContext = {
 };
 
 export async function POST(request: Request, context: RouteContext) {
+  const requestId = generateRequestId();
   if (!(await allowWorkspaceMutation(request))) {
-    return rateLimitResponse();
+    return rateLimitResponse(requestId);
   }
 
   const { id } = await context.params;
@@ -36,7 +38,7 @@ export async function POST(request: Request, context: RouteContext) {
   try {
     body = await readLimitedJson(request, MAX_SHARE_BODY_BYTES);
   } catch (error) {
-    return workspaceApiError(error);
+    return workspaceApiError(error, requestId);
   }
 
   if (!isRecord(body) || typeof body.enabled !== "boolean") {
@@ -62,6 +64,6 @@ export async function POST(request: Request, context: RouteContext) {
 
     return noStoreJson({ workspace });
   } catch (error) {
-    return workspaceApiError(error);
+    return workspaceApiError(error, requestId);
   }
 }

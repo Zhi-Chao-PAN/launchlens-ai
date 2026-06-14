@@ -1,4 +1,4 @@
-import "server-only";
+﻿import "server-only";
 
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 
@@ -83,6 +83,18 @@ export function cloudStorageConfigured() {
   return Boolean(connectionString());
 }
 
+export async function pingCloudStorage(): Promise<boolean> {
+  const url = connectionString();
+  if (!url) return false;
+
+  try {
+    const sql = neon(url);
+    const result = await sql`SELECT 1 as health_check`;
+    return Array.isArray(result) && result.length > 0;
+  } catch {
+    return false;
+  }
+}
 function getSql() {
   const url = connectionString();
 
@@ -709,3 +721,6 @@ export async function getSharedWorkspace(id: string) {
 export function resetWorkspaceStoreForTests() {
   sqlClient = null;
 }
+
+
+
