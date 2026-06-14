@@ -1300,3 +1300,36 @@ One commit containing: layout.tsx metadataBase, e2e.yml workflow, README badge u
 - The e2e workflow is optional by design (triggered only when LAUNCHLENS_E2E_URL repo variable is set), matching the cloud-smoke pattern. Future maintenance: if the hosted deployment URL changes, update layout.tsx metadataBase and LAUNCHLENS_E2E_URL.
 - The production migration (launchlens_tenants table) was verified during the earlier P3 testing and remains intact.
 - Manual follow-up still outstanding: upload public/og.png as the GitHub social preview (one click in repo settings).
+
+
+## 2026-06-15 03:10 Asia/Shanghai
+
+### Cycle 33 — onboarding wizard for first-time reviewers
+
+Cycle target: when a reviewer visits the live Vercel deployment for the first time, they see a quick-start overlay before the workspace loads. The overlay is self-dismissing, stores completion in localStorage, and does not block the product underneath.
+
+### Execution
+
+- Built src/components/onboarding-wizard.tsx: a dismissible 4-step guide rendered as a modal overlay. Steps: (1) Choose a founder brief, (2) Generate a workspace, (3) Validate assumptions, (4) Save/share/export.
+- The wizard checks localStorage on mount and delays 400 ms before showing so the product has time to hydrate underneath.
+- Once dismissed, the wizard never re-appears on that browser.
+- Exported a esetOnboarding helper for tests and the "Help" menu.
+- The component is a pure client component (\"use client\") and is imported by the server component page.tsx without any prop, so the build prerenders / as static content.
+
+### Verification
+
+- 
+pm run build (clean .next) -> success, / prerendered as static.
+- 
+pm test -> 32 files, 108 tests, all passing.
+- 
+px playwright test -> 1 test, 1 passed (14.3s, no retries).
+
+### Commit
+
+One commit with onboarding-wizard.tsx and its integration into page.tsx.
+
+### Cycle 33 handoff
+
+- The onboarding text is deliberately product-neutral and does not spoil the sample brief content. A future cycle could localize it or add a "Skip" affordance that counts as a dismissal.
+- The e2e test does not cover the wizard because the test runs on a clean page load already; the wizard only shows on the very first visit.
