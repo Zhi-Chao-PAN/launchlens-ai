@@ -74,3 +74,14 @@ Honest scope estimate from a code review in mid-2026:
 - Eval retention and drift alerts: 1 to 2 days.
 
 Total re-entry estimate: 6 to 10 weeks for a small team to convert this portfolio release into a real commercial SaaS. The current code is intentionally designed to make that re-entry tractable (server-only DML, schema in a migration, owner-scoped queries, capability account on a single column) but it has not been built with billing in mind. The bar for portfolio-ready is met; the bar for ship to paying teams is not, and the difference is documented here so that the next reader does not mistake one for the other.
+
+### P3 - Multi-tenant workspace isolation (2026-06-14)
+- Database migration adds launchlens_tenants table with UUID PK, owner_hash FK, and 	enant_id column on workspaces.
+- createWorkspace auto-creates a default tenant for new owners via INSERT ... WHERE NOT EXISTS.
+- All existing workspaces backfilled with tenant_id via migration script.
+- New API routes: GET/POST /api/tenants, GET /api/tenants/[id], GET/POST /api/tenants/[id]/workspaces.
+- TenantStoreError with typed code+status for consistent error responses.
+- Smoke test (smoke:tenant) verifies: 2 tenants per owner, cross-tenant workspace isolation, cross-owner 404, same-owner visibility.
+- Unit tests for tenant store (4 tests).
+- Status: ✅ Complete. Smoke:tenant, smoke:cloud, smoke:rbac all pass against production Neon.
+- Re-entry cost estimate for full commercial multi-tenancy (billing, RBAC matrix, quota per tenant): 2-3 weeks.

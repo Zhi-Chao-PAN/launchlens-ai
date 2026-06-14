@@ -1069,3 +1069,37 @@ pm run smoke:rbac passed all 6 steps (configured, created, memberInvited, member
 Cycle 26 handoff:
 
 - P2 is done. The remaining deferred items are P3 (multi-tenant workspaces, billing, real hosted pricing as a paid product) and the post-portfolio eval retention work, which are explicitly out of scope for this build.
+
+## 2026-06-14 Cycle 27 — P3 Multi-Tenant Workspace Isolation
+
+Cycle target: Implement and verify launchlens_tenants table, auto-create default tenants, tenant-scoped API routes, and cross-tenant/cross-owner isolation smoke.
+
+### Execution
+
+- Fixed workspace-store.ts destructure bug: transaction array grew from 3 to 5 steps (advisory locks, auto-create tenant, tenant lookup, workspace INSERT, member INSERT). The old const [, rows] = ... was reading the wrong element — changed to const results = ... with esults[3] targeting the workspace INSERT.
+- Applied tenant_id patch: auto-create default tenant via INSERT ... WHERE NOT EXISTS, then SELECT tenant id for new workspace.
+- Added /api/tenants, /api/tenants/[id], /api/tenants/[id]/workspaces routes.
+- Wrote 	enant-store.ts with list, create, get, listWorkspacesInTenant, getWorkspaceInTenant, createWorkspaceInTenant.
+- Created smoke:tenant script exercising 2 tenants, cross-tenant isolation, cross-owner 404, same-owner visibility.
+- Created smoke:tenant.test.ts with 4 unit tests.
+
+### Verification
+
+- 
+px tsc --noEmit: passed, zero errors.
+- 
+pm run lint: passed.
+- 
+pm run build: passed with new /api/tenants/* routes.
+- 
+pm test: 96 tests in 29 files, all passing.
+- 
+pm run smoke:tenant: 6 assertions passed (tenantA, tenantB, workspace isolation, crossOwner 404, perTenantIsolation).
+- 
+pm run smoke:cloud: 9 assertions passed (configured, created, restored, recovered, previousOwnerRevoked, shared, privateShareBoundary, disabledShare, deleted).
+- 
+pm run smoke:rbac: 7 assertions passed (configured, created, memberInvited, memberAccepted, memberRead, viewerForbidden, deleted).
+
+### Commit
+
+P3 multi-tenant workspace isolation complete. All three smoke suites pass against production Neon.

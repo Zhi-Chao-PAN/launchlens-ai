@@ -137,3 +137,15 @@
 - [ ] Add longitudinal provider/decision eval dashboards and latency drift thresholds.
 - [ ] Add automated deployed visual-regression snapshots.
 
+
+## P3 — Multi-Tenant Workspace Isolation (2026-06-14)
+
+- [x] Add launchlens_tenants migration to migrate-cloud-db.ts.
+- [x] Backfill existing workspaces with tenant_id.
+- [x] Implement 	enant-store.ts with list/create/get tenants, workspace CRUD scoped to tenant.
+- [x] Auto-create default tenant in createWorkspace for new owners.
+- [x] Fix transaction destructure bug (results[3] instead of [, rows]).
+- [x] Add /api/tenants, /api/tenants/[id], /api/tenants/[id]/workspaces routes.
+- [x] Write smoke:tenant script (6 assertions: 2 tenants, cross-tenant isolation, cross-owner 404, same-owner visibility).
+- [x] Add unit tests for tenant store (4 tests, 96 total).
+- [x] Verify triple smoke (tenant, cloud, rbac) all pass against production Neon.
