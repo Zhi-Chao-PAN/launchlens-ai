@@ -15,7 +15,9 @@
     "smoke:rbac": "tsx scripts/smoke-rbac.ts",
     "smoke:tenant": "tsx scripts/smoke-tenant.ts",
     "visual:regression": "tsx scripts/visual-regression.ts",
-    "decision:history": "tsx scripts/decision-history.ts"
+    "decision:history": "tsx scripts/decision-history.ts",
+    "test:e2e": "playwright test",
+    "test:all": "npm test && npm run test:e2e"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
@@ -46,5 +48,3 @@
     "postcss": "^8.5.15"
   }
 }
-
-

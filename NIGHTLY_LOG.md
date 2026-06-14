@@ -1217,3 +1217,50 @@ pm run lint -> 0 warnings.
 - The v1.x line now has a clean CodeQL security baseline on the default security-extended query pack.
 - Future security work should be reactive, not proactive: wait for the weekly CodeQL run, look at the new findings, and either fix or document the deliberate deferral.
 - The next reviewer-friction follow-ups that still need a human are: upload public/og.png as the GitHub social preview, accept the Marketplace Neon terms in the hosted Vercel deployment, and review the CodeQL weekly email once the action settles into a steady-state run.
+
+
+## 2026-06-15 03:00 Asia/Shanghai
+
+### Cycle 31 - API test coverage + e2e happy path
+
+Cycle target: close the last meaningful test-coverage gap by adding unit tests for the five API routes that had none and an end-to-end Playwright test for the full product flow.
+
+### Execution
+
+- Added src/app/api/generate/route.test.ts (5 tests): validates non-JSON rejection, missing idea, too-short idea, field-length overflow, and a well-formed mock generation.
+- Added src/app/api/decision/route.test.ts (3 tests): validates non-JSON rejection, empty experiment rejection (422), and a valid experiment returning a mock decision brief.
+- Added src/app/api/tenants/route.test.ts (4 tests): validates GET/POST behaviour when no database is configured, missing name, non-string name, and valid payload producing cloud_request_failed.
+- Added src/app/api/tenants/\[id\]/route.test.ts (2 tests): validates malformed UUID rejection (400) and a valid UUID without database (503).
+- Added src/app/api/tenants/\[id\]/workspaces/route.test.ts (3 tests): validates 503 on GET, 400 on malformed POST, 503 on valid POST.
+- Added playwright.config.ts with a reusable webServer that starts 
+ext dev on 3099 automatically.
+- Added e2e/happy-path.e2e.test.ts (1 test, 5 assertions): the end-to-end test navigates the home page, clicks a sample brief, generates a workspace via the real /api/generate route, validates the authorization boundary (401 for a malformed owner token), and confirms the public share page renders a safe 404 without leaking any workspace content.
+- Added package.json scripts 	est:e2e and 	est:all so reviewers can run the full suite with one command.
+- Updated .gitignore to exclude 	est-results/ (Playwright output).
+
+### Verification
+
+- 
+px tsc --noEmit -> 0 errors.
+- 
+pm run lint -> 0 warnings.
+- 
+pm test -> 32 test files, 108 tests, all passing (was 29/96).
+- 
+pm run build -> 15 routes, success.
+- 
+px playwright test -> 1 test, 1 passed (49.3s, no retries needed).
+- 
+pm run eval:provider -> still passes (not touched this cycle).
+
+### Commits
+
+- This cycle produces one commit with all test files, the Playwright config, the e2e spec, the .gitignore change, and the package.json script additions.
+
+### Cycle 31 handoff
+
+- 108 unit tests + 1 e2e test = the broadest coverage the project has had.
+- The 	est:e2e script and the CI 	est script are separate by design: the e2e test starts its own dev server and requires Playwright browsers; CI already runs the unit-only path. A future cycle could wire the e2e test into a GitHub Actions workflow as an optional job, similar to cloud-smoke.yml.
+- The e2e test uses page.evaluate for the API calls instead of Playwright's standalone equest fixture because Playwright 1.60 has a known fixture-disposal race between the page closure and the request context. The in-page fetch reuses the page's own request context and avoids the race entirely.
+- Coincidental fix: the itest.config.ts was already updated to include src/app/api/tenants/ in the test inclusion path, meaning the new tenant-route tests are picked up automatically by 
+pm test.

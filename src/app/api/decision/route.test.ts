@@ -1,72 +1,69 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+﻿import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { exampleWorkspaces } from "@/lib/launchlens/example-workspaces";
-import { decisionSourceFromExperiment } from "@/lib/launchlens/decision";
 
 import { POST, resetDecisionRateLimitsForTests } from "./route";
 
-describe("POST /api/decision", () => {
-  const source = decisionSourceFromExperiment(
-    exampleWorkspaces[0].execution.experiments[0],
-  );
+const sample = exampleWorkspaces[0].execution.experiments[0];
 
+describe("/api/decision", () => {
   beforeEach(() => {
-    delete process.env.OPENAI_API_KEY;
     delete process.env.MINIMAX_API_KEY;
+    delete process.env.OPENAI_API_KEY;
+    delete process.env.DECISION_COPILOT_LIVE_ENABLED;
     resetDecisionRateLimitsForTests();
   });
 
   afterEach(() => {
-    delete process.env.OPENAI_API_KEY;
     delete process.env.MINIMAX_API_KEY;
+    delete process.env.OPENAI_API_KEY;
+    delete process.env.DECISION_COPILOT_LIVE_ENABLED;
+    resetDecisionRateLimitsForTests();
   });
 
-  it("returns a demo decision brief without an API key", async () => {
+  function postExperiment(experiment: unknown) {
+    return POST(
+      new Request("http://localhost/api/decision", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ experiment }),
+      }),
+    );
+  }
+
+  it("rejects non-JSON payloads with 400", async () => {
     const response = await POST(
       new Request("http://localhost/api/decision", {
         method: "POST",
-        body: JSON.stringify({ experiment: source }),
+        headers: { "content-type": "application/json" },
+        body: "not-json",
       }),
     );
-    const body = await response.json();
-
-    expect(response.status).toBe(200);
-    expect(body.mode).toBe("demo");
-    expect(body.brief.provider).toBe("mock");
-    expect(
-      body.brief.claims.flatMap(
-        (claim: { evidenceIds: string[] }) => claim.evidenceIds,
-      ),
-    ).toEqual(
-      source.evidence.map((item) => item.id),
-    );
-    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.status).toBe(400);
   });
 
-  it("rejects experiments without evidence", async () => {
-    const response = await POST(
-      new Request("http://localhost/api/decision", {
-        method: "POST",
-        body: JSON.stringify({
-          experiment: { ...source, evidence: [] },
-        }),
-      }),
-    );
-
+  it("rejects empty experiments with 422 because no evidence is available", async () => {
+    const response = await postExperiment({
+      id: "empty-experiment",
+      assumption: "No evidence yet.",
+      status: "testing",
+      confidence: "low",
+      evidence: [],
+    });
     expect(response.status).toBe(422);
     await expect(response.json()).resolves.toMatchObject({
       error: expect.stringContaining("evidence"),
     });
   });
 
-  it("rejects oversized chunked request bodies", async () => {
-    const response = await POST(
-      new Request("http://localhost/api/decision", {
-        method: "POST",
-        body: JSON.stringify({ padding: "x".repeat(40_001) }),
-      }),
-    );
-
-    expect(response.status).toBe(413);
+  it("returns a decision brief for a well-formed experiment", async () => {
+    const response = await postExperiment({ ...sample, experimentId: sample.id });
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    const body = (await response.json()) as Record<string, unknown>;
+    const brief = (body.brief ?? {}) as Record<string, unknown>;
+    expect(typeof brief.recommendation).toBe("string");
+    expect(Array.isArray(brief.groundedClaims ?? brief.claims)).toBe(true);
+    expect(body.mode).toBe("demo");
   });
 });

@@ -46,3 +46,6 @@ next-env.d.ts
 .visual-regression/
 job.log
 
+
+# playwright e2e
+test-results/
