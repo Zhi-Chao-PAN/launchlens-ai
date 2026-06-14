@@ -9,6 +9,10 @@ import {
   workspaceApiError,
 } from "@/lib/launchlens/workspace-api";
 import {
+  ERROR_CLOUD_UNAVAILABLE,
+  ERROR_INVALID_RECOVERY_TOKEN,
+} from "@/lib/launchlens/error-codes";
+import {
   cloudStorageConfigured,
   migrateWorkspaceOwner,
   validateOwnerToken,
@@ -29,7 +33,7 @@ export async function POST(request: Request) {
   if (!cloudStorageConfigured()) {
     return noStoreJson(
       {
-        code: "cloud_unavailable",
+        code: ERROR_CLOUD_UNAVAILABLE,
         error: "Cloud workspace storage is not configured.",
       },
       { status: 503 },
@@ -47,7 +51,7 @@ export async function POST(request: Request) {
   if (!isRecord(body) || typeof body.recoveryOwnerToken !== "string") {
     return noStoreJson(
       {
-        code: "invalid_recovery_token",
+        code: ERROR_INVALID_RECOVERY_TOKEN,
         error: "Recovery owner token is invalid.",
       },
       { status: 400 },

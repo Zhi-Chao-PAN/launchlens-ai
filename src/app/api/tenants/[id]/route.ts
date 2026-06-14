@@ -4,6 +4,10 @@ import {
   ownerTokenFromRequest,
   workspaceApiError,
 } from "@/lib/launchlens/workspace-api";
+import {
+  ERROR_INVALID_TENANT_ID,
+  ERROR_TENANT_NOT_FOUND,
+} from "@/lib/launchlens/error-codes";
 import { getTenantForOwner } from "@/lib/launchlens/tenant-store";
 import { isUuid } from "@/lib/launchlens/workspace-validation";
 
@@ -20,7 +24,7 @@ export async function GET(request: Request, context: RouteContext) {
   const requestId = generateRequestId();
   if (!isUuid(id)) {
     return noStoreJson(
-      { code: "invalid_tenant_id", error: "Tenant ID is invalid." },
+      { code: ERROR_INVALID_TENANT_ID, error: "Tenant ID is invalid." },
       { status: 400 },
     );
   }
@@ -29,7 +33,7 @@ export async function GET(request: Request, context: RouteContext) {
     const tenant = await getTenantForOwner(ownerTokenFromRequest(request), id);
     if (!tenant) {
       return noStoreJson(
-        { code: "tenant_not_found", error: "Tenant was not found." },
+        { code: ERROR_TENANT_NOT_FOUND, error: "Tenant was not found." },
         { status: 404 },
       );
     }

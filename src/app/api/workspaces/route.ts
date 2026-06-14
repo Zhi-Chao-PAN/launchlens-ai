@@ -13,6 +13,9 @@ import { generateRequestId,
   readLimitedJson,
   workspaceApiError,
 } from "@/lib/launchlens/workspace-api";
+import {
+  ERROR_INVALID_WORKSPACE,
+} from "@/lib/launchlens/error-codes";
 import { parseWorkspaceSnapshot } from "@/lib/launchlens/workspace-validation";
 
 export const runtime = "nodejs";
@@ -53,7 +56,7 @@ export async function POST(request: Request) {
   if (!payload) {
     return noStoreJson(
       {
-        code: "invalid_workspace",
+        code: ERROR_INVALID_WORKSPACE,
         error: "Workspace snapshot does not match the required schema.",
       },
       { status: 400 },

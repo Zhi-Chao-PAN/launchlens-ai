@@ -9,6 +9,11 @@ import {
   workspaceApiError,
 } from "@/lib/launchlens/workspace-api";
 import {
+  ERROR_INVALID_MEMBER_ROLE,
+  ERROR_INVALID_WORKSPACE_ID,
+  ERROR_WORKSPACE_FORBIDDEN,
+} from "@/lib/launchlens/error-codes";
+import {
   createWorkspaceInvite,
   listWorkspaceMembers,
 } from "@/lib/launchlens/workspace-store";
@@ -27,7 +32,7 @@ export async function GET(request: Request, context: RouteContext) {
   const requestId = generateRequestId();
   if (!isUuid(id)) {
     return noStoreJson(
-      { code: "invalid_workspace_id", error: "Workspace ID is invalid." },
+      { code: ERROR_INVALID_WORKSPACE_ID, error: "Workspace ID is invalid." },
       { status: 400 },
     );
   }
@@ -40,7 +45,7 @@ export async function GET(request: Request, context: RouteContext) {
 
     if (members === null) {
       return noStoreJson(
-        { code: "workspace_forbidden", error: "Only members can view the member list." },
+        { code: ERROR_WORKSPACE_FORBIDDEN, error: "Only members can view the member list." },
         { status: 403 },
       );
     }
@@ -61,7 +66,7 @@ export async function POST(request: Request, context: RouteContext) {
 
   if (!isUuid(id)) {
     return noStoreJson(
-      { code: "invalid_workspace_id", error: "Workspace ID is invalid." },
+      { code: ERROR_INVALID_WORKSPACE_ID, error: "Workspace ID is invalid." },
       { status: 400 },
     );
   }
@@ -79,7 +84,7 @@ export async function POST(request: Request, context: RouteContext) {
     (body.role !== "editor" && body.role !== "viewer")
   ) {
     return noStoreJson(
-      { code: "invalid_member_role", error: "Member role must be editor or viewer." },
+      { code: ERROR_INVALID_MEMBER_ROLE, error: "Member role must be editor or viewer." },
       { status: 400 },
     );
   }
@@ -93,7 +98,7 @@ export async function POST(request: Request, context: RouteContext) {
 
     if (!invite) {
       return noStoreJson(
-        { code: "workspace_forbidden", error: "Only owners can invite members." },
+        { code: ERROR_WORKSPACE_FORBIDDEN, error: "Only owners can invite members." },
         { status: 403 },
       );
     }

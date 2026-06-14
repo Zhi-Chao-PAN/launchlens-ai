@@ -55,3 +55,24 @@ export const ERROR_FIELD_TOO_LONG = "field_too_long";
 
 // --- Decision ---
 export const ERROR_DECISION_NO_EVIDENCE = "decision_no_evidence";
+
+// --- Workspace ---
+export const ERROR_INVALID_WORKSPACE_ID = "invalid_workspace_id";
+export const ERROR_WORKSPACE_FORBIDDEN = "workspace_forbidden";
+
+// --- Sharing ---
+export const ERROR_INVALID_SHARE_STATE = "invalid_share_state";
+
+// --- Members / RBAC ---
+export const ERROR_INVALID_MEMBER_ROLE = "invalid_member_role";
+
+// --- Invites ---
+export const ERROR_INVALID_INVITE_TOKEN = "invalid_invite_token";
+export const ERROR_INVITE_UNAVAILABLE = "invite_unavailable";
+
+// --- Recovery ---
+export const ERROR_INVALID_RECOVERY_TOKEN = "invalid_recovery_token";
+export const ERROR_INVALID_OWNER_TOKEN = "invalid_owner_token";
+
+// --- Tenants ---
+export const ERROR_INVALID_TENANT_PAYLOAD = "invalid_tenant_payload";

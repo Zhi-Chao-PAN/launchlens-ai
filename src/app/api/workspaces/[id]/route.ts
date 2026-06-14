@@ -10,6 +10,10 @@ import { generateRequestId,
   rateLimitResponse,
   workspaceApiError,
 } from "@/lib/launchlens/workspace-api";
+import {
+  ERROR_INVALID_WORKSPACE_ID,
+  ERROR_WORKSPACE_NOT_FOUND,
+} from "@/lib/launchlens/error-codes";
 import { isUuid } from "@/lib/launchlens/workspace-validation";
 
 export const runtime = "nodejs";
@@ -25,7 +29,7 @@ export async function GET(request: Request, context: RouteContext) {
   const requestId = generateRequestId();
   if (!isUuid(id)) {
     return noStoreJson(
-      { code: "invalid_workspace_id", error: "Workspace ID is invalid." },
+      { code: ERROR_INVALID_WORKSPACE_ID, error: "Workspace ID is invalid." },
       { status: 400 },
     );
   }
@@ -38,7 +42,7 @@ export async function GET(request: Request, context: RouteContext) {
 
     if (!access) {
       return noStoreJson(
-        { code: "workspace_not_found", error: "Workspace was not found." },
+        { code: ERROR_WORKSPACE_NOT_FOUND, error: "Workspace was not found." },
         { status: 404 },
       );
     }
@@ -59,7 +63,7 @@ export async function DELETE(request: Request, context: RouteContext) {
 
   if (!isUuid(id)) {
     return noStoreJson(
-      { code: "invalid_workspace_id", error: "Workspace ID is invalid." },
+      { code: ERROR_INVALID_WORKSPACE_ID, error: "Workspace ID is invalid." },
       { status: 400 },
     );
   }
@@ -72,7 +76,7 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     if (!deleted) {
       return noStoreJson(
-        { code: "workspace_not_found", error: "Workspace was not found." },
+        { code: ERROR_WORKSPACE_NOT_FOUND, error: "Workspace was not found." },
         { status: 404 },
       );
     }

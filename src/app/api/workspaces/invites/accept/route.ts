@@ -8,6 +8,10 @@ import {
   readLimitedJson,
   workspaceApiError,
 } from "@/lib/launchlens/workspace-api";
+import {
+  ERROR_INVALID_INVITE_TOKEN,
+  ERROR_INVITE_UNAVAILABLE,
+} from "@/lib/launchlens/error-codes";
 import { acceptWorkspaceInvite } from "@/lib/launchlens/workspace-store";
 import { isRecord } from "@/lib/launchlens/workspace-validation";
 
@@ -30,7 +34,7 @@ export async function POST(request: Request) {
 
   if (!isRecord(body) || typeof body.token !== "string" || body.token.length < 32) {
     return noStoreJson(
-      { code: "invalid_invite_token", error: "Invite token is invalid." },
+      { code: ERROR_INVALID_INVITE_TOKEN, error: "Invite token is invalid." },
       { status: 400 },
     );
   }
@@ -43,7 +47,7 @@ export async function POST(request: Request) {
 
     if (!result) {
       return noStoreJson(
-        { code: "invite_unavailable", error: "Invite is expired, already used, or unknown." },
+        { code: ERROR_INVITE_UNAVAILABLE, error: "Invite is expired, already used, or unknown." },
         { status: 410 },
       );
     }

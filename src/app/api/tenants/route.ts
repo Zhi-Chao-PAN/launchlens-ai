@@ -9,6 +9,9 @@ import {
   workspaceApiError,
 } from "@/lib/launchlens/workspace-api";
 import {
+  ERROR_INVALID_TENANT_PAYLOAD,
+} from "@/lib/launchlens/error-codes";
+import {
   createTenant,
   listTenantsForOwner,
   TenantStoreError,
@@ -50,7 +53,7 @@ export async function POST(request: Request) {
 
   if (!isRecord(body) || typeof body.name !== "string") {
     return noStoreJson(
-      { code: "invalid_tenant_payload", error: "Tenant name is required." },
+      { code: ERROR_INVALID_TENANT_PAYLOAD, error: "Tenant name is required." },
       { status: 400 },
     );
   }

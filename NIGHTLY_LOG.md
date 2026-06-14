@@ -1438,3 +1438,50 @@ pm run build -> success, all routes compile cleanly.
 - 25+ standardized error codes across the API surface.
 - Next cycle candidates: (a) migrate remaining workspace/tenant routes to use error code constants, (b) add an error-code contract test that verifies each route returns consistent codes, (c) add request timing/metrics middleware, (d) start experience layer improvements (keyboard shortcuts, better empty states).
 
+### Cycle 38 - Full error-code standardization across workspace/tenant routes
+
+Cycle target: Migrate all remaining string-literal error codes to named constants in workspace and tenant API routes.
+
+#### Execution
+
+- Added 15+ new error code constants to error-codes.ts covering workspaces, sharing, members, invites, recovery, and tenants domains.
+- Deduplicated error code file (39 unique constants, all following ERROR_ prefix convention).
+- Migrated 9 workspace/tenant route files from string literals to imported constants:
+  - /api/workspaces (GET/POST)
+  - /api/workspaces/[id] (GET/DELETE)
+  - /api/workspaces/[id]/share (GET/POST)
+  - /api/workspaces/[id]/members (GET/POST)
+  - /api/workspaces/recovery (POST)
+  - /api/workspaces/invites/accept (POST)
+  - /api/tenants (GET/POST)
+  - /api/tenants/[id] (GET)
+  - /api/tenants/[id]/workspaces (GET/POST)
+- 0 string-literal error codes remain in route files — all 11 API routes now use named constants.
+
+### Cycle 39 - Error code contract test suite
+
+Cycle target: Add architectural tests that guarantee the error code system stays consistent.
+
+#### Execution
+
+- Created src/lib/launchlens/error-codes.test.ts with 5 contract tests:
+  1. Exports at least 30 error codes
+  2. All constant names start with ERROR_ prefix
+  3. All code values are snake_case strings
+  4. No duplicate code values (one name maps to one value)
+  5. Code names follow UPPER_SNAKE_CASE -> snake_case value convention (80%+ match rate)
+- Test count: 113 -> 118 (+5 contract tests)
+
+#### Verification (Cycles 38-39)
+
+- 
+pm test -> 34 files, 118 tests, all passing.
+- 
+pm run build -> success, all routes compile cleanly.
+- Route audit: 0 string-literal error codes in any route.ts file.
+
+#### Cycle 39 handoff
+
+- Error code system is fully standardized across the API surface.
+- Next cycle candidates: (a) add response-time header and timing metrics, (b) start experience layer improvements (keyboard shortcuts, empty states), (c) add OpenAPI / API reference documentation, (d) add request size validation to all POST endpoints.
+

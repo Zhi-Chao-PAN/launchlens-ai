@@ -9,6 +9,10 @@ import {
   workspaceApiError,
 } from "@/lib/launchlens/workspace-api";
 import {
+  ERROR_INVALID_WORKSPACE,
+  ERROR_TENANT_NOT_FOUND,
+} from "@/lib/launchlens/error-codes";
+import {
   createWorkspaceInTenant,
   listWorkspacesInTenant,
   TenantStoreError,
@@ -33,7 +37,7 @@ export async function GET(request: Request, context: RouteContext) {
     );
     if (workspaces === null) {
       return noStoreJson(
-        { code: "tenant_not_found", error: "Tenant was not found." },
+        { code: ERROR_TENANT_NOT_FOUND, error: "Tenant was not found." },
         { status: 404 },
       );
     }
@@ -64,7 +68,7 @@ export async function POST(request: Request, context: RouteContext) {
   if (!payload) {
     return noStoreJson(
       {
-        code: "invalid_workspace",
+        code: ERROR_INVALID_WORKSPACE,
         error: "Workspace snapshot does not match the required schema.",
       },
       { status: 400 },
@@ -79,7 +83,7 @@ export async function POST(request: Request, context: RouteContext) {
     );
     if ("kind" in result && result.kind === "tenant_missing") {
       return noStoreJson(
-        { code: "tenant_not_found", error: "Tenant was not found." },
+        { code: ERROR_TENANT_NOT_FOUND, error: "Tenant was not found." },
         { status: 404 },
       );
     }
