@@ -1179,3 +1179,41 @@ pm run lint -> still 0 warnings (lint config was already strict).
 - Future cycles after this one should be either real product enhancements, or the long-running re-entry-cost commercial work. There is no more obvious "top-level file is missing" work to do.
 - The CodeQL workflow will start emitting findings as soon as the next push to main; that is the first signal that the security surface is being monitored automatically.
 - Reviewer-friction follow-ups that still need a human in front of the keyboard: (1) upload public/og.png as the GitHub social preview (one click in repo settings), (2) accept the Marketplace Neon terms in the hosted Vercel deployment if that has not already happened, (3) review the CodeQL findings on the next CI run.
+
+
+## 2026-06-14 20:45 Asia/Shanghai
+
+### Cycle 30 - close the CodeQL feedback loop
+
+Cycle target: when a security workflow starts reporting findings, the first response is to fix the findings, not to silence the workflow. This cycle fixes the three note findings that the new CodeQL workflow emitted on its very first run, and turns the action version up to v4 so the workflow does not get auto-deprecated in December 2026.
+
+### Execution
+
+- Fixed the GitHub CodeQL action from v3 to v4 because v3 is deprecated December 2026.
+- Renamed the matrix language from 	ypescript-javascript to javascript-typescript because CodeQL CLI 2.25.6 only recognizes the new alias.
+- Removed the three note findings that the first CodeQL run produced:
+  - scripts/visual-regression.ts: dropped the unused ImageDiff type import.
+  - scripts/decision-history.ts: dropped the unused DEFAULT_RETENTION_MAX_AGE_DAYS constant and the unused hasFlag helper.
+
+### Verification
+
+- 
+px tsc --noEmit -> 0 errors.
+- 
+pm test -> 96 tests in 29 files pass.
+- 
+pm run lint -> 0 warnings.
+- GitHub Actions on 8957538: CI success, Hosted visual regression success, Cloud smoke (optional) skipped (no secret by design), CodeQL success.
+- The CodeQL security-extended and security-and-quality query packs reported zero findings on the second run. The three note findings from the first run are fixed in this commit.
+
+### Commits
+
+- e42fcd9 chore(community): add SECURITY, CONTRIBUTING, issue/PR templates, and weekly CodeQL workflow
+- 91cd4b fix(ci): CodeQL language alias and v4 action
+- 8957538 chore(ci): clear the three CodeQL note findings on scripts/
+
+### Cycle 30 handoff
+
+- The v1.x line now has a clean CodeQL security baseline on the default security-extended query pack.
+- Future security work should be reactive, not proactive: wait for the weekly CodeQL run, look at the new findings, and either fix or document the deliberate deferral.
+- The next reviewer-friction follow-ups that still need a human are: upload public/og.png as the GitHub social preview, accept the Marketplace Neon terms in the hosted Vercel deployment, and review the CodeQL weekly email once the action settles into a steady-state run.
