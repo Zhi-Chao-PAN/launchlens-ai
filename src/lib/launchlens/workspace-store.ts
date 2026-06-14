@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 
 import { neon } from "@neondatabase/serverless";
 
@@ -20,9 +20,16 @@ import {
   isLaunchLensInput,
   isLaunchLensWorkspace,
 } from "./workspace-validation";
+import {
+  isWorkspaceRole,
+  type WorkspaceRole,
+} from "./workspace-rbac";
 
 const OWNER_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43,128}$/;
+const INVITE_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const GLOBAL_QUOTA_LOCK = 4_912_826_168;
+const INVITE_LOCK = 1_847_392_164;
+const MAX_MEMBERS_PER_WORKSPACE = 10;
 
 type WorkspaceRow = {
   id: string;
@@ -107,6 +114,10 @@ export function hashOwnerToken(token: string) {
   return createHash("sha256").update(token, "utf8").digest("hex");
 }
 
+function hashInviteToken(token: string) {
+  return createHash("sha256").update(token, "utf8").digest("hex");
+}
+
 function toIso(value: string | Date) {
   return new Date(value).toISOString();
 }
@@ -184,18 +195,54 @@ function firstRow<T>(rows: unknown) {
   return (rows as T[])[0];
 }
 
-export async function listWorkspaces(ownerToken: string) {
-  const ownerHash = hashOwnerToken(ownerToken);
+export async function listWorkspacesForMember(ownerToken: string) {
+  const memberHash = hashOwnerToken(ownerToken);
   const sql = getSql();
   const rows = (await sql`
     SELECT id, title, is_public, created_at, updated_at
     FROM launchlens_workspaces
-    WHERE owner_hash = ${ownerHash}
+    WHERE id IN (
+      SELECT workspace_id FROM launchlens_workspace_members WHERE member_hash = ${memberHash}
+    )
     ORDER BY updated_at DESC
     LIMIT ${MAX_CLOUD_WORKSPACES}
   `) as unknown as WorkspaceRow[];
 
   return rows.map(toSummary);
+}
+
+export async function getWorkspaceForMember(
+  ownerToken: string,
+  id: string,
+): Promise<{ role: WorkspaceRole; record: CloudWorkspaceRecord } | null> {
+  const memberHash = hashOwnerToken(ownerToken);
+  const sql = getSql();
+  const memberRows = (await sql`
+    SELECT role
+    FROM launchlens_workspace_members
+    WHERE workspace_id = ${id} AND member_hash = ${memberHash}
+    LIMIT 1
+  `) as unknown as Array<{ role: string }>;
+  const memberRow = memberRows[0];
+
+  if (!memberRow || !isWorkspaceRole(memberRow.role)) {
+    return null;
+  }
+
+  const rows = (await sql`
+    SELECT id, title, input, workspace, execution, is_public, created_at, updated_at
+    FROM launchlens_workspaces
+    WHERE id = ${id}
+    LIMIT 1
+  `) as unknown as WorkspaceRow[];
+
+  const row = rows[0];
+
+  if (!row) {
+    return null;
+  }
+
+  return { role: memberRow.role, record: toRecord(row) };
 }
 
 export async function createWorkspace(
@@ -224,13 +271,17 @@ export async function createWorkspace(
         ${JSON.stringify(payload.execution)}::jsonb
       WHERE
         (SELECT COUNT(*) FROM launchlens_workspaces) < ${MAX_TOTAL_CLOUD_WORKSPACES}
-        AND
-        (
+        AND (
           SELECT COUNT(*)
           FROM launchlens_workspaces
           WHERE owner_hash = ${ownerHash}
         ) < ${MAX_CLOUD_WORKSPACES}
       RETURNING id, title, input, workspace, execution, is_public, created_at, updated_at
+    `,
+    transaction`
+      INSERT INTO launchlens_workspace_members (workspace_id, member_hash, role)
+      VALUES (${id}, ${ownerHash}, 'owner')
+      ON CONFLICT (workspace_id, member_hash) DO NOTHING
     `,
   ]);
   const row = firstRow<WorkspaceRow>(rows);
@@ -246,30 +297,60 @@ export async function createWorkspace(
   return toRecord(row);
 }
 
-export async function getOwnedWorkspace(ownerToken: string, id: string) {
-  const ownerHash = hashOwnerToken(ownerToken);
+export async function deleteWorkspaceForMember(
+  ownerToken: string,
+  id: string,
+) {
+  const memberHash = hashOwnerToken(ownerToken);
   const sql = getSql();
-  const rows = await sql`
-    SELECT id, title, input, workspace, execution, is_public, created_at, updated_at
-    FROM launchlens_workspaces
-    WHERE id = ${id} AND owner_hash = ${ownerHash}
+  const roleRows = (await sql`
+    SELECT role
+    FROM launchlens_workspace_members
+    WHERE workspace_id = ${id} AND member_hash = ${memberHash}
     LIMIT 1
-  `;
-  const row = firstRow<WorkspaceRow>(rows);
+  `) as unknown as Array<{ role: string }>;
 
-  return row ? toRecord(row) : null;
-}
+  if (roleRows[0]?.role !== "owner") {
+    return false;
+  }
 
-export async function deleteWorkspace(ownerToken: string, id: string) {
-  const ownerHash = hashOwnerToken(ownerToken);
-  const sql = getSql();
   const rows = (await sql`
     DELETE FROM launchlens_workspaces
-    WHERE id = ${id} AND owner_hash = ${ownerHash}
+    WHERE id = ${id}
     RETURNING id
   `) as unknown as Array<{ id: string }>;
 
   return Boolean(rows[0]);
+}
+
+export async function setWorkspaceSharingForMember(
+  ownerToken: string,
+  id: string,
+  enabled: boolean,
+) {
+  const memberHash = hashOwnerToken(ownerToken);
+  const sql = getSql();
+  const roleRows = (await sql`
+    SELECT role
+    FROM launchlens_workspace_members
+    WHERE workspace_id = ${id} AND member_hash = ${memberHash}
+    LIMIT 1
+  `) as unknown as Array<{ role: string }>;
+  const role = roleRows[0]?.role;
+
+  if (role !== "owner" && role !== "editor") {
+    return null;
+  }
+
+  const rows = await sql`
+    UPDATE launchlens_workspaces
+    SET is_public = ${enabled}, updated_at = NOW()
+    WHERE id = ${id}
+    RETURNING id, title, input, workspace, execution, is_public, created_at, updated_at
+  `;
+  const row = firstRow<WorkspaceRow>(rows);
+
+  return row ? toRecord(row) : null;
 }
 
 export async function migrateWorkspaceOwner(
@@ -284,10 +365,7 @@ export async function migrateWorkspaceOwner(
   }
 
   const sql = getSql();
-  const [firstHash, secondHash] = [
-    currentOwnerHash,
-    recoveryOwnerHash,
-  ].sort();
+  const [firstHash, secondHash] = [currentOwnerHash, recoveryOwnerHash].sort();
   const [, countRows, migratedRows] = await sql.transaction((transaction) => [
     transaction`
       SELECT pg_advisory_xact_lock(hashtextextended(${firstHash}, 0)),
@@ -295,16 +373,8 @@ export async function migrateWorkspaceOwner(
     `,
     transaction`
       SELECT
-        (
-          SELECT COUNT(*)::int
-          FROM launchlens_workspaces
-          WHERE owner_hash = ${currentOwnerHash}
-        ) AS current_count,
-        (
-          SELECT COUNT(*)::int
-          FROM launchlens_workspaces
-          WHERE owner_hash = ${recoveryOwnerHash}
-        ) AS recovery_count
+        (SELECT COUNT(*)::int FROM launchlens_workspaces WHERE owner_hash = ${currentOwnerHash}) AS current_count,
+        (SELECT COUNT(*)::int FROM launchlens_workspaces WHERE owner_hash = ${recoveryOwnerHash}) AS recovery_count
     `,
     transaction`
       UPDATE launchlens_workspaces
@@ -316,6 +386,17 @@ export async function migrateWorkspaceOwner(
           WHERE owner_hash IN (${currentOwnerHash}, ${recoveryOwnerHash})
         ) <= ${MAX_CLOUD_WORKSPACES}
       RETURNING id
+    `,
+    transaction`
+      INSERT INTO launchlens_workspace_members (workspace_id, member_hash, role)
+      SELECT id, ${recoveryOwnerHash}, 'owner'
+      FROM launchlens_workspaces
+      WHERE owner_hash = ${recoveryOwnerHash}
+      ON CONFLICT (workspace_id, member_hash) DO NOTHING
+    `,
+    transaction`
+      DELETE FROM launchlens_workspace_members
+      WHERE member_hash = ${currentOwnerHash} AND role = 'owner'
     `,
   ]);
   const counts = firstRow<{
@@ -378,22 +459,196 @@ export async function consumeWorkspaceMutationSlot(
   return Boolean(row && Number(row.request_count) <= limit);
 }
 
-export async function setWorkspaceSharing(
+export type WorkspaceMemberSummary = {
+  memberHash: string;
+  role: WorkspaceRole;
+  createdAt: string;
+};
+
+export type WorkspaceInviteSummary = {
+  token: string;
+  workspaceId: string;
+  invitedRole: "editor" | "viewer";
+  expiresAt: string;
+};
+
+export async function listWorkspaceMembers(
   ownerToken: string,
   id: string,
-  enabled: boolean,
-) {
-  const ownerHash = hashOwnerToken(ownerToken);
+): Promise<WorkspaceMemberSummary[] | null> {
+  const memberHash = hashOwnerToken(ownerToken);
   const sql = getSql();
-  const rows = await sql`
-    UPDATE launchlens_workspaces
-    SET is_public = ${enabled}, updated_at = NOW()
-    WHERE id = ${id} AND owner_hash = ${ownerHash}
-    RETURNING id, title, input, workspace, execution, is_public, created_at, updated_at
-  `;
-  const row = firstRow<WorkspaceRow>(rows);
+  const requester = (await sql`
+    SELECT role
+    FROM launchlens_workspace_members
+    WHERE workspace_id = ${id} AND member_hash = ${memberHash}
+    LIMIT 1
+  `) as unknown as Array<{ role: string }>;
 
-  return row ? toRecord(row) : null;
+  if (!isWorkspaceRole(requester[0]?.role)) {
+    return null;
+  }
+
+  const rows = (await sql`
+    SELECT member_hash, role, created_at
+    FROM launchlens_workspace_members
+    WHERE workspace_id = ${id}
+    ORDER BY created_at ASC
+  `) as unknown as Array<{
+    member_hash: string;
+    role: string;
+    created_at: string | Date;
+  }>;
+
+  const memberSummaries: WorkspaceMemberSummary[] = [];
+  for (const row of rows) {
+    if (!isWorkspaceRole(row.role)) {
+      continue;
+    }
+    memberSummaries.push({
+      memberHash: row.member_hash,
+      role: row.role,
+      createdAt: toIso(row.created_at),
+    });
+  }
+  return memberSummaries;
+}
+
+export async function createWorkspaceInvite(
+  ownerToken: string,
+  id: string,
+  invitedRole: "editor" | "viewer",
+): Promise<WorkspaceInviteSummary | null> {
+  const memberHash = hashOwnerToken(ownerToken);
+  const sql = getSql();
+  const requester = (await sql`
+    SELECT role
+    FROM launchlens_workspace_members
+    WHERE workspace_id = ${id} AND member_hash = ${memberHash}
+    LIMIT 1
+  `) as unknown as Array<{ role: string }>;
+
+  if (requester[0]?.role !== "owner") {
+    return null;
+  }
+
+  const memberCountRows = (await sql`
+    SELECT COUNT(*)::int AS count
+    FROM launchlens_workspace_members
+    WHERE workspace_id = ${id}
+  `) as unknown as Array<{ count: number }>;
+
+  if (Number(memberCountRows[0]?.count ?? 0) >= MAX_MEMBERS_PER_WORKSPACE) {
+    throw new WorkspaceStoreError(
+      "member_limit_reached",
+      409,
+      "The workspace is full. Remove an existing member before inviting more.",
+    );
+  }
+
+  const token = randomBytes(32).toString("base64url");
+  const tokenHash = hashInviteToken(token);
+  const expiresAt = new Date(Date.now() + INVITE_TOKEN_TTL_MS);
+  const [, rows] = await sql.transaction((transaction) => [
+    transaction`
+      SELECT pg_advisory_xact_lock(${INVITE_LOCK})
+    `,
+    transaction`
+      INSERT INTO launchlens_workspace_invites (
+        token_hash, workspace_id, invited_role, invited_by_hash, expires_at
+      )
+      VALUES (${tokenHash}, ${id}, ${invitedRole}, ${memberHash}, ${expiresAt.toISOString()}::timestamptz)
+      ON CONFLICT (token_hash) DO UPDATE
+      SET expires_at = EXCLUDED.expires_at,
+          accepted_at = NULL,
+          invited_role = EXCLUDED.invited_role
+      RETURNING token_hash, workspace_id, invited_role, expires_at
+    `,
+  ]);
+  const row = firstRow<{
+    token_hash: string;
+    workspace_id: string;
+    invited_role: string;
+    expires_at: string | Date;
+  }>(rows);
+
+  if (!row) {
+    return null;
+  }
+
+  return {
+    token,
+    workspaceId: row.workspace_id,
+    invitedRole,
+    expiresAt: toIso(row.expires_at),
+  };
+}
+
+export async function acceptWorkspaceInvite(
+  ownerToken: string,
+  rawToken: string,
+) {
+  const memberHash = hashOwnerToken(ownerToken);
+  const tokenHash = hashInviteToken(rawToken);
+  const sql = getSql();
+
+  const result = await sql.transaction((transaction) => [
+    transaction`
+      SELECT pg_advisory_xact_lock(${INVITE_LOCK})
+    `,
+    transaction`
+      UPDATE launchlens_workspace_invites
+      SET accepted_at = NOW()
+      WHERE token_hash = ${tokenHash}
+        AND accepted_at IS NULL
+        AND expires_at > NOW()
+      RETURNING workspace_id, invited_role
+    `,
+    transaction`
+      INSERT INTO launchlens_workspace_members (workspace_id, member_hash, role)
+      SELECT workspace_id, ${memberHash}, invited_role
+      FROM launchlens_workspace_invites
+      WHERE token_hash = ${tokenHash}
+      ON CONFLICT (workspace_id, member_hash) DO NOTHING
+    `,
+  ]);
+
+  const accepted = firstRow<{ workspace_id: string; invited_role: string }>(
+    result[1],
+  );
+
+  if (!accepted || !isWorkspaceRole(accepted.invited_role)) {
+    return null;
+  }
+
+  return { workspaceId: accepted.workspace_id, role: accepted.invited_role };
+}
+
+export async function removeWorkspaceMember(
+  ownerToken: string,
+  id: string,
+  targetHash: string,
+) {
+  const memberHash = hashOwnerToken(ownerToken);
+  const sql = getSql();
+  const requester = (await sql`
+    SELECT role
+    FROM launchlens_workspace_members
+    WHERE workspace_id = ${id} AND member_hash = ${memberHash}
+    LIMIT 1
+  `) as unknown as Array<{ role: string }>;
+
+  if (requester[0]?.role !== "owner") {
+    return false;
+  }
+
+  const rows = (await sql`
+    DELETE FROM launchlens_workspace_members
+    WHERE workspace_id = ${id} AND member_hash = ${targetHash} AND role <> 'owner'
+    RETURNING member_hash
+  `) as unknown as Array<{ member_hash: string }>;
+
+  return Boolean(rows[0]);
 }
 
 export async function getSharedWorkspace(id: string) {

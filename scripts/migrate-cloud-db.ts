@@ -84,6 +84,45 @@ async function main() {
     ON launchlens_rate_limits (window_started_at)
   `;
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS launchlens_workspace_members (
+      workspace_id UUID NOT NULL REFERENCES launchlens_workspaces(id) ON DELETE CASCADE,
+      member_hash CHAR(64) NOT NULL,
+      role TEXT NOT NULL CHECK (role IN ('owner', 'editor', 'viewer')),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (workspace_id, member_hash)
+    )
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS launchlens_workspace_members_member_idx
+    ON launchlens_workspace_members (member_hash, role)
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS launchlens_workspace_invites (
+      token_hash CHAR(64) PRIMARY KEY,
+      workspace_id UUID NOT NULL REFERENCES launchlens_workspaces(id) ON DELETE CASCADE,
+      invited_role TEXT NOT NULL CHECK (invited_role IN ('editor', 'viewer')),
+      invited_by_hash CHAR(64) NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      expires_at TIMESTAMPTZ NOT NULL,
+      accepted_at TIMESTAMPTZ
+    )
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS launchlens_workspace_invites_workspace_idx
+    ON launchlens_workspace_invites (workspace_id, expires_at)
+  `;
+
+  await sql`
+    INSERT INTO launchlens_workspace_members (workspace_id, member_hash, role)
+    SELECT id, owner_hash, 'owner'
+    FROM launchlens_workspaces
+    ON CONFLICT (workspace_id, member_hash) DO NOTHING
+  `;
+
   console.log("LaunchLens cloud database migration completed.");
 }
 

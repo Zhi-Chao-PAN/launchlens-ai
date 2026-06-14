@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const storeMocks = vi.hoisted(() => ({
-  setWorkspaceSharing: vi.fn(),
+  setWorkspaceSharingForMember: vi.fn(),
 }));
 
 vi.mock("@/lib/launchlens/workspace-store", async (importOriginal) => ({
   ...(await importOriginal<
     typeof import("@/lib/launchlens/workspace-store")
   >()),
-  setWorkspaceSharing: storeMocks.setWorkspaceSharing,
+  setWorkspaceSharingForMember: storeMocks.setWorkspaceSharingForMember,
 }));
 
 import { exampleWorkspaces } from "@/lib/launchlens/example-workspaces";
@@ -48,17 +48,18 @@ describe("/api/workspaces/[id]/share", () => {
     });
   });
 
-  it("enables sharing through the owner-scoped store operation", async () => {
+  it("enables sharing through the member-scoped store operation", async () => {
     const sharedRecord = {
       id: workspaceId,
       title: "Activation workspace",
       input: example.input,
       workspace: example.workspace,
+      execution: example.execution,
       isPublic: true,
       createdAt: "2026-06-13T00:00:00.000Z",
       updatedAt: "2026-06-13T00:01:00.000Z",
     };
-    storeMocks.setWorkspaceSharing.mockResolvedValue(sharedRecord);
+    storeMocks.setWorkspaceSharingForMember.mockResolvedValue(sharedRecord);
 
     const response = await POST(
       new Request(`http://localhost/api/workspaces/${workspaceId}/share`, {
@@ -73,13 +74,33 @@ describe("/api/workspaces/[id]/share", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(storeMocks.setWorkspaceSharing).toHaveBeenCalledWith(
+    expect(storeMocks.setWorkspaceSharingForMember).toHaveBeenCalledWith(
       ownerToken,
       workspaceId,
       true,
     );
     await expect(response.json()).resolves.toEqual({
       workspace: sharedRecord,
+    });
+  });
+
+  it("returns 403 when the caller is not an editor or owner", async () => {
+    storeMocks.setWorkspaceSharingForMember.mockResolvedValue(null);
+    const response = await POST(
+      new Request(`http://localhost/api/workspaces/${workspaceId}/share`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-launchlens-owner": ownerToken,
+        },
+        body: JSON.stringify({ enabled: true }),
+      }),
+      { params: Promise.resolve({ id: workspaceId }) },
+    );
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "workspace_forbidden",
     });
   });
 
@@ -100,7 +121,7 @@ describe("/api/workspaces/[id]/share", () => {
     });
 
     expect(response.status).toBe(413);
-    expect(storeMocks.setWorkspaceSharing).not.toHaveBeenCalled();
+    expect(storeMocks.setWorkspaceSharingForMember).not.toHaveBeenCalled();
     await expect(response.json()).resolves.toMatchObject({
       code: "workspace_too_large",
     });

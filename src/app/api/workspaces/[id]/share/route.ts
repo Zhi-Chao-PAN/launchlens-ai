@@ -7,7 +7,7 @@ import {
   readLimitedJson,
   workspaceApiError,
 } from "@/lib/launchlens/workspace-api";
-import { setWorkspaceSharing } from "@/lib/launchlens/workspace-store";
+import { setWorkspaceSharingForMember } from "@/lib/launchlens/workspace-store";
 import { isRecord, isUuid } from "@/lib/launchlens/workspace-validation";
 
 export const runtime = "nodejs";
@@ -47,7 +47,7 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   try {
-    const workspace = await setWorkspaceSharing(
+    const workspace = await setWorkspaceSharingForMember(
       ownerTokenFromRequest(request),
       id,
       body.enabled,
@@ -55,8 +55,8 @@ export async function POST(request: Request, context: RouteContext) {
 
     if (!workspace) {
       return noStoreJson(
-        { code: "workspace_not_found", error: "Workspace was not found." },
-        { status: 404 },
+        { code: "workspace_forbidden", error: "Sharing requires editor or owner access." },
+        { status: 403 },
       );
     }
 

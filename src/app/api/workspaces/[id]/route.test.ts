@@ -1,16 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const storeMocks = vi.hoisted(() => ({
-  deleteWorkspace: vi.fn(),
-  getOwnedWorkspace: vi.fn(),
+  deleteWorkspaceForMember: vi.fn(),
+  getWorkspaceForMember: vi.fn(),
 }));
 
 vi.mock("@/lib/launchlens/workspace-store", async (importOriginal) => ({
   ...(await importOriginal<
     typeof import("@/lib/launchlens/workspace-store")
   >()),
-  deleteWorkspace: storeMocks.deleteWorkspace,
-  getOwnedWorkspace: storeMocks.getOwnedWorkspace,
+  deleteWorkspaceForMember: storeMocks.deleteWorkspaceForMember,
+  getWorkspaceForMember: storeMocks.getWorkspaceForMember,
 }));
 
 import { exampleWorkspaces } from "@/lib/launchlens/example-workspaces";
@@ -26,6 +26,7 @@ const record = {
   title: "Activation workspace",
   input: example.input,
   workspace: example.workspace,
+  execution: example.execution,
   isPublic: false,
   createdAt: "2026-06-13T00:00:00.000Z",
   updatedAt: "2026-06-13T00:00:00.000Z",
@@ -37,8 +38,11 @@ describe("/api/workspaces/[id]", () => {
     resetWorkspaceRateLimitsForTests();
   });
 
-  it("returns an owner-scoped workspace record", async () => {
-    storeMocks.getOwnedWorkspace.mockResolvedValue(record);
+  it("returns a member-scoped workspace record with the caller's role", async () => {
+    storeMocks.getWorkspaceForMember.mockResolvedValue({
+      role: "owner",
+      record,
+    });
     const response = await GET(
       new Request(`http://localhost/api/workspaces/${workspaceId}`, {
         headers: { "x-launchlens-owner": ownerToken },
@@ -47,15 +51,18 @@ describe("/api/workspaces/[id]", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(storeMocks.getOwnedWorkspace).toHaveBeenCalledWith(
+    expect(storeMocks.getWorkspaceForMember).toHaveBeenCalledWith(
       ownerToken,
       workspaceId,
     );
-    await expect(response.json()).resolves.toEqual({ workspace: record });
+    await expect(response.json()).resolves.toEqual({
+      workspace: record,
+      role: "owner",
+    });
   });
 
-  it("does not reveal whether another owner's workspace exists", async () => {
-    storeMocks.getOwnedWorkspace.mockResolvedValue(null);
+  it("returns 404 when the caller is not a member of the workspace", async () => {
+    storeMocks.getWorkspaceForMember.mockResolvedValue(null);
     const response = await GET(
       new Request(`http://localhost/api/workspaces/${workspaceId}`, {
         headers: { "x-launchlens-owner": ownerToken },
@@ -70,7 +77,7 @@ describe("/api/workspaces/[id]", () => {
   });
 
   it("deletes only through the owner-scoped store operation", async () => {
-    storeMocks.deleteWorkspace.mockResolvedValue(true);
+    storeMocks.deleteWorkspaceForMember.mockResolvedValue(true);
     const response = await DELETE(
       new Request(`http://localhost/api/workspaces/${workspaceId}`, {
         method: "DELETE",
@@ -80,7 +87,7 @@ describe("/api/workspaces/[id]", () => {
     );
 
     expect(response.status).toBe(204);
-    expect(storeMocks.deleteWorkspace).toHaveBeenCalledWith(
+    expect(storeMocks.deleteWorkspaceForMember).toHaveBeenCalledWith(
       ownerToken,
       workspaceId,
     );

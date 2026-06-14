@@ -9,6 +9,8 @@ import {
 export const OWNER_HEADER = "x-launchlens-owner";
 export const MAX_WORKSPACE_BODY_BYTES = 160_000;
 export const MAX_SHARE_BODY_BYTES = 1_024;
+export const MAX_MEMBER_BODY_BYTES = 2_048;
+export const MAX_ACCEPT_BODY_BYTES = 4_096;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 20;
 const MAX_RATE_LIMIT_BUCKETS = 5_000;
@@ -192,3 +194,4 @@ export function noStoreJson(body: unknown, init?: ResponseInit) {
 export function resetWorkspaceRateLimitsForTests() {
   mutationBuckets.clear();
 }
+

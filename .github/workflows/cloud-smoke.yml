@@ -1,0 +1,55 @@
+name: Cloud smoke (optional)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cloud-smoke:
+    name: Production Neon cloud smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: ${{ vars.LAUNCHLENS_SMOKE_DATABASE_URL != '' }}
+    env:
+      DATABASE_URL: ${{ vars.LAUNCHLENS_SMOKE_DATABASE_URL }}
+      DATABASE_MIGRATION_URL: ${{ vars.LAUNCHLENS_SMOKE_DATABASE_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run migration
+        run: npm run db:migrate
+
+      - name: Start production server
+        run: |
+          npm run build
+          nohup npx next start --hostname 127.0.0.1 --port 3011 > .next/cloud-smoke.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3011/api/workspaces >/dev/null 2>&1; then
+              echo "ready after ${i}s"
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Run cloud smoke (recovery + share + privacy + delete)
+        env:
+          LAUNCHLENS_BASE_URL: http://127.0.0.1:3011
+        run: npm run smoke:cloud
+
+      - name: Run RBAC smoke (invite + accept + viewer forbidden)
+        env:
+          LAUNCHLENS_BASE_URL: http://127.0.0.1:3011
+        run: npm run smoke:rbac

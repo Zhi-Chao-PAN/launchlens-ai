@@ -53,9 +53,9 @@ These are commercial expansion paths, not missing evidence for the current portf
 - Why it is not in the portfolio release: a single decision fixture is enough evidence of a repeatable eval gate, and a real trend dashboard needs retention and querying choices that are themselves a design exercise.
 
 ### P2 - Team roles, comments, and collaboration primitives
-- Owner + editor + viewer roles, comment threads on experiments, per-workspace invitations.
-- Estimated effort: 1 to 2 weeks including the RBAC matrix, the share-token rotation logic, and the migration of existing single-owner workspaces to multi-owner rows.
-- Why it is not in the portfolio release: this is a real product surface, not a portfolio differentiator, and the current single-owner story is a deliberate, defensible scope for a solo-founder workflow.
+- **Status: done.** Shipped as a membership table with role-aware storage, request, and migration paths. See the P2 entry under "Maturity Notes" for the per-route surface and the `smoke:rbac` exercise.
+- The re-entry cost note for converting to a real commercial SaaS (P3 below) still covers billing and tenant isolation; the P2 work does not unlock that path on its own.
+
 
 ### P3 - Multi-tenant workspaces, billing, and hosted pricing as a real product
 - Tenant isolation, quota, billing, and a hosted pricing page that charges money.

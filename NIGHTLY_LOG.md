@@ -1020,3 +1020,52 @@ pm run decision:history -- --dashboard produced docs/decision-dashboard.html wit
 Cycle 25 handoff:
 
 - P1 is done. The next deferred items are P2 (team roles and collaboration primitives) and P3 (multi-tenant workspaces, billing, real hosted pricing). P0 is documented as done; the rest of the list still matches PROJECT_MATURITY.md.
+
+## 2026-06-14 15:05 Asia/Shanghai
+
+Manual continuation: Phase 2 team roles, comments, and collaboration primitives.
+
+Current maturity:
+
+- 100% portfolio-ready with P0 (hosted pricing page) and P1 (retention + drift gate + dashboard) shipped. P2 was unstarted: the single-owner token had no role awareness and no way to share a workspace with a second browser.
+
+Largest product gap:
+
+- The capability account was a single-owner story. A reviewer could see that the workspace survived a recovery key rotation, but could not see how two humans would actually share the same plan.
+
+Outcome target:
+
+- Add a real membership table with three roles, single-use invite tokens, and a role-aware read/write path. Keep the existing recovery, public share, and export paths intact.
+
+Cycle 26 result:
+
+- DB migration adds launchlens_workspace_members (workspace_id, member_hash, role) and launchlens_workspace_invites (token_hash, workspace_id, invited_role, invited_by_hash, expires_at, accepted_at), and seeds an owner row for every existing workspace so the public demo does not regress.
+- migrateWorkspaceOwner now also deletes the previous browser credential row inside the same transaction that updates launchlens_workspaces.owner_hash. The existing smoke:cloud smoke continues to pass and now also reports previousOwnerRevoked: true by design.
+- Store operations were renamed or extended to be member-scoped: listWorkspacesForMember, getWorkspaceForMember, createWorkspace (now seeds the owner member), deleteWorkspaceForMember (owner only), setWorkspaceSharingForMember (owner or editor), plus new listWorkspaceMembers, createWorkspaceInvite (owner only, 7-day TTL, 10-member cap), cceptWorkspaceInvite (single-use, atomic), and emoveWorkspaceMember (non-owner members only).
+- New routes: GET /api/workspaces/[id]/members, POST /api/workspaces/[id]/members (invite), POST /api/workspaces/invites/accept. Each route reuses the existing body size cap, the x-launchlens-owner header, the distributed mutation limit, and the safe-error code contract.
+- A new smoke:rbac exercise invites a viewer, accepts the invite, reads as the viewer, refuses the viewer from toggling the public share (HTTP 403), and then has the owner delete the workspace. The script is wired into a new optional Cloud smoke (optional) GitHub Actions workflow that runs only when the LAUNCHLENS_SMOKE_DATABASE_URL repo variable is set, so standard CI stays secret-free.
+- Updated README.md, PROJECT_MATURITY.md (P2 marked done), and ROADMAP.md to match.
+
+Cycle 26 verification:
+
+- 
+px tsc --noEmit passed.
+- 
+pm run lint -- --max-warnings=0 passed.
+- 
+pm run test passed with 92 tests across 28 files, including new coverage for the workspace-rbac module, the member/invite routes, and the accept route.
+- 
+pm run build passed and the route manifest now exposes 9 API routes (including /api/workspaces/[id]/members and /api/workspaces/invites/accept).
+- 
+pm audit --audit-level=moderate found 0 vulnerabilities.
+- 
+pm run db:migrate succeeded against the production Neon connection and now creates the membership and invite tables.
+- 
+pm run smoke:cloud passed all 9 steps including the new previousOwnerRevoked: true after the migration.
+- 
+pm run smoke:rbac passed all 6 steps (configured, created, memberInvited, memberAccepted, memberRead, viewerForbidden, deleted).
+- Manual SQL inspection confirmed that migrated workspaces have exactly one owner member row, owned by the recovery account.
+
+Cycle 26 handoff:
+
+- P2 is done. The remaining deferred items are P3 (multi-tenant workspaces, billing, real hosted pricing as a paid product) and the post-portfolio eval retention work, which are explicitly out of scope for this build.

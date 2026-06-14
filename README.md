@@ -120,6 +120,12 @@ npm run decision:history -- --dashboard
 
 The history snapshots are committed to `fixtures/providers/decision-history/`, the dashboard is rendered to `docs/decision-dashboard.html`, and the GitHub Actions workflow `CI` runs the 5-run window as a release gate (any scenario whose quality drifts down by more than 5 points fails the build) and uploads the latest dashboard as a build artifact. The `--prune` flag keeps the history directory at 90 days of retention with at least 10 entries preserved.
 
+## Team Collaboration (RBAC)
+
+When a database is configured, the workspace owner can invite other capability accounts to the same workspace as `editor` (can save snapshots and toggle the public share link) or `viewer` (can read the workspace and its decision briefs but cannot mutate it). Membership uses the same `x-launchlens-owner` header as the existing recovery flow, and the new `/api/workspaces/[id]/members` and `/api/workspaces/invites/accept` routes re-use the existing body, schema, and rate-limit guards.
+
+`npm run smoke:rbac` exercises the full RBAC path against a database-enabled deployment: owner invites viewer, viewer accepts, viewer can read but is forbidden from toggling the public share (HTTP 403), then owner deletes the workspace.
+
 ## Provider Evaluation
 
 The repository includes a repeatable provider eval over three public scenarios:

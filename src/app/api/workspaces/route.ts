@@ -1,7 +1,7 @@
 import {
   cloudStorageConfigured,
   createWorkspace,
-  listWorkspaces,
+  listWorkspacesForMember,
 } from "@/lib/launchlens/workspace-store";
 import {
   allowWorkspaceMutation,
@@ -23,7 +23,9 @@ export async function GET(request: Request) {
   }
 
   try {
-    const workspaces = await listWorkspaces(ownerTokenFromRequest(request));
+    const workspaces = await listWorkspacesForMember(
+      ownerTokenFromRequest(request),
+    );
     return noStoreJson({ configured: true, workspaces });
   } catch (error) {
     return workspaceApiError(error);

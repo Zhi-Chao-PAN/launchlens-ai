@@ -1,15 +1,17 @@
 import {
-  deleteWorkspaceForMember,
-  getWorkspaceForMember,
-} from "@/lib/launchlens/workspace-store";
-import {
   allowWorkspaceMutation,
+  MAX_MEMBER_BODY_BYTES,
   noStoreJson,
   ownerTokenFromRequest,
   rateLimitResponse,
+  readLimitedJson,
   workspaceApiError,
 } from "@/lib/launchlens/workspace-api";
-import { isUuid } from "@/lib/launchlens/workspace-validation";
+import {
+  createWorkspaceInvite,
+  listWorkspaceMembers,
+} from "@/lib/launchlens/workspace-store";
+import { isRecord, isUuid } from "@/lib/launchlens/workspace-validation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,25 +31,25 @@ export async function GET(request: Request, context: RouteContext) {
   }
 
   try {
-    const access = await getWorkspaceForMember(
+    const members = await listWorkspaceMembers(
       ownerTokenFromRequest(request),
       id,
     );
 
-    if (!access) {
+    if (members === null) {
       return noStoreJson(
-        { code: "workspace_not_found", error: "Workspace was not found." },
-        { status: 404 },
+        { code: "workspace_forbidden", error: "Only members can view the member list." },
+        { status: 403 },
       );
     }
 
-    return noStoreJson({ workspace: access.record, role: access.role });
+    return noStoreJson({ members });
   } catch (error) {
     return workspaceApiError(error);
   }
 }
 
-export async function DELETE(request: Request, context: RouteContext) {
+export async function POST(request: Request, context: RouteContext) {
   if (!(await allowWorkspaceMutation(request))) {
     return rateLimitResponse();
   }
@@ -61,23 +63,39 @@ export async function DELETE(request: Request, context: RouteContext) {
     );
   }
 
+  let body: unknown;
+
   try {
-    const deleted = await deleteWorkspaceForMember(
+    body = await readLimitedJson(request, MAX_MEMBER_BODY_BYTES);
+  } catch (error) {
+    return workspaceApiError(error);
+  }
+
+  if (
+    !isRecord(body) ||
+    (body.role !== "editor" && body.role !== "viewer")
+  ) {
+    return noStoreJson(
+      { code: "invalid_member_role", error: "Member role must be editor or viewer." },
+      { status: 400 },
+    );
+  }
+
+  try {
+    const invite = await createWorkspaceInvite(
       ownerTokenFromRequest(request),
       id,
+      body.role,
     );
 
-    if (!deleted) {
+    if (!invite) {
       return noStoreJson(
-        { code: "workspace_not_found", error: "Workspace was not found." },
-        { status: 404 },
+        { code: "workspace_forbidden", error: "Only owners can invite members." },
+        { status: 403 },
       );
     }
 
-    return new Response(null, {
-      status: 204,
-      headers: { "Cache-Control": "no-store" },
-    });
+    return noStoreJson({ invite });
   } catch (error) {
     return workspaceApiError(error);
   }
