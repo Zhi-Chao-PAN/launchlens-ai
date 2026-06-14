@@ -1103,3 +1103,41 @@ pm run smoke:rbac: 7 assertions passed (configured, created, memberInvited, memb
 ### Commit
 
 P3 multi-tenant workspace isolation complete. All three smoke suites pass against production Neon.
+
+
+## 2026-06-14 20:29 Asia/Shanghai
+
+### Cycle 28 - portfolio release pass
+
+Cycle target: close the last 5 percent of reviewer friction and freeze the portfolio story as v1.0.0.
+
+### Execution
+
+- Generated public/og.png as a 1280x640 PNG cover image with the LaunchLens brand, tagline, three capability cards, and the tech-stack strip. Rendered with .NET System.Drawing so the file ships in the repo without adding a new dependency.
+- Wired openGraph, 	witter, and keywords metadata into the Next.js root layout so the live Vercel deployment now ships a proper preview card.
+- Pinned the same image at the top of README.md with a tip pointing reviewers to upload it as the GitHub social preview (one click in repo settings).
+- Updated the "How this was built" section: the live commit count is 48, not 38. The new sentence treats the number as a snapshot, not a moving claim, so it does not become a future maintenance trap.
+- Created Git tag 1.0.0 and published a GitHub Release with full release notes at https://github.com/Zhi-Chao-PAN/launchlens-ai/releases/tag/v1.0.0
+- The release notes link the README, ARCHITECTURE, ROADMAP, TASKS, PROJECT_MATURITY, and NIGHTLY_LOG, and they include the honest re-entry cost to convert the portfolio into a real commercial SaaS.
+
+### Verification
+
+- 
+pm run build -> production build passes with 15 routes (3 static, 12 dynamic).
+- 
+pm run lint -> 0 warnings.
+- 
+pm test -> 96 tests in 29 files pass.
+- git push -> 201c2a8..9394ca1 main then 1.0.0 tag pushed.
+- GitHub Actions on 9394ca1: CI success, Hosted visual regression success, Cloud smoke (optional) skipped as designed.
+- gh release view v1.0.0 returns the published release with the release notes.
+
+### Commit and tag
+
+- Commit: 9394ca1 feat(presentation): add OG cover image, social metadata, refresh commit count
+- Tag: 1.0.0
+
+### Cycle 28 handoff
+
+- v1.0.0 is the canonical portfolio release point. Future commits should be post-portfolio enhancements documented in PROJECT_MATURITY.md and the NIGHTLY_LOG, not regression of the v1.0.0 surface.
+- Two manual follow-ups that I could not automate from this environment: (1) upload public/og.png as the GitHub social preview (one click in repo settings), (2) verify the live Vercel deployment picks up the new OG metadata on its next redeploy.
