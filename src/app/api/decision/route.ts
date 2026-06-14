@@ -6,6 +6,12 @@ import {
   readLimitedJson,
   WorkspaceRequestError,
 } from "@/lib/launchlens/workspace-api";
+import {
+  ERROR_BODY_TOO_LARGE,
+  ERROR_INVALID_JSON,
+  ERROR_RATE_LIMITED,
+  ERROR_DECISION_NO_EVIDENCE,
+} from "@/lib/launchlens/error-codes";
 
 export const runtime = "nodejs";
 export const maxDuration = 65;
@@ -50,7 +56,7 @@ export async function POST(request: Request) {
   const requestId = generateRequestId();
   if (!rateLimit(request)) {
     return noStoreJson(
-      { error: "Too many decision requests. Please try again in a minute." },
+      { code: ERROR_RATE_LIMITED, error: "Too many decision requests. Please try again in a minute." },
       { status: 429 },
       requestId,
     );
@@ -84,6 +90,7 @@ export async function POST(request: Request) {
   if (!source) {
     return noStoreJson(
       {
+        code: ERROR_DECISION_NO_EVIDENCE,
         error:
           "Add at least one valid evidence item before generating a decision brief.",
       },

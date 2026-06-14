@@ -1,4 +1,11 @@
 export const REQUEST_ID_HEADER = "x-request-id";
+
+import {
+  ERROR_BODY_TOO_LARGE,
+  ERROR_INVALID_JSON,
+  ERROR_CLOUD_RATE_LIMITED,
+  ERROR_CLOUD_REQUEST_FAILED,
+} from "./error-codes";
 import { createHash } from "node:crypto";
 
 import {
@@ -38,7 +45,7 @@ export async function readLimitedJson(request: Request, maxBytes: number) {
 
   if (Number.isFinite(contentLength) && contentLength > maxBytes) {
     throw new WorkspaceRequestError(
-      "workspace_too_large",
+      ERROR_BODY_TOO_LARGE,
       413,
       "Request body is too large.",
     );
@@ -46,7 +53,7 @@ export async function readLimitedJson(request: Request, maxBytes: number) {
 
   if (!request.body) {
     throw new WorkspaceRequestError(
-      "invalid_json",
+      ERROR_INVALID_JSON,
       400,
       "Invalid JSON payload.",
     );
@@ -94,7 +101,7 @@ export async function readLimitedJson(request: Request, maxBytes: number) {
     return JSON.parse(text) as unknown;
   } catch {
     throw new WorkspaceRequestError(
-      "invalid_json",
+      ERROR_INVALID_JSON,
       400,
       "Invalid JSON payload.",
     );
@@ -154,7 +161,7 @@ export async function allowWorkspaceMutation(request: Request) {
 export function rateLimitResponse(requestId?: string) {
   return noStoreJson(
     {
-      code: "cloud_rate_limited",
+      code: ERROR_CLOUD_RATE_LIMITED,
       error: "Too many cloud workspace changes. Please try again in a minute.",
     },
     { status: 429 },
@@ -182,7 +189,7 @@ export function workspaceApiError(error: unknown, requestId?: string) {
   console.error("[launchlens:workspace-store] request_failed", { requestId });
   return noStoreJson(
     {
-      code: "cloud_request_failed",
+      code: ERROR_CLOUD_REQUEST_FAILED,
       error: "Cloud workspace storage is temporarily unavailable.",
     },
     { status: 503 },
@@ -212,3 +219,11 @@ export function resetWorkspaceRateLimitsForTests() {
 }
 
 
+
+// Re-export standard error codes for convenience across routes
+export {
+  ERROR_BODY_TOO_LARGE,
+  ERROR_INVALID_JSON,
+  ERROR_CLOUD_RATE_LIMITED,
+  ERROR_CLOUD_REQUEST_FAILED,
+} from "./error-codes";

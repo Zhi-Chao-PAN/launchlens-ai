@@ -1,6 +1,14 @@
 ﻿import { generateLaunchWorkspace } from "@/lib/launchlens/provider";
 import type { LaunchLensInput } from "@/lib/launchlens/types";
-import { generateRequestId, noStoreJson, REQUEST_ID_HEADER } from "@/lib/launchlens/workspace-api";
+import { generateRequestId, noStoreJson } from "@/lib/launchlens/workspace-api";
+import {
+  ERROR_BODY_TOO_LARGE,
+  ERROR_RATE_LIMITED,
+  ERROR_INVALID_JSON,
+  ERROR_INVALID_INPUT,
+  ERROR_IDEA_TOO_SHORT,
+  ERROR_FIELD_TOO_LONG,
+} from "@/lib/launchlens/error-codes";
 
 export const runtime = "nodejs";
 export const maxDuration = 65;
@@ -29,19 +37,31 @@ function normalize(body: unknown): LaunchLensInput {
   };
 }
 
-function validateInput(input: LaunchLensInput) {
+type ValidationResult =
+  | { ok: true; error?: never; code?: never }
+  | { ok: false; error: string; code: string };
+
+function validateInput(input: LaunchLensInput): ValidationResult {
   if (input.idea.length < 12) {
-    return "Please provide a product idea with at least 12 characters.";
+    return {
+      ok: false,
+      code: ERROR_IDEA_TOO_SHORT,
+      error: "Please provide a product idea with at least 12 characters.",
+    };
   }
 
   const entries = Object.entries(input) as Array<[keyof LaunchLensInput, string]>;
   const longField = entries.find(([, value]) => value.length > MAX_FIELD_LENGTH);
 
   if (longField) {
-    return `${longField[0]} must be ${MAX_FIELD_LENGTH} characters or less.`;
+    return {
+      ok: false,
+      code: ERROR_FIELD_TOO_LONG,
+      error: `${longField[0]} must be ${MAX_FIELD_LENGTH} characters or less.`,
+    };
   }
 
-  return "";
+  return { ok: true };
 }
 
 function clientKey(request: Request) {
@@ -80,7 +100,7 @@ export async function POST(request: Request) {
 
   if (contentLength > MAX_CONTENT_LENGTH) {
     return noStoreJson(
-      { error: "Request body is too large for the demo endpoint." },
+      { code: ERROR_BODY_TOO_LARGE, error: "Request body is too large for the demo endpoint." },
       { status: 413 },
       requestId,
     );
@@ -88,7 +108,7 @@ export async function POST(request: Request) {
 
   if (!rateLimit(request)) {
     return noStoreJson(
-      { error: "Too many generation requests. Please try again in a minute." },
+      { code: ERROR_RATE_LIMITED, error: "Too many generation requests. Please try again in a minute." },
       { status: 429 },
       requestId,
     );
@@ -99,14 +119,18 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return noStoreJson({ error: "Invalid JSON payload." }, { status: 400 }, requestId);
+    return noStoreJson({ code: ERROR_INVALID_JSON, error: "Invalid JSON payload." }, { status: 400 }, requestId);
   }
 
   const input = normalize(body);
-  const inputError = validateInput(input);
+  const validation = validateInput(input);
 
-  if (inputError) {
-    return noStoreJson({ error: inputError }, { status: 400 }, requestId);
+  if (!validation.ok) {
+    return noStoreJson(
+      { code: validation.code, error: validation.error },
+      { status: 400 },
+      requestId,
+    );
   }
 
   const result = await generateLaunchWorkspace(input);

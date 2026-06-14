@@ -76,3 +76,24 @@ export type ApiFailure = {
 };
 
 export type ApiResult<T> = ApiSuccess<T> | ApiFailure;
+
+// Standardized API error response shape.
+// Every error response from the API follows this shape so clients
+// can handle errors uniformly without parsing arbitrary messages.
+export type ApiErrorResponse = {
+  code?: string;
+  error: string;
+  requestId?: string;
+};
+
+// Standardized API success response shape.
+// Use this for routes that want to wrap their payload in a
+// consistent envelope instead of returning raw data.
+export type ApiSuccessResponse<T> = {
+  success: true;
+  data: T;
+  requestId?: string;
+};
+
+// Union type for routes that return either success or error.
+export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;

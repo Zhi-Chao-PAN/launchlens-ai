@@ -1,5 +1,13 @@
 ﻿import "server-only";
 
+import {
+  ERROR_CLOUD_UNAVAILABLE,
+  ERROR_NOT_FOUND,
+  ERROR_QUOTA_EXCEEDED,
+  ERROR_WORKSPACE_NOT_FOUND,
+  ERROR_ALREADY_SHARED,
+} from "./error-codes";
+
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 
 import { neon } from "@neondatabase/serverless";
@@ -100,7 +108,7 @@ function getSql() {
 
   if (!url) {
     throw new WorkspaceStoreError(
-      "cloud_unavailable",
+      ERROR_CLOUD_UNAVAILABLE,
       503,
       "Cloud workspace storage is not configured.",
     );

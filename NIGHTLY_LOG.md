@@ -1402,3 +1402,39 @@ One commit with all cycle-35 changes.
 - 113 tests all pass, build is green, requestId coverage is complete across all API routes.
 - Next cycle candidates: (a) standardize success responses to { success: true, data } shape for consistency, (b) add input validation schemas for all POST/PUT bodies, (c) add request timing metrics to status endpoint, (d) improve accessibility of workspace UI components.
 
+### Cycle 36 - Standardized error codes and API response types
+
+Cycle target: Centralize all API error codes as constants and add standardized response type definitions.
+
+#### Execution
+
+- Created src/lib/launchlens/error-codes.ts with 25+ named error code constants organized by domain (auth, validation, rate limiting, resources, quota, cloud, invites, recovery, generation, decision).
+- Added ApiErrorResponse, ApiSuccessResponse<T>, and ApiResponse<T> types to 	ypes.ts for standardized API contract.
+- Updated workspace-api.ts to use error code constants instead of string literals (ERROR_BODY_TOO_LARGE, ERROR_INVALID_JSON, ERROR_CLOUD_RATE_LIMITED, ERROR_CLOUD_REQUEST_FAILED).
+- Updated workspace-store.ts to use ERROR_CLOUD_UNAVAILABLE constant.
+- Re-exported common error codes from workspace-api.ts for convenience.
+
+### Cycle 37 - Error code propagation in generate and decision routes
+
+Cycle target: Bring generate and decision routes up to the same error code standard as workspace routes.
+
+#### Execution
+
+- Updated /api/generate route: all error responses now include a code field using standard constants (ERROR_BODY_TOO_LARGE, ERROR_RATE_LIMITED, ERROR_INVALID_JSON, ERROR_IDEA_TOO_SHORT, ERROR_FIELD_TOO_LONG).
+- Refactored alidateInput() to return { ok, error, code } discriminant union instead of bare string.
+- Updated /api/decision route: 429 and 422 error responses now include error codes (ERROR_RATE_LIMITED, ERROR_DECISION_NO_EVIDENCE).
+- Added generation-specific and decision-specific error codes to error-codes.ts.
+- WorkspaceRequestError paths already carry correct codes from the underlying eadLimitedJson function.
+
+#### Verification (Cycles 36-37)
+
+- 
+pm test -> 33 files, 113 tests, all passing.
+- 
+pm run build -> success, all routes compile cleanly.
+
+#### Cycle 37 handoff
+
+- 25+ standardized error codes across the API surface.
+- Next cycle candidates: (a) migrate remaining workspace/tenant routes to use error code constants, (b) add an error-code contract test that verifies each route returns consistent codes, (c) add request timing/metrics middleware, (d) start experience layer improvements (keyboard shortcuts, better empty states).
+
