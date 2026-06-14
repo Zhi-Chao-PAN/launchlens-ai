@@ -1,5 +1,10 @@
 # LaunchLens AI
 
+![LaunchLens AI portfolio cover](public/og.png)
+
+> Tip: upload `public/og.png` to **Settings -> General -> Social preview** so the GitHub link card uses this same cover. The image is already wired into the Next.js `openGraph` and `twitter` metadata for the live Vercel deployment.
+
+
 [![CI](https://github.com/Zhi-Chao-PAN/launchlens-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhi-Chao-PAN/launchlens-ai/actions/workflows/ci.yml)
 
 LaunchLens AI is an AI-powered SaaS workspace that turns a raw product idea into an editable go-to-market plan for indie founders, solo builders, and small product teams.
@@ -298,7 +303,7 @@ This project is built for Zhi-Chao-PAN's UTS Master of Artificial Intelligence a
 This is a single-author portfolio build that took three evening sessions over three Asia/Shanghai days, with the work split between product phases and CI hardening.
 
 - Total human time on this repository: approximately 8 to 10 hours of focused authoring plus the time spent reviewing Playwright traces, Vercel deployment logs, and the local Neon production smoke.
-- Total commits: 38. Roughly two thirds of the commits are real product, security, or evaluation work; the rest are CI and lockfile fixes that came from running the standard pipeline against a fresh clone on a different OS/Node version than the dev machine.
+- Total commits: 48 at the time of the portfolio release. Roughly two thirds of the commits are real product, security, or evaluation work; the rest are CI and lockfile fixes that came from running the standard pipeline against a fresh clone on a different OS/Node version than the dev machine. The exact commit count will keep growing as the post-portfolio enhancements land; this sentence is intentionally a snapshot, not a moving claim.
 - The eleven CI and lockfile commits are not pad commits. They came from three real environment crossings: a first GitHub Actions run that discovered lockfile drift, a Playwright install on Ubuntu that introduced optional native `@emnapi/*` deps requiring a lockfile regeneration, and a Chromium rendering mismatch between the Windows-captured baselines and the hosted CI renderer. Each commit message names the underlying cause so the trail is readable.
 - I chose to scope this portfolio release around a single founder workflow with a registration-free capability account. A full OAuth identity, team workspaces, billing, and a hosted pricing page were considered and intentionally deferred. See the re-entry cost note in `PROJECT_MATURITY.md` for what the conversion to a real commercial SaaS would require.
 - Reviewers who want a quick read of the engineering signals behind the project can scan the Phase coverage table below; reviewers who want the design intent can read `ARCHITECTURE.md`; reviewers who want the build diary can read `NIGHTLY_LOG.md`.

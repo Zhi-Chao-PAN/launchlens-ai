@@ -16,6 +16,38 @@ export const metadata: Metadata = {
   title: "LaunchLens AI",
   description:
     "AI-powered go-to-market workspace for indie founders and small teams.",
+  applicationName: "LaunchLens AI",
+  keywords: [
+    "AI SaaS",
+    "go-to-market",
+    "indie founders",
+    "LLM",
+    "MiniMax",
+    "Next.js",
+    "portfolio",
+  ],
+  openGraph: {
+    title: "LaunchLens AI - From raw idea to cited GTM decisions",
+    description:
+      "An AI-powered go-to-market workspace: structured GTM generation, evidence-grounded validation, and cited decision briefs with provider abstraction and cloud persistence.",
+    type: "website",
+    siteName: "LaunchLens AI",
+    images: [
+      {
+        url: "/og.png",
+        width: 1280,
+        height: 640,
+        alt: "LaunchLens AI - portfolio cover image",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "LaunchLens AI - From raw idea to cited GTM decisions",
+    description:
+      "An AI-powered go-to-market workspace: structured GTM generation, evidence-grounded validation, and cited decision briefs.",
+    images: ["/og.png"],
+  },
 };
 
 export default function RootLayout({
