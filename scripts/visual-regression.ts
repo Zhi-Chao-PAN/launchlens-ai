@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import { chromium } from "playwright";
 import { PNG } from "pngjs";
 
-import { diffImages, type ImageDiff } from "../src/lib/launchlens/visual-regression";
+import { diffImages } from "../src/lib/launchlens/visual-regression";
 
 type Viewport = { name: string; width: number; height: number };
 

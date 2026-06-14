@@ -18,7 +18,6 @@ const DEFAULT_DASHBOARD_PATH = resolve(
   process.cwd(),
   "docs/decision-dashboard.html",
 );
-const DEFAULT_RETENTION_MAX_AGE_DAYS = 90;
 const DEFAULT_RETENTION_MIN_KEEP = 10;
 const DEFAULT_WINDOW_SIZE = 5;
 const DEFAULT_DRIFT_THRESHOLD = 5;
@@ -123,9 +122,6 @@ function readPositiveIntArg(name: string, fallback: number): number {
   return Number.isFinite(value) && value > 0 ? value : fallback;
 }
 
-function hasFlag(name: string): boolean {
-  return process.argv.includes(`--${name}`);
-}
 
 function readStringArg(name: string, fallback: string): string {
   const flag = `--${name}`;
