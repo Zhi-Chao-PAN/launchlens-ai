@@ -1532,3 +1532,55 @@ pm run build -> success.
 - API reference v1 is complete. Future cycles can add OpenAPI spec generation, interactive docs, or request/response examples.
 - Next cycle candidates: (a) add response timing to workspace/tenant routes, (b) add keyboard shortcuts to workspace UI, (c) add empty state designs, (d) add OpenAPI JSON schema generation.
 
+### Cycle 42 - Keyboard shortcuts system
+
+Cycle target: Add a global keyboard shortcut system with a discoverable help panel.
+
+#### Execution
+
+- Created src/hooks/use-keyboard-shortcuts.ts — a global shortcut registry hook.
+  - Single event listener at window level, no per-component listener proliferation.
+  - Proper modifier key matching (meta/ctrl/shift/alt).
+  - Smart bypass: shortcuts don't fire inside inputs/textareas (except Escape and ?).
+  - Registry-based design: shortcuts can be added/removed dynamically by any component.
+  - ormatShortcut() helper for display (⌘ + S style).
+  - 8 predefined shortcuts across Actions, Navigation, and Help categories.
+- Created src/components/keyboard-shortcuts-modal.tsx — a discoverable help panel.
+  - Floating ? button in the bottom-right corner (always visible, low-profile).
+  - Modal with shortcuts grouped by category.
+  - Each shortcut shown with both description and keybinding.
+  - Press ? to toggle, Esc to close.
+  - Full dark mode support.
+  - Proper ARIA dialog semantics.
+- Added the shortcuts modal to the main page (pp/page.tsx).
+
+### Cycle 43 - Empty state + skeleton loading components
+
+Cycle target: Add reusable UI components for empty and loading states.
+
+#### Execution
+
+- Created src/components/empty-state.tsx — reusable empty state component.
+  - Three sizes (sm/md/lg) for different contexts.
+  - Optional icon, title, description, and action slot.
+  - Semantic ole="status" for accessibility.
+  - Bundled icon variants: NoDataIcon, SparkleIcon, SearchIcon.
+- Created src/components/skeleton.tsx — skeleton loading components.
+  - Base Skeleton component extending HTMLDivElement props.
+  - SkeletonCard for card/list loading states.
+  - SkeletonText for text block loading states.
+  - Standard nimate-pulse animation with dark mode support.
+- Both components follow the existing Tailwind + dark mode design system.
+
+#### Verification (Cycles 42-43)
+
+- 
+pm run build -> success, all pages and routes compile cleanly.
+- Components follow existing code style and design system.
+- No runtime errors, fully client-side ("use client").
+
+#### Cycle 43 handoff
+
+- Experience layer now has building blocks for empty states and loading states.
+- Next cycle candidates: (a) wire up empty states and skeletons into actual routes, (b) integrate keyboard shortcuts with real app actions (generate/edit/save), (c) add a toast/notification system, (d) improve mobile layout of workspace sections.
+
