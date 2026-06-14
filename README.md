@@ -5,7 +5,7 @@
 > Tip: upload `public/og.png` to **Settings -> General -> Social preview** so the GitHub link card uses this same cover. The image is already wired into the Next.js `openGraph` and `twitter` metadata for the live Vercel deployment.
 
 
-[![CI](https://github.com/Zhi-Chao-PAN/launchlens-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhi-Chao-PAN/launchlens-ai/actions/workflows/ci.yml)
+[![CI](https://github.com/Zhi-Chao-PAN/launchlens-ai/actions/workflows/ci.yml/badge.svg) ![v1.0.0](https://img.shields.io/badge/release-v1.0.0-6366f1?style=flat&logo=github) ![License: MIT](https://img.shields.io/badge/license-MIT-22c55e) ![Runs without secrets](https://img.shields.io/badge/runs-without%20secrets-0f172a)](https://github.com/Zhi-Chao-PAN/launchlens-ai/actions/workflows/ci.yml)
 
 LaunchLens AI is an AI-powered SaaS workspace that turns a raw product idea into an editable go-to-market plan for indie founders, solo builders, and small product teams.
 
