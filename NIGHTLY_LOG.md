@@ -1141,3 +1141,41 @@ pm test -> 96 tests in 29 files pass.
 
 - v1.0.0 is the canonical portfolio release point. Future commits should be post-portfolio enhancements documented in PROJECT_MATURITY.md and the NIGHTLY_LOG, not regression of the v1.0.0 surface.
 - Two manual follow-ups that I could not automate from this environment: (1) upload public/og.png as the GitHub social preview (one click in repo settings), (2) verify the live Vercel deployment picks up the new OG metadata on its next redeploy.
+
+
+## 2026-06-14 20:30 Asia/Shanghai
+
+### Cycle 29 - engineering hygiene pass after v1.0.0
+
+Cycle target: close the last reviewer-friction gaps in the top-level files of the repository so the portfolio presentation is complete, even though no new product scope is being added.
+
+### Execution
+
+- Added SECURITY.md (2961 bytes). Documents the threat model, what is in and out of scope, the responsible-disclosure flow, response targets, and a hardening checklist. Names the fixed event codes and the production canary check by file.
+- Added CONTRIBUTING.md (3294 bytes). Documents the issue templates, the PR template, the style, the commit message convention, and the change categories that need an extra reviewer.
+- Added three issue templates: ug_report.md, eature_request.md, security.md. The security template explicitly redirects sensitive reports back to SECURITY.md.
+- Added one PR template that asks for the affected surface, the verification matrix, the risk and rollback plan, and the linked issues.
+- Added .github/workflows/codeql.yml (922 bytes). Runs a weekly GitHub Actions scan against TypeScript and JavaScript on push, pull request, and a Sunday 06:00 UTC cron. Pulls the security-extended and security-and-quality query packs.
+- Updated PROJECT_MATURITY.md with a new "Engineering hygiene" section that names every file added in this cycle and explicitly says the work is post-v1.0.0 hygiene, not new product scope.
+
+### Verification
+
+- 
+px tsc --noEmit -> 0 errors.
+- 
+pm test -> 96 tests in 29 files pass.
+- 
+pm run lint -> still 0 warnings (lint config was already strict).
+- git push -> the v1.0.0 release tag and GitHub Release are unchanged; this commit lands on top of the v1.0.0 line.
+
+### Commit
+
+- This cycle produces one or two commits:
+  - chore(community): add SECURITY, CONTRIBUTING, issue/PR templates, and weekly CodeQL workflow (the files themselves).
+  - docs: log engineering hygiene pass in PROJECT_MATURITY (the maturity note).
+
+### Cycle 29 handoff
+
+- Future cycles after this one should be either real product enhancements, or the long-running re-entry-cost commercial work. There is no more obvious "top-level file is missing" work to do.
+- The CodeQL workflow will start emitting findings as soon as the next push to main; that is the first signal that the security surface is being monitored automatically.
+- Reviewer-friction follow-ups that still need a human in front of the keyboard: (1) upload public/og.png as the GitHub social preview (one click in repo settings), (2) accept the Marketplace Neon terms in the hosted Vercel deployment if that has not already happened, (3) review the CodeQL findings on the next CI run.

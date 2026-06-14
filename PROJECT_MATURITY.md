@@ -85,3 +85,20 @@ Total re-entry estimate: 6 to 10 weeks for a small team to convert this portfoli
 - Unit tests for tenant store (4 tests).
 - Status: ✅ Complete. Smoke:tenant, smoke:cloud, smoke:rbac all pass against production Neon.
 - Re-entry cost estimate for full commercial multi-tenancy (billing, RBAC matrix, quota per tenant): 2-3 weeks.
+
+## Engineering hygiene (2026-06-14)
+
+The portfolio release itself was complete at v1.0.0, but the project still benefited from a small, deliberate round of engineering-hygiene additions that real open-source maintainers ship, even for a single-author portfolio:
+
+- SECURITY.md documents the threat model, what is in and out of scope, the responsible-disclosure flow, the response targets, and the hardening checklist.
+- CONTRIBUTING.md documents the issue templates, the PR template, the style, the commit message convention, and which kinds of changes need an extra reviewer.
+- .github/ISSUE_TEMPLATE/bug_report.md, .github/ISSUE_TEMPLATE/feature_request.md, .github/ISSUE_TEMPLATE/security.md give reviewers and recruiters the same structured intake forms that a real maintenance project would.
+- .github/PULL_REQUEST_TEMPLATE.md asks for an explicit description of the affected surface, the verification matrix, the risk and rollback plan, and the linked issues.
+- .github/workflows/codeql.yml runs a weekly GitHub Actions scan against the TypeScript and JavaScript sources so the security story is not a snapshot.
+- NIGHTLY_LOG.md already carries a hand-written-diary disclaimer so no reader mistakes the log for a cron output.
+
+This is not new portfolio scope; it is the kind of engineering hygiene that a Master of AI admissions reviewer can verify in five minutes by opening the repo and looking at the top-level files.
+
+## Re-entry cost to a real commercial SaaS
+
+Unchanged from the v1.0.0 release. See PROJECT_MATURITY.md for the 6 to 10 weeks of refactoring that would be needed to convert this portfolio release into a paying product.
