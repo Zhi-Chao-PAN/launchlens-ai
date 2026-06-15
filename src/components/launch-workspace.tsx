@@ -29,6 +29,7 @@ import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 import { CloudWorkspaces } from "@/components/cloud-workspaces";
 import { SystemStatus } from "@/components/system-status";
+import { useToast } from "@/components/toast";
 import { DecisionCopilot } from "@/components/decision-copilot";
 import { ValidationBoard } from "@/components/validation-board";
 import { workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
@@ -221,11 +222,12 @@ export function LaunchWorkspace({
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState("");
   const [fallbackNotice, setFallbackNotice] = useState("");
-  const [copyNotice, setCopyNotice] = useState("");
   const [exportText, setExportText] = useState("");
   const [isStorageReady, setIsStorageReady] = useState(false);
   const [persistenceNotice, setPersistenceNotice] = useState("");
   const [isBriefOpen, setIsBriefOpen] = useState(false);
+  const { showToast } = useToast();
+
   const [generationMeta, setGenerationMeta] = useState<GenerationMeta>({
     mode: "demo",
     provider: initialWorkspace.provider,
@@ -373,7 +375,6 @@ export function LaunchWorkspace({
     });
     setError("");
     setFallbackNotice("");
-    setCopyNotice("");
     setExportText("");
     setIsEditing(false);
     setIsBriefOpen(false);
@@ -392,7 +393,6 @@ export function LaunchWorkspace({
     });
     setError("");
     setFallbackNotice("");
-    setCopyNotice("");
     setExportText("");
     setIsEditing(false);
     setIsBriefOpen(false);
@@ -411,7 +411,6 @@ export function LaunchWorkspace({
     });
     setError("");
     setFallbackNotice("");
-    setCopyNotice("");
     setExportText("");
     setIsEditing(false);
     setIsBriefOpen(false);
@@ -422,7 +421,6 @@ export function LaunchWorkspace({
     setIsGenerating(true);
     setError("");
     setFallbackNotice("");
-    setCopyNotice("");
     setExportText("");
 
     try {
@@ -476,9 +474,9 @@ export function LaunchWorkspace({
       }
 
       await navigator.clipboard.writeText(markdown);
-      setCopyNotice("Markdown copied.");
+      showToast("Markdown copied to clipboard", "success");
     } catch {
-      setCopyNotice("Markdown is ready below.");
+      showToast("Clipboard unavailable - Markdown shown below", "info");
     }
   }
 
@@ -492,9 +490,9 @@ export function LaunchWorkspace({
       }
 
       await navigator.clipboard.writeText(json);
-      setCopyNotice("JSON copied.");
+      showToast("JSON copied to clipboard", "success");
     } catch {
-      setCopyNotice("JSON is ready below.");
+      showToast("Clipboard unavailable - JSON shown below", "info");
     }
   }
 
@@ -887,14 +885,14 @@ export function LaunchWorkspace({
                 </div>
               </div>
 
-              {(copyNotice || exportText) && (
+              {exportText && (
                 <div
                   role="status"
                   className="mt-5 rounded-lg border border-[#d8ded4] bg-[#fbfcfa] p-4"
                 >
                   <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#17201d]">
                     <FileText className="size-4" aria-hidden="true" />
-                    {copyNotice || "Markdown export"}
+                    Workspace export
                   </div>
                   {exportText && (
                     <textarea
