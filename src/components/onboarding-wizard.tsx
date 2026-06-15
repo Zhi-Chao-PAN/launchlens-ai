@@ -1,8 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
-
-import { Rocket, Sparkles, Target, UsersRound } from "lucide-react";
+import { Rocket, Sparkles, Target, UsersRound, X } from "lucide-react";
 
 const STORAGE_KEY = "launchlens-onboarding-dismissed";
 
@@ -44,10 +43,17 @@ export function OnboardingWizard() {
     }
   }, []);
 
+  // Dismiss on Escape via the shared launchlens:escape event
+  useEffect(() => {
+    if (!visible) return;
+    const onEscape = () => setVisible(false);
+    window.addEventListener("launchlens:escape", onEscape);
+    return () => window.removeEventListener("launchlens:escape", onEscape);
+  }, [visible]);
+
   function dismiss() {
     localStorage.setItem(STORAGE_KEY, "true");
     setVisible(false);
-
   }
 
   if (!visible) return null;
@@ -57,9 +63,22 @@ export function OnboardingWizard() {
       role="dialog"
       aria-modal="true"
       aria-label="Quick start guide"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0f121c]/60 px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm"
+      onClick={dismiss}
     >
-      <div className="relative flex w-full max-w-lg flex-col gap-6 rounded-xl border border-[#d8ded4] bg-white p-6 shadow-xl">
+      <div
+        className="relative flex w-full max-w-lg flex-col gap-6 rounded-xl border border-[#d8ded4] bg-white p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={dismiss}
+          aria-label="Dismiss quick start guide"
+          className="absolute right-4 top-4 text-[#8e9c93] transition hover:text-[#17201d]"
+        >
+          <X className="size-5" aria-hidden="true" />
+        </button>
+
         <h2 className="pr-6 text-lg font-semibold text-[#17201d]">
           Welcome to LaunchLens AI
         </h2>
@@ -69,7 +88,7 @@ export function OnboardingWizard() {
             const Icon = step.icon;
             return (
               <li key={step.title} className="flex items-start gap-3">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#138a72]/10 text-sm font-bold text-[#138a72]">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#e5f4ef] text-sm font-bold text-[#138a72]">
                   {idx + 1}
                 </span>
                 <div className="flex flex-col gap-0.5">
@@ -86,9 +105,9 @@ export function OnboardingWizard() {
           })}
         </ol>
 
-        <div className="flex items-center justify-between gap-3 border-t border-[#e6ece6] pt-4">
+        <div className="flex items-center justify-between gap-3 border-t border-[#d8ded4] pt-4">
           <p className="max-w-64 text-xs leading-5 text-[#8e9c93]">
-            You can reopen this guide later from the &quot;Help&quot; menu in the header.
+            Use <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1 font-mono">Shift + ?</kbd> any time to see all keyboard shortcuts.
           </p>
           <button
             type="button"

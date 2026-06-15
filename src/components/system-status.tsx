@@ -45,6 +45,14 @@ export function SystemStatus() {
     };
   }, []);
 
+  // Close dropdown on Escape (shared event)
+  useEffect(() => {
+    if (!isOpen) return;
+    const onEscape = () => setIsOpen(false);
+    window.addEventListener("launchlens:escape", onEscape);
+    return () => window.removeEventListener("launchlens:escape", onEscape);
+  }, [isOpen]);
+
   const dbOk = systemStatus?.dbConfigured ? systemStatus.dbHealthy : null;
   const providerOk = systemStatus?.providerConfigured ?? false;
   const allOk = (dbOk === true || dbOk === null) && systemStatus?.status === "ok";
