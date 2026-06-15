@@ -34,7 +34,7 @@ export default async function SignInPage({
         </p>
 
         {params.error ? (
-          <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="rounded-md border border-[#f0c7be] bg-[#fdf2ef] px-3 py-2 text-sm text-[#d85b3f]">
             Invalid handle or recovery key. Try again.
           </p>
         ) : null}
