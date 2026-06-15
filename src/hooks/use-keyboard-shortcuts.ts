@@ -26,12 +26,13 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
   },
   edit: {
     key: "e",
-    description: "Edit the current workspace",
+    description: "Toggle edit/preview mode",
     category: "Actions",
   },
   save: {
     key: "s",
     meta: true,
+    ctrl: true,
     description: "Save workspace to cloud",
     category: "Actions",
   },
@@ -51,17 +52,20 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     description: "Close any open modal or dialog",
     category: "Navigation",
   },
-  nextTab: {
-    key: "]",
+  copyMarkdown: {
+    key: "m",
     meta: true,
-    description: "Next workspace section",
-    category: "Navigation",
+    ctrl: true,
+    description: "Copy workspace as Markdown",
+    category: "Actions",
   },
-  prevTab: {
-    key: "[",
+  reset: {
+    key: "r",
     meta: true,
-    description: "Previous workspace section",
-    category: "Navigation",
+    ctrl: true,
+    shift: true,
+    description: "Reset workspace to initial example",
+    category: "Actions",
   },
 };
 
@@ -102,23 +106,30 @@ function matchesConfig(event: KeyboardEvent, config: ShortcutConfig) {
     return false;
   }
 
-  if (config.meta && !event.metaKey && !event.ctrlKey) {
+  const metaRequired = config.meta;
+  const ctrlRequired = config.ctrl;
+  const shiftRequired = config.shift;
+  const altRequired = config.alt;
+
+  const metaPressed = event.metaKey || event.ctrlKey;
+
+  if (metaRequired && !metaPressed) {
     return false;
   }
-  if (config.ctrl && !event.ctrlKey) {
+  if (ctrlRequired && !event.ctrlKey && !event.metaKey) {
     return false;
   }
-  if (config.shift && !event.shiftKey) {
+  if (shiftRequired && !event.shiftKey) {
     return false;
   }
-  if (config.alt && !event.altKey) {
+  if (altRequired && !event.altKey) {
     return false;
   }
 
-  // If meta/ctrl is not set but the key is a letter, we should NOT trigger when modifiers are pressed
+  // If no meta/ctrl modifier is required, do NOT trigger when modifiers are pressed
   // (to avoid conflicting with browser shortcuts like Cmd+T)
   const letterKey = /^[a-z?\]]$/i.test(config.key);
-  if (letterKey && !config.meta && !config.ctrl) {
+  if (letterKey && !metaRequired && !ctrlRequired) {
     if (event.metaKey || event.ctrlKey || event.altKey) {
       return false;
     }
@@ -156,8 +167,8 @@ function initGlobalListener() {
         tag === "textarea" ||
         target.isContentEditable
       ) {
-        // Still allow Escape and ? shortcut from inputs
-        if (event.key !== "Escape" && event.key !== "?") {
+        // Still allow Escape shortcut from inputs
+        if (event.key !== "Escape") {
           return;
         }
       }
@@ -192,4 +203,3 @@ export function useKeyboardShortcuts(
     };
   }, [shortcuts]);
 }
-

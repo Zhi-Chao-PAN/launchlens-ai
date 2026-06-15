@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   AlertTriangle,
@@ -24,7 +24,8 @@ import {
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 import { CloudWorkspaces } from "@/components/cloud-workspaces";
 import { DecisionCopilot } from "@/components/decision-copilot";
@@ -253,7 +254,38 @@ export function LaunchWorkspace({
     () => evaluateWorkspaceQuality(workspace),
     [workspace],
   );
-  const executionProgress = useMemo(
+
+  // Keyboard shortcuts
+  const focusBrief = useCallback(() => {
+    setIsBriefOpen(true);
+    window.setTimeout(() => {
+      const textarea = document.getElementById("founder-brief-idea") as HTMLTextAreaElement | null;
+      textarea?.focus();
+    }, 50);
+  }, []);
+  
+  const toggleEdit = useCallback(() => {
+    setIsEditing(current => !current);
+  }, []);
+  
+  const handleSave = useCallback(() => {
+    setPersistenceNotice("Use the Save to cloud button in the Cloud history section to save snapshots.");
+    window.setTimeout(() => {
+      const cloudSection = document.getElementById("cloud-workspaces-section");
+      cloudSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  }, []);
+
+  useKeyboardShortcuts({
+    generate: () => { if (!isGenerating) generate(); },
+    edit: toggleEdit,
+    save: handleSave,
+    focusBrief: focusBrief,
+    copyMarkdown: () => copyMarkdown(),
+    reset: () => resetLocalWorkspace(),
+  });
+
+    const executionProgress = useMemo(
     () => evaluateExecutionProgress(execution),
     [execution],
   );
@@ -561,6 +593,7 @@ export function LaunchWorkspace({
                     Product idea
                   </span>
                   <textarea
+                    id="founder-brief-idea"
                     value={input.idea}
                     onChange={(event) =>
                       setInput((current) => ({
@@ -706,12 +739,14 @@ export function LaunchWorkspace({
           </aside>
 
           <div className="min-w-0 space-y-6">
+            <div id="cloud-workspaces-section">
             <CloudWorkspaces
               input={input}
               workspace={workspace}
               execution={execution}
               onRestore={restoreCloudWorkspace}
             />
+            </div>
 
             <section className="rounded-lg border border-[#d8ded4] bg-white p-5 shadow-sm">
               <div className="mb-5 flex flex-col gap-3 border-b border-[#edf0ea] pb-4 xl:flex-row xl:items-center xl:justify-between">
