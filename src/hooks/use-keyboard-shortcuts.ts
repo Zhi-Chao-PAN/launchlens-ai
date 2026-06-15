@@ -101,7 +101,7 @@ export function getShortcutList() {
     .sort((a, b) => a.category.localeCompare(b.category) || a.key.localeCompare(b.key));
 }
 
-function matchesConfig(event: KeyboardEvent, config: ShortcutConfig) {
+export function matchesConfig(event: KeyboardEvent, config: ShortcutConfig) {
   if (event.key.toLowerCase() !== config.key.toLowerCase()) {
     return false;
   }
