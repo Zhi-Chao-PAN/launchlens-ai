@@ -16,6 +16,7 @@ import {
   UploadCloud,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useToast } from "@/components/toast";
 
 import type {
   CloudWorkspaceErrorResponse,
@@ -77,10 +78,10 @@ export function CloudWorkspaces({
   const [cloudState, setCloudState] = useState<CloudState>("checking");
   const [workspaces, setWorkspaces] = useState<CloudWorkspaceSummary[]>([]);
   const [busyAction, setBusyAction] = useState("");
-  const [notice, setNotice] = useState("");
   const [recoveryLabel, setRecoveryLabel] = useState("");
   const [recoveryKey, setRecoveryKey] = useState("");
   const [showRecoveryKey, setShowRecoveryKey] = useState(false);
+  const { showToast } = useToast();
 
   async function cloudRequest<T>(path: string, init?: RequestInit) {
     const headers = new Headers(init?.headers);
@@ -181,7 +182,7 @@ export function CloudWorkspaces({
 
   async function saveSnapshot() {
     setBusyAction("save");
-    setNotice("");
+    showToast("");
 
     try {
       await cloudRequest<CloudWorkspaceResponse>("/api/workspaces", {
@@ -193,10 +194,10 @@ export function CloudWorkspaces({
           execution,
         }),
       });
-      setNotice("Cloud snapshot saved.");
+      showToast("Cloud snapshot saved.", "success");
       await refresh();
     } catch (error) {
-      setNotice(
+      showToast(
         error instanceof Error && error.message === "workspace_limit_reached"
           ? "Cloud history is full. Delete a snapshot before saving."
           : "Cloud save failed. Your local draft is still safe.",
@@ -208,16 +209,16 @@ export function CloudWorkspaces({
 
   async function restoreSnapshot(id: string) {
     setBusyAction(`restore:${id}`);
-    setNotice("");
+    showToast("");
 
     try {
       const response = await cloudRequest<CloudWorkspaceResponse>(
         `/api/workspaces/${id}`,
       );
       onRestore(response.workspace);
-      setNotice("Cloud snapshot restored to the editor.");
+      showToast("Cloud snapshot restored to the editor.", "success");
     } catch {
-      setNotice("That cloud snapshot could not be restored.");
+      showToast("Could not restore that cloud snapshot.", "error");
     } finally {
       setBusyAction("");
     }
@@ -234,7 +235,7 @@ export function CloudWorkspaces({
     }
 
     setBusyAction(`share:${item.id}`);
-    setNotice("");
+    showToast("");
 
     try {
       await cloudRequest<CloudWorkspaceResponse>(
@@ -250,17 +251,17 @@ export function CloudWorkspaces({
 
         try {
           await navigator.clipboard.writeText(shareUrl);
-          setNotice("Read-only share link copied.");
+          showToast("Read-only share link copied to clipboard.", "success");
         } catch {
-          setNotice(`Share link ready: ${shareUrl}`);
+          showToast(`Share link ready: ${shareUrl}`, "info");
         }
       } else {
-        setNotice("Public sharing disabled.");
+        showToast("Public sharing disabled.", "info");
       }
 
       await refresh();
     } catch {
-      setNotice("Sharing could not be updated.");
+      showToast("Could not update sharing settings.", "error");
     } finally {
       setBusyAction("");
     }
@@ -271,9 +272,9 @@ export function CloudWorkspaces({
 
     try {
       await navigator.clipboard.writeText(shareUrl);
-      setNotice("Read-only share link copied.");
+      showToast("Read-only share link copied to clipboard.", "success");
     } catch {
-      setNotice(`Share link ready: ${shareUrl}`);
+      showToast(`Share link ready: ${shareUrl}`, "info");
     }
   }
 
@@ -283,16 +284,16 @@ export function CloudWorkspaces({
     }
 
     setBusyAction(`delete:${item.id}`);
-    setNotice("");
+    showToast("");
 
     try {
       await cloudRequest<null>(`/api/workspaces/${item.id}`, {
         method: "DELETE",
       });
-      setNotice("Cloud snapshot deleted.");
+      showToast("Cloud snapshot deleted.", "success");
       await refresh();
     } catch {
-      setNotice("Cloud snapshot could not be deleted.");
+      showToast("Could not delete cloud snapshot.", "error");
     } finally {
       setBusyAction("");
     }
@@ -301,21 +302,21 @@ export function CloudWorkspaces({
   function generateRecoveryKey() {
     setRecoveryKey(createRecoveryKey());
     setShowRecoveryKey(true);
-    setNotice("Recovery key generated. Keep it somewhere private.");
+    showToast("Recovery key generated - keep it somewhere private!", "success");
   }
 
   async function copyRecoveryKey() {
     try {
       await navigator.clipboard.writeText(recoveryKey);
-      setNotice("Recovery key copied. Store it in a password manager.");
+      showToast("Recovery key copied. Store it safely!", "success");
     } catch {
-      setNotice("Copy failed. Select the recovery key and store it safely.");
+      showToast("Copy failed - please select and save the key manually.", "error");
     }
   }
 
   async function linkRecoveryOwner() {
     setBusyAction("recovery");
-    setNotice("");
+    showToast("");
 
     try {
       const recoveryOwnerToken = await deriveRecoveryOwnerToken(
@@ -330,10 +331,10 @@ export function CloudWorkspaces({
       localStorage.setItem(OWNER_TOKEN_KEY, recoveryOwnerToken);
       localStorage.setItem(RECOVERY_LABEL_KEY, recoveryLabel.trim());
       setOwnerToken(recoveryOwnerToken);
-      setNotice("Cloud history linked to the recovery key.");
+      showToast("Cloud history linked to your recovery key.", "success");
       await refresh(recoveryOwnerToken);
     } catch {
-      setNotice("Recovery link failed. Check the handle and recovery key.");
+      showToast("Recovery failed - check your handle and recovery key.", "error");
     } finally {
       setBusyAction("");
     }
@@ -341,7 +342,7 @@ export function CloudWorkspaces({
 
   async function recoverOwner() {
     setBusyAction("recovery");
-    setNotice("");
+    showToast("");
 
     try {
       const recoveryOwnerToken = await deriveRecoveryOwnerToken(
@@ -352,10 +353,10 @@ export function CloudWorkspaces({
       localStorage.setItem(OWNER_TOKEN_KEY, recoveryOwnerToken);
       localStorage.setItem(RECOVERY_LABEL_KEY, recoveryLabel.trim());
       setOwnerToken(recoveryOwnerToken);
-      setNotice("Recovery key loaded.");
+      showToast("Recovery key loaded - cloud history restored.", "success");
       await refresh(recoveryOwnerToken);
     } catch {
-      setNotice("Recovery failed. Check the handle and recovery key.");
+      showToast("Recovery failed - check your handle and recovery key.", "error");
     } finally {
       setBusyAction("");
     }
@@ -645,11 +646,6 @@ export function CloudWorkspaces({
         </div>
       )}
 
-      {notice && (
-        <p role="status" className="mt-3 text-sm leading-6 text-[#40504a]">
-          {notice}
-        </p>
-      )}
     </section>
   );
 }

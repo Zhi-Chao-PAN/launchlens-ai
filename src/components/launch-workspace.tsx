@@ -532,7 +532,7 @@ export function LaunchWorkspace({
             <span className="rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-[#40504a]">
               {providerLabel}
             </span>
-            <span className="rounded-md bg-[#f6df8f] px-3 py-2 font-medium text-[#493b08]">
+            <span className="hidden rounded-md bg-[#f6df8f] px-3 py-2 font-medium text-[#493b08] sm:inline-flex">
               Portfolio-ready build
             </span>
             <a
