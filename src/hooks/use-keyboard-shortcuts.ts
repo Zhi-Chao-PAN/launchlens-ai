@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 type ShortcutHandler = (event: KeyboardEvent) => void;
 
@@ -175,33 +175,21 @@ function initGlobalListener() {
 
 export function useKeyboardShortcuts(
   shortcuts: Partial<Record<ShortcutId, ShortcutHandler>>,
-  deps: unknown[] = [],
 ) {
-  const depsRef = useRef(deps);
-  depsRef.current = deps;
-
-  const handleKey = useCallback(
-    (event: KeyboardEvent, id: ShortcutId) => {
-      const handler = shortcuts[id];
-      if (handler) {
-        handler(event);
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [...deps, shortcuts],
-  );
-
   useEffect(() => {
     initGlobalListener();
     const unregisters: Array<() => void> = [];
 
     for (const id of Object.keys(shortcuts) as ShortcutId[]) {
-      const handler = (event: KeyboardEvent) => handleKey(event, id);
-      unregisters.push(registerShortcut(id, handler, true));
+      const handler = shortcuts[id];
+      if (handler) {
+        unregisters.push(registerShortcut(id, handler, true));
+      }
     }
 
     return () => {
       unregisters.forEach((fn) => fn());
     };
-  }, [shortcuts, handleKey]);
+  }, [shortcuts]);
 }
+

@@ -1,10 +1,12 @@
-import { signIn } from "@/app/api/auth/[...nextauth]/route";
+﻿import { signIn } from "@/app/api/auth/[...nextauth]/route";
 
-export default function SignInPage({
+export default async function SignInPage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
+  const params = await searchParams;
+  
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#f6f8f4] px-4">
       <form
@@ -31,13 +33,11 @@ export default function SignInPage({
           from the workspace header.
         </p>
 
-        {searchParams.then((p) =>
-          p.error ? (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-              Invalid handle or recovery key. Try again.
-            </p>
-          ) : null,
-        )}
+        {params.error ? (
+          <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+            Invalid handle or recovery key. Try again.
+          </p>
+        ) : null}
 
         <label className="flex flex-col gap-1 text-sm font-medium text-[#17201d]">
           Handle

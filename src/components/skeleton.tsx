@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { ReactNode } from "react";
+
 
 type SkeletonProps = React.HTMLAttributes<HTMLDivElement> & {
   className?: string;

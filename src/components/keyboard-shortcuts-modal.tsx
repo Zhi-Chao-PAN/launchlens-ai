@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   formatShortcut,
@@ -10,7 +10,7 @@ import {
 
 export function KeyboardShortcutsModal() {
   const [isOpen, setIsOpen] = useState(false);
-  const shortcuts = useMemo(() => getShortcutList(), [isOpen]);
+  const shortcuts = getShortcutList();
 
   useEffect(() => {
     const unregister = registerShortcut(
@@ -135,3 +135,4 @@ export function KeyboardShortcutsModal() {
     </div>
   );
 }
+

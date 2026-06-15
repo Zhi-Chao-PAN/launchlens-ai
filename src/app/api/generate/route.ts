@@ -5,7 +5,6 @@ import {
   ERROR_BODY_TOO_LARGE,
   ERROR_RATE_LIMITED,
   ERROR_INVALID_JSON,
-  ERROR_INVALID_INPUT,
   ERROR_IDEA_TOO_SHORT,
   ERROR_FIELD_TOO_LONG,
 } from "@/lib/launchlens/error-codes";
@@ -145,4 +144,6 @@ export async function POST(request: Request) {
 export function resetGenerateRateLimitsForTests() {
   rateLimitBuckets.clear();
 }
+
+
 
