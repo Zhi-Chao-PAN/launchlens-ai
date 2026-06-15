@@ -224,7 +224,6 @@ export function LaunchWorkspace({
   const [fallbackNotice, setFallbackNotice] = useState("");
   const [exportText, setExportText] = useState("");
   const [isStorageReady, setIsStorageReady] = useState(false);
-  const [persistenceNotice, setPersistenceNotice] = useState("");
   const [isBriefOpen, setIsBriefOpen] = useState(false);
   const { showToast } = useToast();
 
@@ -272,12 +271,12 @@ export function LaunchWorkspace({
   }, []);
   
   const handleSave = useCallback(() => {
-    setPersistenceNotice("Use the Save to cloud button in the Cloud history section to save snapshots.");
+    showToast("Use the Cloud history section below to save snapshots to cloud.", "info");
     window.setTimeout(() => {
       const cloudSection = document.getElementById("cloud-workspaces-section");
       cloudSection?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 100);
-  }, []);
+  }, [showToast]);
 
   useKeyboardShortcuts({
     generate: () => { if (!isGenerating) generate(); },
@@ -319,11 +318,11 @@ export function LaunchWorkspace({
               generatedAt: snapshot.workspace.generatedAt,
               usedFallback: false,
             });
-            setPersistenceNotice("Restored local workspace.");
+            showToast("Local workspace restored from browser storage.", "success");
           }
         }
       } catch {
-        setPersistenceNotice("Local save unavailable.");
+        showToast("Local storage unavailable - changes may not persist.", "error");
       } finally {
         setIsStorageReady(true);
       }
@@ -332,7 +331,7 @@ export function LaunchWorkspace({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     if (!isStorageReady) {
@@ -351,10 +350,10 @@ export function LaunchWorkspace({
       localStorage.setItem(LOCAL_WORKSPACE_KEY, JSON.stringify(snapshot));
     } catch {
       window.setTimeout(() => {
-        setPersistenceNotice("Local save unavailable.");
+        showToast("Local storage unavailable - changes may not persist.", "error");
       }, 0);
     }
-  }, [execution, input, isStorageReady, workspace]);
+  }, [execution, input, isStorageReady, showToast, workspace]);
 
   function updateList(key: WorkspaceListKey, items: string[]) {
     setWorkspace((current) => ({
@@ -378,7 +377,7 @@ export function LaunchWorkspace({
     setExportText("");
     setIsEditing(false);
     setIsBriefOpen(false);
-    setPersistenceNotice("Example workspace loaded and saved locally.");
+    showToast("Example workspace loaded.", "success");
   }
 
   function resetLocalWorkspace() {
@@ -396,7 +395,7 @@ export function LaunchWorkspace({
     setExportText("");
     setIsEditing(false);
     setIsBriefOpen(false);
-    setPersistenceNotice("Reset to starter workspace.");
+    showToast("Workspace reset to starter example.", "success");
   }
 
   function restoreCloudWorkspace(record: CloudWorkspaceRecord) {
@@ -414,7 +413,7 @@ export function LaunchWorkspace({
     setExportText("");
     setIsEditing(false);
     setIsBriefOpen(false);
-    setPersistenceNotice("Cloud snapshot restored and saved locally.");
+    showToast("Cloud snapshot restored successfully.", "success");
   }
 
   async function generate() {
@@ -446,12 +445,13 @@ export function LaunchWorkspace({
         usedFallback: Boolean(data.usedFallback),
         fallbackReason: data.fallbackReason,
       });
-      setPersistenceNotice("Generated workspace saved locally.");
-      setFallbackNotice(
-        data.usedFallback
-          ? "Real provider failed, so LaunchLens returned the mock workspace."
-          : "",
-      );
+      
+      if (data.usedFallback) {
+        showToast("Real provider unavailable - returned demo workspace instead.", "info");
+        setFallbackNotice("Real provider failed, so LaunchLens returned the mock workspace.");
+      } else {
+        setFallbackNotice("");
+      }
       setIsBriefOpen(false);
     } catch (caught) {
       setError(
@@ -727,14 +727,7 @@ export function LaunchWorkspace({
                 </div>
               )}
 
-              {persistenceNotice && (
-                <div
-                  role="status"
-                  className="mt-4 rounded-md border border-[#d8ded4] bg-[#fbfcfa] p-3 text-sm leading-6 text-[#40504a]"
-                >
-                  {persistenceNotice}
-                </div>
-              )}
+              
             </div>
           </aside>
 

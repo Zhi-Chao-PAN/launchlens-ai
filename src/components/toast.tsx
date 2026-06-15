@@ -47,6 +47,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     };
   }, [toasts, dismissToast]);
 
+  // Dismiss latest toast on Escape key
+  useEffect(() => {
+    function handleEscape() {
+      setToasts((current) => current.slice(0, -1));
+    }
+    window.addEventListener("launchlens:escape", handleEscape);
+    return () => window.removeEventListener("launchlens:escape", handleEscape);
+  }, []);
+
   return (
     <ToastContext.Provider value={{ toasts, showToast, dismissToast }}>
       {children}

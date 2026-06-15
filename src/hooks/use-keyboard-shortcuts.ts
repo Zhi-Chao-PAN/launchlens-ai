@@ -174,6 +174,11 @@ function initGlobalListener() {
       }
     }
 
+    // Let Escape dispatch a custom event for toasts/modals to listen to
+    if (event.key === "Escape") {
+      window.dispatchEvent(new CustomEvent("launchlens:escape"));
+    }
+
     for (const [, entry] of registry) {
       if (matchesConfig(event, entry)) {
         event.preventDefault();
