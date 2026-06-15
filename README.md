@@ -47,6 +47,23 @@ Current maturity: portfolio-ready. The product loop is generate -> edit -> colle
 11. Watch generation progress and provider metadata without exposing any secret or upstream response detail.
 12. Copy/export the private workspace, evidence record, and current decision briefs as Markdown or JSON.
 
+## Keyboard Shortcuts
+
+LaunchLens includes power-user keyboard shortcuts for fast workflow navigation:
+
+| Shortcut | Action |
+|----------|--------|
+| `G` | Generate workspace from current brief |
+| `E` | Toggle edit / preview mode |
+| `Cmd/Ctrl + S` | Scroll to cloud save section |
+| `B` | Open founder brief and focus input |
+| `Cmd/Ctrl + M` | Copy workspace as Markdown |
+| `Cmd/Ctrl + Shift + R` | Reset workspace to initial example |
+| `Shift + ?` | Show this keyboard shortcuts panel |
+| `Esc` | Close open modals and dialogs |
+
+Press `?` anywhere in the app to see the shortcuts help panel. Shortcuts are automatically disabled when typing in inputs or textareas to avoid conflicts.
+
 ## Demo Script
 
 1. Start the app with `npm run dev`.

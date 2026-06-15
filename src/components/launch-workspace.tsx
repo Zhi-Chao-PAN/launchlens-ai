@@ -28,6 +28,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 import { CloudWorkspaces } from "@/components/cloud-workspaces";
+import { SystemStatus } from "@/components/system-status";
 import { DecisionCopilot } from "@/components/decision-copilot";
 import { ValidationBoard } from "@/components/validation-board";
 import { workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
@@ -529,6 +530,7 @@ export function LaunchWorkspace({
             >
               <RotateCcw className="size-4" aria-hidden="true" />
             </button>
+            <SystemStatus />
             <span className="rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-[#40504a]">
               {providerLabel}
             </span>
