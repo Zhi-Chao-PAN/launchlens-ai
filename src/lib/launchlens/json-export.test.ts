@@ -113,4 +113,22 @@ describe("safeJsonFilename", () => {
     const hasTasks = Array.isArray(parsed.tasks) || Array.isArray(parsed.actionItems);
     expect(hasBacklog || hasTasks).toBe(true);
   });
+
+  it('produces valid parseable JSON output', () => {
+    const workspace = buildMockWorkspace(input);
+    const execution = createExecutionState(workspace);
+    const json = workspaceToJson(workspace, execution);
+    const parsed = JSON.parse(json);
+    expect(typeof parsed).toBe('object');
+    expect(parsed).not.toBeNull();
+  });
+
+  it('includes execution data when execution state is provided', () => {
+    const workspace = buildMockWorkspace(input);
+    const execution = createExecutionState(workspace);
+    const json = workspaceToJson(workspace, execution);
+    const parsed = JSON.parse(json);
+    expect(parsed.execution).toBeDefined();
+    expect(Array.isArray(parsed.execution?.experiments)).toBe(true);
+  });
 });

@@ -108,4 +108,32 @@ describe("friendlyApiMessage", () => {
       expect(msg).not.toBe("fallback");
     }
   });
+
+  it('every error code in the map has a non-empty message', () => {
+    const codes = Object.keys(API_ERROR_MESSAGES);
+    expect(codes.length).toBeGreaterThan(5);
+    for (const code of codes) {
+      expect(typeof API_ERROR_MESSAGES[code]).toBe('string');
+      expect(API_ERROR_MESSAGES[code].length).toBeGreaterThan(0);
+    }
+  });
+
+});
+
+describe('API_ERROR_MESSAGES completeness', () => {
+  it('has entries for all major error categories', () => {
+    const codes = Object.keys(API_ERROR_MESSAGES);
+    expect(codes.length).toBeGreaterThan(5);
+    // Should contain auth, rate limit, body size errors
+    const hasAuth = codes.some(c => c.includes('auth'));
+    const hasRate = codes.some(c => c.includes('rate_limit'));
+    expect(hasAuth || hasRate).toBe(true);
+  });
+
+  it('all messages are non-empty strings', () => {
+    for (const msg of Object.values(API_ERROR_MESSAGES)) {
+      expect(typeof msg).toBe('string');
+      expect(msg.length).toBeGreaterThan(0);
+    }
+  });
 });

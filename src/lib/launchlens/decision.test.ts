@@ -317,4 +317,44 @@ describe("decision brief", () => {
     const badClaim = { ...valid.claims[0], evidenceIds: ['non-existent-id'] };
     expect(normalizeDecisionBrief({ ...valid, claims: [badClaim] }, source)).toBeNull();
   });
+
+  it('rejects briefs with evidenceStrength outside allowed values', () => {
+    const valid = buildMockDecisionBrief(source);
+    expect(normalizeDecisionBrief({ ...valid, evidenceStrength: 'extreme' as const }, source)).toBeNull();
+    expect(normalizeDecisionBrief({ ...valid, evidenceStrength: '' as const }, source)).toBeNull();
+  });
+
+  it('rejects briefs with recommendation outside allowed values', () => {
+    const valid = buildMockDecisionBrief(source);
+    expect(normalizeDecisionBrief({ ...valid, recommendation: 'maybe' as const }, source)).toBeNull();
+  });
+
+  it('rejects briefs with promptVersion mismatch', () => {
+    const valid = buildMockDecisionBrief(source);
+    expect(normalizeDecisionBrief({ ...valid, promptVersion: 'v999' }, source)).toBeNull();
+  });
+
+  it('rejects briefs with empty claims array', () => {
+    const valid = buildMockDecisionBrief(source);
+    expect(normalizeDecisionBrief({ ...valid, claims: [] }, source)).toBeNull();
+  });
+
+  it('rejects briefs with duplicate evidence IDs within a claim', () => {
+    const valid = buildMockDecisionBrief(source);
+    const eid = valid.claims[0].evidenceIds[0];
+    const dupClaim = { ...valid.claims[0], evidenceIds: [eid, eid] };
+    expect(normalizeDecisionBrief({ ...valid, claims: [dupClaim] }, source)).toBeNull();
+  });
+
+  it('rejects briefs with evidenceStrength outside allowed values', () => {
+    const valid = buildMockDecisionBrief(source);
+    expect(normalizeDecisionBrief({ ...valid, evidenceStrength: 'extreme' }, source)).toBeNull();
+    expect(normalizeDecisionBrief({ ...valid, evidenceStrength: '' }, source)).toBeNull();
+  });
+
+  it('rejects briefs with recommendation outside allowed values', () => {
+    const valid = buildMockDecisionBrief(source);
+    expect(normalizeDecisionBrief({ ...valid, recommendation: 'maybe' }, source)).toBeNull();
+  });
+
 });

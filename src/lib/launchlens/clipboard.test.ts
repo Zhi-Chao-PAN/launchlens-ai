@@ -94,4 +94,14 @@ describe("cross-exporter filename parity", () => {
     expect(safeMarkdownFilename({ projectName: "foo/bar/baz" })).toBe("foo-bar-baz.md");
     expect(safeJsonFilename({ projectName: "foo/bar/baz" })).toBe("foo-bar-baz.json");
   });
+
+  it('handles mixed case and converts to lowercase', () => {
+    expect(safeMarkdownFilename({ projectName: 'Hello World 123' })).toBe('hello-world-123.md');
+  });
+
+  it('handles slashes and dots in project name', () => {
+    expect(safeMarkdownFilename({ projectName: 'foo/bar.baz' })).toBe('foo-bar-baz.md');
+    expect(safeJsonFilename({ projectName: 'foo/bar.baz' })).toBe('foo-bar-baz.json');
+  });
+
 });

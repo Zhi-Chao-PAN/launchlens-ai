@@ -114,3 +114,21 @@ describe("formatRelativeTime", () => {
     expect(formatRelativeTime(ts)).toBe(formatRelativeTime(ts));
   });
 });
+
+
+describe('formatRelativeTime boundaries', () => {
+  it('returns different values for different time deltas', () => {
+    const now = Date.now();
+    const r1 = formatRelativeTime(new Date(now - 5 * 1000).toISOString());
+    const r2 = formatRelativeTime(new Date(now - 2 * 60 * 60 * 1000).toISOString());
+    expect(r1).not.toBe(r2);
+  });
+
+  it('handles one minute boundary correctly', () => {
+    const now = new Date();
+    const almostMin = new Date(now.getTime() - 59 * 1000).toISOString();
+    const justOver = new Date(now.getTime() - 61 * 1000).toISOString();
+    expect(formatRelativeTime(almostMin)).toContain('s');
+    expect(formatRelativeTime(justOver)).toContain('m');
+  });
+});
