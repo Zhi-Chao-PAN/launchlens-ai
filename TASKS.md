@@ -216,6 +216,15 @@
 - [x] Modal close buttons (onboarding wizard X, shortcuts modal X) bumped from `p-1` / no-padding to 40×40 `size-10` flex-centered hit targets with a subtle hover background, meeting WCAG target-size guidance.
 - [x] Test count **192 tests / 39 files**. All four quality gates green: ESLint 0-warn, tsc strict, Vitest 192/192, Next.js production build.
 
+## Validation, Contributor Docs & 410 Semantics (R82-R86, 2026-06-16)
+
+- [x] CHANGELOG.md initialized with a `[Unreleased]` section consolidating the R65-R81 changes and a `[1.0.0]` anchor for the portfolio release.
+- [x] Evidence form on the validation board now runs inline validation: source requires at least 2 characters, observation requires at least 8, fields become marked-invalid on blur with error rings, `aria-invalid`, `aria-describedby`, and visible `role="alert"` messages. Submitting with invalid fields shows a form-level alert and focuses stays put. Touched state resets on successful submit.
+- [x] CONTRIBUTING.md added: setup, quality gates, directory map, brand tokens, focus-ring conventions, motion-reduce rule, PowerShell-safe commit-message tip, overlay/shortcut/API code conventions, and PR guidance.
+- [x] ARCHITECTURE.md preserved (the pre-existing full architecture document with data-flow diagrams and security model) and appended with an R65-R85 addendum documenting the clipboard-resilience chain, `useFocusTrap`, idempotent overlay handles, the `{code, error}` envelope, 410-vs-404 share semantics, the skip link, and the no-jsdom testing strategy.
+- [x] Cross-exporter parity test: `safeMarkdownFilename` and `safeJsonFilename` agree on default slug output, long-name truncation (60 char cap), and repeated-separator collapse, preventing drift if either helper is edited later.
+- [x] Test count **195 tests / 40 files**. All four quality gates green: ESLint 0-warn, tsc strict, Vitest 195/195, Next.js production build.
+
 ## Post-Portfolio Enhancements
 
 - [ ] Add optional OAuth/passkey identity for teams that prefer conventional accounts.
