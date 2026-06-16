@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Check,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
@@ -9,6 +10,7 @@ import {
   Link2,
   Plus,
   Trash2,
+  X,
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
@@ -86,6 +88,7 @@ export function ValidationBoard({
   const [draftSubmitError, setDraftSubmitError] = useState<string>("");
   const { announce: srAnnounce, message: srEvidenceAnnouncement } = useSrAnnounce();
   const evidenceListRef = useRef<HTMLUListElement | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const sourceError = draftTouched.source && draft.source.trim().length < 2 ? "Source needs at least 2 characters." : "";
   const noteError = draftTouched.note && draft.note.trim().length < 8 ? "Observation needs at least 8 characters." : "";
   const progress = useMemo(
@@ -410,41 +413,71 @@ export function ValidationBoard({
                           {item.note}
                         </p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          // Find next/previous delete button to move focus after removal
-                          const allDeleteButtons = Array.from(
-                            evidenceListRef.current?.querySelectorAll("button[aria-label^='Remove evidence']") || [],
-                          );
-                          const currentIndex = allDeleteButtons.indexOf(e.currentTarget);
-                          const nextFocusTarget =
-                            allDeleteButtons[currentIndex + 1] ||
-                            allDeleteButtons[currentIndex - 1] ||
-                            evidenceListRef.current;
+                      {pendingDeleteId === item.id ? (
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const allDeleteButtons = Array.from(
+                                evidenceListRef.current?.querySelectorAll("button[data-delete-confirm]") || [],
+                              );
+                              const currentIndex = allDeleteButtons.indexOf(e.currentTarget);
+                              const nextFocusTarget =
+                                allDeleteButtons[currentIndex + 1] ||
+                                allDeleteButtons[currentIndex - 1] ||
+                                evidenceListRef.current;
 
-                          updateExperiment(experiment.id, (current) => ({
-                            ...current,
-                            evidence: current.evidence.filter(
-                              (evidence) => evidence.id !== item.id,
-                            ),
-                          }));
+                              updateExperiment(experiment.id, (current) => ({
+                                ...current,
+                                evidence: current.evidence.filter(
+                                  (evidence) => evidence.id !== item.id,
+                                ),
+                              }));
 
-                          srAnnounce(`Evidence from ${item.source} removed.`);
+                              srAnnounce(`Evidence from ${item.source} removed.`);
+                              setPendingDeleteId(null);
 
-                          // Move focus after the DOM updates
-                          requestAnimationFrame(() => {
-                            if (nextFocusTarget instanceof HTMLElement) {
-                              nextFocusTarget.focus();
-                            }
-                          });
-                        }}
-                        title="Remove evidence"
-                        aria-label={`Remove evidence from ${item.source}`}
-                        className="flex size-11 shrink-0 items-center justify-center rounded-md text-[#8b3d28] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d85b3f] focus-visible:ring-offset-1 sm:size-8"
-                      >
-                        <Trash2 className="size-4" aria-hidden="true" />
-                      </button>
+                              requestAnimationFrame(() => {
+                                if (nextFocusTarget instanceof HTMLElement) {
+                                  nextFocusTarget.focus();
+                                }
+                              });
+                            }}
+                            data-delete-confirm
+                            title="Confirm delete"
+                            aria-label={`Confirm delete evidence from ${item.source}`}
+                            className="flex size-11 shrink-0 items-center justify-center rounded-md bg-[#8b3d28] text-white transition hover:bg-[#6e2f20] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d85b3f] focus-visible:ring-offset-1 sm:size-8"
+                          >
+                            <Check className="size-4" aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPendingDeleteId(null);
+                            }}
+                            title="Cancel delete"
+                            aria-label="Cancel delete evidence"
+                            className="flex size-11 shrink-0 items-center justify-center rounded-md text-[#607069] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b3d28] focus-visible:ring-offset-1 sm:size-8"
+                          >
+                            <X className="size-4" aria-hidden="true" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPendingDeleteId(item.id);
+                          }}
+                          title="Remove evidence"
+                          aria-label={`Remove evidence from ${item.source}`}
+                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-[#8b3d28] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d85b3f] focus-visible:ring-offset-1 sm:size-8"
+                        >
+                          <Trash2 className="size-4" aria-hidden="true" />
+                        </button>
+                      )}
                     </li>
                   ))}
                 </ul>
