@@ -442,7 +442,7 @@ export function CloudWorkspaces({
             type="button"
             onClick={saveSnapshot}
             disabled={cloudState !== "ready" || isBusy}
-            className="flex h-10 items-center gap-2 rounded-md bg-[#17201d] px-3 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#89938f]"
+            className="flex h-10 items-center gap-2 rounded-md bg-[#138a72] px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#89938f]"
           >
             {busyAction === "save" ? (
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
@@ -611,7 +611,7 @@ export function CloudWorkspaces({
                   onClick={linkRecoveryOwner}
                   disabled={isBusy || (recoveryTouched ? !recoveryReady : (!recoveryLabel || !recoveryKey))}
                   aria-disabled={isBusy || (recoveryTouched ? !recoveryReady : (!recoveryLabel || !recoveryKey))}
-                  className="h-9 rounded-md bg-[#17201d] px-3 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#89938f]"
+                  className="h-9 rounded-md bg-[#138a72] px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#89938f]"
                 >
                   Link history
                 </button>

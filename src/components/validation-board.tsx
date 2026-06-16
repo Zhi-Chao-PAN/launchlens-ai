@@ -484,7 +484,7 @@ export function ValidationBoard({
                   </div>
                   <button
                     type="submit"
-                    className="mt-6 flex h-10 items-center justify-center gap-2 rounded-md bg-[#17201d] px-4 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2"
+                    className="mt-6 flex h-10 items-center justify-center gap-2 rounded-md bg-[#138a72] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
                   >
                     <Plus className="size-4" aria-hidden="true" />
                     Record
