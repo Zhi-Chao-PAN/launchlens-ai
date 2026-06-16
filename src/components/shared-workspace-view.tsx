@@ -1,5 +1,6 @@
 ﻿import Link from "next/link";
 import { CopyLinkButton } from "@/components/copy-link-button";
+import { CopyMarkdownButton } from "@/components/copy-markdown-button";
 import {
   ArrowRight,
   CalendarDays,
@@ -88,6 +89,7 @@ export function SharedWorkspaceView({
             <span className="w-fit rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-sm text-[#40504a]">
               Read-only snapshot
             </span>
+            <CopyMarkdownButton workspace={workspace} />
             <CopyLinkButton />
             <Link
               href="/"

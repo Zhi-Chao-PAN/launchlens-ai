@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { SharedWorkspaceView } from "@/components/shared-workspace-view";
@@ -12,6 +13,24 @@ export const dynamic = "force-dynamic";
 type SharedWorkspacePageProps = {
   params: Promise<{ id: string }>;
 };
+
+export async function generateMetadata(
+  { params }: SharedWorkspacePageProps,
+): Promise<Metadata> {
+  // Avoid a second DB round-trip during SSR by returning a generic title.
+  // The page itself renders the workspace headline in <h1> for screen readers.
+  const { id } = await params;
+  if (!isUuid(id)) return { title: "Shared workspace - LaunchLens AI" };
+  return {
+    title: "Shared GTM workspace - LaunchLens AI",
+    description: "A go-to-market workspace shared from LaunchLens AI.",
+    openGraph: {
+      title: "Shared GTM workspace - LaunchLens AI",
+      description: "View a shared LaunchLens AI go-to-market workspace.",
+      type: "article",
+    },
+  };
+}
 
 export default async function SharedWorkspacePage({
   params,
