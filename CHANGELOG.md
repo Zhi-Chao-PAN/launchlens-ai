@@ -27,6 +27,8 @@ tags are cut for milestone demos.
 - `aria-describedby` wiring on the evidence-form Signal select (sr-only hint) and on validation-board Decision/NextAction textareas (character-count descriptions)
 - Screen-reader live-region announcements on the evidence form for successful recording and validation failures
 - Error code chip with one-click copy button on the cloud workspaces error panel
+- `aria-busy` attributes on decision copilot generate button and system status retry button during loading
+- Screen-reader live-region announcements for decision generation (start / success / failure) and system status retries
 
 ### Changed
 - Global primary-CTA color aligned to the brand green (#138a72) with mint focus ring
@@ -51,6 +53,9 @@ tags are cut for milestone demos.
 - Evidence list sorts newest-first so freshly recorded items appear at the top
 - Evidence delete buttons use 44px touch targets on mobile (sm: 32px)
 - `npm run quality` now runs the full CI gate sequence (lint ? test ? typecheck ? provider eval ? decision eval ? build ? audit)
+- Evidence form submission auto-focuses the evidence list for keyboard / screen-reader flow continuity
+- Validation-board header uses compact spacing and typography on mobile
+- Evidence list sorts newest-first, with 44px touch-target delete buttons on mobile
 
 ### Fixed
 - Overlay-stack `pushOverlay` handles are now idempotent, preventing a

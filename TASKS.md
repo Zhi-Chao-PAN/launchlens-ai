@@ -261,6 +261,16 @@
 - [x] Execution test coverage expanded: zero-experiment progress, valid baseline round-trip normalization.
 - [x] Test count: **220 tests / 40 files**. All four quality gates green.
 
+## Accessibility Deep Dive Round 2 (R106-R110, 2026-06-17)
+
+- [x] Decision copilot generate button carries `aria-busy` during synthesis and an `aria-describedby` link to a screen-reader status region.
+- [x] Decision copilot live-region announces generation start, success (with mode/fallback context), and failure (with error message).
+- [x] Evidence form submission auto-focuses the evidence list (`tabindex="-1"`, focus ring) so keyboard and screen-reader users land on the updated content immediately.
+- [x] Validation-board header uses compact mobile layout: smaller padding (p-4 ? p-5 sm:p-5), tighter typography, condensed stat cards.
+- [x] System status retry button has `aria-busy` + explicit `aria-label` when retrying, and announces retry start/result through the status live region.
+- [x] Test count expanded from 220 to **233 tests / 40 files** with coverage across error-codes, filename slugs, markdown-export, and json-export edge cases.
+- [x] All four quality gates green: ESLint 0-warn, tsc strict, Vitest, Next.js build.
+
 ## Post-Portfolio Enhancements
 
 - [ ] Add optional OAuth/passkey identity for teams that prefer conventional accounts.

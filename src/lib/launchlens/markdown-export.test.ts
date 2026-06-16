@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { safeMarkdownFilename, workspaceToMarkdown } from "./markdown-export";
+import { exampleWorkspaces } from "./example-workspaces";
 import { buildMockWorkspace } from "./mock-provider";
 import { createExecutionState } from "./execution";
 import {
@@ -158,5 +159,39 @@ describe("markdown export empty-list robustness", () => {
     expect(md).toContain("# Short");
     expect(md).toContain("## Target Users");
     expect(md).toContain("## Pain Points");
+  });
+
+  it("includes assumptions section when assumptions are present in the workspace", () => {
+    const ws = exampleWorkspaces[0].workspace;
+    const md = workspaceToMarkdown(ws);
+    expect(md).toContain("Assumptions");
+    expect(ws.assumptions.length).toBeGreaterThan(0);
+  });
+
+  it("always starts with a level-1 heading", () => {
+    const ws = exampleWorkspaces[0].workspace;
+    const md = workspaceToMarkdown(ws);
+    expect(md.trim().startsWith("# ")).toBe(true);
+  });
+
+  it("produces output without null/undefined literal strings", () => {
+    const ws = exampleWorkspaces[0].workspace;
+    const md = workspaceToMarkdown(ws);
+    expect(md).not.toContain("undefined");
+    expect(md).not.toContain("null");
+  });
+
+  it("includes backlog items in the output", () => {
+    const ws = exampleWorkspaces[0].workspace;
+    const md = workspaceToMarkdown(ws);
+    expect(md).toContain("Backlog");
+    expect(ws.backlog.length).toBeGreaterThan(0);
+  });
+
+  it("includes content calendar items in the output", () => {
+    const ws = exampleWorkspaces[0].workspace;
+    const md = workspaceToMarkdown(ws);
+    expect(md).toContain("Content");
+    expect(ws.contentCalendar.length).toBeGreaterThan(0);
   });
 });

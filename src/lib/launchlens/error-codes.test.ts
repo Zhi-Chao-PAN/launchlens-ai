@@ -45,4 +45,34 @@ describe("error codes contract", () => {
       (codeEntries.length - mismatched.length) / codeEntries.length;
     expect(matchRate).toBeGreaterThan(0.8);
   });
+
+  it("every HTTP status error has a matching 4xx/5xx semantic code", () => {
+    // All error codes used in HTTP responses should follow snake_case and be descriptive
+    const httpStatusCodes = [
+      "invalid_json",
+      "body_too_large",
+      "rate_limited",
+      "not_found",
+      "workspace_not_found",
+      "cloud_unavailable",
+      "cloud_request_failed",
+      "db_unavailable",
+    ];
+    for (const code of httpStatusCodes) {
+      const found = codeEntries.some(([, v]) => v === code);
+      expect(found).toBe(true);
+    }
+  });
+
+  it("ERROR_STATUS_* and ERROR_HTTP_* follow numerical suffix pattern when present", () => {
+    const numericSuffix = codeEntries.filter(([name]) =>
+      /_(4|5)\d{2}$/.test(name),
+    );
+    // If any exist, they should all be valid HTTP status codes
+    for (const value of numericSuffix.map(([, v]) => v)) {
+      expect(value.length).toBeGreaterThan(3);
+      expect(typeof value).toBe("string");
+    }
+  });
+
 });

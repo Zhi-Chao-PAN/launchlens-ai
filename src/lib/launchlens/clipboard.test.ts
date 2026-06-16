@@ -32,4 +32,22 @@ describe("cross-exporter filename parity", () => {
       safeJsonFilename({ landingPage: { headline: "  Hello---World!!!" } }),
     ).toBe("hello-world.json");
   });
+
+  it("strips emoji and special unicode characters from filenames", () => {
+    const name = { projectName: "My ?? Launch! @2024" };
+    expect(safeMarkdownFilename(name)).toBe("my-launch-2024.md");
+    expect(safeJsonFilename(name)).toBe("my-launch-2024.json");
+  });
+
+  it("handles empty/whitespace-only project names gracefully", () => {
+    expect(safeMarkdownFilename({ projectName: "" })).toBe("launchlens-workspace.md");
+    expect(safeMarkdownFilename({ projectName: "   " })).toBe("launchlens-workspace.md");
+    expect(safeJsonFilename({ projectName: "" })).toBe("launchlens-workspace.json");
+  });
+
+  it("preserves numbers and hyphens correctly", () => {
+    expect(safeMarkdownFilename({ projectName: "v2.1-beta-3" })).toBe("v2-1-beta-3.md");
+    expect(safeJsonFilename({ projectName: "v2.1-beta-3" })).toBe("v2-1-beta-3.json");
+  });
+
 });

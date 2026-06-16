@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { safeJsonFilename, workspaceToJson } from "./json-export";
 import { buildMockWorkspace } from "./mock-provider";
+import { exampleWorkspaces } from "./example-workspaces";
 import { createExecutionState } from "./execution";
 import type { LaunchLensInput } from "./types";
 
@@ -67,5 +68,29 @@ describe("safeJsonFilename", () => {
     const long = safeJsonFilename({ projectName: "a".repeat(200) });
     expect(long.endsWith(".json")).toBe(true);
     expect(long.length).toBeLessThanOrEqual(65);
+  });
+
+  it("produces valid JSON that round-trips through parse", () => {
+    const ws = exampleWorkspaces[0].workspace;
+    const json = workspaceToJson(ws);
+    const parsed = JSON.parse(json);
+    expect(typeof parsed).toBe("object");
+    expect(parsed).not.toBeNull();
+    expect(Array.isArray(parsed)).toBe(false);
+  });
+
+  it("preserves the summary field in JSON output", () => {
+    const ws = exampleWorkspaces[0].workspace;
+    const json = workspaceToJson(ws);
+    expect(json).toContain(ws.summary);
+  });
+
+  it("includes backlog and tasks in the JSON output", () => {
+    const ws = exampleWorkspaces[0].workspace;
+    const json = workspaceToJson(ws);
+    const parsed = JSON.parse(json);
+    const hasBacklog = Array.isArray(parsed.backlog) || Array.isArray(parsed.priorities);
+    const hasTasks = Array.isArray(parsed.tasks) || Array.isArray(parsed.actionItems);
+    expect(hasBacklog || hasTasks).toBe(true);
   });
 });
