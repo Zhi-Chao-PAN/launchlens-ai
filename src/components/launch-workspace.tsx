@@ -35,7 +35,8 @@ import { ReplayTourButton } from "@/components/onboarding-wizard";
 import { useToast } from "@/components/toast";
 import { DecisionCopilot } from "@/components/decision-copilot";
 import { ValidationBoard } from "@/components/validation-board";
-import { workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
+import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
+import { safeMarkdownFilename, workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
 import { workspaceToJson } from "@/lib/launchlens/json-export";
 import type { CloudWorkspaceRecord } from "@/lib/launchlens/cloud-workspace";
 import {
@@ -534,17 +535,29 @@ export function LaunchWorkspace({
     setExportText(markdown);
     setExportFormat("markdown");
 
-    try {
-      if (!navigator.clipboard?.writeText) {
-        throw new Error("Clipboard API is unavailable.");
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(markdown);
+        showToast("Markdown copied to clipboard", "success");
+        flashCopySuccess("markdown");
+        return;
+      } catch {
+        // fall through to sync path
       }
-
-      await navigator.clipboard.writeText(markdown);
+    }
+    if (await copyTextToClipboard(markdown)) {
       showToast("Markdown copied to clipboard", "success");
       flashCopySuccess("markdown");
-    } catch {
-      showToast("Clipboard unavailable - Markdown shown below for manual copy", "info");
+      return;
     }
+    // Last-resort: download the file directly instead of making the user
+    // manually select from the textarea.
+    const filename = safeMarkdownFilename({
+      projectName: null,
+      landingPage: { headline: workspace.landingPage.headline },
+    });
+    downloadTextFile(filename, markdown, "text/markdown;charset=utf-8");
+    showToast("Clipboard unavailable - downloaded Markdown file instead", "info");
   }
 
   async function copyJson() {
@@ -552,17 +565,28 @@ export function LaunchWorkspace({
     setExportText(json);
     setExportFormat("json");
 
-    try {
-      if (!navigator.clipboard?.writeText) {
-        throw new Error("Clipboard API is unavailable.");
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(json);
+        showToast("JSON copied to clipboard", "success");
+        flashCopySuccess("json");
+        return;
+      } catch {
+        // fall through to sync path
       }
-
-      await navigator.clipboard.writeText(json);
+    }
+    if (await copyTextToClipboard(json)) {
       showToast("JSON copied to clipboard", "success");
       flashCopySuccess("json");
-    } catch {
-      showToast("Clipboard unavailable - JSON shown below for manual copy", "info");
+      return;
     }
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadTextFile(
+      `launchlens-workspace-${stamp}.json`,
+      json,
+      "application/json;charset=utf-8",
+    );
+    showToast("Clipboard unavailable - downloaded JSON file instead", "info");
   }
 
   function downloadExport() {

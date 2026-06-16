@@ -1,39 +1,25 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useState } from "react";
 import { CheckCircle2, Link as LinkIcon } from "lucide-react";
 
+import { copyTextToClipboard } from "@/lib/launchlens/clipboard";
+
 /**
  * Small client-side "Copy link" button used by the shared read-only view.
- * Renders a subtle bordered button that copies window.location.href to the
- * clipboard on click; shows a checkmark for 1.8s on success (mirroring the
- * existing export-copy feedback pattern in launch-workspace).
+ * Uses the shared copyTextToClipboard helper (Clipboard API with
+ * execCommand fallback); shows a checkmark for 1.8s on success.
  */
 export function CopyLinkButton({ className = "" }: { className?: string }) {
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = useCallback(async () => {
-    try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(window.location.href);
-      } else {
-        // Legacy fallback for non-secure contexts / older browsers:
-        // create a temporary input, select, execCommand.
-        const input = document.createElement("input");
-        input.value = window.location.href;
-        input.setAttribute("readonly", "");
-        input.style.position = "fixed";
-        input.style.opacity = "0";
-        document.body.appendChild(input);
-        input.select();
-        document.execCommand("copy");
-        document.body.removeChild(input);
+  const handleCopy = useCallback(() => {
+    copyTextToClipboard(window.location.href).then((ok) => {
+      if (ok) {
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1800);
       }
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
-    } catch {
-      // Silently ignore — the button is a convenience, not a critical path.
-    }
+    });
   }, []);
 
   return (

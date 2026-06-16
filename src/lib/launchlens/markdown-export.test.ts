@@ -85,6 +85,24 @@ describe("safeMarkdownFilename", () => {
     ).toBe("hello-world-v2-ai-ml.md");
   });
 
+
+  it("falls back to landingPage.headline when projectName is absent", () => {
+    expect(
+      safeMarkdownFilename({
+        landingPage: { headline: "  Turn a raw SaaS idea into a launch plan!  " },
+      }),
+    ).toBe("turn-a-raw-saas-idea-into-a-launch-plan.md");
+  });
+
+  it("prefers projectName over landingPage.headline when both are provided", () => {
+    expect(
+      safeMarkdownFilename({
+        projectName: "Acme v2",
+        landingPage: { headline: "Ignored headline" },
+      }),
+    ).toBe("acme-v2.md");
+  });
+
   it("truncates long names to 60 chars plus .md", () => {
     const long = "a".repeat(200);
     const out = safeMarkdownFilename({ projectName: long });
