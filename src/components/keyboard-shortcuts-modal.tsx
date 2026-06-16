@@ -69,7 +69,7 @@ export function KeyboardShortcutsModal() {
 
   return (
     <>
-      {/* Floating help button ¡ª placed at bottom-left so it does not overlap
+      {/* Floating help button ï¿½ï¿½ placed at bottom-left so it does not overlap
           with toasts which appear at bottom-right. */}
       <button
         onClick={openModal}

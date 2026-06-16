@@ -143,6 +143,29 @@ export function ValidationBoard({
     setDraftTouched({ source: false, note: false });
   }
 
+  function moveEvidence(
+    experimentId: string,
+    evidenceId: string,
+    direction: "up" | "down",
+  ) {
+    updateExperiment(experimentId, (experiment) => {
+      const idx = experiment.evidence.findIndex((e) => e.id === evidenceId);
+      if (idx === -1) return experiment;
+      const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+      if (targetIdx < 0 || targetIdx >= experiment.evidence.length) {
+        return experiment;
+      }
+      const next = [...experiment.evidence];
+      [next[idx], next[targetIdx]] = [next[targetIdx], next[idx]];
+      return { ...experiment, evidence: next };
+    });
+    const experiment = execution.experiments.find((e) => e.id === experimentId);
+    const evidence = experiment?.evidence.find((e) => e.id === evidenceId);
+    if (evidence) {
+      srAnnounce("Evidence moved " + direction + ": " + evidence.source + ".");
+    }
+  }
+
   function addEvidence(
     event: React.FormEvent<HTMLFormElement>,
     experimentId: string,
@@ -400,7 +423,7 @@ export function ValidationBoard({
 
               {experiment.evidence.length > 0 ? (
                 <ul ref={evidenceListRef} tabIndex={-1} aria-label="Evidence items" className="mt-4 divide-y divide-[#dfe5dd] rounded-md bg-[#f6f8f4] px-4 outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1">
-                  {experiment.evidence.slice().sort((a, b) => new Date(b.observedAt).getTime() - new Date(a.observedAt).getTime()).map((item) => (
+                  {experiment.evidence.map((item) => (
                     <li
                       key={item.id}
                       className="flex items-start gap-3 py-3 text-sm"
@@ -429,6 +452,26 @@ export function ValidationBoard({
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => moveEvidence(experiment.id, item.id, "up")}
+                          disabled={experiment.evidence.findIndex((e) => e.id === item.id) === 0}
+                          title="Move evidence up"
+                          aria-label={`Move evidence from ${item.source} up`}
+                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-[#40504a] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent sm:size-8"
+                        >
+                          <ChevronUp className="size-4" aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveEvidence(experiment.id, item.id, "down")}
+                          disabled={experiment.evidence.findIndex((e) => e.id === item.id) === experiment.evidence.length - 1}
+                          title="Move evidence down"
+                          aria-label={`Move evidence from ${item.source} down`}
+                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-[#40504a] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent sm:size-8"
+                        >
+                          <ChevronDown className="size-4" aria-hidden="true" />
+                        </button>
                         <button
                           type="button"
                           onClick={() => startEditingEvidence(experiment.id, item.id)}
