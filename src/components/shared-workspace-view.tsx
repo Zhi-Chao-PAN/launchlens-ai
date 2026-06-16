@@ -1,6 +1,7 @@
 ﻿import Link from "next/link";
 import { CopyLinkButton } from "@/components/copy-link-button";
 import { CopyMarkdownButton } from "@/components/copy-markdown-button";
+import { DownloadJsonButton } from "@/components/download-json-button";
 import { DownloadMarkdownButton } from "@/components/download-markdown-button";
 import {
   ArrowRight,
@@ -92,6 +93,7 @@ export function SharedWorkspaceView({
             </span>
             <CopyMarkdownButton workspace={workspace} />
             <DownloadMarkdownButton workspace={workspace} />
+            <DownloadJsonButton workspace={workspace} />
             <CopyLinkButton />
             <Link
               href="/"
