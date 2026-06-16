@@ -7,7 +7,7 @@ import {
   buildMockDecisionBrief,
   decisionSourceFromExperiment,
 } from "./decision";
-import type { LaunchLensInput } from "./types";
+import type { LaunchLensInput, LaunchLensWorkspace } from "./types";
 
 const input: LaunchLensInput = {
   idea: "An AI planner that creates go-to-market tasks.",
@@ -108,5 +108,55 @@ describe("safeMarkdownFilename", () => {
     const out = safeMarkdownFilename({ projectName: long });
     expect(out.endsWith(".md")).toBe(true);
     expect(out.length).toBeLessThanOrEqual(64); // 60 + ".md"
+  });
+});
+
+describe("markdown export empty-list robustness", () => {
+  it("renders empty sections without throwing when lists are empty", () => {
+
+    const ws = {
+      provider: "mock",
+      generatedAt: "2026-06-15T10:00:00.000Z",
+      summary: "A short summary that is long enough to pass the length check.",
+      targetUsers: [],
+      pains: [],
+      mvpScope: ["First mvp item that is long enough to render here"],
+      backlog: [
+        {
+          priority: "P0",
+          feature: "First feature has enough length",
+          why: "Because the test needs at least one backlog item",
+        },
+      ],
+      landingPage: {
+        headline: "Short",
+        subheadline: "A longer subheadline for testing the export edge cases here",
+        cta: "A call to action that is sufficiently long",
+        proofBullets: ["Proof point one that has length"],
+      },
+      pricing: {
+        hypothesis: "Pricing hypothesis that is sufficiently long",
+        tiers: ["First pricing tier with enough length"],
+        risks: ["Risk one long enough"],
+      },
+      launchPlan: ["Launch plan item with enough length here"],
+      contentCalendar: [
+        { channel: "Email", cadence: "Weekly", angle: "Weekly email with enough text" },
+      ],
+      tasks: [
+        {
+          title: "First task title with length",
+          owner: "Founder",
+          due: "Week 1",
+          outcome: "Outcome text has enough length here",
+        },
+      ],
+      assumptions: ["Assumption text that is long enough to render"],
+    };
+    const md = workspaceToMarkdown(ws as unknown as LaunchLensWorkspace);
+    expect(typeof md).toBe("string");
+    expect(md).toContain("# Short");
+    expect(md).toContain("## Target Users");
+    expect(md).toContain("## Pain Points");
   });
 });
