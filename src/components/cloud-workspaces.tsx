@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/toast";
+import { Skeleton } from "@/components/skeleton";
 
 import type {
   CloudWorkspaceErrorResponse,
@@ -469,6 +470,24 @@ export function CloudWorkspaces({
           available.
         </p>
       )}
+
+      {cloudState === "checking" ? (
+        <div className="mt-4 space-y-2" aria-busy="true" aria-label="Checking cloud history">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3 rounded-md border border-[#d8ded4] bg-white p-3"
+            >
+              <Skeleton shimmer rounded="md" className="size-8 shrink-0" />
+              <div className="flex-1 space-y-2">
+                <Skeleton shimmer className="h-3 w-2/3" />
+                <Skeleton shimmer className="h-3 w-1/3" />
+              </div>
+              <Skeleton shimmer rounded="md" className="h-8 w-20 shrink-0" />
+            </div>
+          ))}
+        </div>
+      ) : null}
 
       {cloudState === "ready" && workspaces.length === 0 && (
         <div className="mt-4 flex items-center gap-3 rounded-md border border-dashed border-[#cfd8d1] bg-[#fbfcfa] p-4">

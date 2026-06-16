@@ -592,7 +592,7 @@ export function LaunchWorkspace({
       aria-busy={isGenerating || isSwitching}
       className={[
         "min-h-screen bg-[#f6f8f4] text-[#17201d]",
-        "animate-[launchlens-fade-in_280ms_ease-out_both] motion-reduce:animate-none",
+        "animate-[fadeInDown_280ms_ease-out_both] motion-reduce:animate-none",
         isSwitching ? "opacity-40 pointer-events-none transition-opacity duration-150 ease-out motion-reduce:transition-none" : "transition-opacity duration-200 ease-out motion-reduce:transition-none",
       ].join(" ")}
     >
@@ -1321,4 +1321,5 @@ export function LaunchWorkspace({
     </main>
   );
 }
+
 
