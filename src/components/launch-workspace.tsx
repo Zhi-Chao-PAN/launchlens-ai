@@ -48,7 +48,7 @@ import {
   type WorkspaceExecutionState,
 } from "@/lib/launchlens/execution";
 import type { ExampleWorkspace } from "@/lib/launchlens/example-workspaces";
-import { formatGeneratedTime } from "@/lib/launchlens/generated-time";
+import { formatGeneratedTime, formatRelativeTime } from "@/lib/launchlens/generated-time";
 import { evaluateWorkspaceQuality } from "@/lib/launchlens/workspace-quality";
 import { friendlyApiMessage } from "@/lib/launchlens/api-errors";
 import type {
@@ -355,7 +355,22 @@ export function LaunchWorkspace({
   const [saveFlash, setSaveFlash] = useState(false);
   const { announce: srSave } = useSrAnnounce();
 
-  const saveLabel = isStorageReady ? "Saved locally" : "Preparing save";
+  // Save label with relative time that updates periodically
+  const [nowTick, setNowTick] = useState(0);
+  const savedAtRef = useRef<string | null>(null);
+
+  // Update relative time display every 30 seconds
+  useEffect(() => {
+    const timer = window.setInterval(() => setNowTick((t) => t + 1), 30000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const saveLabel = useMemo(() => {
+    if (!isStorageReady) return "Preparing save";
+    if (!savedAtRef.current) return "Saved locally";
+    return `Saved ${formatRelativeTime(savedAtRef.current)}`;
+  }, [isStorageReady, nowTick]);
+
 
   const generationModeLabel =
     generationMeta.mode === "real" && !generationMeta.usedFallback
@@ -430,6 +445,14 @@ export function LaunchWorkspace({
 
       try {
         const rawSnapshot = localStorage.getItem(LOCAL_WORKSPACE_KEY);
+    if (rawSnapshot) {
+      try {
+        const parsed = JSON.parse(rawSnapshot);
+        if (parsed.savedAt) savedAtRef.current = parsed.savedAt;
+      } catch {
+        // ignore parse errors
+      }
+    }
 
         if (rawSnapshot) {
           const snapshot = parseLocalWorkspaceSnapshot(
@@ -476,6 +499,7 @@ export function LaunchWorkspace({
       };
 
       localStorage.setItem(LOCAL_WORKSPACE_KEY, JSON.stringify(snapshot));
+      savedAtRef.current = nextSavedAt;
 
       // Flash the saved indicator so users see the save took effect.
       // Defer to next tick to avoid cascading re-renders inside the effect.
