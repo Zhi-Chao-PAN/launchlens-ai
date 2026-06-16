@@ -83,6 +83,7 @@ export function ValidationBoard({
   const [draft, setDraft] = useState<EvidenceDraft>(emptyDraft);
   const [draftTouched, setDraftTouched] = useState<{source: boolean; note: boolean}>({ source: false, note: false });
   const [draftSubmitError, setDraftSubmitError] = useState<string>("");
+  const [srEvidenceAnnouncement, setSrEvidenceAnnouncement] = useState("");
   const sourceError = draftTouched.source && draft.source.trim().length < 2 ? "Source needs at least 2 characters." : "";
   const noteError = draftTouched.note && draft.note.trim().length < 8 ? "Observation needs at least 8 characters." : "";
   const progress = useMemo(
@@ -133,6 +134,7 @@ export function ValidationBoard({
     setDraftTouched({ source: true, note: true });
     if (source.length < 2 || note.length < 8) {
       setDraftSubmitError("Please fill in the source and observation before recording evidence.");
+      setSrEvidenceAnnouncement("Evidence not recorded. Please fill in the source and observation.");
       return;
     }
     setDraftSubmitError("");
@@ -154,11 +156,19 @@ export function ValidationBoard({
     setDraft(emptyDraft);
     setDraftTouched({ source: false, note: false });
     setDraftSubmitError("");
+    const updatedExperiment = execution.experiments.find((e) => e.id === experimentId);
+    const count = updatedExperiment ? updatedExperiment.evidence.length + 1 : 1;
+    setSrEvidenceAnnouncement(
+      `Evidence recorded: ${source}. ${count} items total.`,
+    );
     setActiveExperimentId("");
   }
 
   return (
     <section className="rounded-lg border border-[#d8ded4] bg-white shadow-sm">
+      <span role="status" aria-live="polite" className="sr-only">
+        {srEvidenceAnnouncement}
+      </span>
       <div className="flex flex-col gap-4 border-b border-[#edf0ea] p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[#fff0eb] text-[#d85b3f]">
