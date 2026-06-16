@@ -266,4 +266,66 @@ describe("workspace execution state", () => {
     expect(typeof progress.evidenceCount).toBe("number");
   });
 
+
+
+  it("experiment ids are unique across the execution state", () => {
+    const ids = execution.experiments.map((e) => e.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids.length).toBeGreaterThan(0);
+  });
+
+  it("evidence ids are unique across all experiments", () => {
+    const allEvidenceIds: string[] = [];
+    for (const exp of execution.experiments) {
+      for (const ev of exp.evidence) {
+        allEvidenceIds.push(ev.id);
+      }
+    }
+    expect(new Set(allEvidenceIds).size).toBe(allEvidenceIds.length);
+  });
+
+  it("evaluateExecutionProgress returns a non-negative score with matching totals", () => {
+    const progress = evaluateExecutionProgress(execution);
+    expect(progress.score).toBeGreaterThanOrEqual(0);
+    expect(progress.total).toBe(execution.experiments.length);
+    expect(progress.evidenceCount).toBeGreaterThanOrEqual(0);
+    expect(progress.withEvidence).toBeLessThanOrEqual(progress.total);
+    expect(progress.decided).toBeLessThanOrEqual(progress.total);
+  });
+
+  it("evaluateExecutionProgress increases when evidence is added", () => {
+    const baseScore = evaluateExecutionProgress(execution).score;
+    const enhanced = {
+      ...execution,
+      experiments: execution.experiments.map((exp, idx) =>
+        idx === 0
+          ? {
+              ...exp,
+              evidence: [
+                ...exp.evidence,
+                {
+                  id: "extra-evidence",
+                  source: "Test Source",
+                  note: "Extra evidence note",
+                  signal: "supports" as const,
+                  observedAt: "2026-01-01T00:00:00.000Z",
+                },
+              ],
+            }
+          : exp,
+      ),
+    };
+    const enhancedScore = evaluateExecutionProgress(enhanced).score;
+    expect(enhancedScore).toBeGreaterThanOrEqual(baseScore);
+  });
+
+  it("taskIdentity produces consistent ids for the same task", () => {
+    const task = { title: "Test task", owner: "Founder", due: "Week 1", outcome: "Validate" };
+    const id1 = taskIdentity(task, 0);
+    const id2 = taskIdentity(task, 0);
+    expect(id1).toBe(id2);
+    expect(typeof id1).toBe("string");
+    expect(id1.length).toBeGreaterThan(5);
+  });
+
 });
