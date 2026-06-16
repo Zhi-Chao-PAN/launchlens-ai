@@ -29,3 +29,27 @@ describe("buildMockWorkspace", () => {
     expect(workspace.provider).toBe("openai");
   });
 });
+
+
+describe('mock provider idempotency', () => {
+  it('produces the same output for the same input (deterministic)', () => {
+    const result1 = buildMockWorkspace(input);
+    const result2 = buildMockWorkspace(input);
+    expect(result1.backlog.length).toBe(result2.backlog.length);
+    expect(result1.assumptions.length).toBe(result2.assumptions.length);
+    expect(result1.backlog[0].feature).toBe(result2.backlog[0].feature);
+  });
+
+  it('includes core workspace sections with non-empty arrays', () => {
+    const result = buildMockWorkspace(input);
+    expect(result).toHaveProperty('backlog');
+    expect(result).toHaveProperty('assumptions');
+    expect(result).toHaveProperty('pricing');
+    expect(Array.isArray(result.backlog)).toBe(true);
+    expect(result.backlog.length).toBeGreaterThan(0);
+    expect(Array.isArray(result.assumptions)).toBe(true);
+    expect(result.assumptions.length).toBeGreaterThan(0);
+    expect(typeof result.pricing).toBe('object');
+    expect(result.pricing).not.toBeNull();
+  });
+});

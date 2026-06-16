@@ -33,4 +33,21 @@ describe("exampleWorkspaces", () => {
       ).toBe(true);
     }
   });
+
+
+  it('all example workspaces have non-empty backlog and assumptions', () => {
+    for (const ex of exampleWorkspaces) {
+      expect(Array.isArray(ex.workspace.backlog)).toBe(true);
+      expect(ex.workspace.backlog.length).toBeGreaterThan(0);
+      expect(Array.isArray(ex.workspace.assumptions)).toBe(true);
+      expect(ex.workspace.assumptions.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('all example workspaces have matching execution state length', () => {
+    for (const ex of exampleWorkspaces) {
+      expect(ex.execution.experiments.length).toBe(ex.workspace.assumptions.length);
+    }
+  });
+
 });
