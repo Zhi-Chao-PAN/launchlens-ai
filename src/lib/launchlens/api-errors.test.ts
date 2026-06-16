@@ -46,4 +46,32 @@ describe("friendlyApiMessage", () => {
       expect(API_ERROR_MESSAGES[code].length).toBeGreaterThan(8);
     }
   });
+
+  it("maps decision-specific error codes to readable messages", () => {
+    expect(friendlyApiMessage("decision_no_evidence", "fallback")).toMatch(/evidence/i);
+    expect(friendlyApiMessage("decision_invalid_response", "fallback")).toMatch(/parsed|retry/i);
+    expect(friendlyApiMessage("decision_no_evidence", "fallback")).not.toBe("fallback");
+    expect(friendlyApiMessage("decision_invalid_response", "fallback")).not.toBe("fallback");
+  });
+
+  it("stability: message keys use lowercase snake_case only", () => {
+    for (const code of Object.keys(API_ERROR_MESSAGES)) {
+      expect(code).toMatch(/^[a-z_]+$/);
+      expect(code.charAt(0)).not.toBe("_");
+      expect(code.charAt(code.length - 1)).not.toBe("_");
+    }
+  });
+
+  it("stability: messages are non-empty and reasonably distinct", () => {
+    const messages = Object.values(API_ERROR_MESSAGES);
+    // All messages should have at least a few words
+    for (const msg of messages) {
+      expect(msg.split(" ").length).toBeGreaterThanOrEqual(2);
+      expect(msg.endsWith(".") || msg.endsWith("?")).toBe(true);
+    }
+    // Most messages should be unique (aliases are OK but a majority must be distinct)
+    const unique = new Set(messages.map((m) => m.toLowerCase()));
+    expect(unique.size).toBeGreaterThan(messages.length * 0.7);
+  });
+
 });

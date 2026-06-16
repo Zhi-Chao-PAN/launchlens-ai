@@ -154,4 +154,39 @@ describe("decision brief", () => {
       decisionSourceFingerprint(source),
     );
   });
+
+  it("returns null for non-record values without throwing", () => {
+    expect(normalizeDecisionBrief(null, source)).toBeNull();
+    expect(normalizeDecisionBrief(undefined, source)).toBeNull();
+    expect(normalizeDecisionBrief("string", source)).toBeNull();
+    expect(normalizeDecisionBrief(42, source)).toBeNull();
+    expect(normalizeDecisionBrief([], source)).toBeNull();
+  });
+
+  it("returns null when brief fields are corrupted (schema mismatch)", () => {
+    const valid = buildMockDecisionBrief(source);
+    expect(normalizeDecisionBrief({ ...valid, schemaVersion: 2 }, source)).toBeNull();
+    expect(normalizeDecisionBrief({ ...valid, mode: "quantum" as any }, source)).toBeNull();
+    expect(normalizeDecisionBrief({ ...valid, recommendation: "maybe" as any }, source)).toBeNull();
+    expect(normalizeDecisionBrief({ ...valid, claims: [] }, source)).toBeNull();
+    expect(normalizeDecisionBrief({ ...valid, headline: null }, source)).toBeNull();
+  });
+
+  it("returns null when claim references non-existent evidence ids", () => {
+    const valid = buildMockDecisionBrief(source);
+    const badClaims = [{ ...valid.claims[0], evidenceIds: ["nonexistent-id"] }];
+    expect(normalizeDecisionBrief({ ...valid, claims: badClaims }, source)).toBeNull();
+  });
+
+  it("handles getter-throwing objects gracefully (try-catch path)", () => {
+    const boobyTrap: Record<string, unknown> = {
+      schemaVersion: 1,
+      get provider() {
+        throw new Error("nope");
+      },
+    };
+    expect(() => normalizeDecisionBrief(boobyTrap, source)).not.toThrow();
+    expect(normalizeDecisionBrief(boobyTrap, source)).toBeNull();
+  });
+
 });
