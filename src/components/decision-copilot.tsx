@@ -9,6 +9,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { Skeleton } from "@/components/skeleton";
 
 import {
   decisionBriefIsCurrent,
@@ -354,15 +355,24 @@ export function DecisionCopilot({
         </div>
 
         {isGenerating ? (
-          <div className="flex min-h-64 flex-col items-center justify-center rounded-md border border-dashed border-[#cfd8d1] bg-[#fbfcfa] p-8 text-center" role="status" aria-live="polite" aria-busy="true">
-            <BrainCircuit className="mx-auto size-8 animate-pulse text-[#8378aa]" aria-hidden="true" />
-            <h3 className="mt-3 text-base font-semibold text-[#17201d]">Synthesizing evidence</h3>
-            <p className="mt-2 max-w-md text-sm leading-6 text-[#607069]">
-              Weighing signals against counter-signals and building a grounded recommendation.
-            </p>
-            <div className="mt-4 h-1 w-40 overflow-hidden rounded-full bg-[#e6ebe4]">
-              <div className="h-full w-1/3 rounded-full bg-[#786cbb] motion-safe:animate-[launchlens-shimmer_1.2s_ease-in-out_infinite]" />
+          <div className="min-h-64 rounded-md border border-dashed border-[#cfd8d1] bg-[#fbfcfa] p-6" role="status" aria-live="polite" aria-busy="true" aria-label="Synthesizing evidence">
+            <div className="mb-4 flex items-center gap-2">
+              <Skeleton shimmer rounded="md" className="h-5 w-24" />
+              <Skeleton shimmer rounded="md" className="h-5 w-20" />
+              <Skeleton shimmer rounded="md" className="h-5 w-28" />
             </div>
+            <Skeleton shimmer className="mb-2 h-4 w-full" />
+            <Skeleton shimmer className="mb-2 h-4 w-11/12" />
+            <Skeleton shimmer className="mb-5 h-4 w-4/5" />
+            <div className="space-y-2">
+              <Skeleton shimmer className="h-3 w-full" />
+              <Skeleton shimmer className="h-3 w-10/12" />
+              <Skeleton shimmer className="h-3 w-9/12" />
+            </div>
+            <p className="mt-5 flex items-center gap-2 text-xs text-[#607069]">
+              <BrainCircuit className="size-4 animate-pulse text-[#8378aa]" aria-hidden="true" />
+              Weighing signals against counter-signals…
+            </p>
           </div>
         ) : currentBrief && experiment ? (
           <article className="min-w-0 motion-safe:animate-[launchlens-fade-in-up_260ms_ease-out_both]">
