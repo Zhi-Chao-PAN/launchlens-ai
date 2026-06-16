@@ -139,11 +139,17 @@ export function matchesConfig(event: KeyboardEvent, config: ShortcutConfig) {
 }
 
 export function formatShortcut(config: ShortcutConfig) {
+  // Detect platform at call time (not module load) to avoid SSR hydration
+  // mismatches and ensure the correct modifier appears after hydration.
+  const isMac =
+    typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
   const parts: string[] = [];
-  if (config.meta) parts.push("⌘");
-  if (config.ctrl) parts.push("Ctrl");
+  // The binding responds to Cmd (meta) on Mac OR Ctrl on Windows/Linux.
+  // Display the platform-appropriate primary modifier instead of both.
+  const primary = isMac ? "⌘" : "Ctrl";
+  if (config.meta || config.ctrl) parts.push(primary);
   if (config.shift) parts.push("Shift");
-  if (config.alt) parts.push("Alt");
+  if (config.alt) parts.push(isMac ? "⌥" : "Alt");
   parts.push(config.key.length === 1 ? config.key.toUpperCase() : config.key);
   return parts.join(" + ");
 }
