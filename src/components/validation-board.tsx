@@ -165,24 +165,39 @@ export function ValidationBoard({
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 text-center text-xs sm:min-w-[310px]">
-          <div className="rounded-md bg-[#eef0ed] px-3 py-2">
-            <strong className="block text-sm text-[#17201d]">
-              {progress.score}%
-            </strong>
-            progress
+        <div className="flex w-full flex-col gap-2 sm:min-w-[310px] sm:max-w-sm">
+          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+            <div className="rounded-md bg-[#eef0ed] px-3 py-2">
+              <strong className="block text-sm text-[#17201d]">
+                {progress.score}%
+              </strong>
+              progress
+            </div>
+            <div className="rounded-md bg-[#e5f4ef] px-3 py-2">
+              <strong className="block text-sm text-[#0f766e]">
+                {progress.withEvidence}/{progress.total}
+              </strong>
+              evidenced
+            </div>
+            <div className="rounded-md bg-[#f6df8f] px-3 py-2">
+              <strong className="block text-sm text-[#493b08]">
+                {progress.decided}/{progress.total}
+              </strong>
+              decided
+            </div>
           </div>
-          <div className="rounded-md bg-[#e5f4ef] px-3 py-2">
-            <strong className="block text-sm text-[#0f766e]">
-              {progress.withEvidence}/{progress.total}
-            </strong>
-            evidenced
-          </div>
-          <div className="rounded-md bg-[#f6df8f] px-3 py-2">
-            <strong className="block text-sm text-[#493b08]">
-              {progress.decided}/{progress.total}
-            </strong>
-            decided
+          <div
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progress.score}
+            aria-label="Validation progress"
+            className="h-1.5 w-full overflow-hidden rounded-full bg-[#eef0ed]"
+          >
+            <div
+              className="h-full rounded-full bg-[#138a72] transition-all duration-500 ease-out motion-reduce:transition-none"
+              style={{ width: `${progress.score}%` }}
+            />
           </div>
         </div>
       </div>
