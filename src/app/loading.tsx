@@ -1,16 +1,16 @@
-﻿import { Skeleton } from "@/components/skeleton";
+import { Skeleton } from "@/components/skeleton";
 
 export default function Loading() {
   return (
     <main
       id="main-content"
-      className="min-h-screen bg-[#f6f8f4]"
+      className="min-h-screen bg-background"
       aria-busy="true"
       aria-label="Loading workspace"
     >
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
         {/* Top bar: workspace avatar + title + subtitle */}
-        <div className="flex items-center gap-3 border-b border-[#d8ded4] pb-5">
+        <div className="flex items-center gap-3 border-b border-card pb-5">
           <Skeleton shimmer rounded="lg" className="h-11 w-11 shrink-0" />
           <div className="flex-1 space-y-2">
             <Skeleton shimmer className="h-3 w-28" />
@@ -26,7 +26,7 @@ export default function Loading() {
           {/* Sidebar: workspace info / brief summary */}
           <aside
             aria-hidden="true"
-            className="space-y-4 rounded-lg border border-[#d8ded4] bg-white p-5"
+            className="space-y-4 rounded-lg border border-card bg-card p-5"
           >
             <Skeleton shimmer className="h-5 w-24" />
             <Skeleton shimmer className="h-3 w-full" />
@@ -47,7 +47,7 @@ export default function Loading() {
             {[220, 300, 260].map((h, i) => (
               <div
                 key={i}
-                className="space-y-4 rounded-lg border border-[#d8ded4] bg-white p-5"
+                className="space-y-4 rounded-lg border border-card bg-card p-5"
               >
                 <div className="flex items-center justify-between">
                   <Skeleton shimmer className="h-5 w-40" />
