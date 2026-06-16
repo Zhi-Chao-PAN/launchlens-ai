@@ -46,9 +46,10 @@ After the portfolio-ready gate was set, an additional polish pass was applied to
 - Toast system: per-id timer map, shrinking progress bar, pause-on-hover, Shift+Esc dismiss-all, dismiss-all affordance at ≥2 toasts.
 - Animation system: page-entrance fade-in, grid-rows collapsible panels, copilot shimmer, staggered snapshot list entrance, loading dot-pulse, workspace-switch crossfade.
 - Overlay stack: `launchlens:escape` dispatcher plus `pushOverlay()` counter ensures Escape closes topmost overlay first; `inert` blocks focus into collapsed content.
-- Error resilience: system-status offline/error/retry states, AbortController timeouts, online/offline events, recovery form inline validation.
+- Error resilience: system-status offline/error/retry states, AbortController timeouts, online/offline events, recovery form inline validation, decision-brief parse-failure code path with dedicated `decision_invalid_response` message.
 - Export robustness: "Copied!" feedback, `.md`/`.json` download fallback, retry-copy from fallback textarea.
 - A11y: aria-describedby on wizard, role=dialog/aria-invalid on forms, chevron rotation on disclosures, reduced-motion respected globally.
+- A11y (round 2): signal-select aria-describedby hint, Decision/NextAction textarea character-count announcements, system-status live-region network announcements, sr-only helper text on evidence forms.
 - Mobile: viewport-clamped panels, bottom padding for floating help button.
 
 These additions do not change the portfolio scope but raise the ceiling on demonstration polish so reviewers experience fewer seams when walking the product manually.

@@ -22,6 +22,9 @@ tags are cut for milestone demos.
 - An `api-errors.ts` friendly-message map so code-driven errors present
   consistent copy across the UI
 - Generate-button hint line documenting Ctrl+Enter and `?`
+- `decision_invalid_response` error code and user-facing copy for provider responses that fail schema normalization
+- Screen-reader live-region announcements on the system status bar for network state transitions
+- `aria-describedby` wiring on the evidence-form Signal select (sr-only hint) and on validation-board Decision/NextAction textareas (character-count descriptions)
 
 ### Changed
 - Global primary-CTA color aligned to the brand green (#138a72) with mint focus ring
@@ -37,6 +40,12 @@ tags are cut for milestone demos.
   friendly-message map
 - Validation-board loading, shimmer, and disclosure animations respect
   `prefers-reduced-motion`
+- `normalizeDecisionBrief` is wrapped in a top-level try-catch so malformed
+  provider responses degrade to `null` instead of throwing
+- Decision copilot distinguishes "API error" from "valid response with
+  unparseable brief" and surfaces the `decision_invalid_response` code
+- Character-count captions on Decision/NextAction textareas now include the
+  word "characters" for clearer screen-reader output
 
 ### Fixed
 - Overlay-stack `pushOverlay` handles are now idempotent, preventing a

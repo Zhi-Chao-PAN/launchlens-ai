@@ -236,6 +236,19 @@
 - [x] Cloud-history error states now render a code-specific friendly message (via `friendlyApiMessage`) in the error card instead of a generic "could not be reached" paragraph, so quota, auth, and misconfiguration failures surface actionable copy.
 - [x] Test count milestone: **200 tests / 40 files**. All four quality gates remain green: ESLint 0-warn, tsc strict, Vitest, `next build`.
 
+## Accessibility Deep Dive & Decision Brief Parse Hardening (R95-R100, 2026-06-16 ? 2026-06-17)
+
+- [x] `isUuid` edge-case tests: empty string, whitespace, bad version digit, bad variant digit (N/8/9/a/b rule) ? rounds out the UUID validation surface.
+- [x] System status bar now announces network transitions (saving, saved, offline, error) through a screen-reader live region (`role="status"`, `aria-live="polite"`) instead of only visual color changes.
+- [x] Evidence form Signal select now carries an `aria-describedby` reference to a screen-reader-only hint explaining what the signal dropdown represents.
+- [x] Validation board Decision and Next-Action textareas now expose their character counts via `aria-describedby`, so screen-reader users can hear the `N/800 characters` counter instead of only seeing it.
+- [x] `normalizeDecisionBrief` is wrapped in a top-level try-catch so booby-trapped objects (getters that throw, proxies, etc.) degrade gracefully to `null` instead of propagating a raw TypeError.
+- [x] New `decision_invalid_response` error code and copy added to `API_ERROR_MESSAGES` for when the provider returns a brief that fails schema normalization ? distinct from generic generation failure.
+- [x] Decision copilot distinguishes "API returned an error" from "API returned data but the brief is unparseable" and routes the latter through `decision_invalid_response` for a clearer user-facing message.
+- [x] Decision brief normalization tests: non-record inputs (null/undefined/string/number/array), corrupted schema fields, claims referencing non-existent evidence ids, and getter-throwing objects all return null safely.
+- [x] API error catalog stability tests: decision-specific codes are mapped, all keys use lowercase snake_case, messages are at least two words ending in punctuation, and over 70% of messages are semantically unique.
+- [x] Test count: **210 tests / 40 files**. All four quality gates green.
+
 ## Post-Portfolio Enhancements
 
 - [ ] Add optional OAuth/passkey identity for teams that prefer conventional accounts.
