@@ -1,52 +1,83 @@
 ﻿# Contributing
 
-LaunchLens AI is a single-author portfolio release, but the project is built with a real multi-contributor shape on purpose so the conventions are not invented for the first outside review.
+Thanks for stopping by. LaunchLens AI is a portfolio-grade AI SaaS demo that
+keeps getting better. Small, well-tested improvements are very welcome.
 
-## Code of conduct
+## Getting started
 
-Be respectful. This is a portfolio build, not a community; reviewers, interviewers, and recruiters are the primary external audience.
+```bash
+npm install
+cp .env.example .env.local   # fill in MiniMax/OpenAI keys if you want live generation
+npm run dev                  # http://localhost:3000
+```
 
-## How to file an issue
+Required versions:
+- Node 20+
+- npm 10+
 
-- Use the `bug_report` template for anything that reproduces a wrong behavior, a broken test, a CI failure, or a security-adjacent observation.
-- Use the `feature_request` template for product ideas.
-- For security-sensitive observations, see `SECURITY.md` and prefix the title with `[security]`.
+## Quality gates
 
-## How to open a pull request
+Every change must pass four gates before it is merged:
 
-- Open a draft PR early and link it to the matching issue.
-- The PR description should cover: what the change does, why the change is the right fix, what alternatives were considered, and how the change was verified.
-- A PR that touches behavior, tests, configuration, or the schema should be green on:
-  - `npx tsc --noEmit`
-  - `npm run lint`
-  - `npm test`
-  - `npm run build`
-  - the GitHub Actions `CI` workflow
-- A PR that touches the visual surface should also be green on the `hosted-visual-regression` workflow against the live Vercel deployment.
-- A PR that touches the cloud schema should also be green on the `cloud-smoke` workflow, but only if a `LAUNCHLENS_SMOKE_DATABASE_URL` repo variable is configured. This workflow is intentionally optional.
+```bash
+npx eslint src/ e2e/ --max-warnings=0
+npx tsc --noEmit
+npx vitest run
+npm run build
+```
 
-## Style
+CI runs the same four gates on every push to `main`. If one fails, fix it
+in place rather than suppressing warnings.
 
-- TypeScript strict, ESM, no `any`, no `@ts-nocheck`. Prefer narrow types and discriminated unions.
-- Comments are short. Add a comment only when the code is not self-explanatory and the next reader would otherwise have to re-derive the rule.
-- File names use `kebab-case.ts` for modules and `PascalCase.tsx` for React components.
-- Tailwind utility classes only, no inline styles, no CSS modules. The portfolio uses a single muted palette and an accent color, defined once in `globals.css` and reused through `text-[#17201d]`, `bg-[#f6f8f4]`, `border-[#138a72]`, and `text-[#138a72]`.
+## Layout
 
-## Commit messages
+- `src/app/` — Next.js App Router pages and API routes.
+- `src/components/` — UI components. Client components are marked
+  `"use client"` at the top of the file.
+- `src/lib/launchlens/` — Domain logic: generation, validation, workspace
+  store, decision copilot, markdown/json export, keyboard shortcuts,
+  provider abstractions.
+- `src/hooks/` — React hooks including `useFocusTrap`, `useToast`,
+  `useKeyboardShortcuts`.
+- `e2e/` — Playwright specs. Run against a dev server on port 3099
+  (`npm run test:e2e`).
+- `scripts/` — One-off TypeScript scripts invoked via `tsx`
+  (tenant smoke tests, eval runs, visual regression).
 
-- One-line subject, lowercase, conventional commit prefix where it fits (`feat`, `fix`, `docs`, `ci`, `chore`, `refactor`, `test`).
-- The body, when present, names the underlying cause and the verification command, not the symptoms.
-- A commit should not mix a behavior change with a lockfile regeneration or a UI copy tweak. Split if it does.
+## Conventions
 
-## Things that need an extra reviewer
+- Tailwind CSS v4 with the LaunchLens brand tokens:
+  background `#f6f8f4`, text `#17201d`, primary green `#138a72` / hover
+  `#0f7665`, accent orange `#d85b3f`, yellow `#f6df8f`, borders
+  `#d8ded4`/`#cfd8d1`, mint ring `#cbe8df`.
+- Focus rings: green primary buttons use `ring-[#cbe8df]`; outline/white
+  buttons use `ring-[#138a72]`.
+- Error surfaces: background `#fff6f1`, border `#e7c9bd`, text `#8b3d28`,
+  ring `#f2d4c8`.
+- Always add `motion-reduce:` guards for new transitions/animations.
+- Never put literal apostrophes inside single-quoted `git commit -m '...'`
+  messages on Windows; use em-dash `—` or rephrase.
+- Import icons from `lucide-react` in alphabetical order within their block.
+- API routes return `{ code, error }` on failure; add any new codes to
+  `src/lib/launchlens/error-codes.ts` and a matching friendly message in
+  `src/lib/launchlens/api-errors.ts`.
 
-- Schema migrations: any change to `scripts/migrate-cloud-db.ts` or to a Postgres DDL statement.
-- Provider runtime: any change to `src/lib/launchlens/provider*.ts`, `provider-runtime.ts`, or the `MINIMAX_*` and `OPENAI_*` env contracts.
-- Rate limit, owner migration, or quota gates: any change to `src/lib/launchlens/workspace-store.ts` or `workspace-api.ts`.
-- Public share projection: any change to the SQL that selects what is exposed on a `/share/[id]` page.
+## Adding a shortcut
 
-## Things that do not
+Register it in `src/hooks/use-keyboard-shortcuts.ts` and call
+`registerShortcut(id, handler)` from a component. The shortcuts modal
+auto-discovers it via `getShortcutList()`.
 
-- Documentation only changes to `README.md`, `ROADMAP.md`, `TASKS.md`, `PROJECT_MATURITY.md`, `NIGHTLY_LOG.md`, and `ARCHITECTURE.md`.
-- Test additions or refactors that do not change behavior.
-- Lockfile regeneration that is the natural result of a fresh `pnpm install` or `npm install` on a different OS / Node version.
+## Adding an overlay
+
+Call `pushOverlay()` in a `useEffect` and invoke the returned dispose on
+cleanup. Escape is routed to the topmost overlay via the `launchlens:escape`
+custom event. The returned handles are idempotent so StrictMode
+double-invoke is safe.
+
+## Submitting a PR
+
+- Keep PRs focused: one behavior per pull request.
+- Add or update Vitest coverage for non-trivial logic.
+- Include a short clip/screenshot if the change is visual.
+- Update `CHANGELOG.md` under the `[Unreleased]` section.
