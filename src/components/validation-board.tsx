@@ -403,11 +403,17 @@ export function ValidationBoard({
                 </p>
               )}
 
-              {formOpen && (
+              <div
+                id={`evidence-form-${experiment.id}`}
+                className="grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none"
+                style={{ gridTemplateRows: formOpen ? "1fr" : "0fr" }}
+                aria-hidden={!formOpen}
+              >
+                <div className="min-h-0 overflow-hidden">
                 <form
-                  id={`evidence-form-${experiment.id}`}
                   onSubmit={(event) => addEvidence(event, experiment.id)}
                   className="mt-4 grid gap-3 rounded-md border border-[#cfd8d1] bg-[#fbfcfa] p-4 md:grid-cols-[160px_1fr_auto]"
+                  inert={!formOpen}
                 >
                   <label className="block">
                     <span className="mb-2 block text-xs font-semibold uppercase text-[#607069]">
@@ -476,7 +482,8 @@ export function ValidationBoard({
                     Record
                   </button>
                 </form>
-              )}
+                </div>
+              </div>
 
               <div className="mt-4 grid gap-4 lg:grid-cols-2">
                 <label className="block">

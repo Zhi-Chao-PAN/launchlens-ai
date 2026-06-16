@@ -1,4 +1,6 @@
+import Link from "next/link";
 import {
+  ArrowRight,
   CalendarDays,
   CheckCircle2,
   CircleDollarSign,
@@ -81,9 +83,18 @@ export function SharedWorkspaceView({
               <h1 className="text-xl font-semibold">Shared GTM workspace</h1>
             </div>
           </div>
-          <span className="w-fit rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-sm text-[#40504a]">
-            Read-only snapshot
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="w-fit rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-sm text-[#40504a]">
+              Read-only snapshot
+            </span>
+            <Link
+              href="/"
+              className="inline-flex h-10 items-center gap-1.5 rounded-md bg-[#17201d] px-3 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2"
+            >
+              Open the demo
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+          </div>
         </header>
 
         <section className="mb-6 rounded-lg border border-[#d8ded4] bg-white p-6 shadow-sm">
