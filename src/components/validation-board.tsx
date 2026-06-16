@@ -218,7 +218,7 @@ export function ValidationBoard({
       </span>
       <div className="flex flex-col gap-3 border-b border-card p-4 sm:gap-4 sm:p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-[#fff0eb] text-[#d85b3f] sm:size-9">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-signal-challenges text-signal-challenges sm:size-9">
             <FlaskConical className="size-4" aria-hidden="true" />
           </span>
           <div>
@@ -239,14 +239,14 @@ export function ValidationBoard({
               </strong>
               progress
             </div>
-            <div className="rounded-md bg-[#e5f4ef] px-3 py-2">
-              <strong className="block text-sm text-[#0f766e]">
+            <div className="rounded-md bg-signal-supports px-3 py-2">
+              <strong className="block text-sm text-signal-supports">
                 {progress.withEvidence}/{progress.total}
               </strong>
               evidenced
             </div>
-            <div className="rounded-md bg-[#f6df8f] px-3 py-2">
-              <strong className="block text-sm text-[#493b08]">
+            <div className="rounded-md bg-signal-neutral px-3 py-2">
+              <strong className="block text-sm text-signal-neutral">
                 {progress.decided}/{progress.total}
               </strong>
               decided
@@ -287,7 +287,7 @@ export function ValidationBoard({
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-xs font-semibold text-[#d85b3f]">
+                    <span className="font-mono text-xs font-semibold text-signal-challenges">
                       H{index + 1}
                     </span>
                     <span
@@ -315,7 +315,7 @@ export function ValidationBoard({
                     }
                     aria-expanded={expanded}
                     aria-controls={`experiment-details-${experiment.id}`}
-                    className="flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfd8d1] bg-white px-3 text-sm font-semibold text-foreground/80 transition hover:border-[#138a72] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                    className="flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground/80 transition hover:border-[#138a72] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                   >
                     {expanded ? (
                       <ChevronUp className="size-4" aria-hidden="true" />
@@ -330,7 +330,7 @@ export function ValidationBoard({
                     disabled={evidenceLimitReached}
                     aria-expanded={formOpen}
                     aria-controls={`evidence-form-${experiment.id}`}
-                    className="flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm font-semibold text-foreground transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-input px-3 text-sm font-semibold text-foreground transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Plus className="size-4" aria-hidden="true" />
                     {formOpen ? "Cancel" : "Add evidence"}
@@ -359,7 +359,7 @@ export function ValidationBoard({
                           .value as ValidationExperiment["status"],
                       }))
                     }
-                    className="h-10 w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                    className="h-10 w-full rounded-md border border-input bg-input px-3 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   >
                     {Object.entries(statusLabels).map(([value, label]) => (
                       <option key={value} value={value}>
@@ -382,7 +382,7 @@ export function ValidationBoard({
                           .value as ValidationExperiment["confidence"],
                       }))
                     }
-                    className="h-10 w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm capitalize text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                    className="h-10 w-full rounded-md border border-input bg-input px-3 text-sm capitalize text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -406,7 +406,7 @@ export function ValidationBoard({
                         linkedTaskId: event.target.value,
                       }))
                     }
-                    className="h-10 w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                    className="h-10 w-full rounded-md border border-input bg-input px-3 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   >
                     <option value="">No linked task</option>
                     {tasks.map((task, taskIndex) => (
@@ -422,14 +422,14 @@ export function ValidationBoard({
               </div>
 
               {experiment.evidence.length > 0 ? (
-                <ul ref={evidenceListRef} tabIndex={-1} aria-label="Evidence items" className="mt-4 divide-y divide-[#dfe5dd] rounded-md bg-muted px-4 outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1">
+                <ul ref={evidenceListRef} tabIndex={-1} aria-label="Evidence items" className="mt-4 divide-y divide-card rounded-md bg-muted px-4 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1">
                   {experiment.evidence.map((item) => (
                     <li
                       key={item.id}
                       className="flex items-start gap-3 py-3 text-sm"
                     >
                       <CheckCircle2
-                        className="mt-0.5 size-4 shrink-0 text-[#138a72]"
+                        className="mt-0.5 size-4 shrink-0 text-accent"
                         aria-hidden="true"
                       />
                       <div className="min-w-0 flex-1">
@@ -437,7 +437,7 @@ export function ValidationBoard({
                           <span className="font-semibold text-foreground">
                             {item.source}
                           </span>
-                          <span className="rounded-md bg-white px-2 py-1 font-medium text-muted">
+                          <span className="rounded-md bg-card px-2 py-1 font-medium text-muted">
                             {signalLabels[item.signal]}
                           </span>
                           <time className="text-muted">
@@ -458,7 +458,7 @@ export function ValidationBoard({
                           disabled={experiment.evidence.findIndex((e) => e.id === item.id) === 0}
                           title="Move evidence up"
                           aria-label={`Move evidence from ${item.source} up`}
-                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent sm:size-8"
+                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent sm:size-8"
                         >
                           <ChevronUp className="size-4" aria-hidden="true" />
                         </button>
@@ -468,7 +468,7 @@ export function ValidationBoard({
                           disabled={experiment.evidence.findIndex((e) => e.id === item.id) === experiment.evidence.length - 1}
                           title="Move evidence down"
                           aria-label={`Move evidence from ${item.source} down`}
-                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent sm:size-8"
+                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent sm:size-8"
                         >
                           <ChevronDown className="size-4" aria-hidden="true" />
                         </button>
@@ -477,7 +477,7 @@ export function ValidationBoard({
                           onClick={() => startEditingEvidence(experiment.id, item.id)}
                           title="Edit evidence"
                           aria-label={`Edit evidence from ${item.source}`}
-                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 sm:size-8"
+                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:size-8"
                         >
                           <PencilLine className="size-4" aria-hidden="true" />
                         </button>
@@ -515,7 +515,7 @@ export function ValidationBoard({
                             data-delete-confirm
                             title="Confirm delete"
                             aria-label={`Confirm delete evidence from ${item.source}`}
-                            className="flex size-11 shrink-0 items-center justify-center rounded-md bg-[#8b3d28] text-white transition hover:bg-[#6e2f20] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d85b3f] focus-visible:ring-offset-1 sm:size-8"
+                            className="flex size-11 shrink-0 items-center justify-center rounded-md bg-signal-challenges text-white transition hover:bg-[color-mix(in_srgb,var(--signal-challenges-bg)_85%,black)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1 sm:size-8"
                           >
                             <Check className="size-4" aria-hidden="true" />
                           </button>
@@ -527,7 +527,7 @@ export function ValidationBoard({
                             }}
                             title="Cancel delete"
                             aria-label="Cancel delete evidence"
-                            className="flex size-11 shrink-0 items-center justify-center rounded-md text-muted transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b3d28] focus-visible:ring-offset-1 sm:size-8"
+                            className="flex size-11 shrink-0 items-center justify-center rounded-md text-muted transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1 sm:size-8"
                           >
                             <X className="size-4" aria-hidden="true" />
                           </button>
@@ -541,7 +541,7 @@ export function ValidationBoard({
                           }}
                           title="Remove evidence"
                           aria-label={`Remove evidence from ${item.source}`}
-                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-[#8b3d28] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d85b3f] focus-visible:ring-offset-1 sm:size-8"
+                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-signal-challenges transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1 sm:size-8"
                         >
                           <Trash2 className="size-4" aria-hidden="true" />
                         </button>
@@ -566,7 +566,7 @@ export function ValidationBoard({
                 <div className="min-h-0 overflow-hidden">
                 <form
                   onSubmit={(event) => addEvidence(event, experiment.id)}
-                  className="mt-4 grid gap-3 rounded-md border border-[#cfd8d1] bg-[#fbfcfa] p-4 md:grid-cols-[160px_1fr_auto]"
+                  className="mt-4 grid gap-3 rounded-md border border-input bg-input p-4 md:grid-cols-[160px_1fr_auto]"
                   inert={!formOpen}
                 >
                   <label className="block">
@@ -582,7 +582,7 @@ export function ValidationBoard({
                         }))
                       }
                       aria-describedby={`evidence-signal-hint-${experiment.id}`}
-                      className="h-10 w-full rounded-md border border-[#cfd8d1] bg-white px-3 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                      className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                     >
                       {Object.entries(signalLabels).map(([value, label]) => (
                         <option key={value} value={value}>
@@ -613,10 +613,10 @@ export function ValidationBoard({
                         aria-invalid={!!sourceError}
                         aria-describedby={sourceError ? "evidence-source-error" : undefined}
                         placeholder="Interview, metric, test"
-                        className={`h-10 w-full rounded-md border bg-white px-3 text-sm outline-none ${
+                        className={`h-10 w-full rounded-md border bg-card px-3 text-sm outline-none ${
                           sourceError
                             ? "border-signal-challenges focus:border-signal-challenges focus:ring-2 focus:ring-[var(--signal-challenges-border)]"
-                            : "border-[#cfd8d1] focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                            : "border-input focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                         }`}
                       />
                       {sourceError && (
@@ -641,10 +641,10 @@ export function ValidationBoard({
                         aria-invalid={!!noteError}
                         aria-describedby={noteError ? "evidence-note-error" : undefined}
                         placeholder="What did you learn?"
-                        className={`h-10 w-full rounded-md border bg-white px-3 text-sm outline-none ${
+                        className={`h-10 w-full rounded-md border bg-card px-3 text-sm outline-none ${
                           noteError
                             ? "border-signal-challenges focus:border-signal-challenges focus:ring-2 focus:ring-[var(--signal-challenges-border)]"
-                            : "border-[#cfd8d1] focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                            : "border-input focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                         }`}
                       />
                       {noteError && (
@@ -658,7 +658,7 @@ export function ValidationBoard({
                     )}
                     <button
                       type="submit"
-                      className="flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
+                      className="flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
                     >
                       <Plus className="size-4" aria-hidden="true" />
                       {editingEvidenceId ? "Save" : "Record"}
@@ -686,9 +686,9 @@ export function ValidationBoard({
                     }
                     aria-describedby={`decision-count-${experiment.id}`}
                     placeholder="What will change because of this evidence?"
-                    className="w-full resize-y rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                    className="w-full resize-y rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
-                  <p id={`decision-count-${experiment.id}`} className="mt-1 text-right text-[11px] leading-4 text-[#8e9c93]">
+                  <p id={`decision-count-${experiment.id}`} className="mt-1 text-right text-[11px] leading-4 text-muted">
                     {experiment.decision.length}/800 characters
                   </p>
                 </label>
@@ -708,9 +708,9 @@ export function ValidationBoard({
                     }
                     aria-describedby={`next-action-count-${experiment.id}`}
                     placeholder="What evidence should be collected next?"
-                    className="w-full resize-y rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                    className="w-full resize-y rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
-                  <p id={`next-action-count-${experiment.id}`} className="mt-1 text-right text-[11px] leading-4 text-[#8e9c93]">
+                  <p id={`next-action-count-${experiment.id}`} className="mt-1 text-right text-[11px] leading-4 text-muted">
                     {experiment.nextAction.length}/800 characters
                   </p>
                 </label>

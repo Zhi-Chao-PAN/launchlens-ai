@@ -229,7 +229,7 @@ function ToastContainer() {
         <button
           type="button"
           onClick={dismissAllToasts}
-          className="mr-1 rounded-md border border-input bg-card/95 px-2 py-0.5 text-[11px] font-medium text-muted shadow-sm backdrop-blur transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+          className="mr-1 rounded-md border border-input bg-card/95 px-2 py-0.5 text-[11px] font-medium text-muted shadow-sm backdrop-blur transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
           aria-label="Dismiss all notifications"
         >
           Dismiss all
@@ -347,8 +347,8 @@ function ToastContainer() {
   }, [toast.id, widthPct, beginShrink]);
 
   const icons = {
-    success: <CheckCircle2 className="size-5 shrink-0 text-[#138a72]" aria-hidden="true" />,
-    error: <AlertTriangle className="size-5 shrink-0 text-[#d85b3f]" aria-hidden="true" />,
+    success: <CheckCircle2 className="size-5 shrink-0 text-accent" aria-hidden="true" />,
+    error: <AlertTriangle className="size-5 shrink-0 text-signal-challenges" aria-hidden="true" />,
     info: <Info className="size-5 shrink-0 text-[#4f7fb8]" aria-hidden="true" />,
   };
 
@@ -359,7 +359,7 @@ function ToastContainer() {
   };
 
   const progressColors = {
-    success: "bg-[#138a72]",
+    success: "bg-primary",
     error: "bg-[#d85b3f]",
     info: "bg-[#4f7fb8]",
   };
@@ -386,7 +386,7 @@ function ToastContainer() {
         type="button"
         onClick={onDismiss}
         aria-label="Dismiss notification"
-        className="shrink-0 rounded text-[#8e9c93] transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+        className="shrink-0 rounded text-muted transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
       >
         <X className="size-4" aria-hidden="true" />
       </button>

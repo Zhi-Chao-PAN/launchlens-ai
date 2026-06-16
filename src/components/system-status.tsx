@@ -128,13 +128,13 @@ export function SystemStatus() {
 
   const buttonIcon = () => {
     if (fetchState === "loading" || retrying) {
-      return <Loader2 className="size-4 animate-spin text-[#8e9c93]" aria-hidden="true" />;
+      return <Loader2 className="size-4 animate-spin text-muted" aria-hidden="true" />;
     }
     if (fetchState === "offline") {
-      return <WifiOff className="size-4 text-[#8e9c93]" aria-hidden="true" />;
+      return <WifiOff className="size-4 text-muted" aria-hidden="true" />;
     }
     if (fetchState === "error" || !allOk) {
-      return <AlertTriangle className="size-4 text-[#d85b3f]" aria-hidden="true" />;
+      return <AlertTriangle className="size-4 text-signal-challenges" aria-hidden="true" />;
     }
     return <CheckCircle2 className="size-4 text-accent" aria-hidden="true" />;
   };
@@ -157,7 +157,7 @@ export function SystemStatus() {
         aria-expanded={isOpen}
         onClick={() => setIsOpen((v) => !v)}
         aria-label="System status"
-        className="flex h-10 items-center gap-2 rounded-md border border-card bg-card px-3 text-sm text-foreground/80 transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+        className="flex h-10 items-center gap-2 rounded-md border border-card bg-card px-3 text-sm text-foreground/80 transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
       >
         {buttonIcon()}
         <span className="hidden sm:inline">{buttonLabel()}</span>
@@ -172,7 +172,7 @@ export function SystemStatus() {
           <h3 className="mb-3 text-sm font-semibold text-foreground">System status</h3>
 
           {fetchState === "error" && (
-            <div role="alert" className="mb-3 flex items-start gap-2 rounded-md border border-[#e7c9bd] bg-[#fff6f1] p-2.5 text-xs leading-5 text-[#8b3d28]">
+            <div role="alert" className="mb-3 flex items-start gap-2 rounded-md border border-signal-challenges bg-signal-challenges p-2.5 text-xs leading-5 text-signal-challenges">
               <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
               <span className="flex-1">
                 Could not reach the status endpoint. The app may be offline or the server is restarting.
@@ -181,7 +181,7 @@ export function SystemStatus() {
                 type="button"
                 onClick={manualRetry}
                 disabled={retrying}
-                className="inline-flex shrink-0 items-center gap-1 rounded border border-[#e7c9bd] bg-card px-2 py-0.5 text-[11px] font-medium text-[#8b3d28] transition hover:bg-[#fff6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d85b3f] focus-visible:ring-offset-1 disabled:opacity-50"
+                className="inline-flex shrink-0 items-center gap-1 rounded border border-signal-challenges bg-card px-2 py-0.5 text-[11px] font-medium text-signal-challenges transition hover:bg-signal-challenges focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d85b3f] focus-visible:ring-offset-1 disabled:opacity-50"
               >
                 <RefreshCw className={`size-3 ${retrying ? "animate-spin" : ""}`} aria-hidden="true" />
                 Retry
@@ -203,28 +203,28 @@ export function SystemStatus() {
                   <Cpu className="size-4" aria-hidden="true" />
                   AI Provider
                 </span>
-                <span className={providerOk ? "text-accent" : "text-[#8e9c93]"}>
+                <span className={providerOk ? "text-accent" : "text-muted"}>
                   {providerOk ? systemStatus.provider : "Mock demo"}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-foreground/80">
                   {dbOk === null ? (
-                    <CloudOff className="size-4 text-[#8e9c93]" aria-hidden="true" />
+                    <CloudOff className="size-4 text-muted" aria-hidden="true" />
                   ) : dbOk ? (
                     <Cloud className="size-4 text-accent" aria-hidden="true" />
                   ) : (
-                    <CloudOff className="size-4 text-[#d85b3f]" aria-hidden="true" />
+                    <CloudOff className="size-4 text-signal-challenges" aria-hidden="true" />
                   )}
                   Cloud storage
                 </span>
                 <span
                   className={
                     dbOk === null
-                      ? "text-[#8e9c93]"
+                      ? "text-muted"
                       : dbOk
                         ? "text-accent"
-                        : "text-[#d85b3f]"
+                        : "text-signal-challenges"
                   }
                 >
                   {dbOk === null
@@ -235,18 +235,18 @@ export function SystemStatus() {
                 </span>
               </div>
               {systemStatus.vercelEnv !== "production" && (
-                <div className="mt-3 border-t border-[#edf0ea] pt-2 text-xs text-[#8e9c93]">
+                <div className="mt-3 border-t border-[#edf0ea] pt-2 text-xs text-muted">
                   Environment: {systemStatus.vercelEnv}
                 </div>
               )}
-              <div className="text-xs text-[#8e9c93]">
+              <div className="text-xs text-muted">
                 Version: {systemStatus.version}
               </div>
             </div>
           )}
 
           {fetchState === "loading" && !systemStatus && (
-            <p className="text-sm text-[#8e9c93]">Contacting status endpoint...</p>
+            <p className="text-sm text-muted">Contacting status endpoint...</p>
           )}
         </div>
       )}

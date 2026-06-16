@@ -115,7 +115,7 @@ function ClaimList({
               role="group"
               tabIndex={0}
               aria-label={`${claim.stance} claim: ${claim.text}. ${claim.evidenceIds.length} citation${claim.evidenceIds.length === 1 ? "" : "s"} from ${sources.join(", ")}.`}
-              className="rounded-md bg-muted p-3 outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+              className="rounded-md bg-muted p-3 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-md bg-card px-2 py-1 text-xs font-semibold capitalize text-foreground/80">
@@ -301,7 +301,7 @@ export function DecisionCopilot({
           <span className="rounded-md bg-muted px-3 py-2 text-foreground/80">
             {briefCount}/{execution.experiments.length} current briefs
           </span>
-          <span className="flex items-center gap-1 rounded-md bg-[#e5f4ef] px-3 py-2 font-semibold text-[#0f766e]">
+          <span className="flex items-center gap-1 rounded-md bg-signal-supports px-3 py-2 font-semibold text-signal-supports">
             <ShieldCheck className="size-3.5" aria-hidden="true" />
             Evidence-bound
           </span>
@@ -402,7 +402,7 @@ export function DecisionCopilot({
               role={error ? "alert" : "status"}
               className={`mt-3 rounded-md border px-3 py-2 text-xs leading-5 ${
                 error
-                  ? "border-[#e7c9bd] bg-[#fff6f1] text-signal-challenges"
+                  ? "border-signal-challenges bg-signal-challenges text-signal-challenges"
                   : "border border-signal-supports bg-signal-supports text-signal-supports"
               }`}
             >
