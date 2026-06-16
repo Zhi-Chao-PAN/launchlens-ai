@@ -81,6 +81,10 @@ export function ValidationBoard({
   const [requestedExpandedExperimentId, setRequestedExpandedExperimentId] =
     useState<string | null>();
   const [draft, setDraft] = useState<EvidenceDraft>(emptyDraft);
+  const [draftTouched, setDraftTouched] = useState<{source: boolean; note: boolean}>({ source: false, note: false });
+  const [draftSubmitError, setDraftSubmitError] = useState<string>("");
+  const sourceError = draftTouched.source && draft.source.trim().length < 2 ? "Source needs at least 2 characters." : "";
+  const noteError = draftTouched.note && draft.note.trim().length < 8 ? "Observation needs at least 8 characters." : "";
   const progress = useMemo(
     () => evaluateExecutionProgress(execution),
     [execution],
@@ -126,9 +130,12 @@ export function ValidationBoard({
     const note = draft.note.trim();
     const source = draft.source.trim();
 
-    if (!note || !source) {
+    setDraftTouched({ source: true, note: true });
+    if (source.length < 2 || note.length < 8) {
+      setDraftSubmitError("Please fill in the source and observation before recording evidence.");
       return;
     }
+    setDraftSubmitError("");
 
     updateExperiment(experimentId, (experiment) => ({
       ...experiment,
@@ -145,6 +152,8 @@ export function ValidationBoard({
       ],
     }));
     setDraft(emptyDraft);
+    setDraftTouched({ source: false, note: false });
+    setDraftSubmitError("");
     setActiveExperimentId("");
   }
 
@@ -459,9 +468,19 @@ export function ValidationBoard({
                             source: event.target.value,
                           }))
                         }
+                        onBlur={() => setDraftTouched((cur) => ({ ...cur, source: true }))}
+                        aria-invalid={!!sourceError}
+                        aria-describedby={sourceError ? "evidence-source-error" : undefined}
                         placeholder="Interview, metric, test"
-                        className="h-10 w-full rounded-md border border-[#cfd8d1] bg-white px-3 text-sm outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                        className={`h-10 w-full rounded-md border bg-white px-3 text-sm outline-none ${
+                          sourceError
+                            ? "border-[#d85b3f] focus:border-[#d85b3f] focus:ring-2 focus:ring-[#f2d4c8]"
+                            : "border-[#cfd8d1] focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                        }`}
                       />
+                      {sourceError && (
+                        <p id="evidence-source-error" role="alert" className="mt-1 text-[11px] leading-4 text-[#b84a31]">{sourceError}</p>
+                      )}
                     </label>
                     <label className="block">
                       <span className="mb-2 block text-xs font-semibold uppercase text-[#607069]">
@@ -477,18 +496,33 @@ export function ValidationBoard({
                             note: event.target.value,
                           }))
                         }
+                        onBlur={() => setDraftTouched((cur) => ({ ...cur, note: true }))}
+                        aria-invalid={!!noteError}
+                        aria-describedby={noteError ? "evidence-note-error" : undefined}
                         placeholder="What did you learn?"
-                        className="h-10 w-full rounded-md border border-[#cfd8d1] bg-white px-3 text-sm outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                        className={`h-10 w-full rounded-md border bg-white px-3 text-sm outline-none ${
+                          noteError
+                            ? "border-[#d85b3f] focus:border-[#d85b3f] focus:ring-2 focus:ring-[#f2d4c8]"
+                            : "border-[#cfd8d1] focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                        }`}
                       />
+                      {noteError && (
+                        <p id="evidence-note-error" role="alert" className="mt-1 text-[11px] leading-4 text-[#b84a31]">{noteError}</p>
+                      )}
                     </label>
                   </div>
-                  <button
-                    type="submit"
-                    className="mt-6 flex h-10 items-center justify-center gap-2 rounded-md bg-[#138a72] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
-                  >
-                    <Plus className="size-4" aria-hidden="true" />
-                    Record
-                  </button>
+                  <div className="mt-6 flex flex-col items-start gap-2 md:mt-0 md:justify-end">
+                    {draftSubmitError && (
+                      <p role="alert" className="text-[11px] leading-4 text-[#b84a31]">{draftSubmitError}</p>
+                    )}
+                    <button
+                      type="submit"
+                      className="flex h-10 items-center justify-center gap-2 rounded-md bg-[#138a72] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
+                    >
+                      <Plus className="size-4" aria-hidden="true" />
+                      Record
+                    </button>
+                  </div>
                 </form>
                 </div>
               </div>
