@@ -166,10 +166,10 @@ describe("decision brief", () => {
   it("returns null when brief fields are corrupted (schema mismatch)", () => {
     const valid = buildMockDecisionBrief(source);
     expect(normalizeDecisionBrief({ ...valid, schemaVersion: 2 }, source)).toBeNull();
-    expect(normalizeDecisionBrief({ ...valid, mode: "quantum" as any }, source)).toBeNull();
-    expect(normalizeDecisionBrief({ ...valid, recommendation: "maybe" as any }, source)).toBeNull();
+    expect(normalizeDecisionBrief({ ...valid, mode: "quantum" as unknown as "demo" | "real" }, source)).toBeNull();
+    expect(normalizeDecisionBrief({ ...valid, recommendation: "maybe" as unknown as DecisionRecommendation }, source)).toBeNull();
     expect(normalizeDecisionBrief({ ...valid, claims: [] }, source)).toBeNull();
-    expect(normalizeDecisionBrief({ ...valid, headline: null }, source)).toBeNull();
+    expect(normalizeDecisionBrief({ ...valid, headline: null as unknown as string }, source)).toBeNull();
   });
 
   it("returns null when claim references non-existent evidence ids", () => {
