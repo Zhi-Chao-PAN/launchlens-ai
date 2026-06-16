@@ -134,3 +134,107 @@ test.describe("Onboarding wizard", () => {
     await expect(dialog).toHaveCount(0);
   });
 });
+
+
+  test("/ and Ctrl+K also open the shortcuts modal (command-palette convention)", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+
+    // Dismiss onboarding if visible
+    const onboarding = page.getByRole("dialog", { name: /quick start guide/i });
+    if (await onboarding.isVisible().catch(() => false)) {
+      await onboarding.getByRole("button", { name: /get started/i }).click();
+    }
+
+    // Press "/" to open (unshifted)
+    await page.keyboard.press("/");
+    await expect(
+      page.getByRole("dialog", { name: /keyboard shortcuts/i }),
+    ).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(
+      page.getByRole("dialog", { name: /keyboard shortcuts/i }),
+    ).toHaveCount(0);
+
+    // Press Ctrl+K to open
+    await page.keyboard.press("Control+k");
+    await expect(
+      page.getByRole("dialog", { name: /keyboard shortcuts/i }),
+    ).toBeVisible();
+    await page.mouse.click(10, 10); // backdrop click closes
+    await expect(
+      page.getByRole("dialog", { name: /keyboard shortcuts/i }),
+    ).toHaveCount(0);
+  });
+
+test.describe("Replay tour button", () => {
+  test("Tour button in header re-opens onboarding wizard", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+
+    // Dismiss onboarding if visible
+    const onboarding = page.getByRole("dialog", { name: /quick start guide/i });
+    if (await onboarding.isVisible().catch(() => false)) {
+      await onboarding.getByRole("button", { name: /get started/i }).click();
+      await expect(onboarding).toHaveCount(0);
+    }
+
+    // Click the Tour button
+    const tourBtn = page.getByRole("button", { name: /replay quick start tour/i });
+    await expect(tourBtn).toBeVisible();
+    await tourBtn.click();
+
+    const reopened = page.getByRole("dialog", { name: /quick start guide/i });
+    await expect(reopened).toBeVisible();
+    await expect(reopened.getByText("Welcome to LaunchLens AI")).toBeVisible();
+
+    // Keyboard shortcut Ctrl+H also reopens
+    await page.keyboard.press("Escape");
+    await expect(reopened).toHaveCount(0);
+    await page.keyboard.press("Control+h");
+    await expect(
+      page.getByRole("dialog", { name: /quick start guide/i }),
+    ).toBeVisible();
+  });
+});
+
+test.describe("System status outside click", () => {
+  test("clicking outside status dropdown closes it", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+
+    const onboarding = page.getByRole("dialog", { name: /quick start guide/i });
+    if (await onboarding.isVisible().catch(() => false)) {
+      await onboarding.getByRole("button", { name: /get started/i }).click();
+    }
+
+    const statusButton = page.getByRole("button", { name: /system status/i });
+    await statusButton.click();
+    const panel = page.getByRole("tooltip");
+    await expect(panel).toBeVisible();
+
+    // Click outside
+    await page.mouse.click(10, 10);
+    await expect(panel).toHaveCount(0);
+  });
+});
+
+test.describe("Cmd/Ctrl+Enter in brief textarea", () => {
+  test("Ctrl+Enter in product-idea textarea triggers Generate", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+
+    const onboarding = page.getByRole("dialog", { name: /quick start guide/i });
+    if (await onboarding.isVisible().catch(() => false)) {
+      await onboarding.getByRole("button", { name: /get started/i }).click();
+    }
+
+    const idea = page.locator("#founder-brief-idea");
+    await idea.click();
+    await idea.fill("A small test product");
+    await page.keyboard.press("Control+Enter");
+
+    // Generate button should now show "Generating..."
+    await expect(page.getByRole("button", { name: /generating/i })).toBeVisible();
+  });
+});
