@@ -48,6 +48,7 @@ import {
 import type { ExampleWorkspace } from "@/lib/launchlens/example-workspaces";
 import { formatGeneratedTime } from "@/lib/launchlens/generated-time";
 import { evaluateWorkspaceQuality } from "@/lib/launchlens/workspace-quality";
+import { friendlyApiMessage } from "@/lib/launchlens/api-errors";
 import type {
   GenerationResult,
   LaunchLensInput,
@@ -484,10 +485,18 @@ export function LaunchWorkspace({
       });
       const data = (await response.json()) as Partial<GenerationResult> & {
         error?: string;
+        code?: string;
       };
 
       if (!response.ok || data.error || !data.workspace) {
-        throw new Error(data.error ?? "Generation failed.");
+        const fallback =
+          response.status === 429
+            ? "Too many requests — please wait a moment and try again."
+            : "Generation failed.";
+        const message = friendlyApiMessage(data.code, data.error ?? fallback);
+        const err = new Error(message);
+        (err as Error & { status?: number }).status = response.status;
+        throw err;
       }
 
       setWorkspace(data.workspace);

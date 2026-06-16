@@ -8,8 +8,10 @@ import {
   WorkspaceRequestError,
 } from "@/lib/launchlens/workspace-api";
 import {
-  ERROR_RATE_LIMITED,
+  ERROR_BODY_TOO_LARGE,
   ERROR_DECISION_NO_EVIDENCE,
+  ERROR_INVALID_JSON,
+  ERROR_RATE_LIMITED,
 } from "@/lib/launchlens/error-codes";
 
 export const runtime = "nodejs";
@@ -71,6 +73,7 @@ export async function POST(request: Request) {
     if (error instanceof WorkspaceRequestError) {
       return noStoreJson(
         {
+          code: error.status === 413 ? ERROR_BODY_TOO_LARGE : ERROR_INVALID_JSON,
           error:
             error.status === 413
               ? "Decision request is too large."
@@ -81,7 +84,7 @@ export async function POST(request: Request) {
       );
     }
 
-    return noStoreJson({ error: "Invalid JSON payload." }, { status: 400 }, requestId);
+    return noStoreJson({ code: ERROR_INVALID_JSON, error: "Invalid JSON payload." }, { status: 400 }, requestId);
   }
 
   const record =
