@@ -1,4 +1,5 @@
 ﻿import Link from "next/link";
+import { CopyLinkButton } from "@/components/copy-link-button";
 import {
   ArrowRight,
   CalendarDays,
@@ -87,9 +88,10 @@ export function SharedWorkspaceView({
             <span className="w-fit rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-sm text-[#40504a]">
               Read-only snapshot
             </span>
+            <CopyLinkButton />
             <Link
               href="/"
-              className="inline-flex h-10 items-center gap-1.5 rounded-md bg-[#17201d] px-3 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2"
+              className="inline-flex h-10 items-center gap-1.5 rounded-md bg-[#138a72] px-3 text-sm font-semibold text-white transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
             >
               Open the demo
               <ArrowRight className="size-4" aria-hidden="true" />

@@ -113,6 +113,22 @@ The portfolio release itself was complete at v1.0.0, but the project still benef
 
 This is not new portfolio scope; it is the kind of engineering hygiene that a Master of AI admissions reviewer can verify in five minutes by opening the repo and looking at the top-level files.
 
+## Post-portfolio quality iteration (2026-06-16, R46-R54)
+
+After v1.0.0 shipped, the repo accumulated another sustained pass of UX and robustness polish. None of this changes scope or moves the product closer to a paid SaaS; it narrows the gap between portfolio and real-software feel.
+
+- **Error / loading / 404 surfaces brought onto the brand system.** Global `error.tsx`, `not-found.tsx`, and route-level `loading.tsx` all now use the established green/orange palette, the registered `fadeInDown` keyframe, accessible headings, and clear primary actions ("Open the demo workspace", "Try again" / "Back to demo"). Dev builds render the raw error message; production renders a friendly card.
+- **Skeleton primitive upgraded with a shimmer variant.** All loading states now use the same `launchlens-shimmer` sweep (diagonal gradient animating across a muted-gray bar) instead of Tailwind's uniform `animate-pulse`. The route shell, cloud history "checking" rows, and per-panel async surfaces all use it.
+- **DisclosureGroup for WAI-ARIA accordion keyboard nav.** The pricing FAQ is wrapped in a DisclosureGroup so Up/Down/Home/End move focus between toggles. The component is generic and reusable for other FAQ-style surfaces.
+- **Modal focus-return.** The onboarding wizard and shortcuts modal now save the previously-focused element when they open and restore focus after the close animation finishes, preventing the "focus lands on `<body>`" accessibility anti-pattern.
+- **Toast background-tab drift fixed.** A `visibilitychange` listener pauses all running toast timers when the tab is hidden and resumes them (reading the live DOM progress-bar width) when it becomes visible, so the auto-dismiss stays accurate even when setTimeout is throttled.
+- **Broken animation class references cleaned up** and `launchlens-fade-in` registered defensively in `@theme` to prevent future silent-fail regressions where Tailwind emits a class pointing at a nonexistent keyframe.
+- **Defensive empty-state** on the validation board for corrupted/zero-experiment workspaces.
+- **Unit coverage expanded from 152 / 37 files to 164 / 38 files**, adding edge cases for recovery-key validation, `formatGeneratedTime`, the visual-regression pixel diff, and sample-brief structural invariants.
+- **README keyboard-shortcut table** updated to include Cmd/Ctrl+Enter (generate from brief), Cmd/Ctrl+H (replay tour), and Shift+Esc (dismiss all toasts) which were all implemented but undocumented.
+
+Quality gates remain green end-to-end: ESLint 0 warnings, strict `tsc --noEmit`, Vitest 164/164, and a clean `next build` on every iteration.
+
 ## Re-entry cost to a real commercial SaaS
 
 Unchanged from the v1.0.0 release. See PROJECT_MATURITY.md for the 6 to 10 weeks of refactoring that would be needed to convert this portfolio release into a paying product.
