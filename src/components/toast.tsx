@@ -95,6 +95,33 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("launchlens:escape", handleEscape);
   }, [dismissToast]);
 
+  // Pause / resume auto-dismiss on hover or focus (per-toast events dispatched from ToastItem).
+  useEffect(() => {
+    function onPause(e: Event) {
+      const id = (e as CustomEvent<string>).detail;
+      const handle = timersRef.current.get(id);
+      if (handle) {
+        window.clearTimeout(handle);
+        timersRef.current.delete(id);
+      }
+    }
+    function onResume(e: Event) {
+      const id = (e as CustomEvent<string>).detail;
+      // Only reschedule if toast still exists in state and isn't already leaving.
+      const toast = toastsRef.current.find((t) => t.id === id);
+      if (!toast || toast.leaving) return;
+      const duration = toast.durationMs ?? 4000;
+      const handle = window.setTimeout(() => dismissToast(id), duration);
+      timersRef.current.set(id, handle);
+    }
+    window.addEventListener("launchlens:toast-pause", onPause);
+    window.addEventListener("launchlens:toast-resume", onResume);
+    return () => {
+      window.removeEventListener("launchlens:toast-pause", onPause);
+      window.removeEventListener("launchlens:toast-resume", onResume);
+    };
+  }, [dismissToast]);
+
   // Cleanup all timers on unmount.
   useEffect(() => {
     const timers = timersRef.current;
@@ -146,6 +173,9 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
     return () => window.cancelAnimationFrame(frame);
   }, []);
   const visible = entered && !toast.leaving;
+  // Pause auto-dismiss while the user hovers or focuses the toast.
+  const handlePause = () => window.dispatchEvent(new CustomEvent("launchlens:toast-pause", { detail: toast.id }));
+  const handleResume = () => window.dispatchEvent(new CustomEvent("launchlens:toast-resume", { detail: toast.id }));
 
   const icons = {
     success: <CheckCircle2 className="size-5 shrink-0 text-[#138a72]" aria-hidden="true" />,
@@ -162,6 +192,10 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
   return (
     <div
       role={toast.type === "error" ? "alert" : "status"}
+      onMouseEnter={handlePause}
+      onMouseLeave={handleResume}
+      onFocus={handlePause}
+      onBlur={handleResume}
       className={[
         "flex items-start gap-3 rounded-md border border-[#d8ded4] border-l-4 bg-white px-4 py-3 shadow-lg",
         borders[toast.type],
