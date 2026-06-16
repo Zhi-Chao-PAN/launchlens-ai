@@ -1,4 +1,4 @@
-﻿import { Check, Sparkles } from "lucide-react";
+import { Check, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Disclosure, DisclosureGroup } from "@/components/disclosure";
@@ -84,7 +84,7 @@ const frequentlyAsked = [
 
 export default function PricingPage() {
   return (
-    <main id="main-content" className="min-h-screen animate-[fadeInDown_280ms_ease-out_both] bg-[#f6f8f4] text-[#17201d] motion-reduce:animate-none">
+    <main id="main-content" className="min-h-screen animate-[fadeInDown_280ms_ease-out_both] bg-background text-foreground motion-reduce:animate-none">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-4 py-12 pb-24 sm:px-6 sm:pb-12 lg:px-8">
         <header className="flex flex-col gap-3">
           <span className="inline-flex w-fit items-center gap-2 rounded-md bg-[#f6df8f] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#493b08]">
@@ -94,7 +94,7 @@ export default function PricingPage() {
           <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">
             Transparent tiers for the LaunchLens AI portfolio release
           </h1>
-          <p className="max-w-2xl text-sm leading-6 text-[#40504a] sm:text-base">
+          <p className="max-w-2xl text-sm leading-6 text-foreground/80 sm:text-base">
             This page documents the pricing tiers that the public demo, the
             Solo plan, and the Team plan would offer. The portfolio release
             ships the Free demo, the Solo capability account, and the
@@ -104,7 +104,7 @@ export default function PricingPage() {
           </p>
           <Link
             href="/"
-            className="mt-1 rounded text-sm font-semibold text-[#138a72] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+            className="mt-1 rounded text-sm font-semibold text-accent underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
           >
             Back to the product workspace
           </Link>
@@ -119,27 +119,27 @@ export default function PricingPage() {
               key={tier.name}
               className={
                 tier.highlight
-                  ? "flex flex-col gap-4 rounded-lg border-2 border-[#138a72] bg-white p-6 shadow-sm"
-                  : "flex flex-col gap-4 rounded-lg border border-[#d8ded4] bg-white p-6 shadow-sm"
+                  ? "flex flex-col gap-4 rounded-lg border-2 border-[#138a72] bg-card p-6 shadow-sm"
+                  : "flex flex-col gap-4 rounded-lg border border-card bg-card p-6 shadow-sm"
               }
             >
               <header className="flex flex-col gap-1">
-                <h2 className="text-lg font-semibold text-[#17201d]">
+                <h2 className="text-lg font-semibold text-foreground">
                   {tier.name}
                 </h2>
-                <p className="text-sm text-[#607069]">{tier.summary}</p>
+                <p className="text-sm text-muted">{tier.summary}</p>
               </header>
               <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-semibold text-[#17201d]">
+                <span className="text-3xl font-semibold text-foreground">
                   {tier.price}
                 </span>
-                <span className="text-sm text-[#607069]">{tier.cadence}</span>
+                <span className="text-sm text-muted">{tier.cadence}</span>
               </div>
-              <ul className="flex flex-col gap-2 text-sm leading-6 text-[#40504a]">
+              <ul className="flex flex-col gap-2 text-sm leading-6 text-foreground/80">
                 {tier.features.map((feature) => (
                   <li key={feature} className="flex items-start gap-2">
                     <Check
-                      className="mt-0.5 size-4 shrink-0 text-[#138a72]"
+                      className="mt-0.5 size-4 shrink-0 text-accent"
                       aria-hidden="true"
                     />
                     <span>{feature}</span>
@@ -150,8 +150,8 @@ export default function PricingPage() {
                 href={tier.href}
                 className={
                   tier.highlight
-                    ? "mt-auto inline-flex h-10 items-center justify-center rounded-md bg-[#138a72] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
-                    : "mt-auto inline-flex h-10 items-center justify-center rounded-md border border-[#cfd8d1] bg-white px-4 text-sm font-semibold text-[#17201d] transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
+                    ? "mt-auto inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
+                    : "mt-auto inline-flex h-10 items-center justify-center rounded-md border border-input bg-card px-4 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
                 }
               >
                 {tier.cta}
@@ -161,12 +161,12 @@ export default function PricingPage() {
         </section>
 
         <section aria-label="Frequently asked questions" className="grid gap-3">
-          <h2 className="text-lg font-semibold text-[#17201d]">
+          <h2 className="text-lg font-semibold text-foreground">
             Pricing questions, answered honestly
           </h2>
-          <p className="text-xs text-[#607069]">
-            Tip: use <kbd className="rounded border border-[#d8ded4] bg-white px-1 py-0.5 font-mono text-[11px]">↑</kbd>{" "}
-            <kbd className="rounded border border-[#d8ded4] bg-white px-1 py-0.5 font-mono text-[11px]">↓</kbd>{" "}
+          <p className="text-xs text-muted">
+            Tip: use <kbd className="rounded border border-card bg-card px-1 py-0.5 font-mono text-[11px]">↑</kbd>{" "}
+            <kbd className="rounded border border-card bg-card px-1 py-0.5 font-mono text-[11px]">↓</kbd>{" "}
             to move between questions.
           </p>
           <DisclosureGroup className="grid gap-3">
@@ -178,7 +178,7 @@ export default function PricingPage() {
           </DisclosureGroup>
         </section>
 
-        <footer className="rounded-md border border-dashed border-[#cfd8d1] bg-[#fbfcfa] p-4 text-sm leading-6 text-[#40504a]">
+        <footer className="rounded-md border border-dashed border-input bg-input p-4 text-sm leading-6 text-foreground/80">
           <p>
             The Solo and Team tiers on this page are placeholders. They use
             mailto links because the portfolio release does not collect payment

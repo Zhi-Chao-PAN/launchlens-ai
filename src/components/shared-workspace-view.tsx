@@ -130,7 +130,7 @@ export function SharedWorkspaceView({
       <div className="mx-auto w-full max-w-6xl">
         <header className="mb-4 flex flex-col gap-3 border-b border-card pb-4 sm:mb-6 sm:gap-4 sm:pb-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <span className="flex size-9 items-center justify-center rounded-lg bg-[#17201d] text-white sm:size-11">
+            <span className="flex size-9 items-center justify-center rounded-lg bg-foreground text-white sm:size-11">
               <Compass className="size-4 sm:size-5" aria-hidden="true" />
             </span>
             <div>
@@ -202,7 +202,7 @@ export function SharedWorkspaceView({
                 >
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="text-sm font-semibold">{item.feature}</h3>
-                    <span className="rounded-md bg-[#f6df8f] px-2 py-1 text-xs font-semibold text-[#493b08]">
+                    <span className="rounded-md bg-signal-neutral px-2 py-1 text-xs font-semibold text-signal-neutral">
                       {item.priority}
                     </span>
                   </div>

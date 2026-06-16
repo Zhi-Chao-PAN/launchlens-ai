@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { signIn } from "@/app/api/auth/[...nextauth]/route";
 
 export default async function SignInPage({
@@ -9,7 +9,7 @@ export default async function SignInPage({
   const params = await searchParams;
   
   return (
-    <main id="main-content" className="flex min-h-screen animate-[launchlens-fade-in_280ms_ease-out_both] items-center justify-center bg-[#f6f8f4] px-4 motion-reduce:animate-none">
+    <main id="main-content" className="flex min-h-screen animate-[launchlens-fade-in_280ms_ease-out_both] items-center justify-center bg-background px-4 motion-reduce:animate-none">
       <form
         action={async (formData: FormData) => {
           "use server";
@@ -23,24 +23,24 @@ export default async function SignInPage({
             // redirect is expected, no-op here
           }
         }}
-        className="flex w-full max-w-sm flex-col gap-4 rounded-lg border border-[#d8ded4] bg-white p-6 shadow-sm"
+        className="flex w-full max-w-sm flex-col gap-4 rounded-lg border border-card bg-card p-6 shadow-sm"
       >
-        <h1 className="text-lg font-semibold text-[#17201d]">
+        <h1 className="text-lg font-semibold text-foreground">
           Sign in with your recovery key
         </h1>
-        <p className="text-sm leading-5 text-[#607069]">
+        <p className="text-sm leading-5 text-muted">
           Enter your handle and recovery key that you created on your first
           visit. If you haven&apos;t linked a recovery key yet, generate one
           from the workspace header.
         </p>
 
         {params.error ? (
-          <p className="rounded-md border border-[#f0c7be] bg-[#fdf2ef] px-3 py-2 text-sm text-[#d85b3f]">
+          <p className="rounded-md border border-[#f0c7be] bg-[#fdf2ef] px-3 py-2 text-sm text-signal-challenges">
             Invalid handle or recovery key. Try again.
           </p>
         ) : null}
 
-        <label className="flex flex-col gap-1 text-sm font-medium text-[#17201d]">
+        <label className="flex flex-col gap-1 text-sm font-medium text-foreground">
           Handle
           <input
             name="handle"
@@ -48,12 +48,12 @@ export default async function SignInPage({
             autoComplete="username"
             required
             minLength={2}
-            className="rounded-md border border-[#d8ded4] px-3 py-2 text-sm text-[#17201d] placeholder-[#8e9c93] transition focus:border-[#138a72] focus:outline-none focus:ring-2 focus:ring-[#cbe8df]"
+            className="rounded-md border border-card px-3 py-2 text-sm text-foreground placeholder-[#8e9c93] transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-[var(--ring-color)]"
             placeholder="Your handle"
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm font-medium text-[#17201d]">
+        <label className="flex flex-col gap-1 text-sm font-medium text-foreground">
           Recovery key
           <input
             name="recoveryKey"
@@ -61,26 +61,26 @@ export default async function SignInPage({
             autoComplete="current-password"
             required
             minLength={32}
-            className="rounded-md border border-[#d8ded4] px-3 py-2 text-sm text-[#17201d] placeholder-[#8e9c93] transition focus:border-[#138a72] focus:outline-none focus:ring-2 focus:ring-[#cbe8df]"
+            className="rounded-md border border-card px-3 py-2 text-sm text-foreground placeholder-[#8e9c93] transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-[var(--ring-color)]"
             placeholder="Paste your recovery key"
           />
         </label>
 
         <button
           type="submit"
-          className="inline-flex h-10 items-center justify-center rounded-md bg-[#138a72] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
+          className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
         >
           Sign in
         </button>
 
         <Link
           href="/"
-          className="inline-flex h-10 items-center justify-center rounded-md border border-[#cfd8d1] bg-white px-5 text-center text-sm font-semibold text-[#17201d] transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
+          className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-card px-5 text-center text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
         >
           Back to demo
         </Link>
 
-        <p className="text-xs leading-5 text-[#8e9c93]">
+        <p className="text-xs leading-5 text-muted">
           You can still use the app without signing in. The workspace and
           cloud history remain accessible through your browser&apos;s
           capability account.
