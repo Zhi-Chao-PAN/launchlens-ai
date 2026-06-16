@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { pushOverlay } from "@/lib/launchlens/overlays";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 
@@ -14,6 +15,7 @@ export function KeyboardShortcutsModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const shortcuts = getShortcutList();
+  const trapRef = useFocusTrap<HTMLDivElement>(isOpen, { restoreFocus: false });
   const isOpenRef = useRef(isOpen);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   useEffect(() => { isOpenRef.current = isOpen; }, [isOpen]);
@@ -85,7 +87,7 @@ export function KeyboardShortcutsModal() {
             "motion-safe:transition-[background-color,backdrop-filter] motion-safe:duration-200 motion-safe:ease-out",
           ].join(" ")}
           onClick={closeModal}
-          role="dialog"
+          ref={trapRef} role="dialog"
           aria-modal="true"
           aria-labelledby="shortcuts-title"
         >

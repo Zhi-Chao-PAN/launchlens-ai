@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Rocket, Sparkles, Target, UsersRound, HelpCircle, X } from "lucide-react";
 import { registerShortcut } from "@/hooks/use-keyboard-shortcuts";
 import { pushOverlay } from "@/lib/launchlens/overlays";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
 
 const STORAGE_KEY = "launchlens-onboarding-dismissed";
 
@@ -43,6 +44,7 @@ function emitShow() {
 export function OnboardingWizard() {
   const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const trapRef = useFocusTrap<HTMLDivElement>(visible, { restoreFocus: false });
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -138,7 +140,7 @@ export function OnboardingWizard() {
 
   return (
     <div
-      role="dialog"
+      ref={trapRef} role="dialog"
       aria-modal="true"
       aria-label="Quick start guide"
       aria-describedby="onboarding-steps onboarding-hints"

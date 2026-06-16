@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { workspaceToMarkdown } from "./markdown-export";
+import { safeMarkdownFilename, workspaceToMarkdown } from "./markdown-export";
 import { buildMockWorkspace } from "./mock-provider";
 import { createExecutionState } from "./execution";
 import {
@@ -59,5 +59,36 @@ describe("workspaceToMarkdown", () => {
     expect(markdown).toContain("AI recommendation:");
     expect(markdown).toContain("AI grounded claims:");
     expect(markdown).toContain("AI unresolved risks:");
+  });
+});
+
+describe("safeMarkdownFilename", () => {
+  it("slugifies a normal project name", () => {
+    expect(safeMarkdownFilename({ projectName: "Acme SaaS Launch" })).toBe(
+      "acme-saas-launch.md",
+    );
+  });
+
+  it("falls back to default when projectName is empty or missing", () => {
+    expect(safeMarkdownFilename({})).toBe("launchlens-workspace.md");
+    expect(safeMarkdownFilename({ projectName: "" })).toBe(
+      "launchlens-workspace.md",
+    );
+    expect(safeMarkdownFilename({ projectName: "   " })).toBe(
+      "launchlens-workspace.md",
+    );
+  });
+
+  it("strips punctuation and collapses non-alphanumerics", () => {
+    expect(
+      safeMarkdownFilename({ projectName: "  Hello, World! (v2) -- AI/ML " }),
+    ).toBe("hello-world-v2-ai-ml.md");
+  });
+
+  it("truncates long names to 60 chars plus .md", () => {
+    const long = "a".repeat(200);
+    const out = safeMarkdownFilename({ projectName: long });
+    expect(out.endsWith(".md")).toBe(true);
+    expect(out.length).toBeLessThanOrEqual(64); // 60 + ".md"
   });
 });

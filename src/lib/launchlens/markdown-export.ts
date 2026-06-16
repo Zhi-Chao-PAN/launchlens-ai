@@ -8,6 +8,22 @@ function bullets(items: string[]) {
   return items.map((item) => `- ${item}`).join("\n");
 }
 
+export function safeMarkdownFilename(workspace: {
+  projectName?: string | null;
+  landingPage?: { headline?: string | null };
+}) {
+  const raw =
+    workspace.projectName || workspace.landingPage?.headline || "launchlens-workspace";
+  const base = raw
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+  return `${base || "launchlens-workspace"}.md`;
+}
+
 export function workspaceToMarkdown(
   workspace: LaunchLensWorkspace,
   execution?: WorkspaceExecutionState,
