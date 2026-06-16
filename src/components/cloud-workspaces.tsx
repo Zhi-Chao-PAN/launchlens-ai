@@ -182,8 +182,6 @@ export function CloudWorkspaces({
 
   async function saveSnapshot() {
     setBusyAction("save");
-    showToast("");
-
     try {
       await cloudRequest<CloudWorkspaceResponse>("/api/workspaces", {
         method: "POST",
@@ -209,8 +207,6 @@ export function CloudWorkspaces({
 
   async function restoreSnapshot(id: string) {
     setBusyAction(`restore:${id}`);
-    showToast("");
-
     try {
       const response = await cloudRequest<CloudWorkspaceResponse>(
         `/api/workspaces/${id}`,
@@ -235,8 +231,6 @@ export function CloudWorkspaces({
     }
 
     setBusyAction(`share:${item.id}`);
-    showToast("");
-
     try {
       await cloudRequest<CloudWorkspaceResponse>(
         `/api/workspaces/${item.id}/share`,
@@ -284,8 +278,6 @@ export function CloudWorkspaces({
     }
 
     setBusyAction(`delete:${item.id}`);
-    showToast("");
-
     try {
       await cloudRequest<null>(`/api/workspaces/${item.id}`, {
         method: "DELETE",
@@ -316,8 +308,6 @@ export function CloudWorkspaces({
 
   async function linkRecoveryOwner() {
     setBusyAction("recovery");
-    showToast("");
-
     try {
       const recoveryOwnerToken = await deriveRecoveryOwnerToken(
         recoveryLabel,
@@ -342,8 +332,6 @@ export function CloudWorkspaces({
 
   async function recoverOwner() {
     setBusyAction("recovery");
-    showToast("");
-
     try {
       const recoveryOwnerToken = await deriveRecoveryOwnerToken(
         recoveryLabel,

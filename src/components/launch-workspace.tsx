@@ -3,6 +3,7 @@
 import {
   AlertTriangle,
   ArrowRight,
+  X,
   CalendarDays,
   CheckCircle2,
   CircleDollarSign,
@@ -883,16 +884,27 @@ export function LaunchWorkspace({
                   role="status"
                   className="mt-5 rounded-lg border border-[#d8ded4] bg-[#fbfcfa] p-4"
                 >
-                  <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#17201d]">
-                    <FileText className="size-4" aria-hidden="true" />
-                    Workspace export
+                  <div className="mb-3 flex items-center justify-between gap-2 text-sm font-semibold text-[#17201d]">
+                    <span className="flex items-center gap-2">
+                      <FileText className="size-4" aria-hidden="true" />
+                      Workspace export
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setExportText("")}
+                      aria-label="Dismiss export"
+                      className="text-[#8e9c93] transition hover:text-[#17201d]"
+                    >
+                      <X className="size-4" aria-hidden="true" />
+                    </button>
                   </div>
                   {exportText && (
                     <textarea
                       readOnly
                       value={exportText}
                       rows={8}
-                      className="w-full resize-y rounded-md border border-[#cfd8d1] bg-white px-3 py-3 font-mono text-xs leading-5 text-[#40504a]"
+                      onFocus={(e) => e.currentTarget.select()}
+                      className="w-full resize-y rounded-md border border-[#cfd8d1] bg-white px-3 py-3 font-mono text-xs leading-5 text-[#40504a] focus:border-[#138a72] focus:outline-none"
                     />
                   )}
                 </div>
