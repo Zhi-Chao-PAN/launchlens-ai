@@ -10,7 +10,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import {
   evaluateExecutionProgress,
@@ -84,6 +84,7 @@ export function ValidationBoard({
   const [draftTouched, setDraftTouched] = useState<{source: boolean; note: boolean}>({ source: false, note: false });
   const [draftSubmitError, setDraftSubmitError] = useState<string>("");
   const [srEvidenceAnnouncement, setSrEvidenceAnnouncement] = useState("");
+  const evidenceListRef = useRef<HTMLUListElement | null>(null);
   const sourceError = draftTouched.source && draft.source.trim().length < 2 ? "Source needs at least 2 characters." : "";
   const noteError = draftTouched.note && draft.note.trim().length < 8 ? "Observation needs at least 8 characters." : "";
   const progress = useMemo(
@@ -162,6 +163,10 @@ export function ValidationBoard({
       `Evidence recorded: ${source}. ${count} items total.`,
     );
     setActiveExperimentId("");
+    // Move focus to the evidence list region for keyboard / screen-reader users
+    if (evidenceListRef.current) {
+      evidenceListRef.current.focus();
+    }
   }
 
   return (
@@ -375,7 +380,7 @@ export function ValidationBoard({
               </div>
 
               {experiment.evidence.length > 0 ? (
-                <ul className="mt-4 divide-y divide-[#dfe5dd] rounded-md bg-[#f6f8f4] px-4">
+                <ul ref={evidenceListRef} tabIndex={-1} aria-label="Evidence items" className="mt-4 divide-y divide-[#dfe5dd] rounded-md bg-[#f6f8f4] px-4 outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1">
                   {experiment.evidence.slice().sort((a, b) => new Date(b.observedAt).getTime() - new Date(a.observedAt).getTime()).map((item) => (
                     <li
                       key={item.id}
