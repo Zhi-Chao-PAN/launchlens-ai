@@ -19,6 +19,13 @@ export const metadata: Metadata = {
   description:
     "AI-powered go-to-market workspace for indie founders and small teams.",
   applicationName: "LaunchLens AI",
+  manifest: "/manifest.webmanifest",
+  themeColor: "#138a72",
+  appleWebApp: {
+    capable: true,
+    title: "LaunchLens",
+    statusBarStyle: "default",
+  },
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ??
     "https://launchlens-ai-two.vercel.app",
@@ -66,6 +73,12 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="LaunchLens" />
+        <link rel="apple-touch-icon" href="/icon.svg" />
+      </head>
       <body className="min-h-full flex flex-col">
       <SkipLink />
       <ToastProvider>{children}</ToastProvider>

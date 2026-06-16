@@ -1,0 +1,18 @@
+﻿{
+  "name": "LaunchLens AI",
+  "short_name": "LaunchLens",
+  "description": "AI-powered go-to-market workspace for indie founders and small teams.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f8f4",
+  "theme_color": "#138a72",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
