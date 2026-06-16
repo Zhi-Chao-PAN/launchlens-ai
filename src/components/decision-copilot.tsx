@@ -4,7 +4,6 @@ import {
   AlertTriangle,
   BrainCircuit,
   CheckCircle2,
-  Loader2,
   RefreshCw,
   ShieldCheck,
   Sparkles,
@@ -308,7 +307,11 @@ export function DecisionCopilot({
             className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#17201d] px-4 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isGenerating ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+              <span className="flex items-center gap-1" aria-hidden="true">
+                <span className="size-1.5 animate-[launchlens-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-white/80 [animation-delay:-0.32s]" />
+                <span className="size-1.5 animate-[launchlens-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-white/80 [animation-delay:-0.16s]" />
+                <span className="size-1.5 animate-[launchlens-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-white/80" />
+              </span>
             ) : currentBrief ? (
               <RefreshCw className="size-4" aria-hidden="true" />
             ) : (
@@ -350,8 +353,19 @@ export function DecisionCopilot({
           )}
         </div>
 
-        {currentBrief && experiment ? (
-          <article className="min-w-0">
+        {isGenerating ? (
+          <div className="flex min-h-64 flex-col items-center justify-center rounded-md border border-dashed border-[#cfd8d1] bg-[#fbfcfa] p-8 text-center" role="status" aria-live="polite">
+            <BrainCircuit className="mx-auto size-8 animate-pulse text-[#8378aa]" aria-hidden="true" />
+            <h3 className="mt-3 text-base font-semibold text-[#17201d]">Synthesizing evidence</h3>
+            <p className="mt-2 max-w-md text-sm leading-6 text-[#607069]">
+              Weighing signals against counter-signals and building a grounded recommendation.
+            </p>
+            <div className="mt-4 h-1 w-40 overflow-hidden rounded-full bg-[#e6ebe4]">
+              <div className="h-full w-1/3 rounded-full bg-[#786cbb] motion-safe:animate-[launchlens-shimmer_1.2s_ease-in-out_infinite]" />
+            </div>
+          </div>
+        ) : currentBrief && experiment ? (
+          <article className="min-w-0 motion-safe:animate-[launchlens-fade-in-up_260ms_ease-out_both]">
             <div className="flex flex-wrap items-center gap-2">
               <span
                 className={`rounded-md px-2 py-1 text-xs font-semibold ${recommendationClass(currentBrief.recommendation)}`}

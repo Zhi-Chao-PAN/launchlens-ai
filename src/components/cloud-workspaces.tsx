@@ -81,6 +81,7 @@ export function CloudWorkspaces({
   const [recoveryLabel, setRecoveryLabel] = useState("");
   const [recoveryKey, setRecoveryKey] = useState("");
   const [showRecoveryKey, setShowRecoveryKey] = useState(false);
+  const [listRenderKey, setListRenderKey] = useState(0);
   const { showToast } = useToast();
 
   async function cloudRequest<T>(path: string, init?: RequestInit) {
@@ -144,6 +145,7 @@ export function CloudWorkspaces({
 
       setWorkspaces(body.workspaces);
       setCloudState("ready");
+      setListRenderKey((k) => k + 1);
     } catch {
       setCloudState("error");
     } finally {
@@ -193,6 +195,7 @@ export function CloudWorkspaces({
         }),
       });
       showToast("Cloud snapshot saved.", "success");
+      setListRenderKey((k) => k + 1);
       await refresh();
     } catch (error) {
       showToast(
@@ -550,10 +553,11 @@ export function CloudWorkspaces({
 
       {workspaces.length > 0 && (
         <div className="mt-4 grid gap-2">
-          {workspaces.map((item) => (
+          {workspaces.map((item, index) => (
             <article
-              key={item.id}
-              className="flex flex-col gap-3 rounded-md border border-[#d8ded4] bg-[#fbfcfa] p-3 sm:flex-row sm:items-center sm:justify-between"
+              key={`${listRenderKey}-${item.id}`}
+              style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
+              className="flex flex-col gap-3 rounded-md border border-[#d8ded4] bg-[#fbfcfa] p-3 opacity-0 motion-safe:animate-[launchlens-fade-in-up_260ms_ease-out_both] sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
