@@ -28,6 +28,18 @@ tags are cut for milestone demos.
 - Screen-reader live-region announcements on the evidence form for successful recording and validation failures
 - Error code chip with one-click copy button on the cloud workspaces error panel
 - `aria-busy` attributes on decision copilot generate button and system status retry button during loading
+- Dark mode support with full theme token system (145 hardcoded colors → 0)
+- AI-purple, info-blue, and skeleton theme tokens for consistent dark/light styling
+- Theme toggle button with localStorage persistence and system preference detection
+- 310+ unit tests covering core logic, hooks, API routes, and components
+- Accessibility improvements: aria-describedby on evidence form and decision textareas,
+  screen-reader live-region announcements for status transitions, skip-to-content link
+- 410 "link revoked" page for disabled share links (distinct from 404 and cloud-unavailable)
+- Decision copilot with keyboard shortcut (D) and evidence-aware validation
+- Evidence reordering with up/down buttons and keyboard arrow-key support
+- Workspace recovery key system with PBKDF2-derived owner tokens
+- Clipboard and download utilities unified across share, export, and error states
+
 - `useSrAnnounce` hook (`src/hooks/use-sr-announce.ts`) for consistent screen-reader live-region announcements
 - Collapsible workspace sections (click header / `[` & `]` keyboard shortcuts) with full ARIA semantics
 - Evidence editing support: pencil button opens pre-filled form, submit saves changes

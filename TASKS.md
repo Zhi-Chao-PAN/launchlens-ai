@@ -327,3 +327,22 @@
 - [x] Evidence move up/down reordering with ChevronUp/ChevronDown buttons, disabled at boundaries, screen-reader announcements.
 - [x] Test count expanded from 260 to **270 tests / 41 files**: formatRelativeTime (7 cases), summarizeExecutionState structure, reconcileExecutionState evidence preservation, evaluateExecutionProgress properties.
 - [x] All four quality gates green: ESLint 0-warn, tsc strict, Vitest, Next.js build.
+
+
+## Done in Phase 2 (Iterative Polish)
+
+- [x] Dark mode with full CSS variable theme token system (background, card, muted, accent, signal colors)
+- [x] Zero hardcoded colors across all components and pages (145 → 0 cleanup)
+- [x] Theme toggle with localStorage persistence and system preference detection
+- [x] Test suite grown to 310+ unit tests (41 test files)
+- [x] ESLint strict mode with zero warnings
+- [x] TypeScript strict mode passing
+- [x] Accessibility: aria-describedby on evidence form and decision textareas
+- [x] Screen-reader live-region announcements for status transitions
+- [x] Skip-to-content link on every route
+- [x] Decision copilot with keyboard shortcut (D) and evidence-aware validation
+- [x] Evidence reordering with up/down buttons and keyboard arrow-key support
+- [x] Workspace recovery key system with PBKDF2-derived owner tokens
+- [x] 410 "link revoked" page for disabled share links
+- [x] Unified clipboard and download utilities across share/export/error states
+- [x] Friendly API error message map for consistent user-facing copy
