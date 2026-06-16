@@ -79,6 +79,7 @@ export function CloudWorkspaces({
 }: CloudWorkspacesProps) {
   const [ownerToken, setOwnerToken] = useState("");
   const [cloudState, setCloudState] = useState<CloudState>("checking");
+  const [cloudError, setCloudError] = useState<string>("");
   const [workspaces, setWorkspaces] = useState<CloudWorkspaceSummary[]>([]);
   const [busyAction, setBusyAction] = useState("");
   const [recoveryLabel, setRecoveryLabel] = useState("");
@@ -149,10 +150,13 @@ export function CloudWorkspaces({
           return;
         }
 
-        throw new Error("cloud_request_failed");
+        const code = "code" in body ? body.code : "cloud_request_failed";
+        setCloudError(friendlyApiMessage(code, "Cloud history could not be reached."));
+        throw new Error(code || "cloud_request_failed");
       }
 
       if (!("workspaces" in body)) {
+        setCloudError("Cloud history returned an unexpected response.");
         throw new Error("cloud_request_failed");
       }
 
@@ -165,8 +169,12 @@ export function CloudWorkspaces({
       setWorkspaces(body.workspaces);
       setCloudState("ready");
       setListRenderKey((k) => k + 1);
-    } catch {
+    } catch (error) {
       setCloudState("error");
+      if (!cloudError) {
+        const code = error instanceof Error ? error.message : "";
+        setCloudError(friendlyApiMessage(code, "Cloud history could not be reached. Your local draft remains available."));
+      }
     } finally {
       setBusyAction("");
     }
@@ -481,8 +489,7 @@ export function CloudWorkspaces({
           role="alert"
           className="mt-4 rounded-md border border-[#e7c9bd] bg-[#fff6f1] p-3 text-sm leading-6 text-[#8b3d28]"
         >
-          Cloud history could not be reached. Your local draft remains
-          available.
+          {cloudError || "Cloud history could not be reached. Your local draft remains available."}
         </p>
       )}
 
