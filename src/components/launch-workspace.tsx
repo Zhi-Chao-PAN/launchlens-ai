@@ -593,17 +593,38 @@ export function LaunchWorkspace({
     if (!exportText || !exportFormat) return;
     const ext = exportFormat === "markdown" ? "md" : "json";
     const mime = exportFormat === "markdown" ? "text/markdown" : "application/json";
-    const blob = new Blob([exportText], { type: `${mime};charset=utf-8` });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
     const stamp = new Date().toISOString().slice(0, 10);
-    a.download = `launchlens-workspace-${stamp}.${ext}`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    showToast(`Exported as .${ext} file`, "success");
+    const ok = downloadTextFile(
+      `launchlens-workspace-${stamp}.${ext}`,
+      exportText,
+      `${mime};charset=utf-8`,
+    );
+    if (ok) showToast(`Exported as .${ext} file`, "success");
+    else showToast(`Unable to download ${ext.toUpperCase()} file in this browser`, "error");
+  }
+
+  function downloadMarkdownFile() {
+    const markdown = workspaceToMarkdown(workspace, execution);
+    const filename = safeMarkdownFilename({
+      landingPage: { headline: workspace.landingPage.headline },
+    });
+    if (downloadTextFile(filename, markdown, "text/markdown;charset=utf-8")) {
+      showToast("Markdown file downloaded", "success");
+    }
+  }
+
+  function downloadJsonFile() {
+    const json = workspaceToJson(workspace, execution);
+    const stamp = new Date().toISOString().slice(0, 10);
+    if (
+      downloadTextFile(
+        `launchlens-workspace-${stamp}.json`,
+        json,
+        "application/json;charset=utf-8",
+      )
+    ) {
+      showToast("JSON file downloaded", "success");
+    }
   }
 
   async function retryCopyFromTextarea() {
@@ -855,6 +876,19 @@ export function LaunchWorkspace({
                   )}
                   {isGenerating ? "Generating" : "Generate workspace"}
                 </button>
+                <p className="mt-2 text-center text-xs text-[#607069]">
+                  Tip: press{" "}
+                  <kbd className="rounded border border-[#cfd8d1] bg-white px-1.5 py-0.5 font-mono text-[11px] text-[#17201d]">
+                    Ctrl
+                  </kbd>
+                  {" "}+{" "}
+                  <kbd className="rounded border border-[#cfd8d1] bg-white px-1.5 py-0.5 font-mono text-[11px] text-[#17201d]">
+                    Enter
+                  </kbd>{" "}
+                  to generate; press{" "}
+                  <kbd className="rounded border border-[#cfd8d1] bg-white px-1.5 py-0.5 font-mono text-[11px] text-[#17201d]">?</kbd>{" "}
+                  for all shortcuts.
+                </p>
               </div>
 
               {isGenerating && (
@@ -975,6 +1009,24 @@ export function LaunchWorkspace({
                       <Braces className="size-4" aria-hidden="true" />
                     )}
                     {copyJustSucceeded === "json" ? "Copied!" : "Copy JSON"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={downloadMarkdownFile}
+                    title="Download Markdown file"
+                    className="flex h-10 items-center gap-2 rounded-md border border-[#cfd8d1] bg-white px-3 text-sm font-semibold text-[#40504a] transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                  >
+                    <Download className="size-4" aria-hidden="true" />
+                    .md
+                  </button>
+                  <button
+                    type="button"
+                    onClick={downloadJsonFile}
+                    title="Download JSON file"
+                    className="flex h-10 items-center gap-2 rounded-md border border-[#cfd8d1] bg-white px-3 text-sm font-semibold text-[#40504a] transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                  >
+                    <Download className="size-4" aria-hidden="true" />
+                    .json
                   </button>
                 </div>
               </div>
