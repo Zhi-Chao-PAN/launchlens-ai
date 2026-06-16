@@ -147,6 +147,7 @@ export function DecisionCopilot({
   const [isGenerating, setIsGenerating] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
+  const [srGenerationAnnouncement, setSrGenerationAnnouncement] = useState("");
   const selectedExperimentId =
     requestedExperimentId &&
     execution.experiments.some(
@@ -196,6 +197,7 @@ export function DecisionCopilot({
     setIsGenerating(true);
     setError("");
     setNotice("");
+    setSrGenerationAnnouncement("Generating decision brief. Please wait.");
 
     try {
       const response = await fetch("/api/decision", {
@@ -222,17 +224,24 @@ export function DecisionCopilot({
       }
 
       saveBrief(experiment.id, brief);
+      const modeLabel = data.mode === "real" ? "Real-provider" : "Demo";
       setNotice(
         data.usedFallback
           ? "The real provider failed, so a deterministic demo brief was saved."
-          : `${data.mode === "real" ? "Real-provider" : "Demo"} decision brief saved.`,
+          : `${modeLabel} decision brief saved.`,
+      );
+      setSrGenerationAnnouncement(
+        data.usedFallback
+          ? "Decision brief saved using demo fallback."
+          : `${modeLabel} decision brief generated and saved.`,
       );
     } catch (caught) {
-      setError(
+      const msg =
         caught instanceof Error
           ? caught.message
-          : "Decision brief generation failed.",
-      );
+          : "Decision brief generation failed.";
+      setError(msg);
+      setSrGenerationAnnouncement(`Decision brief generation failed: ${msg}`);
     } finally {
       setIsGenerating(false);
     }
@@ -315,6 +324,8 @@ export function DecisionCopilot({
             disabled={
               isGenerating || !experiment || experiment.evidence.length === 0
             }
+            aria-busy={isGenerating}
+            aria-describedby="decision-generation-status"
             className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#138a72] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isGenerating ? (
@@ -334,6 +345,9 @@ export function DecisionCopilot({
                 ? "Regenerate brief"
                 : "Generate decision brief"}
           </button>
+          <span id="decision-generation-status" role="status" aria-live="polite" className="sr-only">
+            {srGenerationAnnouncement}
+          </span>
 
           {!experiment?.evidence.length && (
             <p className="mt-3 text-xs leading-5 text-[#607069]">
