@@ -40,15 +40,15 @@ const recommendationLabels: Record<DecisionRecommendation, string> = {
 
 function recommendationClass(recommendation: DecisionRecommendation) {
   if (recommendation === "proceed") {
-    return "bg-[#e5f4ef] text-[#0f766e]";
+    return "bg-signal-supports text-signal-supports";
   }
 
   if (recommendation === "pivot") {
-    return "bg-[#fff0eb] text-[#9a432d]";
+    return "bg-signal-challenges text-signal-challenges";
   }
 
   if (recommendation === "iterate") {
-    return "bg-[#f6df8f] text-[#493b08]";
+    return "bg-signal-neutral text-signal-neutral";
   }
 
   return "bg-muted text-muted";
@@ -74,7 +74,7 @@ function TextList({
               className="flex gap-2 text-sm leading-6 text-foreground/80"
             >
               <CheckCircle2
-                className="mt-1 size-4 shrink-0 text-[#138a72]"
+                className="mt-1 size-4 shrink-0 text-accent"
                 aria-hidden="true"
               />
               <span>{item}</span>
@@ -321,7 +321,7 @@ export function DecisionCopilot({
                 setError("");
                 setNotice("");
               }}
-              className="h-11 w-full rounded-md border border-input bg-[#fbfcfa] px-3 text-sm text-foreground outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+              className="h-11 w-full rounded-md border border-input bg-input px-3 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
             >
               {execution.experiments.map((item, index) => (
                 <option key={item.id} value={item.id}>
@@ -359,7 +359,7 @@ export function DecisionCopilot({
             }
             aria-busy={isGenerating}
             aria-describedby="decision-generation-status"
-            className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#138a72] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-text shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isGenerating ? (
               <span className="flex items-center gap-1" aria-hidden="true">
@@ -389,7 +389,7 @@ export function DecisionCopilot({
             </p>
           )}
           {experiment?.decisionBrief && !currentBrief && (
-            <p className="mt-3 flex gap-2 text-xs leading-5 text-[#8b3d28]">
+            <p className="mt-3 flex gap-2 text-xs leading-5 text-signal-challenges">
               <AlertTriangle
                 className="mt-0.5 size-3.5 shrink-0"
                 aria-hidden="true"
@@ -402,8 +402,8 @@ export function DecisionCopilot({
               role={error ? "alert" : "status"}
               className={`mt-3 rounded-md border px-3 py-2 text-xs leading-5 ${
                 error
-                  ? "border-[#e7c9bd] bg-[#fff6f1] text-[#8b3d28]"
-                  : "border-[#cfe2db] bg-[#eef8f4] text-[#0f766e]"
+                  ? "border-[#e7c9bd] bg-[#fff6f1] text-signal-challenges"
+                  : "border border-signal-supports bg-signal-supports text-signal-supports"
               }`}
             >
               {error || notice}
@@ -412,7 +412,7 @@ export function DecisionCopilot({
         </div>
 
         {isGenerating ? (
-          <div className="min-h-64 rounded-md border border-dashed border-input bg-[#fbfcfa] p-6" role="status" aria-live="polite" aria-busy="true" aria-label="Synthesizing evidence">
+          <div className="min-h-64 rounded-md border border-dashed border-input bg-input p-6" role="status" aria-live="polite" aria-busy="true" aria-label="Synthesizing evidence">
             <div className="mb-4 flex items-center gap-2">
               <Skeleton shimmer rounded="md" className="h-5 w-24" />
               <Skeleton shimmer rounded="md" className="h-5 w-20" />
@@ -476,7 +476,7 @@ export function DecisionCopilot({
             </div>
           </article>
         ) : (
-          <div className="flex min-h-64 items-center justify-center rounded-md border border-dashed border-input bg-[#fbfcfa] p-8 text-center">
+          <div className="flex min-h-64 items-center justify-center rounded-md border border-dashed border-input bg-input p-8 text-center">
             <div className="max-w-md">
               <BrainCircuit
                 className="mx-auto size-8 text-[#8378aa]"

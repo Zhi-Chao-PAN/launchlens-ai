@@ -58,15 +58,15 @@ const signalLabels = {
 
 function statusClass(status: ValidationExperiment["status"]) {
   if (status === "supported") {
-    return "bg-[#e5f4ef] text-[#0f766e]";
+    return "bg-signal-supports text-signal-supports";
   }
 
   if (status === "refuted") {
-    return "bg-[#fff0eb] text-[#9a432d]";
+    return "bg-signal-challenges text-signal-challenges";
   }
 
   if (status === "testing") {
-    return "bg-[#f6df8f] text-[#493b08]";
+    return "bg-signal-neutral text-signal-neutral";
   }
 
   return "bg-muted text-muted";
@@ -261,7 +261,7 @@ export function ValidationBoard({
             className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
           >
             <div
-              className="h-full rounded-full bg-[#138a72] transition-all duration-500 ease-out motion-reduce:transition-none"
+              className="h-full rounded-full bg-primary transition-all duration-500 ease-out motion-reduce:transition-none"
               style={{ width: `${progress.score}%` }}
             />
           </div>
@@ -359,7 +359,7 @@ export function ValidationBoard({
                           .value as ValidationExperiment["status"],
                       }))
                     }
-                    className="h-10 w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm text-foreground outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    className="h-10 w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   >
                     {Object.entries(statusLabels).map(([value, label]) => (
                       <option key={value} value={value}>
@@ -382,7 +382,7 @@ export function ValidationBoard({
                           .value as ValidationExperiment["confidence"],
                       }))
                     }
-                    className="h-10 w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm capitalize text-foreground outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    className="h-10 w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm capitalize text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -406,7 +406,7 @@ export function ValidationBoard({
                         linkedTaskId: event.target.value,
                       }))
                     }
-                    className="h-10 w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm text-foreground outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    className="h-10 w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   >
                     <option value="">No linked task</option>
                     {tasks.map((task, taskIndex) => (
@@ -582,7 +582,7 @@ export function ValidationBoard({
                         }))
                       }
                       aria-describedby={`evidence-signal-hint-${experiment.id}`}
-                      className="h-10 w-full rounded-md border border-[#cfd8d1] bg-white px-3 text-sm outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                      className="h-10 w-full rounded-md border border-[#cfd8d1] bg-white px-3 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                     >
                       {Object.entries(signalLabels).map(([value, label]) => (
                         <option key={value} value={value}>
@@ -615,12 +615,12 @@ export function ValidationBoard({
                         placeholder="Interview, metric, test"
                         className={`h-10 w-full rounded-md border bg-white px-3 text-sm outline-none ${
                           sourceError
-                            ? "border-[#d85b3f] focus:border-[#d85b3f] focus:ring-2 focus:ring-[#f2d4c8]"
-                            : "border-[#cfd8d1] focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                            ? "border-signal-challenges focus:border-signal-challenges focus:ring-2 focus:ring-[var(--signal-challenges-border)]"
+                            : "border-[#cfd8d1] focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                         }`}
                       />
                       {sourceError && (
-                        <p id="evidence-source-error" role="alert" className="mt-1 text-[11px] leading-4 text-[#b84a31]">{sourceError}</p>
+                        <p id="evidence-source-error" role="alert" className="mt-1 text-[11px] leading-4 text-error">{sourceError}</p>
                       )}
                     </label>
                     <label className="block">
@@ -643,22 +643,22 @@ export function ValidationBoard({
                         placeholder="What did you learn?"
                         className={`h-10 w-full rounded-md border bg-white px-3 text-sm outline-none ${
                           noteError
-                            ? "border-[#d85b3f] focus:border-[#d85b3f] focus:ring-2 focus:ring-[#f2d4c8]"
-                            : "border-[#cfd8d1] focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                            ? "border-signal-challenges focus:border-signal-challenges focus:ring-2 focus:ring-[var(--signal-challenges-border)]"
+                            : "border-[#cfd8d1] focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                         }`}
                       />
                       {noteError && (
-                        <p id="evidence-note-error" role="alert" className="mt-1 text-[11px] leading-4 text-[#b84a31]">{noteError}</p>
+                        <p id="evidence-note-error" role="alert" className="mt-1 text-[11px] leading-4 text-error">{noteError}</p>
                       )}
                     </label>
                   </div>
                   <div className="mt-6 flex flex-col items-start gap-2 md:mt-0 md:justify-end">
                     {draftSubmitError && (
-                      <p role="alert" className="text-[11px] leading-4 text-[#b84a31]">{draftSubmitError}</p>
+                      <p role="alert" className="text-[11px] leading-4 text-error">{draftSubmitError}</p>
                     )}
                     <button
                       type="submit"
-                      className="flex h-10 items-center justify-center gap-2 rounded-md bg-[#138a72] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
+                      className="flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
                     >
                       <Plus className="size-4" aria-hidden="true" />
                       {editingEvidenceId ? "Save" : "Record"}
@@ -686,7 +686,7 @@ export function ValidationBoard({
                     }
                     aria-describedby={`decision-count-${experiment.id}`}
                     placeholder="What will change because of this evidence?"
-                    className="w-full resize-y rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    className="w-full resize-y rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
                   <p id={`decision-count-${experiment.id}`} className="mt-1 text-right text-[11px] leading-4 text-[#8e9c93]">
                     {experiment.decision.length}/800 characters
@@ -708,7 +708,7 @@ export function ValidationBoard({
                     }
                     aria-describedby={`next-action-count-${experiment.id}`}
                     placeholder="What evidence should be collected next?"
-                    className="w-full resize-y rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    className="w-full resize-y rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
                   <p id={`next-action-count-${experiment.id}`} className="mt-1 text-right text-[11px] leading-4 text-[#8e9c93]">
                     {experiment.nextAction.length}/800 characters
