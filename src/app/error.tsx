@@ -19,7 +19,7 @@ export default function GlobalError({
   return (
     <html lang="en">
       <body className="min-h-screen bg-[#f6f8f4] text-[#17201d]">
-        <main className="flex min-h-screen items-center justify-center px-4 py-12">
+        <main id="main-content" className="flex min-h-screen items-center justify-center px-4 py-12">
           <div className="w-full max-w-md rounded-lg border border-[#e7c9bd] bg-white p-8 text-center shadow-sm">
             <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-[#fff6f1] text-[#8b3d28]">
               <AlertTriangle className="size-6" aria-hidden="true" />

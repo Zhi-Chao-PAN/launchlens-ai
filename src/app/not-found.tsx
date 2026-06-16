@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function NotFound() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#f6f8f4] px-4 py-12 text-[#17201d]">
+    <main id="main-content" className="flex min-h-screen items-center justify-center bg-[#f6f8f4] px-4 py-12 text-[#17201d]">
       <div className="w-full max-w-md text-center">
         <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-lg bg-[#17201d] text-white">
           <Compass className="size-6" aria-hidden="true" />

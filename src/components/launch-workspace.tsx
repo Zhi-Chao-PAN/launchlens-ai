@@ -498,7 +498,7 @@ export function LaunchWorkspace({
   }
 
   return (
-    <main
+    <main id="main-content"
       aria-busy={isGenerating}
       className="min-h-screen bg-[#f6f8f4] text-[#17201d]"
     >

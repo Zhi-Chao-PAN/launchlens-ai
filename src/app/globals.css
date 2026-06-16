@@ -32,3 +32,37 @@ select,
 textarea {
   font: inherit;
 }
+
+/* Accessible keyboard focus ring ? only shown on keyboard navigation */
+:focus-visible {
+  outline: 2px solid #138a72;
+  outline-offset: 2px;
+}
+
+/* Remove default focus ring for mouse users where we show custom ring styles */
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible),
+select:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Smooth scroll for in-page navigation (keyboard shortcut scrolls) */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
