@@ -93,7 +93,9 @@ export function SystemStatus() {
   async function manualRetry() {
     setRetrying(true);
     setFetchState("loading");
+    setSrAnnouncement("Retrying system status check.");
     await fetchStatus();
+    setSrAnnouncement(fetchState === "ok" ? "System status check succeeded." : "System status check still failing.");
     setRetrying(false);
   }
 
