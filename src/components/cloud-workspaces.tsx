@@ -18,6 +18,8 @@ import {
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/toast";
 import { Skeleton } from "@/components/skeleton";
+import { copyTextToClipboard } from "@/lib/launchlens/clipboard";
+import { friendlyApiMessage } from "@/lib/launchlens/api-errors";
 
 import type {
   CloudWorkspaceErrorResponse,
@@ -215,11 +217,12 @@ export function CloudWorkspaces({
       setListRenderKey((k) => k + 1);
       await refresh();
     } catch (error) {
-      showToast(
-        error instanceof Error && error.message === "workspace_limit_reached"
+      const code = error instanceof Error ? error.message : "";
+      const defaultMsg =
+        code === "quota_exceeded" || code === "workspace_limit_reached"
           ? "Cloud history is full. Delete a snapshot before saving."
-          : "Cloud save failed. Your local draft is still safe.",
-      );
+          : "Cloud save failed. Your local draft is still safe.";
+      showToast(friendlyApiMessage(code, defaultMsg), "error");
     } finally {
       setBusyAction("");
     }
@@ -233,8 +236,12 @@ export function CloudWorkspaces({
       );
       onRestore(response.workspace);
       showToast("Cloud snapshot restored to the editor.", "success");
-    } catch {
-      showToast("Could not restore that cloud snapshot.", "error");
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "";
+      showToast(
+        friendlyApiMessage(code, "Could not restore that cloud snapshot."),
+        "error",
+      );
     } finally {
       setBusyAction("");
     }
@@ -263,10 +270,10 @@ export function CloudWorkspaces({
       if (!item.isPublic) {
         const shareUrl = `${window.location.origin}/share/${item.id}`;
 
-        try {
-          await navigator.clipboard.writeText(shareUrl);
+        const copied = await copyTextToClipboard(shareUrl);
+        if (copied) {
           showToast("Read-only share link copied to clipboard.", "success");
-        } catch {
+        } else {
           showToast(`Share link ready: ${shareUrl}`, "info");
         }
       } else {
@@ -274,8 +281,12 @@ export function CloudWorkspaces({
       }
 
       await refresh();
-    } catch {
-      showToast("Could not update sharing settings.", "error");
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "";
+      showToast(
+        friendlyApiMessage(code, "Could not update sharing settings."),
+        "error",
+      );
     } finally {
       setBusyAction("");
     }
@@ -284,10 +295,10 @@ export function CloudWorkspaces({
   async function copyShareLink(item: CloudWorkspaceSummary) {
     const shareUrl = `${window.location.origin}/share/${item.id}`;
 
-    try {
-      await navigator.clipboard.writeText(shareUrl);
+    const copied = await copyTextToClipboard(shareUrl);
+    if (copied) {
       showToast("Read-only share link copied to clipboard.", "success");
-    } catch {
+    } else {
       showToast(`Share link ready: ${shareUrl}`, "info");
     }
   }
@@ -304,8 +315,12 @@ export function CloudWorkspaces({
       });
       showToast("Cloud snapshot deleted.", "success");
       await refresh();
-    } catch {
-      showToast("Could not delete cloud snapshot.", "error");
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "";
+      showToast(
+        friendlyApiMessage(code, "Could not delete cloud snapshot."),
+        "error",
+      );
     } finally {
       setBusyAction("");
     }
@@ -318,10 +333,10 @@ export function CloudWorkspaces({
   }
 
   async function copyRecoveryKey() {
-    try {
-      await navigator.clipboard.writeText(recoveryKey);
+    const copied = await copyTextToClipboard(recoveryKey);
+    if (copied) {
       showToast("Recovery key copied. Store it safely!", "success");
-    } catch {
+    } else {
       showToast("Copy failed - please select and save the key manually.", "error");
     }
   }
