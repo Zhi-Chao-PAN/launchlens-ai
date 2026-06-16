@@ -669,18 +669,29 @@ export function LaunchWorkspace({
               id="founder-brief-controls"
               className={`${isBriefOpen ? "mt-5 block" : "hidden"} lg:mt-5 lg:block`}
             >
-              <div className="mb-5 grid gap-2">
-                {exampleWorkspaces.map((example) => (
-                  <button
-                    key={example.id}
-                    type="button"
-                    onClick={() => applyExample(example)}
-                    className="flex items-center justify-between rounded-md border border-[#d8ded4] bg-[#fbfcfa] px-3 py-2 text-left text-sm font-medium text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d]"
-                  >
-                    {example.label}
-                    <ArrowRight className="size-4" aria-hidden="true" />
-                  </button>
-                ))}
+              <div className="mb-5 grid gap-2" role="group" aria-label="Sample briefs">
+                {exampleWorkspaces.map((example) => {
+                  const isSelected = workspace.generatedAt === example.workspace.generatedAt
+                    && input.idea === example.input.idea;
+                  return (
+                    <button
+                      key={example.id}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => applyExample(example)}
+                      disabled={isSwitching}
+                      className={[
+                        "flex items-center justify-between rounded-md border px-3 py-2 text-left text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60",
+                        isSelected
+                          ? "border-[#138a72] bg-[#e5f4ef] text-[#0f766e]"
+                          : "border-[#d8ded4] bg-[#fbfcfa] text-[#40504a] hover:border-[#138a72] hover:text-[#17201d]",
+                      ].join(" ")}
+                    >
+                      {example.label}
+                      <ArrowRight className="size-4" aria-hidden="true" />
+                    </button>
+                  );
+                })}
               </div>
 
               <div className="space-y-4">
