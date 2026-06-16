@@ -79,7 +79,7 @@ export function CloudWorkspaces({
 }: CloudWorkspacesProps) {
   const [ownerToken, setOwnerToken] = useState("");
   const [cloudState, setCloudState] = useState<CloudState>("checking");
-  const [cloudError, setCloudError] = useState<string>("");
+  const [cloudError, setCloudError] = useState<{ code: string; message: string } | null>(null);
   const [workspaces, setWorkspaces] = useState<CloudWorkspaceSummary[]>([]);
   const [busyAction, setBusyAction] = useState("");
   const [recoveryLabel, setRecoveryLabel] = useState("");
@@ -151,12 +151,12 @@ export function CloudWorkspaces({
         }
 
         const code = "code" in body ? body.code : "cloud_request_failed";
-        setCloudError(friendlyApiMessage(code, "Cloud history could not be reached."));
+        setCloudError({ code, message: friendlyApiMessage(code, "Cloud history could not be reached.") });
         throw new Error(code || "cloud_request_failed");
       }
 
       if (!("workspaces" in body)) {
-        setCloudError("Cloud history returned an unexpected response.");
+        setCloudError({ code: "cloud_request_failed", message: "Cloud history returned an unexpected response." });
         throw new Error("cloud_request_failed");
       }
 
@@ -173,7 +173,7 @@ export function CloudWorkspaces({
       setCloudState("error");
       if (!cloudError) {
         const code = error instanceof Error ? error.message : "";
-        setCloudError(friendlyApiMessage(code, "Cloud history could not be reached. Your local draft remains available."));
+        setCloudError({ code, message: friendlyApiMessage(code, "Cloud history could not be reached. Your local draft remains available.") });
       }
     } finally {
       setBusyAction("");
@@ -485,12 +485,27 @@ export function CloudWorkspaces({
       )}
 
       {cloudState === "error" && (
-        <p
+        <div
           role="alert"
           className="mt-4 rounded-md border border-[#e7c9bd] bg-[#fff6f1] p-3 text-sm leading-6 text-[#8b3d28]"
         >
-          {cloudError || "Cloud history could not be reached. Your local draft remains available."}
-        </p>
+          <p>{cloudError?.message || "Cloud history could not be reached. Your local draft remains available."}</p>
+          {cloudError?.code && (
+            <div className="mt-2 flex items-center justify-between gap-2 border-t border-[#e7c9bd] pt-2 text-xs">
+              <code className="rounded bg-[#ffe5d7] px-1.5 py-0.5 font-mono text-[#8b3d28]">{cloudError.code}</code>
+              <button
+                type="button"
+                onClick={() => {
+                  copyTextToClipboard(cloudError.code);
+                  showToast("Error code copied to clipboard.", "success");
+                }}
+                className="rounded border border-[#e7c9bd] bg-white px-2 py-1 font-medium transition hover:bg-[#fff6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d85b3f] focus-visible:ring-offset-1"
+              >
+                Copy code
+              </button>
+            </div>
+          )}
+        </div>
       )}
 
       {cloudState === "checking" ? (
