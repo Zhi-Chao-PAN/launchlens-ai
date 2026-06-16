@@ -103,7 +103,7 @@ export default function PricingPage() {
           </p>
           <Link
             href="/"
-            className="mt-1 text-sm font-semibold text-[#138a72] underline-offset-4 hover:underline"
+            className="mt-1 rounded text-sm font-semibold text-[#138a72] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
           >
             Back to the product workspace
           </Link>
@@ -149,8 +149,8 @@ export default function PricingPage() {
                 href={tier.href}
                 className={
                   tier.highlight
-                    ? "mt-auto inline-flex h-10 items-center justify-center rounded-md bg-[#17201d] px-4 text-sm font-semibold text-white transition hover:bg-[#24312d]"
-                    : "mt-auto inline-flex h-10 items-center justify-center rounded-md border border-[#cfd8d1] bg-white px-4 text-sm font-semibold text-[#17201d] transition hover:border-[#138a72]"
+                    ? "mt-auto inline-flex h-10 items-center justify-center rounded-md bg-[#17201d] px-4 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2"
+                    : "mt-auto inline-flex h-10 items-center justify-center rounded-md border border-[#cfd8d1] bg-white px-4 text-sm font-semibold text-[#17201d] transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2"
                 }
               >
                 {tier.cta}
@@ -168,7 +168,7 @@ export default function PricingPage() {
               key={item.question}
               className="rounded-md border border-[#d8ded4] bg-white px-4 py-3 text-sm"
             >
-              <summary className="cursor-pointer font-semibold text-[#17201d]">
+              <summary className="cursor-pointer rounded font-semibold text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1">
                 {item.question}
               </summary>
               <p className="mt-2 leading-6 text-[#40504a]">{item.answer}</p>
