@@ -163,7 +163,7 @@ export function OnboardingWizard() {
           type="button"
           onClick={dismiss}
           aria-label="Dismiss quick start guide"
-          className="absolute right-4 top-4 rounded p-1 text-[#8e9c93] transition hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+          className="absolute right-3 top-3 flex size-10 items-center justify-center rounded-md text-[#8e9c93] transition hover:bg-[#f6f8f4] hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
         >
           <X className="size-5" aria-hidden="true" />
         </button>

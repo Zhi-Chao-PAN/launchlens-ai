@@ -110,7 +110,7 @@ export function KeyboardShortcutsModal() {
                 type="button"
                 onClick={closeModal}
                 aria-label="Close shortcuts"
-                className="rounded text-[#8e9c93] transition hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                className="flex size-10 items-center justify-center rounded-md text-[#8e9c93] transition hover:bg-[#f6f8f4] hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
                autoFocus>
                 <X className="size-5" aria-hidden="true" />
               </button>

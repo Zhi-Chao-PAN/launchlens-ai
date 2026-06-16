@@ -198,6 +198,24 @@
 - [x] `smoke:e2e` npm script added for fast single-spec Playwright runs against the auto-started dev server.
 - [x] Test count **180 tests / 38 files**. All four quality gates green: ESLint 0-warn, tsc strict, Vitest 180/180, Next.js production build.
 
+## Clipboard Resilience, Accessibility & Error Normalization (R72-R79, 2026-06-16)
+
+- [x] `src/lib/launchlens/clipboard.ts` now exports two shared helpers: `copyTextToClipboard` (async: Clipboard API → execCommand fallback, returns boolean) and `downloadTextFile` (Blob + anchor click, returns boolean). Both the shared-readonly view and in-app export buttons now use them so non-secure-context or permission-denied contexts still succeed via execCommand, and last-resort failure downloads a file instead of showing a dead-end toast.
+- [x] `CopyMarkdownButton` (shared view) has three-tier fallback: async Clipboard API → `copyTextToClipboard` → `.md` download; Shift+click forces download. Downloaded state uses copilot purple (#554a8b / #e9e7f7) so it is not confused with clipboard-success green.
+- [x] New `DownloadMarkdownButton` and `DownloadJsonButton` in the shared view header provide explicit file-download affordances alongside Copy, so visitors who prefer "Save as" do not need to discover Shift+click.
+- [x] `safeJsonFilename` added to `json-export.ts` mirroring `safeMarkdownFilename`; both slugify `projectName` → `landingPage.headline` → default, 60-char cap, collapsed dashes.
+- [x] The in-app Copy Markdown and Copy JSON buttons now fall back through the same helper chain and auto-download a file on total failure rather than asking the user to manually select from a textarea. Explicit `.md` and `.json` download chips were added to the export toolbar.
+- [x] Skip-to-content link (`src/components/skip-link.tsx`) added to the root layout; visually hidden until focused, jumps to `#main-content` (verified present on every route including /, /pricing, /auth/signin, /share/[id], not-found, error, loading).
+- [x] Overlay-stack `pushOverlay()` handles were made idempotent via a per-handle `disposed` flag so React StrictMode double-invoke of effects cannot underflow the counter; three new tests cover double-dispose and bulk 50-handle scenarios.
+- [x] `src/lib/launchlens/api-errors.ts` introduces a `friendlyApiMessage(code, fallback)` helper plus a comprehensive code→user-message map covering every constant in `error-codes.ts`. The generation flow now reads `data.code` from API errors and prefers the friendly message over a raw string; 429 rate-limit responses get a specific "wait a moment" message.
+- [x] `/api/decision` error responses were normalized to include `{ code, error }` (previously `Invalid JSON payload.` and the 413 catch branch returned no code). All /api/* routes now return the `{ code, error }` envelope on errors.
+- [x] Cloud-workspaces panel: toggle-share copy, copy-share-link, and copy-recovery-key all now use `copyTextToClipboard`. Save / restore / share-toggle / delete catches now route error codes through `friendlyApiMessage`.
+- [x] `getSharedWorkspace` now returns a `SharedWorkspaceResult` discriminant (`ok` | `revoked` | `not_found`) instead of a nullable record; `/share/[id]` renders a dedicated "link is no longer available" page (Link2Off icon + friendly copy + Back-to-demo CTA) when the owner has revoked sharing, instead of returning a misleading 404.
+- [x] Keyboard hint added beneath the Generate workspace button (Ctrl+Enter to generate, `?` for all shortcuts) using kbd chips styled consistently with the shortcuts panel.
+- [x] README keyboard-shortcut table documents Shift+click-to-download on Copy Markdown.
+- [x] Modal close buttons (onboarding wizard X, shortcuts modal X) bumped from `p-1` / no-padding to 40×40 `size-10` flex-centered hit targets with a subtle hover background, meeting WCAG target-size guidance.
+- [x] Test count **192 tests / 39 files**. All four quality gates green: ESLint 0-warn, tsc strict, Vitest 192/192, Next.js production build.
+
 ## Post-Portfolio Enhancements
 
 - [ ] Add optional OAuth/passkey identity for teams that prefer conventional accounts.
