@@ -67,7 +67,7 @@ export function SharedWorkspaceView({
   const { workspace } = record;
 
   return (
-    <main id="main-content" className="min-h-screen animate-[launchlens-fade-in_280ms_ease-out_both] bg-[#f6f8f4] px-4 py-6 text-[#17201d] motion-reduce:animate-none sm:px-6 lg:px-8">
+    <main id="main-content" className="min-h-screen animate-[launchlens-fade-in_280ms_ease-out_both] bg-[#f6f8f4] px-4 py-6 pb-20 text-[#17201d] motion-reduce:animate-none sm:px-6 sm:pb-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl">
         <header className="mb-6 flex flex-col gap-4 border-b border-[#d8ded4] pb-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">

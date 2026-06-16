@@ -82,7 +82,7 @@ export function KeyboardShortcutsModal() {
         >
           <div
             className={[
-              "w-full max-w-md rounded-lg border border-[#d8ded4] bg-white shadow-xl",
+              "w-[min(28rem,calc(100vw-2rem))] rounded-lg border border-[#d8ded4] bg-white shadow-xl",
               mounted ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-2",
               "motion-safe:transition-all motion-safe:duration-200 motion-safe:ease-out",
             ].join(" ")}

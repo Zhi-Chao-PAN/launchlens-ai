@@ -155,7 +155,7 @@ export function SystemStatus() {
 
       {isOpen && (
         <div
-          className="absolute right-0 top-12 z-50 w-80 origin-top-right rounded-lg border border-[#d8ded4] bg-white p-4 shadow-lg animate-[fadeInDown_150ms_ease-out]"
+          className="absolute right-0 top-12 z-50 w-[min(20rem,calc(100vw-2rem))] origin-top-right rounded-lg border border-[#d8ded4] bg-white p-4 shadow-lg animate-[fadeInDown_150ms_ease-out]"
           role="dialog"
           aria-label="System status details"
         >
