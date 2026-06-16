@@ -26,7 +26,7 @@ import {
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatShortcut, useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 import { CloudWorkspaces } from "@/components/cloud-workspaces";
@@ -230,7 +230,45 @@ export function LaunchWorkspace({
   const [copyJustSucceeded, setCopyJustSucceeded] = useState<"markdown" | "json" | "">("");
   const [isStorageReady, setIsStorageReady] = useState(false);
   const [isBriefOpen, setIsBriefOpen] = useState(false);
+  const [isSwitching, setIsSwitching] = useState(false);
+  const switchTimerRef = useRef<number | null>(null);
   const { showToast } = useToast();
+
+  /**
+   * Brief opacity crossfade when switching examples or restoring snapshots:
+   * fade out the existing panels (120ms), swap state mid-fade, then fade back
+   * in (200ms). Avoids the content-pop that happens when all sections change
+   * in a single paint.
+   */
+  function switchWorkspace(apply: () => void) {
+    if (switchTimerRef.current) {
+      window.clearTimeout(switchTimerRef.current);
+      switchTimerRef.current = null;
+    }
+    setIsSwitching(true);
+    // Reduced-motion users skip the fade and get the instant swap.
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) {
+      apply();
+      setIsSwitching(false);
+      return;
+    }
+    switchTimerRef.current = window.setTimeout(() => {
+      apply();
+      switchTimerRef.current = window.setTimeout(() => {
+        setIsSwitching(false);
+        switchTimerRef.current = null;
+      }, 200);
+    }, 120);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (switchTimerRef.current) window.clearTimeout(switchTimerRef.current);
+    };
+  }, []);
 
   const [generationMeta, setGenerationMeta] = useState<GenerationMeta>({
     mode: "demo",
@@ -368,59 +406,65 @@ export function LaunchWorkspace({
   }
 
   function applyExample(example: ExampleWorkspace) {
-    setInput(example.input);
-    setWorkspace(example.workspace);
-    setExecution(example.execution);
-    setGenerationMeta({
-      mode: "demo",
-      provider: example.workspace.provider,
-      generatedAt: example.workspace.generatedAt,
-      usedFallback: false,
+    switchWorkspace(() => {
+      setInput(example.input);
+      setWorkspace(example.workspace);
+      setExecution(example.execution);
+      setGenerationMeta({
+        mode: "demo",
+        provider: example.workspace.provider,
+        generatedAt: example.workspace.generatedAt,
+        usedFallback: false,
+      });
+      setError("");
+      setFallbackNotice("");
+      setExportText("");
+      setExportFormat("");
+      setIsEditing(false);
+      setIsBriefOpen(false);
     });
-    setError("");
-    setFallbackNotice("");
-    setExportText("");
-    setExportFormat("");
-    setIsEditing(false);
-    setIsBriefOpen(false);
     showToast("Example workspace loaded.", "success");
   }
 
   function resetLocalWorkspace() {
-    setInput(initialInput);
-    setWorkspace(initialWorkspace);
-    setExecution(initialExecution);
-    setGenerationMeta({
-      mode: "demo",
-      provider: initialWorkspace.provider,
-      generatedAt: initialWorkspace.generatedAt,
-      usedFallback: false,
+    switchWorkspace(() => {
+      setInput(initialInput);
+      setWorkspace(initialWorkspace);
+      setExecution(initialExecution);
+      setGenerationMeta({
+        mode: "demo",
+        provider: initialWorkspace.provider,
+        generatedAt: initialWorkspace.generatedAt,
+        usedFallback: false,
+      });
+      setError("");
+      setFallbackNotice("");
+      setExportText("");
+      setExportFormat("");
+      setIsEditing(false);
+      setIsBriefOpen(false);
     });
-    setError("");
-    setFallbackNotice("");
-    setExportText("");
-    setExportFormat("");
-    setIsEditing(false);
-    setIsBriefOpen(false);
     showToast("Workspace reset to starter example.", "success");
   }
 
   function restoreCloudWorkspace(record: CloudWorkspaceRecord) {
-    setInput(record.input);
-    setWorkspace(record.workspace);
-    setExecution(record.execution);
-    setGenerationMeta({
-      mode: record.workspace.provider === "mock" ? "demo" : "real",
-      provider: record.workspace.provider,
-      generatedAt: record.workspace.generatedAt,
-      usedFallback: false,
+    switchWorkspace(() => {
+      setInput(record.input);
+      setWorkspace(record.workspace);
+      setExecution(record.execution);
+      setGenerationMeta({
+        mode: record.workspace.provider === "mock" ? "demo" : "real",
+        provider: record.workspace.provider,
+        generatedAt: record.workspace.generatedAt,
+        usedFallback: false,
+      });
+      setError("");
+      setFallbackNotice("");
+      setExportText("");
+      setExportFormat("");
+      setIsEditing(false);
+      setIsBriefOpen(false);
     });
-    setError("");
-    setFallbackNotice("");
-    setExportText("");
-    setExportFormat("");
-    setIsEditing(false);
-    setIsBriefOpen(false);
     showToast("Cloud snapshot restored successfully.", "success");
   }
 
@@ -545,8 +589,12 @@ export function LaunchWorkspace({
 
   return (
     <main id="main-content"
-      aria-busy={isGenerating}
-      className="min-h-screen animate-[launchlens-fade-in_280ms_ease-out_both] bg-[#f6f8f4] text-[#17201d] motion-reduce:animate-none"
+      aria-busy={isGenerating || isSwitching}
+      className={[
+        "min-h-screen bg-[#f6f8f4] text-[#17201d]",
+        "animate-[launchlens-fade-in_280ms_ease-out_both] motion-reduce:animate-none",
+        isSwitching ? "opacity-40 pointer-events-none transition-opacity duration-150 ease-out motion-reduce:transition-none" : "transition-opacity duration-200 ease-out motion-reduce:transition-none",
+      ].join(" ")}
     >
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-4 border-b border-[#d8ded4] pb-5 lg:flex-row lg:items-center lg:justify-between">
