@@ -190,6 +190,14 @@
 - [x] Added `smoke:e2e` npm script that runs just the happy-path Playwright spec against the auto-started dev server for faster CI prechecks.
 - [x] Test count **178 tests / 38 files**. All four quality gates green: ESLint 0-warn, tsc strict, Vitest 178/178, Next.js production build.
 
+- [x] Extracted `copyTextToClipboard` (async, tries Clipboard API then execCommand fallback) and `downloadTextFile` (Blob+anchor) into `src/lib/launchlens/clipboard.ts` and reused them across `CopyLinkButton`, `CopyMarkdownButton`, and the in-app export Copy Markdown/Copy JSON buttons. Clipboard failures now download a file instead of asking the user to manually select from a textarea.
+- [x] `safeMarkdownFilename` now accepts `landingPage.headline` as a fallback when no projectName is set; two more tests cover preference order and slugification of long headlines.
+- [x] Export header now exposes explicit `.md` and `.json` download buttons alongside Copy Markdown / Copy JSON, so power users can grab a file without learning the Shift+click secret.
+- [x] A small keyboard-hint line sits below the Generate workspace button (Ctrl+Enter to generate, ? for shortcuts); kbd chips use the existing Tailwind styling conventions.
+- [x] The existing motion-reduce:transition-none on the workspace-switch opacity crossfade confirmed — reduced-motion users get an instant swap, no fade.
+- [x] `smoke:e2e` npm script added for fast single-spec Playwright runs against the auto-started dev server.
+- [x] Test count **180 tests / 38 files**. All four quality gates green: ESLint 0-warn, tsc strict, Vitest 180/180, Next.js production build.
+
 ## Post-Portfolio Enhancements
 
 - [ ] Add optional OAuth/passkey identity for teams that prefer conventional accounts.

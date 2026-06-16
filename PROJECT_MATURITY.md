@@ -129,6 +129,22 @@ After v1.0.0 shipped, the repo accumulated another sustained pass of UX and robu
 
 Quality gates remain green end-to-end: ESLint 0 warnings, strict `tsc --noEmit`, Vitest 164/164, and a clean `next build` on every iteration.
 
+
+## Post-portfolio accessibility & export resilience pass (2026-06-16, R55-R71)
+
+After R54, the iteration loop turned toward accessibility hardening, clipboard/export resilience, and modal keyboard polish — the kinds of gaps users only notice when they try to operate the product on a locked-down machine or with a screen reader.
+
+- **Global primary-CTA color alignment.** Buttons that perform the primary action on every surface (Generate, Save, Share toggle, Regenerate brief, Add evidence, Submit, Open demo, Try again, Back to demo, Sign in) are now all the brand green (#138a72 / hover #0f7665) with a mint focus ring (#cbe8df). Previously a handful of CTAs inherited the near-black fill and felt heavier than the rest of the system.
+- **Shared read-only view.** A Copy Link button and a Copy Markdown button now sit in the shared-page header. Copy Markdown has a three-tier fallback: Clipboard API → execCommand("copy") → Blob .md download, so visitors on http:// or with clipboard-deny permissions still walk away with the plan. Shift+click forces a download. Storage-unavailable renders a friendly card with a CloudOff icon and a green Back-to-demo CTA instead of a dead-end paragraph. `generateMetadata` provides OG tags without an extra DB round-trip.
+- **`useFocusTrap` hook** provides Tab/Shift+Tab cycling inside the shortcuts modal and onboarding wizard, with [autofocus] preference and inert-aware candidate filtering. Existing animated focus-return is preserved (restoreFocus:false) so close animations are not interrupted.
+- **Clipboard helpers extracted to `src/lib/launchlens/clipboard.ts`:** `copyTextToClipboard` (async, modern API with execCommand fallback, returns boolean) and `downloadTextFile` (Blob + anchor, returns boolean). The in-app Copy Markdown and Copy JSON buttons now use them and auto-download on failure rather than forcing the user to manually select from a textarea. Explicit `.md` and `.json` download buttons sit alongside Copy in the export header.
+- **Screen-reader announcements.** An off-screen aria-live="polite" region in launch-workspace announces "Workspace ready. N audience segments, N tasks, N hypotheses" on generation success and reads back error messages on failure.
+- **`safeMarkdownFilename`** slugifies landing-page headlines into 60-char-max filesystem-safe filenames (dashes collapsed, punctuation stripped, default fallback); tested for empty, duplicated dashes, and landingPage-headline fallback paths.
+- **`buildDecisionEvalFixture`** gained three defensive checks (non-empty model label, ISO-8601 evaluatedAt, at least one eval case) with corresponding unit tests, so malformed fixtures fail fast during eval runs instead of silently propagating.
+- **Workspace-quality edge cases** tested: invalid backlog priority, too-short task fields, duplicate pain bullets, too-short audience bullets, all-empty zero-score case.
+- **Keyboard hint line** below the Generate button reminds users of Ctrl+Enter and ? for all shortcuts. README shortcut table updated to document Shift+click-to-download on Copy Markdown.
+- **Test count: 180 tests / 38 files.** Quality gates remain green (ESLint 0-warn, tsc strict, Vitest, next build).
+
 ## Re-entry cost to a real commercial SaaS
 
 Unchanged from the v1.0.0 release. See PROJECT_MATURITY.md for the 6 to 10 weeks of refactoring that would be needed to convert this portfolio release into a paying product.

@@ -64,6 +64,7 @@ LaunchLens includes power-user keyboard shortcuts for fast workflow navigation:
 | `?` / `Shift + ?` | Show this keyboard shortcuts panel |
 | `Esc` | Close the topmost open modal / dialog / toast |
 | `Shift + Esc` | Dismiss all toasts at once |
+| `Shift`+click Copy Markdown | Download the shared workspace as a `.md` file instead of copying to clipboard |
 
 Press `?` anywhere in the app to see the shortcuts help panel. Shortcuts are automatically disabled when typing in inputs or textareas to avoid conflicts.
 
