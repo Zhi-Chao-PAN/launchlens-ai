@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { Rocket, Sparkles, Target, UsersRound, HelpCircle, X } from "lucide-react";
 import { registerShortcut } from "@/hooks/use-keyboard-shortcuts";
+import { pushOverlay } from "@/lib/launchlens/overlays";
 
 const STORAGE_KEY = "launchlens-onboarding-dismissed";
 
@@ -77,33 +78,41 @@ export function OnboardingWizard() {
     };
   }, []);
 
+  // Register this modal with the global overlay stack so lower-priority
+  // Escape listeners (toasts, etc.) defer to it; also handle Enter-to-dismiss.
   useEffect(() => {
     if (!visible) return;
+    const pop = pushOverlay();
+
     const onEscape = (e: Event) => {
-      // Stop propagation so that lower-priority listeners (toasts) don't also dismiss.
+      // Because pushOverlay() marked this as the topmost overlay, this handler
+      // should only fire when no higher overlay (e.g. shortcuts modal) is open.
+      // Stop propagation so other listeners on the same dispatch don't act.
       e.stopImmediatePropagation?.();
       dismiss();
     };
-    // Enter dismisses the tour (unless focus is on a text field/textarea/contenteditable).
+
+    // Enter dismisses the tour (unless focus is on a text field/textarea/contenteditable/link).
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Enter") return;
       const t = e.target as HTMLElement | null;
       if (!t) return;
       const tag = t.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || t.isContentEditable) return;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || tag === "A" || t.isContentEditable) return;
       // Let buttons handle their own activation via native click; dismiss after.
       if (tag === "BUTTON" || t.getAttribute("role") === "button") {
-        // Buttons will fire click on Enter naturally; avoid double-dismiss.
         return;
       }
       e.preventDefault();
       dismiss();
     };
+
     window.addEventListener("launchlens:escape", onEscape);
     window.addEventListener("keydown", onKeyDown);
     return () => {
       window.removeEventListener("launchlens:escape", onEscape);
       window.removeEventListener("keydown", onKeyDown);
+      pop();
     };
   }, [visible]);
 
@@ -120,6 +129,7 @@ export function OnboardingWizard() {
       role="dialog"
       aria-modal="true"
       aria-label="Quick start guide"
+      aria-describedby="onboarding-steps onboarding-hints"
       className={[
         "fixed inset-0 z-50 flex items-center justify-center px-4",
         mounted ? "bg-black/40 backdrop-blur-sm" : "bg-black/0 backdrop-blur-none",
@@ -139,7 +149,7 @@ export function OnboardingWizard() {
           type="button"
           onClick={dismiss}
           aria-label="Dismiss quick start guide"
-          className="absolute right-4 top-4 rounded text-[#8e9c93] transition hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+          className="absolute right-4 top-4 rounded p-1 text-[#8e9c93] transition hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
         >
           <X className="size-5" aria-hidden="true" />
         </button>
@@ -148,7 +158,7 @@ export function OnboardingWizard() {
           Welcome to LaunchLens AI
         </h2>
 
-        <ol className="flex flex-col gap-4">
+        <ol id="onboarding-steps" className="flex flex-col gap-4">
           {steps.map((step, idx) => {
             const Icon = step.icon;
             return (
@@ -170,15 +180,19 @@ export function OnboardingWizard() {
           })}
         </ol>
 
-        <div className="flex items-center justify-between gap-3 border-t border-[#d8ded4] pt-4">
-          <p className="max-w-64 text-xs leading-5 text-[#8e9c93]">
-            Press <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1 font-mono">?</kbd> any time to see all keyboard shortcuts.
+        <div
+          id="onboarding-hints"
+          className="flex flex-col gap-3 border-t border-[#d8ded4] pt-4 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p className="text-xs leading-5 text-[#8e9c93]">
+            Press <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1 font-mono">Esc</kbd> or <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1 font-mono">Enter</kbd> to dismiss. Press{" "}
+            <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1 font-mono">?</kbd> any time for all shortcuts.
           </p>
           <button
             type="button"
             onClick={dismiss}
             autoFocus
-            className="inline-flex h-10 items-center justify-center rounded-md bg-[#17201d] px-5 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2"
+            className="inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-[#17201d] px-5 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2"
           >
             Get started
           </button>
