@@ -9,6 +9,39 @@
   --safe-right: env(safe-area-inset-right, 0px);
 }
 
+[data-theme="dark"] {
+  --background: #0f1412;
+  --foreground: #e8efe9;
+  --card-bg: #151c19;
+  --card-border: #24302a;
+  --muted-bg: #1a221e;
+  --muted-text: #8e9c93;
+  --accent: #10b981;
+  --accent-hover: #34d399;
+  --ring-color: rgba(16, 185, 129, 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #0f1412;
+    --foreground: #e8efe9;
+    --card-bg: #151c19;
+    --card-border: #24302a;
+    --muted-bg: #1a221e;
+    --muted-text: #8e9c93;
+    --accent: #10b981;
+    --accent-hover: #34d399;
+    --ring-color: rgba(16, 185, 129, 0.4);
+  }
+}
+
+/* Theme-aware utility classes */
+.bg-card { background-color: var(--card-bg, white); }
+.bg-muted { background-color: var(--muted-bg, #f6f8f4); }
+.text-muted { color: var(--muted-text, #607069); }
+.border-card { border-color: var(--card-border, #d8ded4); }
+
+
 /* Safe-area padding utilities (mobile notch / home indicator) */
 .pt-safe { padding-top: var(--safe-top); }
 .pb-safe { padding-bottom: var(--safe-bottom); }

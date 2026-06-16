@@ -31,6 +31,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatShortcut, useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
 
+import { ThemeToggle } from "./theme-toggle";
 import { CloudWorkspaces } from "@/components/cloud-workspaces";
 import { SystemStatus } from "@/components/system-status";
 import { ReplayTourButton } from "@/components/onboarding-wizard";
@@ -847,6 +848,7 @@ export function LaunchWorkspace({
             >
               <RotateCcw className="size-4" aria-hidden="true" />
             </button>
+            <ThemeToggle />
             <SystemStatus />
             <span className="hidden rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-[#40504a] md:inline">
               {providerLabel}
