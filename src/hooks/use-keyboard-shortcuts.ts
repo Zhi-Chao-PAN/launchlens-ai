@@ -41,6 +41,16 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     description: "Focus founder brief input",
     category: "Navigation",
   },
+  collapseAll: {
+    key: "[",
+    description: "Collapse all sections",
+    category: "Navigation",
+  },
+  expandAll: {
+    key: "]",
+    description: "Expand all sections",
+    category: "Navigation",
+  },
   toggleShortcuts: {
     key: "?",
     shift: true,

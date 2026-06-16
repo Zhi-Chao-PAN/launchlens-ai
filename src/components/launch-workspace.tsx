@@ -20,6 +20,7 @@ import {
   PencilLine,
   RotateCcw,
   Rocket,
+  ChevronDown,
   Save,
   Sparkles,
   Target,
@@ -71,6 +72,10 @@ type SectionProps = {
   title: string;
   icon: LucideIcon;
   children: React.ReactNode;
+  collapsible?: boolean;
+  sectionId?: string;
+  collapsed?: boolean;
+  onToggle?: () => void;
 };
 
 type EditableTextProps = {
@@ -153,16 +158,69 @@ function splitLines(value: string) {
     .filter(Boolean);
 }
 
-function Section({ title, icon: Icon, children }: SectionProps) {
+function Section({ title, icon: Icon, children, collapsible = false, sectionId, collapsed: controlledCollapsed, onToggle }: SectionProps) {
+  const [internalOpen, setInternalOpen] = useState(true);
+  const isOpen = collapsible && controlledCollapsed !== undefined
+    ? !controlledCollapsed
+    : internalOpen;
+
+  const contentId = sectionId ? `${sectionId}-content` : undefined;
+
+  const toggle = () => {
+    if (!collapsible) return;
+    if (onToggle) {
+      onToggle();
+    } else {
+      setInternalOpen(prev => !prev);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!collapsible) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      toggle();
+    }
+  };
+
   return (
-    <section className="rounded-lg border border-[#d8ded4] bg-white p-5 shadow-sm">
-      <div className="mb-4 flex items-center gap-2">
-        <span className="flex size-8 items-center justify-center rounded-md bg-[#e5f4ef] text-[#0f766e]">
-          <Icon className="size-4" aria-hidden="true" />
-        </span>
-        <h2 className="text-base font-semibold text-[#17201d]">{title}</h2>
+    <section className="rounded-lg border border-[#d8ded4] bg-white shadow-sm overflow-hidden">
+      {collapsible ? (
+        <button
+          type="button"
+          onClick={toggle}
+          onKeyDown={handleKeyDown}
+          aria-expanded={isOpen}
+          aria-controls={contentId}
+          className="w-full flex items-center gap-2 p-5 text-left transition hover:bg-[#f6f8f4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-inset"
+        >
+          <span className="flex size-8 items-center justify-center rounded-md bg-[#e5f4ef] text-[#0f766e]">
+            <Icon className="size-4" aria-hidden="true" />
+          </span>
+          <h2 className="flex-1 text-base font-semibold text-[#17201d]">{title}</h2>
+          <ChevronDown
+            className={`size-4 text-[#607069] transition-transform ${isOpen ? "rotate-180" : ""}`}
+            aria-hidden="true"
+          />
+        </button>
+      ) : (
+        <div className="flex items-center gap-2 p-5 pb-0">
+          <span className="flex size-8 items-center justify-center rounded-md bg-[#e5f4ef] text-[#0f766e]">
+            <Icon className="size-4" aria-hidden="true" />
+          </span>
+          <h2 className="text-base font-semibold text-[#17201d]">{title}</h2>
+        </div>
+      )}
+      <div
+        id={contentId}
+        className={`transition-all ${
+          collapsible && !isOpen ? "max-h-0 opacity-0 overflow-hidden" : "max-h-none opacity-100"
+        }`}
+      >
+        <div className={collapsible ? "px-5 pb-5 pt-0" : "p-5 pt-4"}>
+          {children}
+        </div>
       </div>
-      {children}
     </section>
   );
 }
@@ -225,6 +283,7 @@ export function LaunchWorkspace({
   const [execution, setExecution] = useState(initialExecution);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
   const [error, setError] = useState("");
   const [fallbackNotice, setFallbackNotice] = useState("");
   const [exportText, setExportText] = useState("");
@@ -304,6 +363,18 @@ export function LaunchWorkspace({
   );
 
   // Keyboard shortcuts
+  const toggleSection = useCallback((sectionId: string) => {
+    setCollapsedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(sectionId)) {
+        next.delete(sectionId);
+      } else {
+        next.add(sectionId);
+      }
+      return next;
+    });
+  }, []);
+
   const focusBrief = useCallback(() => {
     setIsBriefOpen(true);
     window.setTimeout(() => {
@@ -329,6 +400,13 @@ export function LaunchWorkspace({
     edit: toggleEdit,
     save: handleSave,
     focusBrief: focusBrief,
+    collapseAll: () => {
+      const allIds = Array.from(document.querySelectorAll("section[id$=\"-content\"]"))
+        .map(el => el.id.replace("-content", ""))
+        .filter(Boolean);
+      setCollapsedSections(new Set(allIds));
+    },
+    expandAll: () => setCollapsedSections(new Set()),
     copyMarkdown: () => copyMarkdown(),
     reset: () => resetLocalWorkspace(),
   });
@@ -1184,7 +1262,7 @@ export function LaunchWorkspace({
             />
 
             <div className="grid gap-6 xl:grid-cols-2">
-              <Section title="Target users" icon={UsersRound}>
+              <Section title="Target users" icon={UsersRound} collapsible sectionId="target-users" collapsed={collapsedSections.has("target-users")} onToggle={() => toggleSection("target-users")}>
                 {isEditing ? (
                   <EditableLines
                     label="Target users"
@@ -1196,7 +1274,7 @@ export function LaunchWorkspace({
                 )}
               </Section>
 
-              <Section title="Pain map" icon={Target}>
+              <Section title="Pain map" icon={Target} collapsible sectionId="pain-map" collapsed={collapsedSections.has("pain-map")} onToggle={() => toggleSection("pain-map")}>
                 {isEditing ? (
                   <EditableLines
                     label="Pain map"
@@ -1208,7 +1286,7 @@ export function LaunchWorkspace({
                 )}
               </Section>
 
-              <Section title="MVP scope" icon={ClipboardList}>
+              <Section title="MVP scope" icon={ClipboardList} collapsible sectionId="mvp-scope" collapsed={collapsedSections.has("mvp-scope")} onToggle={() => toggleSection("mvp-scope")}>
                 {isEditing ? (
                   <EditableLines
                     label="MVP scope"
@@ -1220,7 +1298,7 @@ export function LaunchWorkspace({
                 )}
               </Section>
 
-              <Section title="Landing page copy" icon={Megaphone}>
+              <Section title="Landing page copy" icon={Megaphone} collapsible sectionId="landing-page-copy" collapsed={collapsedSections.has("landing-page-copy")} onToggle={() => toggleSection("landing-page-copy")}>
                 {isEditing ? (
                   <div className="space-y-3">
                     <EditableText
@@ -1266,7 +1344,7 @@ export function LaunchWorkspace({
               </Section>
             </div>
 
-            <Section title="Feature backlog" icon={ClipboardCheck}>
+            <Section title="Feature backlog" icon={ClipboardCheck} collapsible sectionId="feature-backlog" collapsed={collapsedSections.has("feature-backlog")} onToggle={() => toggleSection("feature-backlog")}>
               <div className="grid gap-3 lg:grid-cols-2">
                 {workspace.backlog.map((item, index) => (
                   <article
@@ -1290,7 +1368,7 @@ export function LaunchWorkspace({
             </Section>
 
             <div className="grid gap-6 xl:grid-cols-2">
-              <Section title="Pricing hypothesis" icon={CircleDollarSign}>
+              <Section title="Pricing hypothesis" icon={CircleDollarSign} collapsible sectionId="pricing-hypothesis" collapsed={collapsedSections.has("pricing-hypothesis")} onToggle={() => toggleSection("pricing-hypothesis")}>
                 {isEditing ? (
                   <div className="space-y-3">
                     <EditableText
@@ -1334,7 +1412,7 @@ export function LaunchWorkspace({
                 )}
               </Section>
 
-              <Section title="Launch plan" icon={Rocket}>
+              <Section title="Launch plan" icon={Rocket} collapsible sectionId="launch-plan" collapsed={collapsedSections.has("launch-plan")} onToggle={() => toggleSection("launch-plan")}>
                 {isEditing ? (
                   <EditableLines
                     label="Launch plan"
@@ -1348,7 +1426,7 @@ export function LaunchWorkspace({
             </div>
 
             <div className="grid gap-6 xl:grid-cols-2">
-              <Section title="Assumptions to validate" icon={AlertTriangle}>
+              <Section title="Assumptions to validate" icon={AlertTriangle} collapsible sectionId="assumptions-to-validate" collapsed={collapsedSections.has("assumptions-to-validate")} onToggle={() => toggleSection("assumptions-to-validate")}>
                 <BulletList items={workspace.assumptions} />
                 <p className="mt-4 text-xs leading-5 text-[#607069]">
                   Assumptions remain anchored to the generated plan. Track
@@ -1357,7 +1435,7 @@ export function LaunchWorkspace({
                 </p>
               </Section>
 
-              <Section title="Pricing risks" icon={AlertTriangle}>
+              <Section title="Pricing risks" icon={AlertTriangle} collapsible sectionId="pricing-risks" collapsed={collapsedSections.has("pricing-risks")} onToggle={() => toggleSection("pricing-risks")}>
                 {isEditing ? (
                   <EditableLines
                     label="Pricing risks"
@@ -1380,7 +1458,7 @@ export function LaunchWorkspace({
             </div>
 
             <div className="grid gap-6 xl:grid-cols-2">
-              <Section title="Content calendar" icon={CalendarDays}>
+              <Section title="Content calendar" icon={CalendarDays} collapsible sectionId="content-calendar" collapsed={collapsedSections.has("content-calendar")} onToggle={() => toggleSection("content-calendar")}>
                 <div className="space-y-3">
                   {workspace.contentCalendar.map((item, index) => (
                     <article
@@ -1403,7 +1481,7 @@ export function LaunchWorkspace({
                 </div>
               </Section>
 
-              <Section title="Execution tasks" icon={CheckCircle2}>
+              <Section title="Execution tasks" icon={CheckCircle2} collapsible sectionId="execution-tasks" collapsed={collapsedSections.has("execution-tasks")} onToggle={() => toggleSection("execution-tasks")}>
                 <div className="space-y-3">
                   {workspace.tasks.map((task, index) => (
                     <article
