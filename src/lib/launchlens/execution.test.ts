@@ -211,4 +211,21 @@ describe("workspace execution state", () => {
     expect(normalized?.experiments.length).toBe(base.experiments.length);
   });
 
+
+  it("summarizeExecutionState produces stable summaries for the same input", () => {
+    const summary1 = summarizeExecutionState(execution);
+    const summary2 = summarizeExecutionState(execution);
+    expect(summary1.experiments.length).toBe(summary2.experiments.length);
+    expect(summary1.experiments.length).toBeGreaterThan(0);
+    expect(summary1.updatedAt).toBe(summary2.updatedAt);
+  });
+
+  it("taskIdentity produces consistent strings for the same input", () => {
+    const task = { title: "Test task", owner: "Me", due: "Week 1", outcome: "Done" };
+    const id1 = taskIdentity(task, 0);
+    const id2 = taskIdentity(task, 0);
+    expect(id1).toBe(id2);
+    expect(typeof id1).toBe("string");
+    expect(id1.length).toBeGreaterThan(5);
+  });
 });

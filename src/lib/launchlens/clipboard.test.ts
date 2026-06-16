@@ -50,4 +50,24 @@ describe("cross-exporter filename parity", () => {
     expect(safeJsonFilename({ projectName: "v2.1-beta-3" })).toBe("v2-1-beta-3.json");
   });
 
+
+  it("uses landing page headline when project name is missing", () => {
+    const result = safeMarkdownFilename({ landingPage: { headline: "Great Product Launch" } });
+    expect(result).toBe("great-product-launch.md");
+    const json = safeJsonFilename({ landingPage: { headline: "Great Product Launch" } });
+    expect(json).toBe("great-product-launch.json");
+  });
+
+  it("always returns the correct file extension (.md / .json)", () => {
+    expect(safeMarkdownFilename({})).toMatch(/\.md$/);
+    expect(safeJsonFilename({})).toMatch(/\.json$/);
+    expect(safeMarkdownFilename({ projectName: "test" })).toMatch(/\.md$/);
+    expect(safeJsonFilename({ projectName: "test" })).toMatch(/\.json$/);
+  });
+
+  it("prefers projectName over landingPage headline when both are present", () => {
+    const both = { projectName: "Project Alpha", landingPage: { headline: "Landing Beta" } };
+    expect(safeMarkdownFilename(both)).toBe("project-alpha.md");
+    expect(safeJsonFilename(both)).toBe("project-alpha.json");
+  });
 });

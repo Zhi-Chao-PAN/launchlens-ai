@@ -28,6 +28,8 @@ tags are cut for milestone demos.
 - Screen-reader live-region announcements on the evidence form for successful recording and validation failures
 - Error code chip with one-click copy button on the cloud workspaces error panel
 - `aria-busy` attributes on decision copilot generate button and system status retry button during loading
+- `useSrAnnounce` hook (`src/hooks/use-sr-announce.ts`) for consistent screen-reader live-region announcements
+- Safe-area CSS variables + utility classes (`pt-safe`, `pb-safe`, etc.) with `viewport-fit=cover` for iOS PWA
 - Screen-reader live-region announcements for decision generation (start / success / failure) and system status retries
 
 ### Changed
@@ -54,6 +56,9 @@ tags are cut for milestone demos.
 - Evidence delete buttons use 44px touch targets on mobile (sm: 32px)
 - `npm run quality` now runs the full CI gate sequence (lint ? test ? typecheck ? provider eval ? decision eval ? build ? audit)
 - Evidence form submission auto-focuses the evidence list for keyboard / screen-reader flow continuity
+- Evidence deletion preserves keyboard focus (moves to neighbor) and announces removal via screen reader
+- Decision-brief claim list items are keyboard-focusable with descriptive aria-labels
+- iOS safe-area insets supported via `viewport-fit=cover` and `pt-safe` / `pb-safe` utility classes
 - Validation-board header uses compact spacing and typography on mobile
 - Evidence list sorts newest-first, with 44px touch-target delete buttons on mobile
 

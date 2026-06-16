@@ -290,3 +290,12 @@
 - [x] Write smoke:tenant script (6 assertions: 2 tenants, cross-tenant isolation, cross-owner 404, same-owner visibility).
 - [x] Add unit tests for tenant store (4 tests, 96 total).
 - [x] Verify triple smoke (tenant, cloud, rbac) all pass against production Neon.
+
+## Accessibility Polish & Mobile Safe Areas (R111-R115, 2026-06-17)
+
+- [x] Evidence deletion preserves keyboard focus: moves to the next/previous delete button or falls back to the list container, with a screen-reader announcement of the removed source.
+- [x] Decision-brief claim list items are keyboard-focusable (`tabindex="0"`, focus ring) with `role="group"` and descriptive `aria-label` including stance, claim text, citation count, and sources.
+- [x] `useSrAnnounce` hook extracted to `src/hooks/use-sr-announce.ts` ? single source of truth for screen-reader live-region messaging with clear-then-set pattern for repeat announcements.
+- [x] Mobile safe-area insets added: `env(safe-area-inset-*)` CSS variables + utility classes (`pt-safe`, `pb-safe`, `px-safe`, etc.) and `viewport-fit=cover` for iOS PWA full-screen display.
+- [x] Test count expanded from 233 to **240 tests / 41 files**: `useSrAnnounce` hook tests, filename slugger edge cases (headline fallback, extension guarantees, priority order), execution summary stability.
+- [x] All four quality gates green: ESLint 0-warn, tsc strict, Vitest, Next.js build.
