@@ -225,6 +225,17 @@
 - [x] Cross-exporter parity test: `safeMarkdownFilename` and `safeJsonFilename` agree on default slug output, long-name truncation (60 char cap), and repeated-separator collapse, preventing drift if either helper is edited later.
 - [x] Test count **195 tests / 40 files**. All four quality gates green: ESLint 0-warn, tsc strict, Vitest 195/195, Next.js production build.
 
+## Skeleton Loaders, PWA Meta & Cloud Error Messaging (R87-R94, 2026-06-16)
+
+- [x] Decision copilot loading state upgraded from a centered pulse-spinner to a content-shaped skeleton (chips, paragraphs, claim-list rows) using the shared `Skeleton` primitive with `launchlens-shimmer`, matching the route-shell and cloud "checking" loading patterns. `aria-busy="true"` remains on the container.
+- [x] Decision copilot `/api/decision` failures now read `data.code` and route through `friendlyApiMessage`, with a dedicated 429 "wait a moment" fallback instead of surfacing a raw error string.
+- [x] Recovery-key module edge tests: `createRecoveryKey` returns 32-char URL-safe base64url and successive calls produce distinct keys; `deriveRecoveryOwnerToken` rejects empty labels, labels over 160 chars, and keys with invalid characters.
+- [x] Validation-board Decision and Next-Action textareas now display live character counts (`N/800`) in a muted right-aligned caption so founders know when they are approaching the field cap.
+- [x] PWA polish: `public/manifest.webmanifest` (brand name, green `#138a72` theme, standalone display, SVG icon), `public/icon.svg` (compass-styled mark), `theme-color` metadata, and apple-mobile-web-app meta tags in `<head>` so iOS Safari and Android Chrome display the app properly when saved to the home screen.
+- [x] Contributor experience: `npm run quality` one-command script runs lint (0-warn), vitest, `tsc --noEmit`, and `next build` in sequence; `npm run typecheck` is also exposed directly.
+- [x] Cloud-history error states now render a code-specific friendly message (via `friendlyApiMessage`) in the error card instead of a generic "could not be reached" paragraph, so quota, auth, and misconfiguration failures surface actionable copy.
+- [x] Test count milestone: **200 tests / 40 files**. All four quality gates remain green: ESLint 0-warn, tsc strict, Vitest, `next build`.
+
 ## Post-Portfolio Enhancements
 
 - [ ] Add optional OAuth/passkey identity for teams that prefer conventional accounts.
