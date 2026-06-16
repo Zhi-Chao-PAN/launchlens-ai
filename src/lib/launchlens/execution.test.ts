@@ -195,7 +195,7 @@ describe("workspace execution state", () => {
 
   it("evaluateExecutionProgress gives higher score for experiments with evidence", () => {
     const base = execution.experiments[0];
-    const progress = evaluateExecutionProgress({ experiments: [base] });
+    const progress = evaluateExecutionProgress({ experiments: [base], updatedAt: execution.updatedAt });
     expect(progress.total).toBe(1);
     expect(progress.score).toBeGreaterThan(0);
     expect(progress.evidenceCount).toBe(base.evidence.length);

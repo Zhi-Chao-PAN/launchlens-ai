@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { exampleWorkspaces } from "./example-workspaces";
-import type { DecisionRecommendation, ProviderName } from "./decision";
+import type { DecisionRecommendation } from "./decision";
+import type { ProviderName } from "./types";
 import {
   buildMockDecisionBrief,
   decisionBriefIsCurrent,
