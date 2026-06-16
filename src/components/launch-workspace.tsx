@@ -1141,46 +1141,46 @@ export function LaunchWorkspace({
                   <button
                     type="button"
                     onClick={() => setIsEditing((current) => !current)}
-                    className="flex h-10 items-center gap-2 rounded-md border border-input bg-[#fbfcfa] px-3 text-sm font-semibold text-foreground transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                    className="flex h-9 items-center gap-2 rounded-md border border-input bg-input px-2 text-sm font-semibold text-foreground transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:h-10 sm:px-3"
                   >
                     {isEditing ? (
                       <Eye className="size-4" aria-hidden="true" />
                     ) : (
                       <PencilLine className="size-4" aria-hidden="true" />
                     )}
-                    {isEditing ? "Preview" : "Edit"}
+                    <span className="hidden sm:inline">{isEditing ? "Preview" : "Edit"}</span>
                   </button>
                   <button
                     type="button"
                     onClick={copyMarkdown}
                     aria-live="polite"
-                    className="flex h-10 items-center gap-2 rounded-md bg-[#17201d] px-3 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2"
+                    className="flex h-9 items-center gap-2 rounded-md bg-foreground px-2 text-sm font-semibold text-background transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 sm:h-10 sm:px-3"
                   >
                     {copyJustSucceeded === "markdown" ? (
                       <CheckCircle2 className="size-4 text-[#9dd3c5]" aria-hidden="true" />
                     ) : (
                       <Copy className="size-4" aria-hidden="true" />
                     )}
-                    {copyJustSucceeded === "markdown" ? "Copied!" : "Copy Markdown"}
+                    <span className="hidden sm:inline">{copyJustSucceeded === "markdown" ? "Copied!" : "Copy Markdown"}</span>
                   </button>
                   <button
                     type="button"
                     onClick={copyJson}
                     aria-live="polite"
-                    className="flex h-10 items-center gap-2 rounded-md border border-input bg-[#fbfcfa] px-3 text-sm font-semibold text-foreground transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                    className="flex h-9 items-center gap-2 rounded-md border border-input bg-input px-2 text-sm font-semibold text-foreground transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:h-10 sm:px-3"
                   >
                     {copyJustSucceeded === "json" ? (
                       <CheckCircle2 className="size-4 text-[#138a72]" aria-hidden="true" />
                     ) : (
                       <Braces className="size-4" aria-hidden="true" />
                     )}
-                    {copyJustSucceeded === "json" ? "Copied!" : "Copy JSON"}
+                    <span className="hidden sm:inline">{copyJustSucceeded === "json" ? "Copied!" : "Copy JSON"}</span>
                   </button>
                   <button
                     type="button"
                     onClick={downloadMarkdownFile}
                     title="Download Markdown file"
-                    className="flex h-10 items-center gap-2 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground/80 transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                    className="flex h-9 items-center gap-1 rounded-md border border-input bg-card px-2 text-sm font-semibold text-foreground/80 transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:h-10 sm:gap-2 sm:px-3"
                   >
                     <Download className="size-4" aria-hidden="true" />
                     .md
@@ -1189,7 +1189,7 @@ export function LaunchWorkspace({
                     type="button"
                     onClick={downloadJsonFile}
                     title="Download JSON file"
-                    className="flex h-10 items-center gap-2 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground/80 transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                    className="flex h-9 items-center gap-1 rounded-md border border-input bg-card px-2 text-sm font-semibold text-foreground/80 transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:h-10 sm:gap-2 sm:px-3"
                   >
                     <Download className="size-4" aria-hidden="true" />
                     .json
