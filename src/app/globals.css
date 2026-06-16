@@ -6,6 +6,9 @@
 }
 
 @theme inline {
+  --animate-fadeInDown: fadeInDown 150ms ease-out both;
+  @keyframes fadeInDown { from { opacity: 0; transform: translateY(-4px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;

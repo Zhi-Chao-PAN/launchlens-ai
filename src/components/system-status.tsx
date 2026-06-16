@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, CloudOff, Cloud, Cpu, AlertTriangle, Loader2 } from "lucide-react";
 
 type Status = {
@@ -18,6 +18,7 @@ export function SystemStatus() {
   const [systemStatus, setSystemStatus] = useState<Status | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -45,12 +46,21 @@ export function SystemStatus() {
     };
   }, []);
 
-  // Close dropdown on Escape (shared event)
+  // Wire Escape + click-outside.
   useEffect(() => {
     if (!isOpen) return;
     const onEscape = () => setIsOpen(false);
+    const onClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
     window.addEventListener("launchlens:escape", onEscape);
-    return () => window.removeEventListener("launchlens:escape", onEscape);
+    window.addEventListener("mousedown", onClickOutside);
+    return () => {
+      window.removeEventListener("launchlens:escape", onEscape);
+      window.removeEventListener("mousedown", onClickOutside);
+    };
   }, [isOpen]);
 
   const dbOk = systemStatus?.dbConfigured ? systemStatus.dbHealthy : null;
@@ -58,13 +68,13 @@ export function SystemStatus() {
   const allOk = (dbOk === true || dbOk === null) && systemStatus?.status === "ok";
 
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        onBlur={() => window.setTimeout(() => setIsOpen(false), 150)}
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen((v) => !v)}
         aria-label="System status"
-        className="flex h-10 items-center gap-2 rounded-md border border-[#d8ded4] bg-white px-3 text-sm text-[#40504a] transition hover:border-[#138a72]"
+        className="flex h-10 items-center gap-2 rounded-md border border-[#d8ded4] bg-white px-3 text-sm text-[#40504a] transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
       >
         {loading ? (
           <Loader2 className="size-4 animate-spin text-[#8e9c93]" aria-hidden="true" />
@@ -80,7 +90,7 @@ export function SystemStatus() {
 
       {isOpen && systemStatus && (
         <div
-          className="absolute right-0 top-12 z-50 w-72 rounded-lg border border-[#d8ded4] bg-white p-4 shadow-lg"
+          className="absolute right-0 top-12 z-50 w-72 origin-top-right rounded-lg border border-[#d8ded4] bg-white p-4 shadow-lg animate-[fadeInDown_150ms_ease-out]"
           role="tooltip"
         >
           <h3 className="mb-3 text-sm font-semibold text-[#17201d]">System status</h3>
