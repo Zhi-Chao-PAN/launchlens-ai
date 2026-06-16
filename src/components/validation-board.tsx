@@ -411,14 +411,33 @@ export function ValidationBoard({
                       </div>
                       <button
                         type="button"
-                        onClick={() =>
+                        onClick={(e) => {
+                          // Find next/previous delete button to move focus after removal
+                          const allDeleteButtons = Array.from(
+                            evidenceListRef.current?.querySelectorAll("button[aria-label^='Remove evidence']") || [],
+                          );
+                          const currentIndex = allDeleteButtons.indexOf(e.currentTarget);
+                          const nextFocusTarget =
+                            allDeleteButtons[currentIndex + 1] ||
+                            allDeleteButtons[currentIndex - 1] ||
+                            evidenceListRef.current;
+
                           updateExperiment(experiment.id, (current) => ({
                             ...current,
                             evidence: current.evidence.filter(
                               (evidence) => evidence.id !== item.id,
                             ),
-                          }))
-                        }
+                          }));
+
+                          setSrEvidenceAnnouncement(`Evidence from ${item.source} removed.`);
+
+                          // Move focus after the DOM updates
+                          requestAnimationFrame(() => {
+                            if (nextFocusTarget instanceof HTMLElement) {
+                              nextFocusTarget.focus();
+                            }
+                          });
+                        }}
                         title="Remove evidence"
                         aria-label={`Remove evidence from ${item.source}`}
                         className="flex size-11 shrink-0 items-center justify-center rounded-md text-[#8b3d28] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d85b3f] focus-visible:ring-offset-1 sm:size-8"
