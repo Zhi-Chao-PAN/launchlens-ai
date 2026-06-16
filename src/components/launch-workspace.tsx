@@ -26,7 +26,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { formatShortcut, useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 import { CloudWorkspaces } from "@/components/cloud-workspaces";
 import { SystemStatus } from "@/components/system-status";
@@ -604,9 +604,23 @@ export function LaunchWorkspace({
                         idea: event.target.value,
                       }))
                     }
+                    onKeyDown={(event) => {
+                      if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && !isGenerating) {
+                        event.preventDefault();
+                        generate();
+                      }
+                    }}
                     rows={5}
-                    className="w-full resize-none rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    placeholder="Describe the product you are validating..."
+                    className="w-full resize-none rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none transition placeholder:text-[#8e9c93] focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
                   />
+                  <p className="mt-1 text-xs text-[#8e9c93]">
+                    Tip: press{" "}
+                    <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1 font-mono">
+                      {formatShortcut({ key: "Enter", meta: true, ctrl: true, description: "", category: "" })}
+                    </kbd>{" "}
+                    to generate.
+                  </p>
                 </label>
 
                 <label className="block">
