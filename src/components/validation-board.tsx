@@ -174,25 +174,25 @@ export function ValidationBoard({
       <span role="status" aria-live="polite" className="sr-only">
         {srEvidenceAnnouncement}
       </span>
-      <div className="flex flex-col gap-4 border-b border-[#edf0ea] p-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 border-b border-[#edf0ea] p-4 sm:gap-4 sm:p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[#fff0eb] text-[#d85b3f]">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-[#fff0eb] text-[#d85b3f] sm:size-9">
             <FlaskConical className="size-4" aria-hidden="true" />
           </span>
           <div>
-            <h2 className="text-base font-semibold text-[#17201d]">
+            <h2 className="text-sm font-semibold text-[#17201d] sm:text-base">
               Validation loop
             </h2>
-            <p className="mt-1 text-sm leading-6 text-[#607069]">
+            <p className="mt-0.5 text-xs leading-5 text-[#607069] sm:mt-1 sm:text-sm sm:leading-6">
               Turn generated assumptions into evidence-backed product decisions.
             </p>
           </div>
         </div>
 
         <div className="flex w-full flex-col gap-2 sm:min-w-[310px] sm:max-w-sm">
-          <div className="grid grid-cols-3 gap-2 text-center text-xs">
-            <div className="rounded-md bg-[#eef0ed] px-3 py-2">
-              <strong className="block text-sm text-[#17201d]">
+          <div className="grid grid-cols-3 gap-1.5 text-center text-xs sm:gap-2">
+            <div className="rounded-md bg-[#eef0ed] px-2 py-1.5 sm:px-3 sm:py-2">
+              <strong className="block text-sm font-semibold text-[#17201d]">
                 {progress.score}%
               </strong>
               progress
@@ -230,7 +230,7 @@ export function ValidationBoard({
         {execution.experiments.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-sm font-semibold text-[#17201d]">No validation experiments yet</p>
-            <p className="mt-1 text-sm leading-6 text-[#607069]">
+            <p className="mt-0.5 text-xs leading-5 text-[#607069] sm:mt-1 sm:text-sm sm:leading-6">
               Generate a workspace to seed starter assumptions, or add new hypotheses once your brief is in place.
             </p>
           </div>
