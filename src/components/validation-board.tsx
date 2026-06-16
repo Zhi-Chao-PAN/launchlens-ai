@@ -546,6 +546,9 @@ export function ValidationBoard({
                     placeholder="What will change because of this evidence?"
                     className="w-full resize-y rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
                   />
+                  <p className="mt-1 text-right text-[11px] leading-4 text-[#8e9c93]">
+                    {experiment.decision.length}/800
+                  </p>
                 </label>
                 <label className="block">
                   <span className="mb-2 block text-xs font-semibold uppercase text-[#607069]">
@@ -564,6 +567,9 @@ export function ValidationBoard({
                     placeholder="What evidence should be collected next?"
                     className="w-full resize-y rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
                   />
+                  <p className="mt-1 text-right text-[11px] leading-4 text-[#8e9c93]">
+                    {experiment.nextAction.length}/800
+                  </p>
                 </label>
               </div>
                 </div>
