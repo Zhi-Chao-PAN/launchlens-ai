@@ -1,6 +1,7 @@
-import { Check, Sparkles } from "lucide-react";
+﻿import { Check, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Disclosure } from "@/components/disclosure";
 
 export const metadata: Metadata = {
   title: "Pricing - LaunchLens AI",
@@ -164,15 +165,9 @@ export default function PricingPage() {
             Pricing questions, answered honestly
           </h2>
           {frequentlyAsked.map((item) => (
-            <details
-              key={item.question}
-              className="rounded-md border border-[#d8ded4] bg-white px-4 py-3 text-sm"
-            >
-              <summary className="cursor-pointer rounded font-semibold text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1">
-                {item.question}
-              </summary>
-              <p className="mt-2 leading-6 text-[#40504a]">{item.answer}</p>
-            </details>
+            <Disclosure key={item.question} title={item.question}>
+              <p>{item.answer}</p>
+            </Disclosure>
           ))}
         </section>
 
@@ -191,4 +186,3 @@ export default function PricingPage() {
     </main>
   );
 }
-
