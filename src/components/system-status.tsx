@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSrAnnounce } from "@/hooks/use-sr-announce";
 import { CheckCircle2, CloudOff, Cloud, Cpu, AlertTriangle, Loader2, RefreshCw, WifiOff } from "lucide-react";
 import { pushOverlay } from "@/lib/launchlens/overlays";
 
@@ -22,7 +23,7 @@ export function SystemStatus() {
   const [fetchState, setFetchState] = useState<FetchState>("loading");
   const [isOpen, setIsOpen] = useState(false);
   const [retrying, setRetrying] = useState(false);
-  const [srAnnouncement, setSrAnnouncement] = useState("");
+  const { announce: setSrAnnouncement, message: srAnnouncement } = useSrAnnounce();
   const containerRef = useRef<HTMLDivElement>(null);
   const pollTimerRef = useRef<number | null>(null);
 
@@ -88,7 +89,7 @@ export function SystemStatus() {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, [fetchStatus]);
+  }, [fetchStatus, setSrAnnouncement]);
 
   async function manualRetry() {
     setRetrying(true);

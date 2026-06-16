@@ -11,6 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import { useSrAnnounce } from "@/hooks/use-sr-announce";
 
 import {
   evaluateExecutionProgress,
@@ -83,7 +84,7 @@ export function ValidationBoard({
   const [draft, setDraft] = useState<EvidenceDraft>(emptyDraft);
   const [draftTouched, setDraftTouched] = useState<{source: boolean; note: boolean}>({ source: false, note: false });
   const [draftSubmitError, setDraftSubmitError] = useState<string>("");
-  const [srEvidenceAnnouncement, setSrEvidenceAnnouncement] = useState("");
+  const { announce: srAnnounce, message: srEvidenceAnnouncement } = useSrAnnounce();
   const evidenceListRef = useRef<HTMLUListElement | null>(null);
   const sourceError = draftTouched.source && draft.source.trim().length < 2 ? "Source needs at least 2 characters." : "";
   const noteError = draftTouched.note && draft.note.trim().length < 8 ? "Observation needs at least 8 characters." : "";
@@ -135,7 +136,7 @@ export function ValidationBoard({
     setDraftTouched({ source: true, note: true });
     if (source.length < 2 || note.length < 8) {
       setDraftSubmitError("Please fill in the source and observation before recording evidence.");
-      setSrEvidenceAnnouncement("Evidence not recorded. Please fill in the source and observation.");
+      srAnnounce("Evidence not recorded. Please fill in the source and observation.");
       return;
     }
     setDraftSubmitError("");
@@ -159,7 +160,7 @@ export function ValidationBoard({
     setDraftSubmitError("");
     const updatedExperiment = execution.experiments.find((e) => e.id === experimentId);
     const count = updatedExperiment ? updatedExperiment.evidence.length + 1 : 1;
-    setSrEvidenceAnnouncement(
+    srAnnounce(
       `Evidence recorded: ${source}. ${count} items total.`,
     );
     setActiveExperimentId("");
@@ -429,7 +430,7 @@ export function ValidationBoard({
                             ),
                           }));
 
-                          setSrEvidenceAnnouncement(`Evidence from ${item.source} removed.`);
+                          srAnnounce(`Evidence from ${item.source} removed.`);
 
                           // Move focus after the DOM updates
                           requestAnimationFrame(() => {

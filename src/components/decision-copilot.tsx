@@ -9,6 +9,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useSrAnnounce } from "@/hooks/use-sr-announce";
 import { Skeleton } from "@/components/skeleton";
 
 import {
@@ -150,7 +151,7 @@ export function DecisionCopilot({
   const [isGenerating, setIsGenerating] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
-  const [srGenerationAnnouncement, setSrGenerationAnnouncement] = useState("");
+  const { announce: setSrGenerationAnnouncement, message: srGenerationAnnouncement } = useSrAnnounce();
   const selectedExperimentId =
     requestedExperimentId &&
     execution.experiments.some(
