@@ -8,7 +8,7 @@ export default async function SignInPage({
   const params = await searchParams;
   
   return (
-    <main id="main-content" className="flex min-h-screen items-center justify-center bg-[#f6f8f4] px-4">
+    <main id="main-content" className="flex min-h-screen animate-[launchlens-fade-in_280ms_ease-out_both] items-center justify-center bg-[#f6f8f4] px-4 motion-reduce:animate-none">
       <form
         action={async (formData: FormData) => {
           "use server";
