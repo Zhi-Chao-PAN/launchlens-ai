@@ -80,8 +80,27 @@ export function OnboardingWizard() {
   useEffect(() => {
     if (!visible) return;
     const onEscape = () => dismiss();
+    // Enter dismisses the tour (unless focus is on a text field/textarea/contenteditable).
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Enter") return;
+      const t = e.target as HTMLElement | null;
+      if (!t) return;
+      const tag = t.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || t.isContentEditable) return;
+      // Let buttons handle their own activation via native click; dismiss after.
+      if (tag === "BUTTON" || t.getAttribute("role") === "button") {
+        // Buttons will fire click on Enter naturally; avoid double-dismiss.
+        return;
+      }
+      e.preventDefault();
+      dismiss();
+    };
     window.addEventListener("launchlens:escape", onEscape);
-    return () => window.removeEventListener("launchlens:escape", onEscape);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("launchlens:escape", onEscape);
+      window.removeEventListener("keydown", onKeyDown);
+    };
   }, [visible]);
 
   function dismiss() {
@@ -154,6 +173,7 @@ export function OnboardingWizard() {
           <button
             type="button"
             onClick={dismiss}
+            autoFocus
             className="inline-flex h-10 items-center justify-center rounded-md bg-[#17201d] px-5 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2"
           >
             Get started
