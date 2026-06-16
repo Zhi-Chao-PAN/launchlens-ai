@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Rocket, Sparkles, Target, UsersRound, HelpCircle, X } from "lucide-react";
+import { registerShortcut } from "@/hooks/use-keyboard-shortcuts";
 
 const STORAGE_KEY = "launchlens-onboarding-dismissed";
 
@@ -51,6 +52,16 @@ export function OnboardingWizard() {
       }, 400);
       return () => window.clearTimeout(timer);
     }
+  }, []);
+
+  // Keyboard shortcut: Ctrl/Cmd+H re-shows the tour from anywhere.
+  useEffect(() => {
+    const unregister = registerShortcut("showTour", () => {
+      localStorage.removeItem(STORAGE_KEY);
+      setVisible(true);
+      window.requestAnimationFrame(() => setMounted(true));
+    });
+    return unregister;
   }, []);
 
   useEffect(() => {

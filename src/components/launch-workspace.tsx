@@ -516,8 +516,8 @@ export function LaunchWorkspace({
               </h1>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3 text-sm">
-            <span className="flex items-center gap-2 rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-[#40504a]">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-sm sm:flex-wrap sm:overflow-visible sm:pb-0">
+            <span className="hidden items-center gap-2 rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-[#40504a] sm:flex">
               <Save className="size-4 text-[#138a72]" aria-hidden="true" />
               {saveLabel}
             </span>
@@ -531,11 +531,11 @@ export function LaunchWorkspace({
               <RotateCcw className="size-4" aria-hidden="true" />
             </button>
             <SystemStatus />
-            <span className="rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-[#40504a]">
+            <span className="hidden rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-[#40504a] md:inline">
               {providerLabel}
             </span>
-            <ReplayTourButton className="hidden sm:inline-flex" />
-            <span className="hidden rounded-md bg-[#f6df8f] px-3 py-2 font-medium text-[#493b08] sm:inline-flex">
+            <ReplayTourButton />
+            <span className="hidden rounded-md bg-[#f6df8f] px-3 py-2 font-medium text-[#493b08] md:inline-flex">
               Portfolio-ready build
             </span>
             <a

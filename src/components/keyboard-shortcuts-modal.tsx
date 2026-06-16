@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 
 import {
@@ -11,14 +11,25 @@ import {
 
 export function KeyboardShortcutsModal() {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const shortcuts = getShortcutList();
+  const isOpenRef = useRef(isOpen);
+  useEffect(() => { isOpenRef.current = isOpen; }, [isOpen]);
+
+  function openModal() {
+    setIsOpen(true);
+    window.requestAnimationFrame(() => setMounted(true));
+  }
+  function closeModal() {
+    setMounted(false);
+    window.setTimeout(() => setIsOpen(false), 220);
+  }
 
   useEffect(() => {
-    const unregister = registerShortcut(
-      "toggleShortcuts",
-      () => setIsOpen((v) => !v),
-      true,
-    );
+    const unregister = registerShortcut("toggleShortcuts", () => {
+      if (isOpenRef.current) closeModal();
+      else openModal();
+    }, true);
     return unregister;
   }, []);
 
@@ -26,7 +37,7 @@ export function KeyboardShortcutsModal() {
   // the shortcuts modal consistently with toasts and other overlays.
   useEffect(() => {
     if (!isOpen) return;
-    const onEscape = () => setIsOpen(false);
+    const onEscape = () => closeModal();
     window.addEventListener("launchlens:escape", onEscape);
     return () => window.removeEventListener("launchlens:escape", onEscape);
   }, [isOpen]);
@@ -45,23 +56,31 @@ export function KeyboardShortcutsModal() {
       {/* Floating help button — placed at bottom-left so it does not overlap
           with toasts which appear at bottom-right. */}
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={openModal}
         aria-label="Show keyboard shortcuts"
-        className="fixed bottom-4 left-4 z-40 flex h-8 w-8 items-center justify-center rounded-md border border-[#cfd8d1] bg-white/90 text-xs font-medium text-[#607069] shadow-sm backdrop-blur transition hover:bg-white hover:text-[#17201d] focus:outline-none focus:ring-2 focus:ring-[#138a72] focus:ring-offset-1"
+        className="fixed bottom-4 left-4 z-40 flex h-9 w-9 items-center justify-center rounded-full border border-[#cfd8d1] bg-white/90 text-sm font-semibold text-[#40504a] shadow-sm backdrop-blur transition hover:border-[#138a72] hover:text-[#138a72] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
       >
         ?
       </button>
 
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
-          onClick={() => setIsOpen(false)}
+          className={[
+            "fixed inset-0 z-50 flex items-center justify-center p-4",
+            mounted ? "bg-black/40 backdrop-blur-sm" : "bg-black/0 backdrop-blur-none",
+            "motion-safe:transition-[background-color,backdrop-filter] motion-safe:duration-200 motion-safe:ease-out",
+          ].join(" ")}
+          onClick={closeModal}
           role="dialog"
           aria-modal="true"
           aria-labelledby="shortcuts-title"
         >
           <div
-            className="w-full max-w-md rounded-lg bg-white shadow-xl"
+            className={[
+              "w-full max-w-md rounded-lg border border-[#d8ded4] bg-white shadow-xl",
+              mounted ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-2",
+              "motion-safe:transition-all motion-safe:duration-200 motion-safe:ease-out",
+            ].join(" ")}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-[#d8ded4] px-6 py-4">
@@ -73,7 +92,7 @@ export function KeyboardShortcutsModal() {
               </h2>
               <button
                 type="button"
-                onClick={() => setIsOpen(false)}
+                onClick={closeModal}
                 aria-label="Close shortcuts"
                 className="text-[#8e9c93] transition hover:text-[#17201d]"
               >
@@ -112,11 +131,7 @@ export function KeyboardShortcutsModal() {
             </div>
 
             <div className="border-t border-[#d8ded4] px-6 py-3 text-xs text-[#607069]">
-              Press{" "}
-              <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1.5 py-0.5 font-mono text-[#17201d]">
-                {formatShortcut({ key: "?", shift: true, description: "", category: "" })}
-              </kbd>{" "}
-              to open this panel. Press{" "}
+              Press <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1.5 py-0.5 font-mono text-[#17201d]">?</kbd> or <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1.5 py-0.5 font-mono text-[#17201d]">/</kbd> to open this panel. Press{" "}
               <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1.5 py-0.5 font-mono text-[#17201d]">
                 Esc
               </kbd>{" "}

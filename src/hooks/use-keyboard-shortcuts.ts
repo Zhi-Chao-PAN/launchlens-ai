@@ -67,6 +67,13 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     description: "Reset workspace to initial example",
     category: "Actions",
   },
+  showTour: {
+    key: "h",
+    meta: true,
+    ctrl: true,
+    description: "Replay the quick start tour",
+    category: "Help",
+  },
 };
 
 export type ShortcutId = keyof typeof SHORTCUTS;
@@ -128,7 +135,7 @@ export function matchesConfig(event: KeyboardEvent, config: ShortcutConfig) {
 
   // If no meta/ctrl modifier is required, do NOT trigger when modifiers are pressed
   // (to avoid conflicting with browser shortcuts like Cmd+T)
-  const letterKey = /^[a-z?\]]$/i.test(config.key);
+  const letterKey = /^[a-z?\/\]]$/i.test(config.key);
   if (letterKey && !metaRequired && !ctrlRequired) {
     if (event.metaKey || event.ctrlKey || event.altKey) {
       return false;
@@ -185,8 +192,16 @@ function initGlobalListener() {
       window.dispatchEvent(new CustomEvent("launchlens:escape"));
     }
 
-    for (const [, entry] of registry) {
-      if (matchesConfig(event, entry)) {
+    // Special case: "?" (shift+/) should also fire when "/" is pressed alone,
+    // matching GitHub/Linear convention where "/" opens the command palette/help.
+    const isSlashForShortcutsHelp =
+      event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey;
+
+    for (const [id, entry] of registry) {
+      const matches =
+        matchesConfig(event, entry) ||
+        (isSlashForShortcutsHelp && id === "toggleShortcuts");
+      if (matches) {
         event.preventDefault();
         entry.handler(event);
         break;
