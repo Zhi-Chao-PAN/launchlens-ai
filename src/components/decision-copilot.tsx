@@ -354,7 +354,7 @@ export function DecisionCopilot({
         </div>
 
         {isGenerating ? (
-          <div className="flex min-h-64 flex-col items-center justify-center rounded-md border border-dashed border-[#cfd8d1] bg-[#fbfcfa] p-8 text-center" role="status" aria-live="polite">
+          <div className="flex min-h-64 flex-col items-center justify-center rounded-md border border-dashed border-[#cfd8d1] bg-[#fbfcfa] p-8 text-center" role="status" aria-live="polite" aria-busy="true">
             <BrainCircuit className="mx-auto size-8 animate-pulse text-[#8378aa]" aria-hidden="true" />
             <h3 className="mt-3 text-base font-semibold text-[#17201d]">Synthesizing evidence</h3>
             <p className="mt-2 max-w-md text-sm leading-6 text-[#607069]">
