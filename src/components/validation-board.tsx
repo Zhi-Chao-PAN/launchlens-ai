@@ -20,6 +20,7 @@ import {
   evaluateExecutionProgress,
   taskIdentity,
   type EvidenceSignal,
+  type ValidationEvidence,
   type ValidationExperiment,
   type WorkspaceExecutionState,
 } from "@/lib/launchlens/execution";
@@ -90,6 +91,7 @@ export function ValidationBoard({
   const { announce: srAnnounce, message: srEvidenceAnnouncement } = useSrAnnounce();
   const evidenceListRef = useRef<HTMLUListElement | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [recentlyDeleted, setRecentlyDeleted] = useState<{ experimentId: string; evidence: ValidationEvidence; index: number } | null>(null);
   const [editingEvidenceId, setEditingEvidenceId] = useState<string | null>(null);
   const sourceError = draftTouched.source && draft.source.trim().length < 2 ? "Source needs at least 2 characters." : "";
   const noteError = draftTouched.note && draft.note.trim().length < 8 ? "Observation needs at least 8 characters." : "";
@@ -165,6 +167,83 @@ export function ValidationBoard({
       srAnnounce("Evidence moved " + direction + ": " + evidence.source + ".");
     }
   }
+
+  function deleteEvidence(experimentId: string, evidenceId: string) {
+    const experiment = execution.experiments.find((e) => e.id === experimentId);
+    if (!experiment) return;
+    const idx = experiment.evidence.findIndex((e) => e.id === evidenceId);
+    if (idx === -1) return;
+    const evidence = experiment.evidence[idx];
+    setRecentlyDeleted({ experimentId, evidence, index: idx });
+    const allDeleteButtons = Array.from(
+      evidenceListRef.current?.querySelectorAll("button[data-delete-confirm]") || [],
+    );
+    const deleteBtn = evidenceListRef.current?.querySelector(
+      "[data-evidence-id=" + evidenceId + "] [data-delete-confirm]",
+    );
+    const currentIndex = deleteBtn ? allDeleteButtons.indexOf(deleteBtn) : -1;
+    const nextFocusTarget =
+      allDeleteButtons[currentIndex + 1] ||
+      allDeleteButtons[currentIndex - 1] ||
+      evidenceListRef.current;
+    updateExperiment(experimentId, (exp) => ({
+      ...exp,
+      evidence: exp.evidence.filter((e) => e.id !== evidenceId),
+    }));
+    srAnnounce("Evidence from " + evidence.source + " removed. Press Ctrl+Z to undo.");
+    setPendingDeleteId(null);
+    requestAnimationFrame(() => {
+      if (nextFocusTarget instanceof HTMLElement) {
+        nextFocusTarget.focus();
+      }
+    });
+  }
+
+  function undoDeleteEvidence() {
+    if (!recentlyDeleted) return;
+    const { experimentId, evidence, index } = recentlyDeleted;
+    updateExperiment(experimentId, (exp) => {
+      const next = [...exp.evidence];
+      next.splice(index, 0, evidence);
+      return { ...exp, evidence: next };
+    });
+    srAnnounce("Evidence from " + evidence.source + " restored.");
+    setRecentlyDeleted(null);
+  }
+
+  function handleEvidenceKeyDown(e: React.KeyboardEvent<HTMLUListElement>) {
+    const target = e.currentTarget;
+    const items = Array.from(target.querySelectorAll("[data-evidence-id]"));
+    if (items.length === 0) return;
+
+    const active = document.activeElement;
+    let currentIdx = -1;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].contains(active)) {
+        currentIdx = i;
+        break;
+      }
+    }
+
+    if (e.key === "ArrowUp" && currentIdx > 0) {
+      e.preventDefault();
+      const prev = items[currentIdx - 1] as HTMLElement;
+      const focusable = prev.querySelector("button");
+      focusable?.focus();
+    } else if (e.key === "ArrowDown" && currentIdx < items.length - 1) {
+      e.preventDefault();
+      const next = items[currentIdx + 1] as HTMLElement;
+      const focusable = next.querySelector("button");
+      focusable?.focus();
+    } else if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+      if (recentlyDeleted) {
+        e.preventDefault();
+        undoDeleteEvidence();
+      }
+    }
+  }
+
+
 
   function addEvidence(
     event: React.FormEvent<HTMLFormElement>,
@@ -422,7 +501,7 @@ export function ValidationBoard({
               </div>
 
               {experiment.evidence.length > 0 ? (
-                <ul ref={evidenceListRef} tabIndex={-1} aria-label="Evidence items" className="mt-4 divide-y divide-card rounded-md bg-muted px-4 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1">
+                <ul ref={evidenceListRef} tabIndex={-1} aria-label="Evidence items" onKeyDown={handleEvidenceKeyDown} className="mt-4 divide-y divide-card rounded-md bg-muted px-4 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1">
                   {experiment.evidence.map((item) => (
                     <li
                       key={item.id}
@@ -485,33 +564,7 @@ export function ValidationBoard({
                         <div className="flex items-center gap-1">
                           <button
                             type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const allDeleteButtons = Array.from(
-                                evidenceListRef.current?.querySelectorAll("button[data-delete-confirm]") || [],
-                              );
-                              const currentIndex = allDeleteButtons.indexOf(e.currentTarget);
-                              const nextFocusTarget =
-                                allDeleteButtons[currentIndex + 1] ||
-                                allDeleteButtons[currentIndex - 1] ||
-                                evidenceListRef.current;
-
-                              updateExperiment(experiment.id, (current) => ({
-                                ...current,
-                                evidence: current.evidence.filter(
-                                  (evidence) => evidence.id !== item.id,
-                                ),
-                              }));
-
-                              srAnnounce(`Evidence from ${item.source} removed.`);
-                              setPendingDeleteId(null);
-
-                              requestAnimationFrame(() => {
-                                if (nextFocusTarget instanceof HTMLElement) {
-                                  nextFocusTarget.focus();
-                                }
-                              });
-                            }}
+                            onClick={() => deleteEvidence(experiment.id, item.id)}
                             data-delete-confirm
                             title="Confirm delete"
                             aria-label={`Confirm delete evidence from ${item.source}`}
