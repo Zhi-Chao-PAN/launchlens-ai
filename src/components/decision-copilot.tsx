@@ -8,7 +8,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
 import { Skeleton } from "@/components/skeleton";
 
@@ -149,6 +149,9 @@ export function DecisionCopilot({
   );
   const [requestedExperimentId, setRequestedExperimentId] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [revealStep, setRevealStep] = useState(0);
+  const revealTimerRef = useRef<number | null>(null);
+  const lastBriefIdRef = useRef<string | null>(null);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const { announce: setSrGenerationAnnouncement, message: srGenerationAnnouncement } = useSrAnnounce();
@@ -250,6 +253,32 @@ export function DecisionCopilot({
       setIsGenerating(false);
     }
   }
+
+
+  // Staggered reveal animation when a new brief finishes generating
+  useEffect(() => {
+    const briefId =
+      currentBrief && experiment ? currentBrief.headline + experiment.id : null;
+    if (briefId && briefId !== lastBriefIdRef.current && !isGenerating) {
+      lastBriefIdRef.current = briefId;
+      setRevealStep(0);
+      const totalSteps = 4;
+      let step = 0;
+      const tick = () => {
+        step += 1;
+        setRevealStep(step);
+        if (step < totalSteps) {
+          revealTimerRef.current = window.setTimeout(tick, 120);
+        }
+      };
+      revealTimerRef.current = window.setTimeout(tick, 80);
+    }
+    return () => {
+      if (revealTimerRef.current) {
+        window.clearTimeout(revealTimerRef.current);
+      }
+    };
+  }, [currentBrief, experiment, isGenerating]);
 
   return (
     <section className="rounded-lg border border-[#d8ded4] bg-white shadow-sm">
@@ -404,7 +433,11 @@ export function DecisionCopilot({
           </div>
         ) : currentBrief && experiment ? (
           <article className="min-w-0 motion-safe:animate-[launchlens-fade-in-up_260ms_ease-out_both]">
-            <div className="flex flex-wrap items-center gap-2">
+            <div
+              className={`flex flex-wrap items-center gap-2 transition-opacity duration-300 ${
+                revealStep >= 1 ? "opacity-100" : "opacity-0"
+              }`}
+            >
               <span
                 className={`rounded-md px-2 py-1 text-xs font-semibold ${recommendationClass(currentBrief.recommendation)}`}
               >
@@ -417,10 +450,18 @@ export function DecisionCopilot({
                 {currentBrief.provider} | {citationCount} cited
               </span>
             </div>
-            <h3 className="mt-3 text-xl font-semibold leading-8 text-[#17201d]">
+            <h3
+              className={`mt-3 text-xl font-semibold leading-8 text-[#17201d] transition-opacity duration-300 ${
+                revealStep >= 2 ? "opacity-100" : "opacity-0"
+              }`}
+            >
               {currentBrief.headline}
             </h3>
-            <div className="mt-5 grid gap-5 md:grid-cols-2">
+            <div
+              className={`mt-5 grid gap-5 transition-opacity duration-300 md:grid-cols-2 ${
+                revealStep >= 3 ? "opacity-100" : "opacity-0"
+              }`}
+            >
               <ClaimList claims={currentBrief.claims} experiment={experiment} />
               <TextList
                 title="Unresolved risks"
