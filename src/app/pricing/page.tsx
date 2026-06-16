@@ -83,7 +83,7 @@ const frequentlyAsked = [
 
 export default function PricingPage() {
   return (
-    <main id="main-content" className="min-h-screen bg-[#f6f8f4] text-[#17201d]">
+    <main id="main-content" className="min-h-screen animate-[launchlens-fade-in_280ms_ease-out_both] bg-[#f6f8f4] text-[#17201d] motion-reduce:animate-none">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-4 py-12 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-3">
           <span className="inline-flex w-fit items-center gap-2 rounded-md bg-[#f6df8f] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#493b08]">

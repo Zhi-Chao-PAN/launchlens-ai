@@ -501,7 +501,7 @@ export function LaunchWorkspace({
   return (
     <main id="main-content"
       aria-busy={isGenerating}
-      className="min-h-screen bg-[#f6f8f4] text-[#17201d]"
+      className="min-h-screen animate-[launchlens-fade-in_280ms_ease-out_both] bg-[#f6f8f4] text-[#17201d] motion-reduce:animate-none"
     >
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-4 border-b border-[#d8ded4] pb-5 lg:flex-row lg:items-center lg:justify-between">
