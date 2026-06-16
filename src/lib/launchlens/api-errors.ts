@@ -53,6 +53,8 @@ export const API_ERROR_MESSAGES: Record<string, string> = {
 
   decision_no_evidence:
     "Add at least one evidence note before generating a decision brief.",
+  decision_invalid_response:
+    "The decision brief returned by the provider could not be parsed. Please retry.",
 
   invalid_workspace_id: "That workspace could not be found.",
   workspace_forbidden: "You do not have access to that workspace.",

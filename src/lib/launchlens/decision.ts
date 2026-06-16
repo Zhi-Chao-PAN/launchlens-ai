@@ -282,6 +282,7 @@ export function normalizeDecisionBrief(
   value: unknown,
   source: DecisionSource,
 ): DecisionBrief | null {
+  try {
   if (!isRecord(value)) {
     return null;
   }
@@ -390,6 +391,9 @@ export function normalizeDecisionBrief(
     unresolvedRisks,
     nextActions,
   };
+  } catch {
+    return null;
+  }
 }
 
 function recommendationFor(source: DecisionSource): DecisionRecommendation {

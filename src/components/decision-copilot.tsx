@@ -208,13 +208,17 @@ export function DecisionCopilot({
         code?: string;
       };
       const brief = data.brief ? normalizeDecisionBrief(data.brief, source) : null;
+      const briefInvalid = data.brief && !brief;
 
       if (!response.ok || data.error || !brief) {
         const fallback =
           response.status === 429
             ? "Too many decision requests - wait a moment and retry."
-            : "Decision brief generation failed.";
-        throw new Error(friendlyApiMessage(data.code, data.error ?? fallback));
+            : briefInvalid
+              ? "The decision brief returned by the provider could not be parsed. Please retry."
+              : "Decision brief generation failed.";
+        const errorCode = briefInvalid ? "decision_invalid_response" : data.code;
+        throw new Error(friendlyApiMessage(errorCode, data.error ?? fallback));
       }
 
       saveBrief(experiment.id, brief);
