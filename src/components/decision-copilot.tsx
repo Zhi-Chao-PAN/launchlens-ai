@@ -99,7 +99,7 @@ function ClaimList({
       <h3 className="text-xs font-semibold uppercase text-[#607069]">
         Grounded claims
       </h3>
-      <ul className="mt-2 space-y-3">
+      <ul aria-label="Evidence-grounded claims" className="mt-2 space-y-3">
         {claims.map((claim, index) => {
           const sources = claim.evidenceIds
             .map(
@@ -111,7 +111,10 @@ function ClaimList({
           return (
             <li
               key={`${claim.text}-${index}`}
-              className="rounded-md bg-[#f6f8f4] p-3"
+              role="group"
+              tabIndex={0}
+              aria-label={`${claim.stance} claim: ${claim.text}. ${claim.evidenceIds.length} citation${claim.evidenceIds.length === 1 ? "" : "s"} from ${sources.join(", ")}.`}
+              className="rounded-md bg-[#f6f8f4] p-3 outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-md bg-white px-2 py-1 text-xs font-semibold capitalize text-[#40504a]">
