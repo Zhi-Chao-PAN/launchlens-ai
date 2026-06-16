@@ -82,7 +82,23 @@ export function CloudWorkspaces({
   const [recoveryKey, setRecoveryKey] = useState("");
   const [showRecoveryKey, setShowRecoveryKey] = useState(false);
   const [listRenderKey, setListRenderKey] = useState(0);
+  const [recoveryTouched, setRecoveryTouched] = useState(false);
   const { showToast } = useToast();
+
+  const trimmedLabel = recoveryLabel.trim();
+  const trimmedKey = recoveryKey.trim();
+  const labelError =
+    !trimmedLabel
+      ? "Enter the handle you used when you first saved the key."
+      : trimmedLabel.length > 160
+        ? "Handle is too long (max 160 characters)."
+        : "";
+  const keyError = !recoveryKey
+    ? "Enter or generate your recovery key."
+    : !/^[A-Za-z0-9_-]{24,128}$/.test(trimmedKey)
+      ? "Key does not look like a valid LaunchLens recovery key."
+      : "";
+  const recoveryReady = !labelError && !keyError && trimmedLabel && trimmedKey;
 
   async function cloudRequest<T>(path: string, init?: RequestInit) {
     const headers = new Headers(init?.headers);
@@ -310,11 +326,15 @@ export function CloudWorkspaces({
   }
 
   async function linkRecoveryOwner() {
+    if (!recoveryReady) {
+      setRecoveryTouched(true);
+      return;
+    }
     setBusyAction("recovery");
     try {
       const recoveryOwnerToken = await deriveRecoveryOwnerToken(
-        recoveryLabel,
-        recoveryKey,
+        trimmedLabel,
+        trimmedKey,
       );
       await cloudRequest<{ migrated: number }>("/api/workspaces/recovery", {
         method: "POST",
@@ -322,32 +342,50 @@ export function CloudWorkspaces({
       });
 
       localStorage.setItem(OWNER_TOKEN_KEY, recoveryOwnerToken);
-      localStorage.setItem(RECOVERY_LABEL_KEY, recoveryLabel.trim());
+      localStorage.setItem(RECOVERY_LABEL_KEY, trimmedLabel);
       setOwnerToken(recoveryOwnerToken);
+      setRecoveryTouched(false);
       showToast("Cloud history linked to your recovery key.", "success");
       await refresh(recoveryOwnerToken);
-    } catch {
-      showToast("Recovery failed - check your handle and recovery key.", "error");
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : "";
+      if (message === "invalid_recovery_input") {
+        setRecoveryTouched(true);
+        showToast("Recovery details don't look right - double-check handle and key.", "error");
+      } else {
+        showToast("Recovery failed - check your handle and recovery key.", "error");
+      }
     } finally {
       setBusyAction("");
     }
   }
 
   async function recoverOwner() {
+    if (!recoveryReady) {
+      setRecoveryTouched(true);
+      return;
+    }
     setBusyAction("recovery");
     try {
       const recoveryOwnerToken = await deriveRecoveryOwnerToken(
-        recoveryLabel,
-        recoveryKey,
+        trimmedLabel,
+        trimmedKey,
       );
 
       localStorage.setItem(OWNER_TOKEN_KEY, recoveryOwnerToken);
-      localStorage.setItem(RECOVERY_LABEL_KEY, recoveryLabel.trim());
+      localStorage.setItem(RECOVERY_LABEL_KEY, trimmedLabel);
       setOwnerToken(recoveryOwnerToken);
+      setRecoveryTouched(false);
       showToast("Recovery key loaded - cloud history restored.", "success");
       await refresh(recoveryOwnerToken);
-    } catch {
-      showToast("Recovery failed - check your handle and recovery key.", "error");
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : "";
+      if (message === "invalid_recovery_input") {
+        setRecoveryTouched(true);
+        showToast("Recovery details don't look right - double-check handle and key.", "error");
+      } else {
+        showToast("Recovery failed - check your handle and recovery key.", "error");
+      }
     } finally {
       setBusyAction("");
     }
@@ -457,7 +495,7 @@ export function CloudWorkspaces({
               </h3>
               <p className="mt-1 text-xs leading-5 text-[#607069]">
                 Save this key privately. Possession grants access to cloud
-                history.
+                history. Use <strong>Link history</strong> on the device that created the account and <strong>Recover</strong> on a new device.
               </p>
               <div className="mt-3 grid min-w-0 gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
                 <label className="block min-w-0">
@@ -466,10 +504,20 @@ export function CloudWorkspaces({
                   </span>
                   <input
                     value={recoveryLabel}
-                    onChange={(event) => setRecoveryLabel(event.target.value)}
+                    onChange={(event) => { setRecoveryLabel(event.target.value); if (recoveryTouched) setRecoveryTouched(true); }}
+                    onBlur={() => setRecoveryTouched(true)}
                     placeholder="founder@example.com"
-                    className="h-10 w-full rounded-md border border-[#cfd8d1] bg-white px-3 text-sm text-[#17201d] outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    aria-invalid={recoveryTouched && !!labelError}
+                    aria-describedby={recoveryTouched && labelError ? "recovery-label-error" : undefined}
+                    className={`h-10 w-full rounded-md border bg-white px-3 text-sm text-[#17201d] outline-none ${
+                      recoveryTouched && labelError
+                        ? "border-[#d85b3f] focus:border-[#d85b3f] focus:ring-2 focus:ring-[#f2d4c8]"
+                        : "border-[#cfd8d1] focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    }`}
                   />
+                  {recoveryTouched && labelError && (
+                    <p id="recovery-label-error" role="alert" className="mt-1 text-[11px] leading-4 text-[#b84a31]">{labelError}</p>
+                  )}
                 </label>
                 <div className="min-w-0">
                   <span className="mb-1 block text-xs font-semibold uppercase text-[#607069]">
@@ -482,8 +530,15 @@ export function CloudWorkspaces({
                       autoComplete="off"
                       spellCheck={false}
                       value={recoveryKey}
-                      onChange={(event) => setRecoveryKey(event.target.value)}
-                      className="h-10 min-w-0 flex-1 rounded-md border border-[#cfd8d1] bg-white px-3 font-mono text-sm text-[#17201d] outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                      onChange={(event) => { setRecoveryKey(event.target.value); if (recoveryTouched) setRecoveryTouched(true); }}
+                      onBlur={() => setRecoveryTouched(true)}
+                      aria-invalid={recoveryTouched && !!keyError}
+                      aria-describedby={recoveryTouched && keyError ? "recovery-key-error" : undefined}
+                      className={`h-10 min-w-0 flex-1 rounded-md border bg-white px-3 font-mono text-sm text-[#17201d] outline-none ${
+                        recoveryTouched && keyError
+                          ? "border-[#d85b3f] focus:border-[#d85b3f] focus:ring-2 focus:ring-[#f2d4c8]"
+                          : "border-[#cfd8d1] focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                      }`}
                     />
                     <button
                       type="button"
@@ -519,6 +574,9 @@ export function CloudWorkspaces({
                   </div>
                 </div>
               </div>
+              {recoveryTouched && keyError && (
+                <p id="recovery-key-error" role="alert" className="mt-2 text-[11px] leading-4 text-[#b84a31]">{keyError}</p>
+              )}
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
                   type="button"
@@ -532,7 +590,8 @@ export function CloudWorkspaces({
                 <button
                   type="button"
                   onClick={linkRecoveryOwner}
-                  disabled={isBusy || !recoveryLabel || !recoveryKey}
+                  disabled={isBusy || (recoveryTouched ? !recoveryReady : (!recoveryLabel || !recoveryKey))}
+                  aria-disabled={isBusy || (recoveryTouched ? !recoveryReady : (!recoveryLabel || !recoveryKey))}
                   className="h-9 rounded-md bg-[#17201d] px-3 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#89938f]"
                 >
                   Link history
@@ -540,7 +599,8 @@ export function CloudWorkspaces({
                 <button
                   type="button"
                   onClick={recoverOwner}
-                  disabled={isBusy || !recoveryLabel || !recoveryKey}
+                  disabled={isBusy || (recoveryTouched ? !recoveryReady : (!recoveryLabel || !recoveryKey))}
+                  aria-disabled={isBusy || (recoveryTouched ? !recoveryReady : (!recoveryLabel || !recoveryKey))}
                   className="h-9 rounded-md border border-[#cfd8d1] bg-white px-3 text-sm font-semibold text-[#40504a] transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:opacity-50"
                 >
                   Recover
