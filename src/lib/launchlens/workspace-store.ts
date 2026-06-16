@@ -676,7 +676,12 @@ export async function removeWorkspaceMember(
   return Boolean(rows[0]);
 }
 
-export async function getSharedWorkspace(id: string) {
+export type SharedWorkspaceResult =
+  | { status: "ok"; record: ReturnType<typeof toSharedRecord> }
+  | { status: "revoked" }
+  | { status: "not_found" };
+
+export async function getSharedWorkspace(id: string): Promise<SharedWorkspaceResult> {
   const sql = getSql();
   const rows = await sql`
     SELECT
@@ -714,12 +719,14 @@ export async function getSharedWorkspace(id: string) {
       created_at,
       updated_at
     FROM launchlens_workspaces
-    WHERE id = ${id} AND is_public = TRUE
+    WHERE id = ${id}
     LIMIT 1
   `;
   const row = firstRow<SharedWorkspaceRow>(rows);
 
-  return row ? toSharedRecord(row) : null;
+  if (!row) return { status: "not_found" };
+  if (!row.is_public) return { status: "revoked" };
+  return { status: "ok", record: toSharedRecord(row) };
 }
 
 export function resetWorkspaceStoreForTests() {
