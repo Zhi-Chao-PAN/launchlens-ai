@@ -203,6 +203,14 @@ export function ValidationBoard({
       </div>
 
       <div className="divide-y divide-[#edf0ea]">
+        {execution.experiments.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-sm font-semibold text-[#17201d]">No validation experiments yet</p>
+            <p className="mt-1 text-sm leading-6 text-[#607069]">
+              Generate a workspace to seed starter assumptions, or add new hypotheses once your brief is in place.
+            </p>
+          </div>
+        ) : null}
         {execution.experiments.map((experiment, index) => {
           const formOpen = activeExperimentId === experiment.id;
           const expanded = expandedExperimentId === experiment.id;

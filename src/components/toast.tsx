@@ -172,6 +172,27 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     };
   }, [dismissToast, startTimer]);
 
+  // When the tab is backgrounded browsers throttle setTimeout, so toast timers
+  // drift. Pause all running toasts on `visibilitychange` to hidden and resume
+  // them on visible — onPause captures the DOM-computed remaining width so
+  // progress reflects wall-clock time accurately.
+  useEffect(() => {
+    function onVisibility() {
+      if (typeof document === "undefined") return;
+      const snapshot = [...toastsRef.current];
+      for (const t of snapshot) {
+        if (t.leaving) continue;
+        if (document.visibilityState === "hidden") {
+          window.dispatchEvent(new CustomEvent("launchlens:toast-pause", { detail: t.id }));
+        } else {
+          window.dispatchEvent(new CustomEvent("launchlens:toast-resume", { detail: t.id }));
+        }
+      }
+    }
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
+
   useEffect(() => {
     const timers = timersRef.current;
     return () => {

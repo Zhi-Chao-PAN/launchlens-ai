@@ -152,6 +152,18 @@
 - [x] Vitest overlay stack invariants (2 new tests → 152 tests / 37 files passing).
 - [x] All quality gates pass: ESLint (0 warnings), TSC, Vitest (152/37), Next.js production build.
 
+## Continued Quality Iteration (R46-R50, 2026-06-16)
+
+- [x] `not-found.tsx`: fixed undefined `launchlens-fade-in` keyframe (replaced with registered `fadeInDown`), rebranded CTA to green "Open the demo workspace" with ArrowRight icon, added secondary pricing CTA.
+- [x] `error.tsx` (global client error boundary): dev-only `error.message` pre block (hidden in production), rounded-xl card, green primary action, Home icon on "Back to demo", fade-in entrance.
+- [x] Added `shimmer` variant to `<Skeleton>` primitive using the global `launchlens-shimmer` keyframe; route-level `loading.tsx` rebuilt with shimmer skeletons for top bar, sidebar, and three main-column cards; `aria-busy`/`aria-label` for AT.
+- [x] New `DisclosureGroup` component with WAI-ARIA accordion keyboard navigation (Up/Down moves focus between toggles, Home/End jumps to first/last); context-based registration so disclosures can be nested.
+- [x] Pricing FAQ wrapped in `DisclosureGroup` with visible kbd hint (arrow keys); fixed same broken `launchlens-fade-in` class on pricing page.
+- [x] Modal focus-return: `OnboardingWizard` and `KeyboardShortcutsModal` now save the previously-focused element when opening and restore it after the 220ms close animation; shortcuts X button `autoFocus`.
+- [x] Unit coverage expansion: recovery edge cases (invalid chars, 24/23/160/161 boundaries, case-sensitivity, URL-safe output); `generated-time` HH:MM padding + invalid date handling; `visual-regression` identical/size-mismatch/threshold/diff/sample-caps/0x0; `sample-briefs` structure/ids/population.
+- [x] Test suite: **152 -> 164 tests / 37 -> 38 files passing**.
+- [x] All quality gates pass: ESLint (0 warnings), TSC, Vitest (164/38), Next.js production build.
+
 ## Post-Portfolio Enhancements
 
 - [ ] Add optional OAuth/passkey identity for teams that prefer conventional accounts.
