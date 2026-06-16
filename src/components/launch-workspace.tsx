@@ -702,11 +702,15 @@ export function LaunchWorkspace({
                   className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-[#17201d] px-4 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#7c8781]"
                 >
                   {isGenerating ? (
-                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                    <span className="flex items-center gap-1" aria-hidden="true">
+                      <span className="size-1.5 animate-[launchlens-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-white/80 [animation-delay:-0.32s]" />
+                      <span className="size-1.5 animate-[launchlens-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-white/80 [animation-delay:-0.16s]" />
+                      <span className="size-1.5 animate-[launchlens-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-white/80" />
+                    </span>
                   ) : (
                     <Rocket className="size-4" aria-hidden="true" />
                   )}
-                  {isGenerating ? "Generating..." : "Generate workspace"}
+                  {isGenerating ? "Generating" : "Generate workspace"}
                 </button>
               </div>
 
@@ -714,7 +718,7 @@ export function LaunchWorkspace({
                 <div
                   role="status"
                   aria-live="polite"
-                  className="mt-4 rounded-md border border-[#d8ded4] bg-[#fbfcfa] p-3"
+                  className="mt-4 animate-[launchlens-fade-in-up_260ms_ease-out_both] rounded-md border border-[#d8ded4] bg-[#fbfcfa] p-3 motion-reduce:animate-none"
                 >
                   <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#17201d]">
                     <Loader2
@@ -724,11 +728,13 @@ export function LaunchWorkspace({
                     Generating workspace
                   </div>
                   <div className="space-y-2">
-                    {loadingSteps.map((step) => (
-                      <div key={step} className="flex items-center gap-3">
-                        <span className="size-2 rounded-full bg-[#138a72]" />
+                    {loadingSteps.map((step, idx) => (
+                      <div key={step} className="flex items-center gap-3" style={{ animationDelay: `${idx * 60}ms` }}>
+                        <span className="size-2 animate-[launchlens-dot-pulse_1.4s_ease-in-out_infinite] rounded-full bg-[#138a72]" style={{ animationDelay: `${idx * 120}ms` }} />
                         <span className="text-sm text-[#40504a]">{step}</span>
-                        <span className="ml-auto h-2 w-12 animate-pulse rounded-full bg-[#d8ded4]" />
+                        <span className="ml-auto h-2 w-12 overflow-hidden rounded-full bg-[#d8ded4]">
+                          <span className="block h-full w-1/3 rounded-full bg-[#138a72] motion-safe:animate-[launchlens-shimmer_1.4s_ease-in-out_infinite]" style={{ animationDelay: `${idx * 120}ms` }} />
+                        </span>
                       </div>
                     ))}
                   </div>
