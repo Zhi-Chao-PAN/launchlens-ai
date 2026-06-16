@@ -136,7 +136,7 @@ export function SystemStatus() {
     if (fetchState === "error" || !allOk) {
       return <AlertTriangle className="size-4 text-[#d85b3f]" aria-hidden="true" />;
     }
-    return <CheckCircle2 className="size-4 text-[#138a72]" aria-hidden="true" />;
+    return <CheckCircle2 className="size-4 text-accent" aria-hidden="true" />;
   };
 
   const buttonLabel = () => {
@@ -157,7 +157,7 @@ export function SystemStatus() {
         aria-expanded={isOpen}
         onClick={() => setIsOpen((v) => !v)}
         aria-label="System status"
-        className="flex h-10 items-center gap-2 rounded-md border border-card bg-card px-3 text-sm text-foreground/80 transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+        className="flex h-10 items-center gap-2 rounded-md border border-card bg-card px-3 text-sm text-foreground/80 transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
       >
         {buttonIcon()}
         <span className="hidden sm:inline">{buttonLabel()}</span>
@@ -203,7 +203,7 @@ export function SystemStatus() {
                   <Cpu className="size-4" aria-hidden="true" />
                   AI Provider
                 </span>
-                <span className={providerOk ? "text-[#138a72]" : "text-[#8e9c93]"}>
+                <span className={providerOk ? "text-accent" : "text-[#8e9c93]"}>
                   {providerOk ? systemStatus.provider : "Mock demo"}
                 </span>
               </div>
@@ -212,7 +212,7 @@ export function SystemStatus() {
                   {dbOk === null ? (
                     <CloudOff className="size-4 text-[#8e9c93]" aria-hidden="true" />
                   ) : dbOk ? (
-                    <Cloud className="size-4 text-[#138a72]" aria-hidden="true" />
+                    <Cloud className="size-4 text-accent" aria-hidden="true" />
                   ) : (
                     <CloudOff className="size-4 text-[#d85b3f]" aria-hidden="true" />
                   )}
@@ -223,7 +223,7 @@ export function SystemStatus() {
                     dbOk === null
                       ? "text-[#8e9c93]"
                       : dbOk
-                        ? "text-[#138a72]"
+                        ? "text-accent"
                         : "text-[#d85b3f]"
                   }
                 >

@@ -84,4 +84,28 @@ describe("friendlyApiMessage", () => {
     expect(friendlyApiMessage("", "oops")).toBe("oops");
     expect(friendlyApiMessage(null as unknown as string, "oops")).toBe("oops");
   });
+
+  it("every error code constant has a friendly message", () => {
+    const allCodes = Object.entries(errorCodes)
+      .filter(([key]) => key.startsWith("ERROR_"))
+      .map(([, value]) => value);
+    expect(allCodes.length).toBeGreaterThan(0);
+    for (const code of allCodes) {
+      expect(API_ERROR_MESSAGES).toHaveProperty(code);
+      expect(typeof API_ERROR_MESSAGES[code]).toBe("string");
+      expect(API_ERROR_MESSAGES[code].length).toBeGreaterThan(0);
+    }
+  });
+
+  it("friendlyApiMessage returns a non-empty string for every known error code", () => {
+    const allCodes = Object.entries(errorCodes)
+      .filter(([key]) => key.startsWith("ERROR_"))
+      .map(([, value]) => value);
+    for (const code of allCodes) {
+      const msg = friendlyApiMessage(code, "fallback");
+      expect(typeof msg).toBe("string");
+      expect(msg.length).toBeGreaterThan(0);
+      expect(msg).not.toBe("fallback");
+    }
+  });
 });

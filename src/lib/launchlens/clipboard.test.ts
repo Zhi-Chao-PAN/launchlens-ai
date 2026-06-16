@@ -85,4 +85,13 @@ describe("cross-exporter filename parity", () => {
     expect(safeMarkdownFilename({ projectName: "!!!???..." })).toBe("launchlens-workspace.md");
     expect(safeJsonFilename({ projectName: "---___===" })).toBe("launchlens-workspace.json");
   });
+
+  it("handles mixed case and preserves lowercase", () => {
+    expect(safeMarkdownFilename({ projectName: "Hello World 123" })).toBe("hello-world-123.md");
+  });
+
+  it("replaces forward slashes and backslashes with hyphens", () => {
+    expect(safeMarkdownFilename({ projectName: "foo/bar/baz" })).toBe("foo-bar-baz.md");
+    expect(safeJsonFilename({ projectName: "foo/bar/baz" })).toBe("foo-bar-baz.json");
+  });
 });

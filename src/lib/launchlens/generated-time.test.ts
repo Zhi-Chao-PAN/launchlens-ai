@@ -108,4 +108,9 @@ describe("formatRelativeTime", () => {
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
     expect(formatRelativeTime(oneDayAgo)).toBe("1d ago");
   });
+
+  it("is idempotent — calling twice with the same input returns the same result", () => {
+    const ts = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    expect(formatRelativeTime(ts)).toBe(formatRelativeTime(ts));
+  });
 });
