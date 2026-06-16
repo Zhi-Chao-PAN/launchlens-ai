@@ -12,3 +12,9 @@ export function pushOverlay() {
 export function hasOpenOverlay() {
   return overlayCount > 0;
 }
+
+
+/** Test-only helper: reset the overlay counter. Exposed primarily for vitest. */
+export function __resetOverlayStackForTests() {
+  overlayCount = 0;
+}
