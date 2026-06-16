@@ -264,8 +264,13 @@ export function ValidationBoard({
                 </div>
               </div>
 
-              {expanded && (
-                <div id={`experiment-details-${experiment.id}`}>
+              <div
+                id={`experiment-details-${experiment.id}`}
+                className="grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none"
+                style={{ gridTemplateRows: expanded ? "1fr" : "0fr" }}
+                aria-hidden={!expanded}
+              >
+                <div className="min-h-0 overflow-hidden" inert={!expanded}>
               <div className="mt-4 grid gap-4 md:grid-cols-3">
                 <label className="block">
                   <span className="mb-2 block text-xs font-semibold uppercase text-[#607069]">
@@ -513,7 +518,7 @@ export function ValidationBoard({
                 </label>
               </div>
                 </div>
-              )}
+              </div>
             </article>
           );
         })}
