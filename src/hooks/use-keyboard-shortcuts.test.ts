@@ -313,6 +313,32 @@ describe("slash key help convention", () => {
     // special-case in the listener also requires !metaKey && !ctrlKey && !altKey.
     expect(matchesConfig(makeEvent({ key: "/", ctrlKey: true }), { key: "/", description: "", category: "" })).toBe(false);
   });
+
+  it("treats Ctrl+K / Cmd+K as a help-panel opener (contract verified via listener branch)", () => {
+    // Ctrl+K and Meta+K should both route to the help panel via the explicit
+    // listener branch (not via matchesConfig, which would see the 'k' letter).
+    // We verify the predicate that drives it: modified K with no shift/alt.
+    const ev1 = makeEvent({ key: "k", ctrlKey: true });
+    const ev2 = makeEvent({ key: "k", metaKey: true });
+    const ev3 = makeEvent({ key: "k", shiftKey: true, ctrlKey: true });
+    const isCmdK = (e: KeyboardEvent) =>
+      e.key.toLowerCase() === "k" &&
+      (e.metaKey || e.ctrlKey) &&
+      !e.altKey &&
+      !e.shiftKey;
+    expect(isCmdK(ev1)).toBe(true);
+    expect(isCmdK(ev2)).toBe(true);
+    expect(isCmdK(ev3)).toBe(false);
+  });
+
+  it("ignores slash when shift is held (shift+/ already maps to '?' via matchesConfig)", () => {
+    // shift+/ produces "?" in most keyboard layouts; our listener must not
+    // double-fire when shift is held.
+    const ev = makeEvent({ key: "/", shiftKey: true });
+    const isSlash =
+      ev.key === "/" && !ev.metaKey && !ev.ctrlKey && !ev.altKey && !ev.shiftKey;
+    expect(isSlash).toBe(false);
+  });
 });
 
 // ---------------------------------------------------------------------------

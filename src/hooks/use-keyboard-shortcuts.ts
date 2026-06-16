@@ -192,15 +192,18 @@ function initGlobalListener() {
       window.dispatchEvent(new CustomEvent("launchlens:escape"));
     }
 
-    // Special case: "?" (shift+/) should also fire when "/" is pressed alone,
-    // matching GitHub/Linear convention where "/" opens the command palette/help.
+    // Special cases: open shortcuts help on "/" (unshifted, GitHub/Linear convention)
+    // or on Ctrl/Cmd+K (command-palette convention used in Linear, Vercel, Notion, etc.).
     const isSlashForShortcutsHelp =
-      event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey;
+      event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey;
+    const isCmdK =
+      event.key.toLowerCase() === "k" && (event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey;
+    const opensHelp = isSlashForShortcutsHelp || isCmdK;
 
     for (const [id, entry] of registry) {
       const matches =
         matchesConfig(event, entry) ||
-        (isSlashForShortcutsHelp && id === "toggleShortcuts");
+        (opensHelp && id === "toggleShortcuts");
       if (matches) {
         event.preventDefault();
         entry.handler(event);
