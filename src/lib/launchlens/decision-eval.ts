@@ -290,6 +290,16 @@ export function buildDecisionEvalFixture(options: {
   evaluatedAt: string;
   cases: DecisionEvalCase[];
 }): DecisionEvalFixture {
+  if (!options.model || !options.model.trim()) {
+    throw new Error("Decision eval fixture requires a non-empty model label.");
+  }
+  const ts = Date.parse(options.evaluatedAt);
+  if (Number.isNaN(ts)) {
+    throw new Error("Decision eval fixture evaluatedAt must be a valid ISO timestamp.");
+  }
+  if (!Array.isArray(options.cases) || options.cases.length === 0) {
+    throw new Error("Decision eval fixture must include at least one eval case.");
+  }
   return {
     schemaVersion: 1,
     promptVersion: DECISION_PROMPT_VERSION,

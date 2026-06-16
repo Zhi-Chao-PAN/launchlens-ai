@@ -91,3 +91,52 @@ describe("decision eval", () => {
     ).toThrow("configured secret");
   });
 });
+
+
+describe("decision eval edge cases", () => {
+  const source = decisionSourceFromExperiment(
+    exampleWorkspaces[0].execution.experiments[0],
+  );
+
+  it("rejects fixture with an empty cases list", () => {
+    expect(() =>
+      buildDecisionEvalFixture({
+        model: "test-model",
+        evaluatedAt: "2026-06-13T10:00:00.000Z",
+        cases: [],
+      }),
+    ).toThrow();
+  });
+
+  it("rejects fixture when model label is blank", () => {
+    const evalCase = buildDecisionEvalCase(
+      "activation-analyst",
+      source,
+      { brief: buildMockDecisionBrief(source), mode: "demo", usedFallback: false },
+      1,
+    );
+    expect(() =>
+      buildDecisionEvalFixture({
+        model: "",
+        evaluatedAt: "2026-06-13T10:00:00.000Z",
+        cases: [evalCase],
+      }),
+    ).toThrow();
+  });
+
+  it("rejects fixture when evaluatedAt is not a valid ISO timestamp", () => {
+    const evalCase = buildDecisionEvalCase(
+      "activation-analyst",
+      source,
+      { brief: buildMockDecisionBrief(source), mode: "demo", usedFallback: false },
+      1,
+    );
+    expect(() =>
+      buildDecisionEvalFixture({
+        model: "test-model",
+        evaluatedAt: "yesterday",
+        cases: [evalCase],
+      }),
+    ).toThrow();
+  });
+});

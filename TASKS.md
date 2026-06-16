@@ -177,6 +177,19 @@
 - [x] PROJECT_MATURITY.md updated with a "Post-portfolio quality iteration" section narrating the R46-R54 polish pass.
 - [x] All quality gates green: ESLint (0 warnings), TypeScript strict, Vitest 166/166, Next.js production build.
 
+## Accessibility, Export Resilience & Validation Hardening (R64-R68, 2026-06-16)
+
+- [x] `generateMetadata` added to `/share/[id]` route so shared links surface an explicit OG title/description without an extra DB round-trip.
+- [x] New `CopyMarkdownButton` on the shared read-only view: Clipboard API with Promise-based write, `execCommand("copy")` fallback, and a Blob-download-as-`.md` fallback for non-secure contexts. Shift+click forces download directly. Downloaded state uses the copilot purple (`#554a8b` / `#e9e7f7`) to avoid being confused with clipboard-success green.
+- [x] `safeMarkdownFilename` helper exported from `markdown-export.ts` to slugify project headlines into filesystem-safe names (truncated to 60 chars, dashes collapsed, punctuation stripped). Defaults to `launchlens-workspace.md`.
+- [x] Shared-view storage-unavailable screen gained a `CloudOff` icon, friendlier explanatory copy, and a green Back-to-demo CTA so locked-out visitors still have a path forward.
+- [x] New `useFocusTrap` hook (`src/hooks/use-focus-trap.ts`) implements a lightweight Tab/Shift+Tab cycle with `[autofocus]` preference and `inert`-aware candidate filtering. Wired into both the keyboard-shortcuts modal and onboarding wizard with `restoreFocus:false` so the existing animated focus-return logic stays authoritative.
+- [x] Screen-reader generation status added to `launch-workspace.tsx`: an off-screen `aria-live="polite"` region announces "Workspace ready. N audience segments, N execution tasks, N validation hypotheses." on success and reports failure text on error.
+- [x] `evaluateWorkspaceQuality` edge-case coverage extended: invalid backlog priority (P9), too-short task fields, duplicate pain bullets, too-short audience bullets, and the all-empty 0-score case.
+- [x] `buildDecisionEvalFixture` now defensively validates its inputs (non-empty model, ISO timestamp, at least one case) and throws before emitting a malformed fixture; three new edge-case tests cover each guard.
+- [x] Added `smoke:e2e` npm script that runs just the happy-path Playwright spec against the auto-started dev server for faster CI prechecks.
+- [x] Test count **178 tests / 38 files**. All four quality gates green: ESLint 0-warn, tsc strict, Vitest 178/178, Next.js production build.
+
 ## Post-Portfolio Enhancements
 
 - [ ] Add optional OAuth/passkey identity for teams that prefer conventional accounts.
