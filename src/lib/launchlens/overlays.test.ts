@@ -55,3 +55,39 @@ describe("overlay stack ordering", () => {
     expect(hasOpenOverlay()).toBe(false);
   });
 });
+
+describe("overlay stack defensive behavior", () => {
+  it("reset between tests leaves no residue across describe blocks", () => {
+    expect(hasOpenOverlay()).toBe(false);
+  });
+
+  it("popping an already-popped handle is a no-op and does not affect other overlays", () => {
+    const a = pushOverlay();
+    const b = pushOverlay();
+    const c = pushOverlay();
+    a();
+    a(); // double-pop same handle
+    a(); // triple
+    expect(hasOpenOverlay()).toBe(true); // b and c still open
+    b();
+    c();
+    expect(hasOpenOverlay()).toBe(false);
+  });
+
+  it("push returns independent handles that never cross-decrement", () => {
+    const handles = Array.from({ length: 50 }, () => pushOverlay());
+    expect(hasOpenOverlay()).toBe(true);
+    // Pop every even index twice (double-pop)
+    for (let i = 0; i < handles.length; i += 2) {
+      handles[i]();
+      handles[i]();
+    }
+    // Odd-indexed handles should still hold the stack open
+    expect(hasOpenOverlay()).toBe(true);
+    // Pop odd indices once each
+    for (let i = 1; i < handles.length; i += 2) {
+      handles[i]();
+    }
+    expect(hasOpenOverlay()).toBe(false);
+  });
+});
