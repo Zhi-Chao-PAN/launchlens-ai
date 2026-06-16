@@ -1,4 +1,5 @@
-﻿import { signIn } from "@/app/api/auth/[...nextauth]/route";
+﻿import Link from "next/link";
+import { signIn } from "@/app/api/auth/[...nextauth]/route";
 
 export default async function SignInPage({
   searchParams,
@@ -67,10 +68,17 @@ export default async function SignInPage({
 
         <button
           type="submit"
-          className="inline-flex h-10 items-center justify-center rounded-md bg-[#17201d] px-5 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2"
+          className="inline-flex h-10 items-center justify-center rounded-md bg-[#138a72] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
         >
           Sign in
         </button>
+
+        <Link
+          href="/"
+          className="inline-flex h-10 items-center justify-center rounded-md border border-[#cfd8d1] bg-white px-5 text-center text-sm font-semibold text-[#17201d] transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
+        >
+          Back to demo
+        </Link>
 
         <p className="text-xs leading-5 text-[#8e9c93]">
           You can still use the app without signing in. The workspace and
