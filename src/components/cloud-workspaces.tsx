@@ -523,7 +523,7 @@ export function CloudWorkspaces({
                   </span>
                   <input
                     value={recoveryLabel}
-                    onChange={(event) => { setRecoveryLabel(event.target.value); if (recoveryTouched) setRecoveryTouched(true); }}
+                    onChange={(event) => { setRecoveryLabel(event.target.value); }}
                     onBlur={() => setRecoveryTouched(true)}
                     placeholder="founder@example.com"
                     aria-invalid={recoveryTouched && !!labelError}
@@ -549,7 +549,7 @@ export function CloudWorkspaces({
                       autoComplete="off"
                       spellCheck={false}
                       value={recoveryKey}
-                      onChange={(event) => { setRecoveryKey(event.target.value); if (recoveryTouched) setRecoveryTouched(true); }}
+                      onChange={(event) => { setRecoveryKey(event.target.value); }}
                       onBlur={() => setRecoveryTouched(true)}
                       aria-invalid={recoveryTouched && !!keyError}
                       aria-describedby={recoveryTouched && keyError ? "recovery-key-error" : undefined}
@@ -687,7 +687,7 @@ export function CloudWorkspaces({
                   type="button"
                   onClick={() => toggleShare(item)}
                   disabled={isBusy}
-                  title={item.isPublic ? "Disable sharing" : "Copy share link"}
+                  title={item.isPublic ? "Disable sharing" : "Enable sharing"}
                   aria-label={
                     item.isPublic
                       ? `Disable sharing for ${item.title}`
