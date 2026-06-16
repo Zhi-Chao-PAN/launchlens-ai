@@ -47,7 +47,7 @@ export default async function SignInPage({
             autoComplete="username"
             required
             minLength={2}
-            className="rounded-md border border-[#d8ded4] px-3 py-2 text-sm text-[#17201d] placeholder-[#8e9c93] focus:border-[#138a72] focus:outline-none"
+            className="rounded-md border border-[#d8ded4] px-3 py-2 text-sm text-[#17201d] placeholder-[#8e9c93] transition focus:border-[#138a72] focus:outline-none focus:ring-2 focus:ring-[#cbe8df]"
             placeholder="Your handle"
           />
         </label>
@@ -60,7 +60,7 @@ export default async function SignInPage({
             autoComplete="current-password"
             required
             minLength={32}
-            className="rounded-md border border-[#d8ded4] px-3 py-2 text-sm text-[#17201d] placeholder-[#8e9c93] focus:border-[#138a72] focus:outline-none"
+            className="rounded-md border border-[#d8ded4] px-3 py-2 text-sm text-[#17201d] placeholder-[#8e9c93] transition focus:border-[#138a72] focus:outline-none focus:ring-2 focus:ring-[#cbe8df]"
             placeholder="Paste your recovery key"
           />
         </label>
