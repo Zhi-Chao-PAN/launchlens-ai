@@ -444,6 +444,7 @@ export function ValidationBoard({
                           signal: event.target.value as EvidenceSignal,
                         }))
                       }
+                      aria-describedby={`evidence-signal-hint-${experiment.id}`}
                       className="h-10 w-full rounded-md border border-[#cfd8d1] bg-white px-3 text-sm outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
                     >
                       {Object.entries(signalLabels).map(([value, label]) => (
@@ -452,6 +453,9 @@ export function ValidationBoard({
                         </option>
                       ))}
                     </select>
+                    <p id={`evidence-signal-hint-${experiment.id}`} className="sr-only">
+                      Choose the evidence signal strength for this validation finding.
+                    </p>
                   </label>
                   <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
                     <label className="block">
@@ -543,11 +547,12 @@ export function ValidationBoard({
                         decision: event.target.value,
                       }))
                     }
+                    aria-describedby={`decision-count-${experiment.id}`}
                     placeholder="What will change because of this evidence?"
                     className="w-full resize-y rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
                   />
-                  <p className="mt-1 text-right text-[11px] leading-4 text-[#8e9c93]">
-                    {experiment.decision.length}/800
+                  <p id={`decision-count-${experiment.id}`} className="mt-1 text-right text-[11px] leading-4 text-[#8e9c93]">
+                    {experiment.decision.length}/800 characters
                   </p>
                 </label>
                 <label className="block">
@@ -564,11 +569,12 @@ export function ValidationBoard({
                         nextAction: event.target.value,
                       }))
                     }
+                    aria-describedby={`next-action-count-${experiment.id}`}
                     placeholder="What evidence should be collected next?"
                     className="w-full resize-y rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
                   />
-                  <p className="mt-1 text-right text-[11px] leading-4 text-[#8e9c93]">
-                    {experiment.nextAction.length}/800
+                  <p id={`next-action-count-${experiment.id}`} className="mt-1 text-right text-[11px] leading-4 text-[#8e9c93]">
+                    {experiment.nextAction.length}/800 characters
                   </p>
                 </label>
               </div>
