@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CheckCircle2, CloudOff, Cloud, Cpu, AlertTriangle, Loader2, RefreshCw, WifiOff } from "lucide-react";
@@ -22,6 +22,7 @@ export function SystemStatus() {
   const [fetchState, setFetchState] = useState<FetchState>("loading");
   const [isOpen, setIsOpen] = useState(false);
   const [retrying, setRetrying] = useState(false);
+  const [srAnnouncement, setSrAnnouncement] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const pollTimerRef = useRef<number | null>(null);
 
@@ -67,13 +68,16 @@ export function SystemStatus() {
 
     const handleOnline = () => {
       if (!mounted) return;
+      setSrAnnouncement("Network connection restored. Checking system status.");
       setFetchState("loading");
       window.requestAnimationFrame(() => {
         if (mounted) void fetchStatus();
       });
     };
     const handleOffline = () => {
-      if (mounted) setFetchState("offline");
+      if (!mounted) return;
+      setSrAnnouncement("Network connection lost. Showing offline indicator.");
+      setFetchState("offline");
     };
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
@@ -142,6 +146,9 @@ export function SystemStatus() {
 
   return (
     <div className="relative" ref={containerRef}>
+      <span role="status" aria-live="polite" className="sr-only">
+        {srAnnouncement}
+      </span>
       <button
         type="button"
         aria-expanded={isOpen}
