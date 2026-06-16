@@ -163,7 +163,7 @@ export function OnboardingWizard() {
           type="button"
           onClick={dismiss}
           aria-label="Dismiss quick start guide"
-          className="absolute right-3 top-3 flex size-10 items-center justify-center rounded-md text-[#8e9c93] transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+          className="absolute right-3 top-3 flex size-10 items-center justify-center rounded-md text-muted transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
         >
           <X className="size-5" aria-hidden="true" />
         </button>
@@ -177,12 +177,12 @@ export function OnboardingWizard() {
             const Icon = step.icon;
             return (
               <li key={step.title} className="flex items-start gap-3">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#e5f4ef] text-sm font-bold text-[#138a72]">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-signal-supports text-sm font-bold text-accent">
                   {idx + 1}
                 </span>
                 <div className="flex flex-col gap-0.5">
                   <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                    <Icon className="size-4 text-[#138a72]" aria-hidden="true" />
+                    <Icon className="size-4 text-accent" aria-hidden="true" />
                     {step.title}
                   </span>
                   <p className="text-sm leading-5 text-muted">
@@ -198,7 +198,7 @@ export function OnboardingWizard() {
           id="onboarding-hints"
           className="flex flex-col gap-3 border-t border-card pt-4 sm:flex-row sm:items-center sm:justify-between"
         >
-          <p className="text-xs leading-5 text-[#8e9c93]">
+          <p className="text-xs leading-5 text-muted">
             Press <kbd className="rounded border border-input bg-muted px-1 font-mono">Esc</kbd> or <kbd className="rounded border border-input bg-muted px-1 font-mono">Enter</kbd> to dismiss. Press{" "}
             <kbd className="rounded border border-input bg-muted px-1 font-mono">?</kbd> any time for all shortcuts.
           </p>
@@ -206,7 +206,7 @@ export function OnboardingWizard() {
             type="button"
             onClick={dismiss}
             autoFocus
-            className="inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-[#138a72] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
+            className="inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-primary px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
           >
             Get started
           </button>
@@ -237,8 +237,8 @@ export function ReplayTourButton({ className = "" }: { className?: string }) {
       aria-label="Replay quick start tour"
       className={[
         "inline-flex items-center gap-1.5 rounded-md border border-input bg-card px-3 py-1.5 text-xs font-medium text-foreground/80",
-        "transition hover:border-[#138a72] hover:text-[#138a72]",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1",
+        "transition hover:border-accent hover:text-accent",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1",
         className,
       ].join(" ")}
     >

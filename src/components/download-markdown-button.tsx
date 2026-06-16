@@ -44,7 +44,7 @@ export function DownloadMarkdownButton({
         "inline-flex h-10 items-center gap-1.5 rounded-md border px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
         downloaded
           ? "border-[#554a8b] bg-[#e9e7f7] text-[#554a8b] focus-visible:ring-[#cbe8df]"
-          : "border-input bg-card text-foreground hover:border-[#138a72] hover:text-[#138a72] focus-visible:ring-[#cbe8df]",
+          : "border-input bg-card text-foreground hover:border-accent hover:text-accent focus-visible:ring-[#cbe8df]",
         className,
       ].join(" ")}
     >

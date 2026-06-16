@@ -170,12 +170,12 @@ export function Disclosure({ title, children, defaultOpen = false }: DisclosureP
           aria-controls={panelId}
           onClick={toggle}
           onKeyDown={handleKeyDown}
-          className="group flex w-full items-center justify-between gap-3 rounded px-4 py-3 text-left font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+          className="group flex w-full items-center justify-between gap-3 rounded px-4 py-3 text-left font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
         >
           <span>{title}</span>
           <ChevronDown
             aria-hidden="true"
-            className="size-4 shrink-0 text-muted transition-transform duration-200 ease-out motion-reduce:transition-none group-hover:text-[#138a72]"
+            className="size-4 shrink-0 text-muted transition-transform duration-200 ease-out motion-reduce:transition-none group-hover:text-accent"
             style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
           />
         </button>

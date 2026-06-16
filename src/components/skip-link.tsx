@@ -8,7 +8,7 @@ export function SkipLink() {
   return (
     <a
       href="#main-content"
-      className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:z-[100] focus:rounded-md focus:bg-[#138a72] focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#cbe8df]" style={{ top: "calc(0.75rem + env(safe-area-inset-top, 0px))" }}
+      className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--ring-color)]" style={{ top: "calc(0.75rem + env(safe-area-inset-top, 0px))" }}
     >
       Skip to content
     </a>

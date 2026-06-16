@@ -74,7 +74,7 @@ export function KeyboardShortcutsModal() {
       <button
         onClick={openModal}
         aria-label="Show keyboard shortcuts"
-        className="fixed bottom-4 left-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-input bg-card/90 text-base font-semibold text-foreground/80 shadow-sm backdrop-blur transition hover:border-[#138a72] hover:text-[#138a72] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 print:hidden sm:h-9 sm:w-9 sm:text-sm" style={{ paddingBottom: "env(safe-area-inset-bottom, 0)" }}
+        className="fixed bottom-4 left-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-input bg-card/90 text-base font-semibold text-foreground/80 shadow-sm backdrop-blur transition hover:border-accent hover:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 print:hidden sm:h-9 sm:w-9 sm:text-sm" style={{ paddingBottom: "env(safe-area-inset-bottom, 0)" }}
       >
         ?
       </button>
@@ -110,7 +110,7 @@ export function KeyboardShortcutsModal() {
                 type="button"
                 onClick={closeModal}
                 aria-label="Close shortcuts"
-                className="flex size-10 items-center justify-center rounded-md text-[#8e9c93] transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                className="flex size-10 items-center justify-center rounded-md text-muted transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                autoFocus>
                 <X className="size-5" aria-hidden="true" />
               </button>

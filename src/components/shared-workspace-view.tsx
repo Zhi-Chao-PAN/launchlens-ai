@@ -66,9 +66,9 @@ function ReadOnlySection({
           onKeyDown={handleKeyDown}
           aria-expanded={isOpen}
           aria-controls={contentId}
-          className="w-full flex items-center gap-2 p-4 sm:p-5 text-left transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-inset"
+          className="w-full flex items-center gap-2 p-4 sm:p-5 text-left transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
         >
-          <span className="flex size-7 items-center justify-center rounded-md bg-[#e5f4ef] text-[#0f766e] sm:size-8">
+          <span className="flex size-7 items-center justify-center rounded-md bg-signal-supports text-signal-supports sm:size-8">
             <Icon className="size-3.5 sm:size-4" aria-hidden="true" />
           </span>
           <h2 className="flex-1 text-sm sm:text-base font-semibold text-foreground">{title}</h2>
@@ -79,7 +79,7 @@ function ReadOnlySection({
         </button>
       ) : (
         <div className="flex items-center gap-2 p-4 pb-0 sm:p-5 sm:pb-0">
-          <span className="flex size-7 items-center justify-center rounded-md bg-[#e5f4ef] text-[#0f766e] sm:size-8">
+          <span className="flex size-7 items-center justify-center rounded-md bg-signal-supports text-signal-supports sm:size-8">
             <Icon className="size-3.5 sm:size-4" aria-hidden="true" />
           </span>
           <h2 className="text-sm sm:text-base font-semibold text-foreground">{title}</h2>
@@ -108,7 +108,7 @@ function Bullets({ items }: { items: string[] }) {
           className="flex gap-3 text-sm leading-6 text-foreground/80"
         >
           <CheckCircle2
-            className="mt-1 size-4 shrink-0 text-[#138a72]"
+            className="mt-1 size-4 shrink-0 text-accent"
             aria-hidden="true"
           />
           <span>{item}</span>
@@ -134,7 +134,7 @@ export function SharedWorkspaceView({
               <Compass className="size-4 sm:size-5" aria-hidden="true" />
             </span>
             <div>
-              <p className="text-sm font-medium text-[#d85b3f]">
+              <p className="text-sm font-medium text-signal-challenges">
                 LaunchLens AI
               </p>
               <h1 className="text-xl font-semibold">Shared GTM workspace</h1>
@@ -150,7 +150,7 @@ export function SharedWorkspaceView({
             <CopyLinkButton />
             <Link
               href="/"
-              className="inline-flex h-10 items-center gap-1.5 rounded-md bg-[#138a72] px-3 text-sm font-semibold text-white transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
+              className="inline-flex h-10 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-semibold text-white transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
             >
               Open the demo
               <ArrowRight className="size-4" aria-hidden="true" />
@@ -160,7 +160,7 @@ export function SharedWorkspaceView({
 
         <section className="mb-6 rounded-lg border border-card bg-card p-6 shadow-sm">
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
-            <span className="rounded-md bg-[#e5f4ef] px-2 py-1 font-medium text-[#0f766e]">
+            <span className="rounded-md bg-signal-supports px-2 py-1 font-medium text-signal-supports">
               {workspace.provider} provider
             </span>
             <span>Generated {formatGeneratedTime(workspace.generatedAt)}</span>
@@ -198,7 +198,7 @@ export function SharedWorkspaceView({
               {workspace.backlog.map((item, index) => (
                 <article
                   key={`${item.feature}-${index}`}
-                  className="rounded-md border border-card bg-[#fbfcfa] p-4"
+                  className="rounded-md border border-card bg-input p-4"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="text-sm font-semibold">{item.feature}</h3>
@@ -227,7 +227,7 @@ export function SharedWorkspaceView({
               {workspace.tasks.map((task, index) => (
                 <article
                   key={`${task.title}-${index}`}
-                  className="rounded-md border border-card bg-[#fbfcfa] p-4"
+                  className="rounded-md border border-card bg-input p-4"
                 >
                   <h3 className="text-sm font-semibold">{task.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-foreground/80">
@@ -255,7 +255,7 @@ export function SharedWorkspaceView({
                 return (
                   <article key={experiment.id} className="py-4 first:pt-0 last:pb-0">
                     <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <span className="font-mono font-semibold text-[#d85b3f]">
+                      <span className="font-mono font-semibold text-signal-challenges">
                         H{index + 1}
                       </span>
                       <span className="rounded-md bg-muted px-2 py-1 font-semibold capitalize text-foreground/80">
