@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   createContext,
@@ -18,7 +18,6 @@ export type Toast = {
   type: ToastType;
   message: string;
   durationMs?: number;
-  /** True while the toast is playing its exit animation (kept in DOM). */
   leaving?: boolean;
 };
 
@@ -31,13 +30,18 @@ type ToastContextValue = {
 const ToastContext = createContext<ToastContextValue | null>(null);
 
 let toastIdCounter = 0;
-/** Milliseconds for the CSS exit animation before removal from DOM. */
 const TOAST_EXIT_MS = 220;
+
+type TimerState = {
+  handle: number;
+  startedAt: number;
+  waitMs: number;
+  totalMs: number;
+};
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
-  // Per-toast auto-dismiss timers, keyed by toast id ? new toasts never reset old timers.
-  const timersRef = useRef<Map<string, number>>(new Map());
+  const timersRef = useRef<Map<string, TimerState>>(new Map());
   const toastsRef = useRef<Toast[]>([]);
 
   useEffect(() => {
@@ -45,16 +49,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, [toasts]);
 
   const dismissToast = useCallback((id: string) => {
-    // Clear the auto-dismiss timer for this toast.
     const existing = timersRef.current.get(id);
     if (existing) {
-      window.clearTimeout(existing);
+      window.clearTimeout(existing.handle);
       timersRef.current.delete(id);
     }
+    window.dispatchEvent(new CustomEvent("launchlens:toast-dismissing", { detail: id }));
     setToasts((current) => {
       const target = current.find((t) => t.id === id);
       if (!target || target.leaving) return current;
-      // Play exit animation, then remove.
       window.setTimeout(() => {
         setToasts((c) => c.filter((t) => t.id !== id));
       }, TOAST_EXIT_MS);
@@ -62,11 +65,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const scheduleDismiss = useCallback((id: string, durationMs: number) => {
-    const handle = window.setTimeout(() => {
-      dismissToast(id);
-    }, durationMs);
-    timersRef.current.set(id, handle);
+  const startTimer = useCallback((id: string, waitMs: number, totalMs: number) => {
+    const existing = timersRef.current.get(id);
+    if (existing) window.clearTimeout(existing.handle);
+    const handle = window.setTimeout(() => dismissToast(id), waitMs);
+    timersRef.current.set(id, { handle, startedAt: performance.now(), waitMs, totalMs });
   }, [dismissToast]);
 
   const showToast = useCallback(
@@ -74,13 +77,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       const id = `toast-${++toastIdCounter}`;
       setToasts((current) => [...current, { id, type, message, durationMs, leaving: false }]);
       if (durationMs && durationMs > 0) {
-        scheduleDismiss(id, durationMs);
+        startTimer(id, durationMs, durationMs);
       }
     },
-    [scheduleDismiss],
+    [startTimer],
   );
 
-  // Dismiss latest non-leaving toast on Escape key
   useEffect(() => {
     function handleEscape() {
       const current = toastsRef.current;
@@ -95,24 +97,37 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("launchlens:escape", handleEscape);
   }, [dismissToast]);
 
-  // Pause / resume auto-dismiss on hover or focus (per-toast events dispatched from ToastItem).
   useEffect(() => {
     function onPause(e: Event) {
       const id = (e as CustomEvent<string>).detail;
-      const handle = timersRef.current.get(id);
-      if (handle) {
-        window.clearTimeout(handle);
-        timersRef.current.delete(id);
-      }
+      const state = timersRef.current.get(id);
+      if (!state) return;
+      const elapsed = performance.now() - state.startedAt;
+      const remainingMs = Math.max(0, state.waitMs - elapsed);
+      window.clearTimeout(state.handle);
+      timersRef.current.set(id, { ...state, handle: 0, waitMs: remainingMs, startedAt: 0 });
+      window.dispatchEvent(
+        new CustomEvent("launchlens:toast-paused", {
+          detail: { id, remainingMs, totalMs: state.totalMs },
+        }),
+      );
     }
     function onResume(e: Event) {
       const id = (e as CustomEvent<string>).detail;
-      // Only reschedule if toast still exists in state and isn't already leaving.
+      const state = timersRef.current.get(id);
+      if (!state) return;
       const toast = toastsRef.current.find((t) => t.id === id);
       if (!toast || toast.leaving) return;
-      const duration = toast.durationMs ?? 4000;
-      const handle = window.setTimeout(() => dismissToast(id), duration);
-      timersRef.current.set(id, handle);
+      if (state.waitMs <= 0) {
+        dismissToast(id);
+        return;
+      }
+      startTimer(id, state.waitMs, state.totalMs);
+      window.dispatchEvent(
+        new CustomEvent("launchlens:toast-resumed", {
+          detail: { id, remainingMs: state.waitMs, totalMs: state.totalMs },
+        }),
+      );
     }
     window.addEventListener("launchlens:toast-pause", onPause);
     window.addEventListener("launchlens:toast-resume", onResume);
@@ -120,13 +135,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("launchlens:toast-pause", onPause);
       window.removeEventListener("launchlens:toast-resume", onResume);
     };
-  }, [dismissToast]);
+  }, [dismissToast, startTimer]);
 
-  // Cleanup all timers on unmount.
   useEffect(() => {
     const timers = timersRef.current;
     return () => {
-      timers.forEach((h) => window.clearTimeout(h));
+      timers.forEach((s) => window.clearTimeout(s.handle));
       timers.clear();
     };
   }, []);
@@ -165,17 +179,103 @@ function ToastContainer() {
   );
 }
 
-function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
-  // Animate in on mount (respects prefers-reduced-motion via motion-safe:).
+
+﻿function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
   const [entered, setEntered] = useState(false);
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => setEntered(true));
-    return () => window.cancelAnimationFrame(frame);
-  }, []);
+  /** Width percentage of the progress bar fill (100 = full time left, 0 = done). */
+  const [widthPct, setWidthPct] = useState(100);
+  /** Transition duration in ms for the current shrink phase; 0 means no transition (snap). */
+  const [transitionMs, setTransitionMs] = useState(0);
+  const barInnerRef = useRef<HTMLDivElement | null>(null);
+  const shrinkRafRef = useRef<number | null>(null);
+
   const visible = entered && !toast.leaving;
-  // Pause auto-dismiss while the user hovers or focuses the toast.
-  const handlePause = () => window.dispatchEvent(new CustomEvent("launchlens:toast-pause", { detail: toast.id }));
-  const handleResume = () => window.dispatchEvent(new CustomEvent("launchlens:toast-resume", { detail: toast.id }));
+  const totalMs = toast.durationMs ?? 4000;
+
+  /** Begin shrinking from currentWidth% to 0% over durationMs using a CSS transition. */
+  const beginShrink = useCallback((fromPct: number, durationMs: number) => {
+    if (shrinkRafRef.current != null) {
+      window.cancelAnimationFrame(shrinkRafRef.current);
+      shrinkRafRef.current = null;
+    }
+    // Snap without transition first, then enable transition and shrink to 0.
+    setTransitionMs(0);
+    setWidthPct(fromPct);
+    shrinkRafRef.current = window.requestAnimationFrame(() => {
+      shrinkRafRef.current = window.requestAnimationFrame(() => {
+        setTransitionMs(Math.max(1, durationMs));
+        setWidthPct(0);
+        shrinkRafRef.current = null;
+      });
+    });
+  }, []);
+
+  // Animate toast slide-in and kick off the progress bar shrink.
+  useEffect(() => {
+    // First rAF flips `entered` for the slide-in; second rAF starts the progress shrink.
+    const f1 = window.requestAnimationFrame(() => {
+      setEntered(true);
+      if (totalMs > 0) {
+        const f2 = window.requestAnimationFrame(() => {
+          beginShrink(100, totalMs);
+        });
+        shrinkRafRef.current = f2;
+      }
+    });
+    return () => {
+      window.cancelAnimationFrame(f1);
+      if (shrinkRafRef.current != null) window.cancelAnimationFrame(shrinkRafRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handlePause = useCallback(() => {
+    // Freeze at current computed width by disabling the transition and setting width to current value.
+    const inner = barInnerRef.current;
+    if (inner && inner.parentElement && inner.parentElement.clientWidth > 0) {
+      const currentPct = (inner.clientWidth / inner.parentElement.clientWidth) * 100;
+      setTransitionMs(0);
+      setWidthPct(currentPct);
+    }
+    window.dispatchEvent(new CustomEvent("launchlens:toast-pause", { detail: toast.id }));
+  }, [toast.id]);
+
+  const handleResume = useCallback(() => {
+    window.dispatchEvent(new CustomEvent("launchlens:toast-resume", { detail: toast.id }));
+  }, [toast.id]);
+
+  useEffect(() => {
+    function onPaused() {
+      // Pause was already applied via handlePause reading DOM; nothing else needed here.
+    }
+    function onResumed(e: Event) {
+      const d = (e as CustomEvent<{ id: string; remainingMs: number; totalMs: number }>).detail;
+      if (d.id !== toast.id) return;
+      // Resume shrinking from current width over remainingMs.
+      const inner = barInnerRef.current;
+      let currentPct = widthPct;
+      if (inner && inner.parentElement && inner.parentElement.clientWidth > 0) {
+        currentPct = (inner.clientWidth / inner.parentElement.clientWidth) * 100;
+      }
+      beginShrink(currentPct, d.remainingMs);
+    }
+    function onDismissing(e: Event) {
+      const id = (e as CustomEvent<string>).detail;
+      if (id !== toast.id) return;
+      // Fast-snap to 0 for a clean exit.
+      if (shrinkRafRef.current != null) window.cancelAnimationFrame(shrinkRafRef.current);
+      setTransitionMs(120);
+      setWidthPct(0);
+    }
+    window.addEventListener("launchlens:toast-paused", onPaused);
+    window.addEventListener("launchlens:toast-resumed", onResumed);
+    window.addEventListener("launchlens:toast-dismissing", onDismissing);
+    return () => {
+      window.removeEventListener("launchlens:toast-paused", onPaused);
+      window.removeEventListener("launchlens:toast-resumed", onResumed);
+      window.removeEventListener("launchlens:toast-dismissing", onDismissing);
+    };
+  }, [toast.id, widthPct, beginShrink]);
 
   const icons = {
     success: <CheckCircle2 className="size-5 shrink-0 text-[#138a72]" aria-hidden="true" />,
@@ -189,6 +289,12 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
     info: "border-l-[#4f7fb8]",
   };
 
+  const progressColors = {
+    success: "bg-[#138a72]",
+    error: "bg-[#d85b3f]",
+    info: "bg-[#4f7fb8]",
+  };
+
   return (
     <div
       role={toast.type === "error" ? "alert" : "status"}
@@ -197,7 +303,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
       onFocus={handlePause}
       onBlur={handleResume}
       className={[
-        "flex items-start gap-3 rounded-md border border-[#d8ded4] border-l-4 bg-white px-4 py-3 shadow-lg",
+        "relative flex items-start gap-3 overflow-hidden rounded-md border border-[#d8ded4] border-l-4 bg-white px-4 py-3 shadow-lg",
         borders[toast.type],
         visible
           ? "opacity-100 translate-x-0"
@@ -215,6 +321,23 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
       >
         <X className="size-4" aria-hidden="true" />
       </button>
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-0.5 bg-[#e6ebe4]"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(widthPct)}
+        aria-label="Time remaining"
+      >
+        <div
+          ref={barInnerRef}
+          className={["h-full", progressColors[toast.type]].join(" ")}
+          style={{
+            width: `${widthPct}%`,
+            transition: transitionMs > 0 ? `width ${transitionMs}ms linear` : "none",
+          }}
+        />
+      </div>
     </div>
   );
 }
