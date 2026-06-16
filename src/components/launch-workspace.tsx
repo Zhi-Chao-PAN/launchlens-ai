@@ -665,15 +665,15 @@ export function LaunchWorkspace({
         isSwitching ? "opacity-40 pointer-events-none transition-opacity duration-150 ease-out motion-reduce:transition-none" : "transition-opacity duration-200 ease-out motion-reduce:transition-none",
       ].join(" ")}
     >
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 pb-20 sm:px-6 sm:pb-6 lg:px-8">
-        <header className="flex flex-col gap-4 border-b border-[#d8ded4] pb-5 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 pb-20 sm:gap-6 sm:px-6 sm:py-6 sm:pb-6 lg:px-8">
+        <header className="flex flex-col gap-3 border-b border-[#d8ded4] pb-4 sm:gap-4 sm:pb-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
-            <span className="flex size-11 items-center justify-center rounded-lg bg-[#17201d] text-white">
-              <Compass className="size-5" aria-hidden="true" />
+            <span className="flex size-9 items-center justify-center rounded-lg bg-[#17201d] text-white sm:size-11">
+              <Compass className="size-4 sm:size-5" aria-hidden="true" />
             </span>
             <div>
-              <p className="text-sm font-medium text-[#d85b3f]">LaunchLens AI</p>
-              <h1 className="text-2xl font-semibold text-[#17201d]">
+              <p className="text-xs font-medium text-[#d85b3f] sm:text-sm">LaunchLens AI</p>
+              <h1 className="text-lg font-semibold text-[#17201d] sm:text-2xl">
                 Go-to-market workspace
               </h1>
             </div>
@@ -688,7 +688,7 @@ export function LaunchWorkspace({
               onClick={resetLocalWorkspace}
               title="Reset local draft"
               aria-label="Reset local draft"
-              className="flex size-10 items-center justify-center rounded-md border border-[#d8ded4] bg-white text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+              className="flex size-9 items-center justify-center rounded-md border border-[#d8ded4] bg-white text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 sm:size-10"
             >
               <RotateCcw className="size-4" aria-hidden="true" />
             </button>
