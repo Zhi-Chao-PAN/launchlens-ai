@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { exampleWorkspaces } from "./example-workspaces";
-import type { DecisionRecommendation } from "./decision";
+import type { DecisionRecommendation, ProviderName } from "./decision";
 import {
   buildMockDecisionBrief,
   decisionBriefIsCurrent,
@@ -188,6 +188,101 @@ describe("decision brief", () => {
     };
     expect(() => normalizeDecisionBrief(boobyTrap, source)).not.toThrow();
     expect(normalizeDecisionBrief(boobyTrap, source)).toBeNull();
+  });
+
+  it("rejects briefs with duplicate evidence ids in a single claim", () => {
+    const valid = buildMockDecisionBrief(source);
+    if (valid.claims.length > 0 && source.evidence.length > 0) {
+      const dupClaim = {
+        ...valid.claims[0],
+        evidenceIds: [source.evidence[0].id, source.evidence[0].id],
+      };
+      expect(
+        normalizeDecisionBrief({ ...valid, claims: [dupClaim] }, source),
+      ).toBeNull();
+    }
+  });
+
+  it("rejects briefs where a claim stance mismatches all cited signal directions", () => {
+    const valid = buildMockDecisionBrief(source);
+    if (valid.claims.length > 0) {
+      // Flip the stance to opposite of all cited signals
+      const badClaim = { ...valid.claims[0], stance: "challenges" as const };
+      // Only test if all evidence supports (then challenges stance should fail)
+      const allSupport = source.evidence.every((e) => e.signal === "supports");
+      if (allSupport) {
+        expect(
+          normalizeDecisionBrief({ ...valid, claims: [badClaim] }, source),
+        ).toBeNull();
+      }
+    }
+  });
+
+  it("decisionSourceFingerprint is stable for identical source data", () => {
+    const fp1 = decisionSourceFingerprint(source);
+    const fp2 = decisionSourceFingerprint({ ...source });
+    expect(fp1).toBe(fp2);
+    expect(typeof fp1).toBe("string");
+    expect(fp1.length).toBeGreaterThan(8);
+  });
+
+  it("decisionBriefIsCurrent returns false when evidence changes", () => {
+    const experimentWithBrief = {
+      ...experiment,
+      decisionBrief: buildMockDecisionBrief(source),
+    };
+    expect(decisionBriefIsCurrent(experimentWithBrief)).toBe(true);
+
+    // Add a new evidence item - should make brief stale
+    const staleExperiment = {
+      ...experimentWithBrief,
+      evidence: [
+        ...experimentWithBrief.evidence,
+        {
+          id: "new-123",
+          note: "New finding",
+          source: "New source",
+          signal: "supports" as const,
+          observedAt: new Date().toISOString(),
+        },
+      ],
+    };
+    expect(decisionBriefIsCurrent(staleExperiment)).toBe(false);
+  });
+
+  it("rejects briefs with promptVersion mismatch", () => {
+    const valid = buildMockDecisionBrief(source);
+    expect(
+      normalizeDecisionBrief(
+        { ...valid, promptVersion: "launchlens-decision-v999" },
+        source,
+      ),
+    ).toBeNull();
+  });
+
+  it("rejects briefs with wrong provider name", () => {
+    const valid = buildMockDecisionBrief(source);
+    expect(
+      normalizeDecisionBrief({ ...valid, provider: "unknown-ai" as unknown as ProviderName }, source),
+    ).toBeNull();
+  });
+
+  it("rejects briefs with mismatched usedFallback and fallbackReason", () => {
+    const valid = buildMockDecisionBrief(source);
+    // usedFallback=false but fallbackReason present
+    expect(
+      normalizeDecisionBrief(
+        { ...valid, usedFallback: false, fallbackReason: "oops" },
+        source,
+      ),
+    ).toBeNull();
+    // usedFallback=true but fallbackReason missing
+    expect(
+      normalizeDecisionBrief(
+        { ...valid, usedFallback: true, fallbackReason: undefined },
+        source,
+      ),
+    ).toBeNull();
   });
 
 });

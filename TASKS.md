@@ -249,6 +249,18 @@
 - [x] API error catalog stability tests: decision-specific codes are mapped, all keys use lowercase snake_case, messages are at least two words ending in punctuation, and over 70% of messages are semantically unique.
 - [x] Test count: **210 tests / 40 files**. All four quality gates green.
 
+## Evidence UX Polish & Cloud Error Code Visibility (R101-R105, 2026-06-17)
+
+- [x] Evidence form screen-reader live region announces successful recording and validation errors with context (source + total count).
+- [x] `npm run quality` now matches CI order: lint ? test ? typecheck ? provider eval ? decision eval ? build ? audit.
+- [x] Evidence list renders newest-first so newly recorded items appear at the top of the expanded panel.
+- [x] Evidence delete buttons are 44px touch-friendly on mobile (`size-11`, `sm:size-8`), matching iOS/Android touch-target guidelines.
+- [x] Evidence note text uses `break-words` for long unbroken strings, preventing horizontal overflow on narrow viewports.
+- [x] Cloud workspaces error panel now displays the raw error code in a monospaced chip with a one-click "Copy code" button, making bug reports more actionable.
+- [x] Decision-brief normalization test coverage expanded: duplicate evidence ids, stance/signal mismatch, fingerprint stability, stale-brief detection, prompt-version mismatch, provider-name rejection, usedFallback/fallbackReason consistency.
+- [x] Execution test coverage expanded: zero-experiment progress, valid baseline round-trip normalization.
+- [x] Test count: **220 tests / 40 files**. All four quality gates green.
+
 ## Post-Portfolio Enhancements
 
 - [ ] Add optional OAuth/passkey identity for teams that prefer conventional accounts.

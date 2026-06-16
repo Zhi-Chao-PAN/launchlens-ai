@@ -25,6 +25,8 @@ tags are cut for milestone demos.
 - `decision_invalid_response` error code and user-facing copy for provider responses that fail schema normalization
 - Screen-reader live-region announcements on the system status bar for network state transitions
 - `aria-describedby` wiring on the evidence-form Signal select (sr-only hint) and on validation-board Decision/NextAction textareas (character-count descriptions)
+- Screen-reader live-region announcements on the evidence form for successful recording and validation failures
+- Error code chip with one-click copy button on the cloud workspaces error panel
 
 ### Changed
 - Global primary-CTA color aligned to the brand green (#138a72) with mint focus ring
@@ -46,6 +48,9 @@ tags are cut for milestone demos.
   unparseable brief" and surfaces the `decision_invalid_response` code
 - Character-count captions on Decision/NextAction textareas now include the
   word "characters" for clearer screen-reader output
+- Evidence list sorts newest-first so freshly recorded items appear at the top
+- Evidence delete buttons use 44px touch targets on mobile (sm: 32px)
+- `npm run quality` now runs the full CI gate sequence (lint ? test ? typecheck ? provider eval ? decision eval ? build ? audit)
 
 ### Fixed
 - Overlay-stack `pushOverlay` handles are now idempotent, preventing a

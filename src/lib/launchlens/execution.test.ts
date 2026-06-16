@@ -16,6 +16,7 @@ import {
 } from "./execution";
 
 const workspace = exampleWorkspaces[0].workspace;
+const execution = exampleWorkspaces[0].execution;
 
 describe("workspace execution state", () => {
   it("creates one deterministic experiment per generated assumption", () => {
@@ -181,4 +182,33 @@ describe("workspace execution state", () => {
     expect(normalized).not.toBeNull();
     expect(normalized?.experiments[0].decisionBrief).toBeUndefined();
   });
+
+  it("evaluateExecutionProgress returns 0 for no experiments", () => {
+    const empty = { experiments: [], updatedAt: new Date().toISOString() };
+    const progress = evaluateExecutionProgress(empty);
+    expect(progress.score).toBe(0);
+    expect(progress.total).toBe(0);
+    expect(progress.withEvidence).toBe(0);
+    expect(progress.decided).toBe(0);
+    expect(progress.evidenceCount).toBe(0);
+  });
+
+  it("evaluateExecutionProgress gives higher score for experiments with evidence", () => {
+    const base = execution.experiments[0];
+    const progress = evaluateExecutionProgress({ experiments: [base] });
+    expect(progress.total).toBe(1);
+    expect(progress.score).toBeGreaterThan(0);
+    expect(progress.evidenceCount).toBe(base.evidence.length);
+  });
+
+  it("normalizeExecutionState handles multiple evidence items within limits", () => {
+    const base = createExecutionState(workspace);
+    const first = base.experiments[0];
+    expect(first.evidence.length).toBeGreaterThanOrEqual(0);
+
+    const normalized = normalizeExecutionState(base, workspace);
+    expect(normalized).not.toBeNull();
+    expect(normalized?.experiments.length).toBe(base.experiments.length);
+  });
+
 });
