@@ -213,24 +213,50 @@ export function ValidationBoard({
 
   function handleEvidenceKeyDown(e: React.KeyboardEvent<HTMLUListElement>) {
     const target = e.currentTarget;
+    const experimentId = target.getAttribute("data-experiment-id") || "";
     const items = Array.from(target.querySelectorAll("[data-evidence-id]"));
     if (items.length === 0) return;
 
     const active = document.activeElement;
     let currentIdx = -1;
+    let currentEvidenceId: string | null = null;
     for (let i = 0; i < items.length; i++) {
       if (items[i].contains(active)) {
         currentIdx = i;
+        currentEvidenceId = items[i].getAttribute("data-evidence-id");
         break;
       }
     }
 
-    if (e.key === "ArrowUp" && currentIdx > 0) {
+    if (e.altKey && e.key === "ArrowUp" && currentIdx > 0 && currentEvidenceId) {
+      // Move evidence up and keep focus on it
+      e.preventDefault();
+      moveEvidence(experimentId, currentEvidenceId, "up");
+      // After re-render, focus the same evidence in its new position
+      requestAnimationFrame(() => {
+        const moved = target.querySelector(`[data-evidence-id="\${currentEvidenceId}"]`);
+        if (moved) {
+          const focusable = (moved as HTMLElement).querySelector("button");
+          focusable?.focus();
+        }
+      });
+    } else if (e.altKey && e.key === "ArrowDown" && currentIdx < items.length - 1 && currentEvidenceId) {
+      // Move evidence down and keep focus on it
+      e.preventDefault();
+      moveEvidence(experimentId, currentEvidenceId, "down");
+      requestAnimationFrame(() => {
+        const moved = target.querySelector(`[data-evidence-id="\${currentEvidenceId}"]`);
+        if (moved) {
+          const focusable = (moved as HTMLElement).querySelector("button");
+          focusable?.focus();
+        }
+      });
+    } else if (e.key === "ArrowUp" && currentIdx > 0 && !e.altKey) {
       e.preventDefault();
       const prev = items[currentIdx - 1] as HTMLElement;
       const focusable = prev.querySelector("button");
       focusable?.focus();
-    } else if (e.key === "ArrowDown" && currentIdx < items.length - 1) {
+    } else if (e.key === "ArrowDown" && currentIdx < items.length - 1 && !e.altKey) {
       e.preventDefault();
       const next = items[currentIdx + 1] as HTMLElement;
       const focusable = next.querySelector("button");
@@ -501,9 +527,10 @@ export function ValidationBoard({
               </div>
 
               {experiment.evidence.length > 0 ? (
-                <ul ref={evidenceListRef} tabIndex={-1} aria-label="Evidence items" onKeyDown={handleEvidenceKeyDown} className="mt-4 divide-y divide-card rounded-md bg-muted px-4 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1">
+                <ul ref={evidenceListRef} data-experiment-id={experiment.id} tabIndex={-1} aria-label="Evidence items" onKeyDown={handleEvidenceKeyDown} className="mt-4 divide-y divide-card rounded-md bg-muted px-4 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1">
                   {experiment.evidence.map((item) => (
                     <li
+                      data-evidence-id={item.id}
                       key={item.id}
                       className="flex items-start gap-3 py-3 text-sm"
                     >
