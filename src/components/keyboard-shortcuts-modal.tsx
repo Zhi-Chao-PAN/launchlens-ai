@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import { pushOverlay } from "@/lib/launchlens/overlays";
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 
@@ -37,9 +38,13 @@ export function KeyboardShortcutsModal() {
   // the shortcuts modal consistently with toasts and other overlays.
   useEffect(() => {
     if (!isOpen) return;
-    const onEscape = () => closeModal();
+    const pop = pushOverlay();
+    const onEscape = (e: Event) => { e.stopImmediatePropagation?.(); closeModal(); };
     window.addEventListener("launchlens:escape", onEscape);
-    return () => window.removeEventListener("launchlens:escape", onEscape);
+    return () => {
+      window.removeEventListener("launchlens:escape", onEscape);
+      pop();
+    };
   }, [isOpen]);
 
   // Group shortcuts by category
@@ -94,7 +99,7 @@ export function KeyboardShortcutsModal() {
                 type="button"
                 onClick={closeModal}
                 aria-label="Close shortcuts"
-                className="text-[#8e9c93] transition hover:text-[#17201d]"
+                className="rounded text-[#8e9c93] transition hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
               >
                 <X className="size-5" aria-hidden="true" />
               </button>
@@ -130,7 +135,7 @@ export function KeyboardShortcutsModal() {
               )}
             </div>
 
-            <div className="border-t border-[#d8ded4] px-6 py-3 text-xs text-[#607069]">
+            <div className="border-t border-[#d8ded4] px-6 py-3 text-xs leading-5 text-[#607069]">
               Press{" "}
               <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1.5 py-0.5 font-mono text-[#17201d]">?</kbd>,{" "}
               <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1.5 py-0.5 font-mono text-[#17201d]">/</kbd>, or{" "}
@@ -139,7 +144,11 @@ export function KeyboardShortcutsModal() {
               </kbd>{" "}
               to open this panel. Press{" "}
               <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1.5 py-0.5 font-mono text-[#17201d]">Esc</kbd>{" "}
-              to close.
+              to dismiss the newest toast or topmost overlay; hold{" "}
+              <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1.5 py-0.5 font-mono text-[#17201d]">Shift</kbd>{" "}
+              with{" "}
+              <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1.5 py-0.5 font-mono text-[#17201d]">Esc</kbd>{" "}
+              to clear all toasts.
             </div>
           </div>
         </div>

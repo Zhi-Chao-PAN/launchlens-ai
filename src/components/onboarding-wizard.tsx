@@ -79,7 +79,11 @@ export function OnboardingWizard() {
 
   useEffect(() => {
     if (!visible) return;
-    const onEscape = () => dismiss();
+    const onEscape = (e: Event) => {
+      // Stop propagation so that lower-priority listeners (toasts) don't also dismiss.
+      e.stopImmediatePropagation?.();
+      dismiss();
+    };
     // Enter dismisses the tour (unless focus is on a text field/textarea/contenteditable).
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Enter") return;

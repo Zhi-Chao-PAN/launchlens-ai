@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, CloudOff, Cloud, Cpu, AlertTriangle, Loader2 } from "lucide-react";
+import { pushOverlay } from "@/lib/launchlens/overlays";
 
 type Status = {
   status: string;
@@ -49,7 +50,8 @@ export function SystemStatus() {
   // Wire Escape + click-outside.
   useEffect(() => {
     if (!isOpen) return;
-    const onEscape = () => setIsOpen(false);
+    const pop = pushOverlay();
+    const onEscape = (e: Event) => { e.stopImmediatePropagation?.(); setIsOpen(false); };
     const onClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsOpen(false);
@@ -60,6 +62,7 @@ export function SystemStatus() {
     return () => {
       window.removeEventListener("launchlens:escape", onEscape);
       window.removeEventListener("mousedown", onClickOutside);
+      pop();
     };
   }, [isOpen]);
 

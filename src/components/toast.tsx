@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { CheckCircle2, AlertTriangle, Info, X } from "lucide-react";
+import { hasOpenOverlay } from "@/lib/launchlens/overlays";
 
 export type ToastType = "success" | "error" | "info";
 
@@ -109,6 +110,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     function handleEscape() {
+      // Let modals/wizards/dropdowns handle Escape first — do not dismiss toasts
+      // when any overlay is open.
+      if (hasOpenOverlay()) return;
       if (shiftHeldRef.current) {
         const snapshot = [...toastsRef.current];
         for (const t of snapshot) {
