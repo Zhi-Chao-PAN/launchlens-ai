@@ -79,3 +79,37 @@ describe("recovery capability edge cases", () => {
     expect(result.startsWith("acct_")).toBe(true);
   });
 });
+
+describe("createRecoveryKey", () => {
+  it("returns a 32-char URL-safe base64url string (24 random bytes = 32 base64url chars)", () => {
+    const key = createRecoveryKey();
+    expect(typeof key).toBe("string");
+    expect(key).toMatch(/^[A-Za-z0-9_-]{32}$/);
+  });
+
+  it("produces distinct keys on successive calls", () => {
+    const a = createRecoveryKey();
+    const b = createRecoveryKey();
+    expect(a).not.toBe(b);
+  });
+});
+
+describe("deriveRecoveryOwnerToken validation", () => {
+  it("rejects empty labels", async () => {
+    await expect(deriveRecoveryOwnerToken("", "A".repeat(32))).rejects.toThrow(
+      "invalid_recovery_input",
+    );
+  });
+
+  it("rejects labels over 160 chars", async () => {
+    await expect(
+      deriveRecoveryOwnerToken("a".repeat(161), "A".repeat(32)),
+    ).rejects.toThrow("invalid_recovery_input");
+  });
+
+  it("rejects keys with invalid characters", async () => {
+    await expect(
+      deriveRecoveryOwnerToken("a@b.co", "has spaces and!!"),
+    ).rejects.toThrow("invalid_recovery_input");
+  });
+});
