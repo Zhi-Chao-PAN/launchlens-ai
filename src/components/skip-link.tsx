@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Skip-to-content link. Visually hidden until focused, then appears in the
  * top-left corner and jumps keyboard users straight to #main-content so
  * they do not have to tab through every nav/interactive element to reach

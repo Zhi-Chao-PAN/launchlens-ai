@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { Rocket, Sparkles, Target, UsersRound, HelpCircle, X } from "lucide-react";
@@ -154,7 +154,7 @@ export function OnboardingWizard() {
       <div
         onClick={(e) => e.stopPropagation()}
         className={[
-          "relative flex w-full max-w-lg flex-col gap-6 rounded-xl border border-[#d8ded4] bg-white p-6 shadow-xl",
+          "relative flex w-full max-w-lg flex-col gap-6 rounded-xl border border-card bg-card p-6 shadow-xl",
           mounted ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-2",
           "motion-safe:transition-all motion-safe:duration-200 motion-safe:ease-out",
         ].join(" ")}
@@ -163,12 +163,12 @@ export function OnboardingWizard() {
           type="button"
           onClick={dismiss}
           aria-label="Dismiss quick start guide"
-          className="absolute right-3 top-3 flex size-10 items-center justify-center rounded-md text-[#8e9c93] transition hover:bg-[#f6f8f4] hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+          className="absolute right-3 top-3 flex size-10 items-center justify-center rounded-md text-[#8e9c93] transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
         >
           <X className="size-5" aria-hidden="true" />
         </button>
 
-        <h2 className="pr-6 text-lg font-semibold text-[#17201d]">
+        <h2 className="pr-6 text-lg font-semibold text-foreground">
           Welcome to LaunchLens AI
         </h2>
 
@@ -181,11 +181,11 @@ export function OnboardingWizard() {
                   {idx + 1}
                 </span>
                 <div className="flex flex-col gap-0.5">
-                  <span className="flex items-center gap-2 text-sm font-semibold text-[#17201d]">
+                  <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
                     <Icon className="size-4 text-[#138a72]" aria-hidden="true" />
                     {step.title}
                   </span>
-                  <p className="text-sm leading-5 text-[#607069]">
+                  <p className="text-sm leading-5 text-muted">
                     {step.description}
                   </p>
                 </div>
@@ -196,11 +196,11 @@ export function OnboardingWizard() {
 
         <div
           id="onboarding-hints"
-          className="flex flex-col gap-3 border-t border-[#d8ded4] pt-4 sm:flex-row sm:items-center sm:justify-between"
+          className="flex flex-col gap-3 border-t border-card pt-4 sm:flex-row sm:items-center sm:justify-between"
         >
           <p className="text-xs leading-5 text-[#8e9c93]">
-            Press <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1 font-mono">Esc</kbd> or <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1 font-mono">Enter</kbd> to dismiss. Press{" "}
-            <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1 font-mono">?</kbd> any time for all shortcuts.
+            Press <kbd className="rounded border border-input bg-muted px-1 font-mono">Esc</kbd> or <kbd className="rounded border border-input bg-muted px-1 font-mono">Enter</kbd> to dismiss. Press{" "}
+            <kbd className="rounded border border-input bg-muted px-1 font-mono">?</kbd> any time for all shortcuts.
           </p>
           <button
             type="button"
@@ -236,7 +236,7 @@ export function ReplayTourButton({ className = "" }: { className?: string }) {
       onClick={() => showOnboarding()}
       aria-label="Replay quick start tour"
       className={[
-        "inline-flex items-center gap-1.5 rounded-md border border-[#cfd8d1] bg-white px-3 py-1.5 text-xs font-medium text-[#40504a]",
+        "inline-flex items-center gap-1.5 rounded-md border border-input bg-card px-3 py-1.5 text-xs font-medium text-foreground/80",
         "transition hover:border-[#138a72] hover:text-[#138a72]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1",
         className,

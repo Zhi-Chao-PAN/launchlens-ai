@@ -69,7 +69,7 @@ function statusClass(status: ValidationExperiment["status"]) {
     return "bg-[#f6df8f] text-[#493b08]";
   }
 
-  return "bg-[#eef0ed] text-[#607069]";
+  return "bg-muted text-muted";
 }
 
 function evidenceId() {
@@ -212,20 +212,20 @@ export function ValidationBoard({
   }
 
   return (
-    <section className="rounded-lg border border-[#d8ded4] bg-white shadow-sm">
+    <section className="rounded-lg border border-card bg-card shadow-sm">
       <span role="status" aria-live="polite" className="sr-only">
         {srEvidenceAnnouncement}
       </span>
-      <div className="flex flex-col gap-3 border-b border-[#edf0ea] p-4 sm:gap-4 sm:p-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 border-b border-card p-4 sm:gap-4 sm:p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
           <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-[#fff0eb] text-[#d85b3f] sm:size-9">
             <FlaskConical className="size-4" aria-hidden="true" />
           </span>
           <div>
-            <h2 className="text-sm font-semibold text-[#17201d] sm:text-base">
+            <h2 className="text-sm font-semibold text-foreground sm:text-base">
               Validation loop
             </h2>
-            <p className="mt-0.5 text-xs leading-5 text-[#607069] sm:mt-1 sm:text-sm sm:leading-6">
+            <p className="mt-0.5 text-xs leading-5 text-muted sm:mt-1 sm:text-sm sm:leading-6">
               Turn generated assumptions into evidence-backed product decisions.
             </p>
           </div>
@@ -233,8 +233,8 @@ export function ValidationBoard({
 
         <div className="flex w-full flex-col gap-2 sm:min-w-[310px] sm:max-w-sm">
           <div className="grid grid-cols-3 gap-1.5 text-center text-xs sm:gap-2">
-            <div className="rounded-md bg-[#eef0ed] px-2 py-1.5 sm:px-3 sm:py-2">
-              <strong className="block text-sm font-semibold text-[#17201d]">
+            <div className="rounded-md bg-muted px-2 py-1.5 sm:px-3 sm:py-2">
+              <strong className="block text-sm font-semibold text-foreground">
                 {progress.score}%
               </strong>
               progress
@@ -258,7 +258,7 @@ export function ValidationBoard({
             aria-valuemax={100}
             aria-valuenow={progress.score}
             aria-label="Validation progress"
-            className="h-1.5 w-full overflow-hidden rounded-full bg-[#eef0ed]"
+            className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
           >
             <div
               className="h-full rounded-full bg-[#138a72] transition-all duration-500 ease-out motion-reduce:transition-none"
@@ -271,8 +271,8 @@ export function ValidationBoard({
       <div className="divide-y divide-[#edf0ea]">
         {execution.experiments.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-sm font-semibold text-[#17201d]">No validation experiments yet</p>
-            <p className="mt-0.5 text-xs leading-5 text-[#607069] sm:mt-1 sm:text-sm sm:leading-6">
+            <p className="text-sm font-semibold text-foreground">No validation experiments yet</p>
+            <p className="mt-0.5 text-xs leading-5 text-muted sm:mt-1 sm:text-sm sm:leading-6">
               Generate a workspace to seed starter assumptions, or add new hypotheses once your brief is in place.
             </p>
           </div>
@@ -295,12 +295,12 @@ export function ValidationBoard({
                     >
                       {statusLabels[experiment.status]}
                     </span>
-                    <span className="text-xs text-[#607069]">
+                    <span className="text-xs text-muted">
                       {experiment.evidence.length} evidence item
                       {experiment.evidence.length === 1 ? "" : "s"}
                     </span>
                   </div>
-                  <h3 className="mt-2 max-w-4xl text-sm font-semibold leading-6 text-[#17201d]">
+                  <h3 className="mt-2 max-w-4xl text-sm font-semibold leading-6 text-foreground">
                     {experiment.assumption}
                   </h3>
                 </div>
@@ -315,7 +315,7 @@ export function ValidationBoard({
                     }
                     aria-expanded={expanded}
                     aria-controls={`experiment-details-${experiment.id}`}
-                    className="flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfd8d1] bg-white px-3 text-sm font-semibold text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                    className="flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfd8d1] bg-white px-3 text-sm font-semibold text-foreground/80 transition hover:border-[#138a72] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
                   >
                     {expanded ? (
                       <ChevronUp className="size-4" aria-hidden="true" />
@@ -330,7 +330,7 @@ export function ValidationBoard({
                     disabled={evidenceLimitReached}
                     aria-expanded={formOpen}
                     aria-controls={`evidence-form-${experiment.id}`}
-                    className="flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm font-semibold text-[#17201d] transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm font-semibold text-foreground transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Plus className="size-4" aria-hidden="true" />
                     {formOpen ? "Cancel" : "Add evidence"}
@@ -347,7 +347,7 @@ export function ValidationBoard({
                 <div className="min-h-0 overflow-hidden" inert={!expanded}>
               <div className="mt-4 grid gap-4 md:grid-cols-3">
                 <label className="block">
-                  <span className="mb-2 block text-xs font-semibold uppercase text-[#607069]">
+                  <span className="mb-2 block text-xs font-semibold uppercase text-muted">
                     Validation status
                   </span>
                   <select
@@ -359,7 +359,7 @@ export function ValidationBoard({
                           .value as ValidationExperiment["status"],
                       }))
                     }
-                    className="h-10 w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm text-[#17201d] outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    className="h-10 w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm text-foreground outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
                   >
                     {Object.entries(statusLabels).map(([value, label]) => (
                       <option key={value} value={value}>
@@ -370,7 +370,7 @@ export function ValidationBoard({
                 </label>
 
                 <label className="block">
-                  <span className="mb-2 block text-xs font-semibold uppercase text-[#607069]">
+                  <span className="mb-2 block text-xs font-semibold uppercase text-muted">
                     Confidence
                   </span>
                   <select
@@ -382,19 +382,19 @@ export function ValidationBoard({
                           .value as ValidationExperiment["confidence"],
                       }))
                     }
-                    className="h-10 w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm capitalize text-[#17201d] outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    className="h-10 w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm capitalize text-foreground outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
                     <option value="high">High</option>
                   </select>
-                  <span className="mt-1 block text-xs leading-5 text-[#607069]">
+                  <span className="mt-1 block text-xs leading-5 text-muted">
                     Product judgment, not statistical certainty.
                   </span>
                 </label>
 
                 <label className="block">
-                  <span className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase text-[#607069]">
+                  <span className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase text-muted">
                     <Link2 className="size-3.5" aria-hidden="true" />
                     Linked execution task
                   </span>
@@ -406,7 +406,7 @@ export function ValidationBoard({
                         linkedTaskId: event.target.value,
                       }))
                     }
-                    className="h-10 w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm text-[#17201d] outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    className="h-10 w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm text-foreground outline-none focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
                   >
                     <option value="">No linked task</option>
                     {tasks.map((task, taskIndex) => (
@@ -422,7 +422,7 @@ export function ValidationBoard({
               </div>
 
               {experiment.evidence.length > 0 ? (
-                <ul ref={evidenceListRef} tabIndex={-1} aria-label="Evidence items" className="mt-4 divide-y divide-[#dfe5dd] rounded-md bg-[#f6f8f4] px-4 outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1">
+                <ul ref={evidenceListRef} tabIndex={-1} aria-label="Evidence items" className="mt-4 divide-y divide-[#dfe5dd] rounded-md bg-muted px-4 outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1">
                   {experiment.evidence.map((item) => (
                     <li
                       key={item.id}
@@ -434,20 +434,20 @@ export function ValidationBoard({
                       />
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2 text-xs">
-                          <span className="font-semibold text-[#17201d]">
+                          <span className="font-semibold text-foreground">
                             {item.source}
                           </span>
-                          <span className="rounded-md bg-white px-2 py-1 font-medium text-[#607069]">
+                          <span className="rounded-md bg-white px-2 py-1 font-medium text-muted">
                             {signalLabels[item.signal]}
                           </span>
-                          <time className="text-[#607069]">
+                          <time className="text-muted">
                             {new Intl.DateTimeFormat("en", {
                               month: "short",
                               day: "numeric",
                             }).format(new Date(item.observedAt))}
                           </time>
                         </div>
-                        <p className="mt-1 break-words leading-6 text-[#40504a]">
+                        <p className="mt-1 break-words leading-6 text-foreground/80">
                           {item.note}
                         </p>
                       </div>
@@ -458,7 +458,7 @@ export function ValidationBoard({
                           disabled={experiment.evidence.findIndex((e) => e.id === item.id) === 0}
                           title="Move evidence up"
                           aria-label={`Move evidence from ${item.source} up`}
-                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-[#40504a] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent sm:size-8"
+                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent sm:size-8"
                         >
                           <ChevronUp className="size-4" aria-hidden="true" />
                         </button>
@@ -468,7 +468,7 @@ export function ValidationBoard({
                           disabled={experiment.evidence.findIndex((e) => e.id === item.id) === experiment.evidence.length - 1}
                           title="Move evidence down"
                           aria-label={`Move evidence from ${item.source} down`}
-                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-[#40504a] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent sm:size-8"
+                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent sm:size-8"
                         >
                           <ChevronDown className="size-4" aria-hidden="true" />
                         </button>
@@ -477,7 +477,7 @@ export function ValidationBoard({
                           onClick={() => startEditingEvidence(experiment.id, item.id)}
                           title="Edit evidence"
                           aria-label={`Edit evidence from ${item.source}`}
-                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-[#40504a] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 sm:size-8"
+                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 sm:size-8"
                         >
                           <PencilLine className="size-4" aria-hidden="true" />
                         </button>
@@ -527,7 +527,7 @@ export function ValidationBoard({
                             }}
                             title="Cancel delete"
                             aria-label="Cancel delete evidence"
-                            className="flex size-11 shrink-0 items-center justify-center rounded-md text-[#607069] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b3d28] focus-visible:ring-offset-1 sm:size-8"
+                            className="flex size-11 shrink-0 items-center justify-center rounded-md text-muted transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b3d28] focus-visible:ring-offset-1 sm:size-8"
                           >
                             <X className="size-4" aria-hidden="true" />
                           </button>
@@ -551,7 +551,7 @@ export function ValidationBoard({
                   ))}
                 </ul>
               ) : (
-                <p className="mt-4 rounded-md bg-[#f6f8f4] px-4 py-3 text-sm text-[#607069]">
+                <p className="mt-4 rounded-md bg-muted px-4 py-3 text-sm text-muted">
                   No evidence recorded yet. Add an interview signal, metric, or
                   market observation.
                 </p>
@@ -570,7 +570,7 @@ export function ValidationBoard({
                   inert={!formOpen}
                 >
                   <label className="block">
-                    <span className="mb-2 block text-xs font-semibold uppercase text-[#607069]">
+                    <span className="mb-2 block text-xs font-semibold uppercase text-muted">
                       Signal
                     </span>
                     <select
@@ -596,7 +596,7 @@ export function ValidationBoard({
                   </label>
                   <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
                     <label className="block">
-                      <span className="mb-2 block text-xs font-semibold uppercase text-[#607069]">
+                      <span className="mb-2 block text-xs font-semibold uppercase text-muted">
                         Source
                       </span>
                       <input
@@ -624,7 +624,7 @@ export function ValidationBoard({
                       )}
                     </label>
                     <label className="block">
-                      <span className="mb-2 block text-xs font-semibold uppercase text-[#607069]">
+                      <span className="mb-2 block text-xs font-semibold uppercase text-muted">
                         Observation
                       </span>
                       <input
@@ -670,7 +670,7 @@ export function ValidationBoard({
 
               <div className="mt-4 grid gap-4 lg:grid-cols-2">
                 <label className="block">
-                  <span className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase text-[#607069]">
+                  <span className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase text-muted">
                     <CircleGauge className="size-3.5" aria-hidden="true" />
                     Decision
                   </span>
@@ -693,7 +693,7 @@ export function ValidationBoard({
                   </p>
                 </label>
                 <label className="block">
-                  <span className="mb-2 block text-xs font-semibold uppercase text-[#607069]">
+                  <span className="mb-2 block text-xs font-semibold uppercase text-muted">
                     Next validation action
                   </span>
                   <textarea

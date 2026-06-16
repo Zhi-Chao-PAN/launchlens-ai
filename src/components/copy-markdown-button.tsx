@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useState } from "react";
 import { CheckCircle2, Copy, Download } from "lucide-react";
@@ -85,7 +85,7 @@ export function CopyMarkdownButton({
           ? "border-[#138a72] bg-[#e5f4ef] text-[#0f766e] focus-visible:ring-[#cbe8df]"
           : status === "downloaded"
             ? "border-[#554a8b] bg-[#e9e7f7] text-[#554a8b] focus-visible:ring-[#cbe8df]"
-            : "border-[#cfd8d1] bg-white text-[#17201d] hover:border-[#138a72] hover:text-[#138a72] focus-visible:ring-[#cbe8df]",
+            : "border-input bg-card text-foreground hover:border-[#138a72] hover:text-[#138a72] focus-visible:ring-[#cbe8df]",
         className,
       ].join(" ")}
     >

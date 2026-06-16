@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import type { ReactNode } from "react";
 
@@ -48,11 +48,11 @@ export function EmptyState({
           {icon}
         </div>
       )}
-      <h3 className={`font-medium text-[#17201d] ${titleSizes[size]}`}>
+      <h3 className={`font-medium text-foreground ${titleSizes[size]}`}>
         {title}
       </h3>
       {description && (
-        <p className="mt-1 max-w-sm text-sm text-[#607069]">
+        <p className="mt-1 max-w-sm text-sm text-muted">
           {description}
         </p>
       )}

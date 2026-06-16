@@ -160,7 +160,7 @@ export function Disclosure({ title, children, defaultOpen = false }: DisclosureP
   );
 
   return (
-    <div className="overflow-hidden rounded-md border border-[#d8ded4] bg-white text-sm">
+    <div className="overflow-hidden rounded-md border border-card bg-card text-sm">
       <h3>
         <button
           id={buttonId}
@@ -170,12 +170,12 @@ export function Disclosure({ title, children, defaultOpen = false }: DisclosureP
           aria-controls={panelId}
           onClick={toggle}
           onKeyDown={handleKeyDown}
-          className="group flex w-full items-center justify-between gap-3 rounded px-4 py-3 text-left font-semibold text-[#17201d] transition-colors hover:bg-[#f6f8f4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+          className="group flex w-full items-center justify-between gap-3 rounded px-4 py-3 text-left font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
         >
           <span>{title}</span>
           <ChevronDown
             aria-hidden="true"
-            className="size-4 shrink-0 text-[#607069] transition-transform duration-200 ease-out motion-reduce:transition-none group-hover:text-[#138a72]"
+            className="size-4 shrink-0 text-muted transition-transform duration-200 ease-out motion-reduce:transition-none group-hover:text-[#138a72]"
             style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
           />
         </button>
@@ -189,7 +189,7 @@ export function Disclosure({ title, children, defaultOpen = false }: DisclosureP
         style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
       >
         <div className="min-h-0 overflow-hidden">
-          <div className="px-4 pb-3 pt-1 leading-6 text-[#40504a]">
+          <div className="px-4 pb-3 pt-1 leading-6 text-foreground/80">
             {children}
           </div>
         </div>

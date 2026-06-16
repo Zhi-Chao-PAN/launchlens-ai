@@ -12,7 +12,7 @@ export function ThemeToggle() {
       <button
         type="button"
         aria-hidden="true"
-        className="flex h-9 w-9 items-center justify-center rounded-md border border-[#cfd8d1] bg-white text-[#40504a] opacity-0 sm:h-8 sm:w-8"
+        className="flex h-9 w-9 items-center justify-center rounded-md border border-input bg-card text-foreground/80 opacity-0 sm:h-8 sm:w-8"
         tabIndex={-1}
       >
         <Sun className="size-4" aria-hidden="true" />
@@ -34,7 +34,7 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       aria-label={label}
       title={label}
-      className="flex h-9 w-9 items-center justify-center rounded-md border border-[#cfd8d1] bg-white text-[#40504a] transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 print:hidden sm:h-8 sm:w-8"
+      className="flex h-9 w-9 items-center justify-center rounded-md border border-input bg-card text-foreground/80 transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 print:hidden sm:h-8 sm:w-8"
     >
       <Icon className="size-4" aria-hidden="true" />
     </button>

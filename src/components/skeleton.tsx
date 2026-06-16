@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 type SkeletonProps = React.HTMLAttributes<HTMLDivElement> & {
   className?: string;
@@ -58,7 +58,7 @@ type SkeletonCardProps = {
 
 export function SkeletonCard({ lines = 3, title = true }: SkeletonCardProps) {
   return (
-    <div className="rounded-lg border border-[#d8ded4] bg-white p-4">
+    <div className="rounded-lg border border-card bg-card p-4">
       {title && <Skeleton className="mb-3 h-5 w-1/3" />}
       <div className="space-y-2">
         {Array.from({ length: lines }).map((_, i) => (

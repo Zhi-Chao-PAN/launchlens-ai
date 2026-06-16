@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useState } from "react";
 import { CheckCircle2, Link as LinkIcon } from "lucide-react";
@@ -32,7 +32,7 @@ export function CopyLinkButton({ className = "" }: { className?: string }) {
         "inline-flex h-10 items-center gap-1.5 rounded-md border px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
         copied
           ? "border-[#138a72] bg-[#e5f4ef] text-[#0f766e] focus-visible:ring-[#cbe8df]"
-          : "border-[#cfd8d1] bg-white text-[#17201d] hover:border-[#138a72] hover:text-[#138a72] focus-visible:ring-[#cbe8df]",
+          : "border-input bg-card text-foreground hover:border-[#138a72] hover:text-[#138a72] focus-visible:ring-[#cbe8df]",
         className,
       ].join(" ")}
     >

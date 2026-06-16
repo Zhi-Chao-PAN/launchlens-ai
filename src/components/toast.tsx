@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   createContext,
@@ -229,7 +229,7 @@ function ToastContainer() {
         <button
           type="button"
           onClick={dismissAllToasts}
-          className="mr-1 rounded-md border border-[#cfd8d1] bg-white/95 px-2 py-0.5 text-[11px] font-medium text-[#607069] shadow-sm backdrop-blur transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+          className="mr-1 rounded-md border border-input bg-card/95 px-2 py-0.5 text-[11px] font-medium text-muted shadow-sm backdrop-blur transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
           aria-label="Dismiss all notifications"
         >
           Dismiss all
@@ -372,7 +372,7 @@ function ToastContainer() {
       onFocus={handlePause}
       onBlur={handleResume}
       className={[
-        "relative flex items-start gap-3 overflow-hidden rounded-md border border-[#d8ded4] border-l-4 bg-white px-4 py-3 shadow-lg",
+        "relative flex items-start gap-3 overflow-hidden rounded-md border border-card border-l-4 bg-card px-4 py-3 shadow-lg",
         borders[toast.type],
         visible
           ? "opacity-100 translate-x-0"
@@ -381,12 +381,12 @@ function ToastContainer() {
       ].join(" ")}
     >
       {icons[toast.type]}
-      <p className="flex-1 text-sm leading-5 text-[#17201d]">{toast.message}</p>
+      <p className="flex-1 text-sm leading-5 text-foreground">{toast.message}</p>
       <button
         type="button"
         onClick={onDismiss}
         aria-label="Dismiss notification"
-        className="shrink-0 rounded text-[#8e9c93] transition hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+        className="shrink-0 rounded text-[#8e9c93] transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
       >
         <X className="size-4" aria-hidden="true" />
       </button>

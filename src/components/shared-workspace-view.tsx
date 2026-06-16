@@ -58,7 +58,7 @@ function ReadOnlySection({
   };
 
   return (
-    <section className="rounded-lg border border-[#d8ded4] bg-white shadow-sm overflow-hidden">
+    <section className="rounded-lg border border-card bg-card shadow-sm overflow-hidden">
       {collapsible ? (
         <button
           type="button"
@@ -66,14 +66,14 @@ function ReadOnlySection({
           onKeyDown={handleKeyDown}
           aria-expanded={isOpen}
           aria-controls={contentId}
-          className="w-full flex items-center gap-2 p-4 sm:p-5 text-left transition hover:bg-[#f6f8f4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-inset"
+          className="w-full flex items-center gap-2 p-4 sm:p-5 text-left transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-inset"
         >
           <span className="flex size-7 items-center justify-center rounded-md bg-[#e5f4ef] text-[#0f766e] sm:size-8">
             <Icon className="size-3.5 sm:size-4" aria-hidden="true" />
           </span>
-          <h2 className="flex-1 text-sm sm:text-base font-semibold text-[#17201d]">{title}</h2>
+          <h2 className="flex-1 text-sm sm:text-base font-semibold text-foreground">{title}</h2>
           <ChevronDown
-            className={`size-4 text-[#607069] transition-transform ${isOpen ? "rotate-180" : ""}`}
+            className={`size-4 text-muted transition-transform ${isOpen ? "rotate-180" : ""}`}
             aria-hidden="true"
           />
         </button>
@@ -82,7 +82,7 @@ function ReadOnlySection({
           <span className="flex size-7 items-center justify-center rounded-md bg-[#e5f4ef] text-[#0f766e] sm:size-8">
             <Icon className="size-3.5 sm:size-4" aria-hidden="true" />
           </span>
-          <h2 className="text-sm sm:text-base font-semibold text-[#17201d]">{title}</h2>
+          <h2 className="text-sm sm:text-base font-semibold text-foreground">{title}</h2>
         </div>
       )}
       <div
@@ -105,7 +105,7 @@ function Bullets({ items }: { items: string[] }) {
       {items.map((item, index) => (
         <li
           key={`${item}-${index}`}
-          className="flex gap-3 text-sm leading-6 text-[#40504a]"
+          className="flex gap-3 text-sm leading-6 text-foreground/80"
         >
           <CheckCircle2
             className="mt-1 size-4 shrink-0 text-[#138a72]"
@@ -126,9 +126,9 @@ export function SharedWorkspaceView({
   const { workspace } = record;
 
   return (
-    <main id="main-content" className="min-h-screen animate-[fadeInDown_280ms_ease-out_both] bg-[#f6f8f4] px-4 py-4 pb-20 pt-safe text-[#17201d] motion-reduce:animate-none sm:px-6 sm:py-6 sm:pb-6 lg:px-8">
+    <main id="main-content" className="min-h-screen animate-[fadeInDown_280ms_ease-out_both] bg-muted px-4 py-4 pb-20 pt-safe text-foreground motion-reduce:animate-none sm:px-6 sm:py-6 sm:pb-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl">
-        <header className="mb-4 flex flex-col gap-3 border-b border-[#d8ded4] pb-4 sm:mb-6 sm:gap-4 sm:pb-5 sm:flex-row sm:items-center sm:justify-between">
+        <header className="mb-4 flex flex-col gap-3 border-b border-card pb-4 sm:mb-6 sm:gap-4 sm:pb-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <span className="flex size-9 items-center justify-center rounded-lg bg-[#17201d] text-white sm:size-11">
               <Compass className="size-4 sm:size-5" aria-hidden="true" />
@@ -141,7 +141,7 @@ export function SharedWorkspaceView({
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="w-fit rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-sm text-[#40504a]">
+            <span className="w-fit rounded-md border border-card bg-card px-3 py-2 text-sm text-foreground/80">
               Read-only snapshot
             </span>
             <CopyMarkdownButton workspace={workspace} />
@@ -158,8 +158,8 @@ export function SharedWorkspaceView({
           </div>
         </header>
 
-        <section className="mb-6 rounded-lg border border-[#d8ded4] bg-white p-6 shadow-sm">
-          <div className="flex flex-wrap items-center gap-2 text-xs text-[#607069]">
+        <section className="mb-6 rounded-lg border border-card bg-card p-6 shadow-sm">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
             <span className="rounded-md bg-[#e5f4ef] px-2 py-1 font-medium text-[#0f766e]">
               {workspace.provider} provider
             </span>
@@ -169,7 +169,7 @@ export function SharedWorkspaceView({
           <h2 className="mt-4 text-2xl font-semibold leading-8">
             {workspace.landingPage.headline}
           </h2>
-          <p className="mt-3 max-w-4xl text-sm leading-6 text-[#40504a]">
+          <p className="mt-3 max-w-4xl text-sm leading-6 text-foreground/80">
             {workspace.summary}
           </p>
         </section>
@@ -198,7 +198,7 @@ export function SharedWorkspaceView({
               {workspace.backlog.map((item, index) => (
                 <article
                   key={`${item.feature}-${index}`}
-                  className="rounded-md border border-[#d8ded4] bg-[#fbfcfa] p-4"
+                  className="rounded-md border border-card bg-[#fbfcfa] p-4"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="text-sm font-semibold">{item.feature}</h3>
@@ -206,7 +206,7 @@ export function SharedWorkspaceView({
                       {item.priority}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm leading-6 text-[#40504a]">
+                  <p className="mt-2 text-sm leading-6 text-foreground/80">
                     {item.why}
                   </p>
                 </article>
@@ -214,7 +214,7 @@ export function SharedWorkspaceView({
             </div>
           </ReadOnlySection>
           <ReadOnlySection title="Pricing hypothesis" icon={CircleDollarSign} collapsible sectionId="pricing-hypothesis">
-            <p className="mb-4 text-sm leading-6 text-[#40504a]">
+            <p className="mb-4 text-sm leading-6 text-foreground/80">
               {workspace.pricing.hypothesis}
             </p>
             <Bullets items={workspace.pricing.tiers} />
@@ -227,10 +227,10 @@ export function SharedWorkspaceView({
               {workspace.tasks.map((task, index) => (
                 <article
                   key={`${task.title}-${index}`}
-                  className="rounded-md border border-[#d8ded4] bg-[#fbfcfa] p-4"
+                  className="rounded-md border border-card bg-[#fbfcfa] p-4"
                 >
                   <h3 className="text-sm font-semibold">{task.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-[#40504a]">
+                  <p className="mt-2 text-sm leading-6 text-foreground/80">
                     {task.owner} owns {task.outcome}. Due {task.due}.
                   </p>
                 </article>
@@ -241,7 +241,7 @@ export function SharedWorkspaceView({
 
         <div className="mt-6">
           <ReadOnlySection title="Validation decisions" icon={FlaskConical} collapsible sectionId="validation-decisions">
-            <p className="mb-4 text-sm leading-6 text-[#607069]">
+            <p className="mb-4 text-sm leading-6 text-muted">
               Evidence notes and sources remain private. This shared view shows
               decision state and evidence counts only.
             </p>
@@ -258,14 +258,14 @@ export function SharedWorkspaceView({
                       <span className="font-mono font-semibold text-[#d85b3f]">
                         H{index + 1}
                       </span>
-                      <span className="rounded-md bg-[#eef0ed] px-2 py-1 font-semibold capitalize text-[#40504a]">
+                      <span className="rounded-md bg-muted px-2 py-1 font-semibold capitalize text-foreground/80">
                         {experiment.status}
                       </span>
-                      <span className="text-[#607069]">
+                      <span className="text-muted">
                         {experiment.evidenceCount} evidence item
                         {experiment.evidenceCount === 1 ? "" : "s"}
                       </span>
-                      <span className="text-[#607069]">
+                      <span className="text-muted">
                         {experiment.confidence} confidence
                       </span>
                     </div>
@@ -274,24 +274,24 @@ export function SharedWorkspaceView({
                     </h3>
                     <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
                       <div>
-                        <dt className="font-semibold text-[#17201d]">Decision</dt>
-                        <dd className="mt-1 leading-6 text-[#40504a]">
+                        <dt className="font-semibold text-foreground">Decision</dt>
+                        <dd className="mt-1 leading-6 text-foreground/80">
                           {experiment.decision || "Pending"}
                         </dd>
                       </div>
                       <div>
-                        <dt className="font-semibold text-[#17201d]">
+                        <dt className="font-semibold text-foreground">
                           Next action
                         </dt>
-                        <dd className="mt-1 leading-6 text-[#40504a]">
+                        <dd className="mt-1 leading-6 text-foreground/80">
                           {experiment.nextAction || "Pending"}
                         </dd>
                       </div>
                       <div>
-                        <dt className="font-semibold text-[#17201d]">
+                        <dt className="font-semibold text-foreground">
                           Linked task
                         </dt>
-                        <dd className="mt-1 leading-6 text-[#40504a]">
+                        <dd className="mt-1 leading-6 text-foreground/80">
                           {linkedTask?.title ?? "None"}
                         </dd>
                       </div>

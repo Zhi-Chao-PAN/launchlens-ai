@@ -157,7 +157,7 @@ export function SystemStatus() {
         aria-expanded={isOpen}
         onClick={() => setIsOpen((v) => !v)}
         aria-label="System status"
-        className="flex h-10 items-center gap-2 rounded-md border border-[#d8ded4] bg-white px-3 text-sm text-[#40504a] transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+        className="flex h-10 items-center gap-2 rounded-md border border-card bg-card px-3 text-sm text-foreground/80 transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
       >
         {buttonIcon()}
         <span className="hidden sm:inline">{buttonLabel()}</span>
@@ -165,11 +165,11 @@ export function SystemStatus() {
 
       {isOpen && (
         <div
-          className="absolute right-0 top-12 z-50 w-[min(20rem,calc(100vw-2rem))] origin-top-right rounded-lg border border-[#d8ded4] bg-white p-4 shadow-lg animate-[fadeInDown_150ms_ease-out]"
+          className="absolute right-0 top-12 z-50 w-[min(20rem,calc(100vw-2rem))] origin-top-right rounded-lg border border-card bg-card p-4 shadow-lg animate-[fadeInDown_150ms_ease-out]"
           role="dialog"
           aria-label="System status details"
         >
-          <h3 className="mb-3 text-sm font-semibold text-[#17201d]">System status</h3>
+          <h3 className="mb-3 text-sm font-semibold text-foreground">System status</h3>
 
           {fetchState === "error" && (
             <div role="alert" className="mb-3 flex items-start gap-2 rounded-md border border-[#e7c9bd] bg-[#fff6f1] p-2.5 text-xs leading-5 text-[#8b3d28]">
@@ -181,7 +181,7 @@ export function SystemStatus() {
                 type="button"
                 onClick={manualRetry}
                 disabled={retrying}
-                className="inline-flex shrink-0 items-center gap-1 rounded border border-[#e7c9bd] bg-white px-2 py-0.5 text-[11px] font-medium text-[#8b3d28] transition hover:bg-[#fff6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d85b3f] focus-visible:ring-offset-1 disabled:opacity-50"
+                className="inline-flex shrink-0 items-center gap-1 rounded border border-[#e7c9bd] bg-card px-2 py-0.5 text-[11px] font-medium text-[#8b3d28] transition hover:bg-[#fff6f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d85b3f] focus-visible:ring-offset-1 disabled:opacity-50"
               >
                 <RefreshCw className={`size-3 ${retrying ? "animate-spin" : ""}`} aria-hidden="true" />
                 Retry
@@ -190,7 +190,7 @@ export function SystemStatus() {
           )}
 
           {fetchState === "offline" && (
-            <div role="alert" className="mb-3 flex items-start gap-2 rounded-md border border-[#d8ded4] bg-[#f6f8f4] p-2.5 text-xs leading-5 text-[#40504a]">
+            <div role="alert" className="mb-3 flex items-start gap-2 rounded-md border border-card bg-muted p-2.5 text-xs leading-5 text-foreground/80">
               <WifiOff className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
               <span>Browser reports no network connection. Local draft and export still work.</span>
             </div>
@@ -199,7 +199,7 @@ export function SystemStatus() {
           {systemStatus && (
             <div className="space-y-2 text-sm">
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-[#40504a]">
+                <span className="flex items-center gap-2 text-foreground/80">
                   <Cpu className="size-4" aria-hidden="true" />
                   AI Provider
                 </span>
@@ -208,7 +208,7 @@ export function SystemStatus() {
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-[#40504a]">
+                <span className="flex items-center gap-2 text-foreground/80">
                   {dbOk === null ? (
                     <CloudOff className="size-4 text-[#8e9c93]" aria-hidden="true" />
                   ) : dbOk ? (

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   AlertTriangle,
@@ -187,7 +187,7 @@ function Section({ title, icon: Icon, children, collapsible = false, sectionId, 
   };
 
   return (
-    <section className="rounded-lg border border-[#d8ded4] bg-white shadow-sm overflow-hidden">
+    <section className="rounded-lg border border-card bg-card shadow-sm overflow-hidden">
       {collapsible ? (
         <button
           type="button"
@@ -195,14 +195,14 @@ function Section({ title, icon: Icon, children, collapsible = false, sectionId, 
           onKeyDown={handleKeyDown}
           aria-expanded={isOpen}
           aria-controls={contentId}
-          className="w-full flex items-center gap-2 p-5 text-left transition hover:bg-[#f6f8f4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-inset"
+          className="w-full flex items-center gap-2 p-5 text-left transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-inset"
         >
           <span className="flex size-8 items-center justify-center rounded-md bg-[#e5f4ef] text-[#0f766e]">
             <Icon className="size-4" aria-hidden="true" />
           </span>
-          <h2 className="flex-1 text-base font-semibold text-[#17201d]">{title}</h2>
+          <h2 className="flex-1 text-base font-semibold text-foreground">{title}</h2>
           <ChevronDown
-            className={`size-4 text-[#607069] transition-transform ${isOpen ? "rotate-180" : ""}`}
+            className={`size-4 text-muted transition-transform ${isOpen ? "rotate-180" : ""}`}
             aria-hidden="true"
           />
         </button>
@@ -211,7 +211,7 @@ function Section({ title, icon: Icon, children, collapsible = false, sectionId, 
           <span className="flex size-8 items-center justify-center rounded-md bg-[#e5f4ef] text-[#0f766e]">
             <Icon className="size-4" aria-hidden="true" />
           </span>
-          <h2 className="text-base font-semibold text-[#17201d]">{title}</h2>
+          <h2 className="text-base font-semibold text-foreground">{title}</h2>
         </div>
       )}
       <div
@@ -235,7 +235,7 @@ function EditableText({ label, value, rows = 3, onCommit }: EditableTextProps) {
       value={value}
       rows={rows}
       onChange={(event) => onCommit(event.target.value)}
-      className="w-full resize-y rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 text-[#17201d] outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+      className="w-full resize-y rounded-md border border-input bg-[#fbfcfa] px-3 py-3 text-sm leading-6 text-foreground outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
     />
   );
 }
@@ -262,7 +262,7 @@ function BulletList({ items }: { items: string[] }) {
       {items.map((item, index) => (
         <li
           key={`${item}-${index}`}
-          className="flex gap-3 text-sm leading-6 text-[#40504a]"
+          className="flex gap-3 text-sm leading-6 text-foreground/80"
         >
           <CheckCircle2
             className="mt-1 size-4 shrink-0 text-[#138a72]"
@@ -816,26 +816,26 @@ export function LaunchWorkspace({
     <main id="main-content"
       aria-busy={isGenerating || isSwitching}
       className={[
-        "min-h-screen bg-[#f6f8f4] text-[#17201d]",
+        "min-h-screen bg-muted text-foreground",
         "animate-[fadeInDown_280ms_ease-out_both] motion-reduce:animate-none",
         isSwitching ? "opacity-40 pointer-events-none transition-opacity duration-150 ease-out motion-reduce:transition-none" : "transition-opacity duration-200 ease-out motion-reduce:transition-none",
       ].join(" ")}
     >
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 pb-20 sm:gap-6 sm:px-6 sm:py-6 sm:pb-6 lg:px-8">
-        <header className="flex flex-col gap-3 border-b border-[#d8ded4] pb-4 sm:gap-4 sm:pb-5 lg:flex-row lg:items-center lg:justify-between">
+        <header className="flex flex-col gap-3 border-b border-card pb-4 sm:gap-4 sm:pb-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
             <span className="flex size-9 items-center justify-center rounded-lg bg-[#17201d] text-white sm:size-11">
               <Compass className="size-4 sm:size-5" aria-hidden="true" />
             </span>
             <div>
               <p className="text-xs font-medium text-[#d85b3f] sm:text-sm">LaunchLens AI</p>
-              <h1 className="text-lg font-semibold text-[#17201d] sm:text-2xl">
+              <h1 className="text-lg font-semibold text-foreground sm:text-2xl">
                 Go-to-market workspace
               </h1>
             </div>
           </div>
           <div className="flex items-center gap-2 overflow-x-auto pb-1 text-sm sm:flex-wrap sm:overflow-visible sm:pb-0">
-            <span className={`hidden items-center gap-2 rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-[#40504a] transition-colors sm:flex ${saveFlash ? "bg-[#e5f4ef] text-[#0f766e] border-[#138a72]" : ""}`}>
+            <span className={`hidden items-center gap-2 rounded-md border border-card bg-card px-3 py-2 text-foreground/80 transition-colors sm:flex ${saveFlash ? "bg-[#e5f4ef] text-[#0f766e] border-[#138a72]" : ""}`}>
               <Save className="size-4 text-[#138a72]" aria-hidden="true" />
               {saveLabel}
             </span>
@@ -844,13 +844,13 @@ export function LaunchWorkspace({
               onClick={resetLocalWorkspace}
               title="Reset local draft"
               aria-label="Reset local draft"
-              className="flex size-9 items-center justify-center rounded-md border border-[#d8ded4] bg-white text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 sm:size-10"
+              className="flex size-9 items-center justify-center rounded-md border border-card bg-card text-foreground/80 transition hover:border-[#138a72] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 sm:size-10"
             >
               <RotateCcw className="size-4" aria-hidden="true" />
             </button>
             <ThemeToggle />
             <SystemStatus />
-            <span className="hidden rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-[#40504a] md:inline">
+            <span className="hidden rounded-md border border-card bg-card px-3 py-2 text-foreground/80 md:inline">
               {providerLabel}
             </span>
             <ReplayTourButton />
@@ -859,7 +859,7 @@ export function LaunchWorkspace({
             </span>
             <a
               href="/pricing"
-              className="rounded-md border border-[#cfd8d1] bg-white px-3 py-2 text-[#17201d] transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+              className="rounded-md border border-input bg-card px-3 py-2 text-foreground transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
             >
               Pricing
             </a>
@@ -867,7 +867,7 @@ export function LaunchWorkspace({
         </header>
 
         <div className="grid gap-6 lg:grid-cols-[370px_1fr]">
-          <aside className="min-w-0 rounded-lg border border-[#d8ded4] bg-white p-5 shadow-sm lg:sticky lg:top-6 lg:self-start">
+          <aside className="min-w-0 rounded-lg border border-card bg-card p-5 shadow-sm lg:sticky lg:top-6 lg:self-start">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="size-5 text-[#d85b3f]" aria-hidden="true" />
@@ -878,7 +878,7 @@ export function LaunchWorkspace({
                 aria-controls="founder-brief-controls"
                 aria-expanded={isBriefOpen}
                 onClick={() => setIsBriefOpen((current) => !current)}
-                className="flex h-9 items-center gap-2 rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm font-semibold text-[#17201d] transition hover:border-[#138a72] lg:hidden"
+                className="flex h-9 items-center gap-2 rounded-md border border-input bg-[#fbfcfa] px-3 text-sm font-semibold text-foreground transition hover:border-[#138a72] lg:hidden"
               >
                 <PencilLine className="size-4" aria-hidden="true" />
                 {isBriefOpen ? "Hide brief" : "Edit brief"}
@@ -886,7 +886,7 @@ export function LaunchWorkspace({
             </div>
 
             {!isBriefOpen && (
-              <p className="mt-3 line-clamp-2 text-sm leading-6 text-[#40504a] lg:hidden">
+              <p className="mt-3 line-clamp-2 text-sm leading-6 text-foreground/80 lg:hidden">
                 {input.idea}
               </p>
             )}
@@ -910,7 +910,7 @@ export function LaunchWorkspace({
                         "flex items-center justify-between rounded-md border px-3 py-2 text-left text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60",
                         isSelected
                           ? "border-[#138a72] bg-[#e5f4ef] text-[#0f766e]"
-                          : "border-[#d8ded4] bg-[#fbfcfa] text-[#40504a] hover:border-[#138a72] hover:text-[#17201d]",
+                          : "border-card bg-[#fbfcfa] text-foreground/80 hover:border-[#138a72] hover:text-foreground",
                       ].join(" ")}
                     >
                       {example.label}
@@ -922,7 +922,7 @@ export function LaunchWorkspace({
 
               <div className="space-y-4">
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-[#40504a]">
+                  <span className="mb-2 block text-sm font-medium text-foreground/80">
                     Product idea
                   </span>
                   <textarea
@@ -942,11 +942,11 @@ export function LaunchWorkspace({
                     }}
                     rows={5}
                     placeholder="Describe the product you are validating..."
-                    className="w-full resize-none rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none transition placeholder:text-[#8e9c93] focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    className="w-full resize-none rounded-md border border-input bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none transition placeholder:text-[#8e9c93] focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
                   />
                   <p className="mt-1 text-xs text-[#8e9c93]">
                     Tip: press{" "}
-                    <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1 font-mono">
+                    <kbd className="rounded border border-input bg-muted px-1 font-mono">
                       {formatShortcut({ key: "Enter", meta: true, ctrl: true, description: "", category: "" })}
                     </kbd>{" "}
                     to generate.
@@ -954,7 +954,7 @@ export function LaunchWorkspace({
                 </label>
 
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-[#40504a]">
+                  <span className="mb-2 block text-sm font-medium text-foreground/80">
                     Target audience
                   </span>
                   <textarea
@@ -966,12 +966,12 @@ export function LaunchWorkspace({
                       }))
                     }
                     rows={3}
-                    className="w-full resize-none rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    className="w-full resize-none rounded-md border border-input bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
                   />
                 </label>
 
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-[#40504a]">
+                  <span className="mb-2 block text-sm font-medium text-foreground/80">
                     Market context
                   </span>
                   <input
@@ -982,12 +982,12 @@ export function LaunchWorkspace({
                         market: event.target.value,
                       }))
                     }
-                    className="w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    className="w-full rounded-md border border-input bg-[#fbfcfa] px-3 py-3 text-sm outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
                   />
                 </label>
 
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-[#40504a]">
+                  <span className="mb-2 block text-sm font-medium text-foreground/80">
                     Voice
                   </span>
                   <select
@@ -998,7 +998,7 @@ export function LaunchWorkspace({
                         tone: event.target.value,
                       }))
                     }
-                    className="w-full rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    className="w-full rounded-md border border-input bg-[#fbfcfa] px-3 py-3 text-sm outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
                   >
                     {tones.map((tone) => (
                       <option key={tone} value={tone}>
@@ -1009,7 +1009,7 @@ export function LaunchWorkspace({
                 </label>
 
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-[#40504a]">
+                  <span className="mb-2 block text-sm font-medium text-foreground/80">
                     Constraints
                   </span>
                   <textarea
@@ -1021,7 +1021,7 @@ export function LaunchWorkspace({
                       }))
                     }
                     rows={4}
-                    className="w-full resize-none rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    className="w-full resize-none rounded-md border border-input bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
                   />
                 </label>
 
@@ -1033,26 +1033,26 @@ export function LaunchWorkspace({
                 >
                   {isGenerating ? (
                     <span className="flex items-center gap-1" aria-hidden="true">
-                      <span className="size-1.5 animate-[launchlens-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-white/80 [animation-delay:-0.32s]" />
-                      <span className="size-1.5 animate-[launchlens-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-white/80 [animation-delay:-0.16s]" />
-                      <span className="size-1.5 animate-[launchlens-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-white/80" />
+                      <span className="size-1.5 animate-[launchlens-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-card/80 [animation-delay:-0.32s]" />
+                      <span className="size-1.5 animate-[launchlens-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-card/80 [animation-delay:-0.16s]" />
+                      <span className="size-1.5 animate-[launchlens-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-card/80" />
                     </span>
                   ) : (
                     <Rocket className="size-4" aria-hidden="true" />
                   )}
                   {isGenerating ? "Generating" : "Generate workspace"}
                 </button>
-                <p className="mt-2 text-center text-xs text-[#607069]">
+                <p className="mt-2 text-center text-xs text-muted">
                   Tip: press{" "}
-                  <kbd className="rounded border border-[#cfd8d1] bg-white px-1.5 py-0.5 font-mono text-[11px] text-[#17201d]">
+                  <kbd className="rounded border border-input bg-card px-1.5 py-0.5 font-mono text-[11px] text-foreground">
                     Ctrl
                   </kbd>
                   {" "}+{" "}
-                  <kbd className="rounded border border-[#cfd8d1] bg-white px-1.5 py-0.5 font-mono text-[11px] text-[#17201d]">
+                  <kbd className="rounded border border-input bg-card px-1.5 py-0.5 font-mono text-[11px] text-foreground">
                     Enter
                   </kbd>{" "}
                   to generate; press{" "}
-                  <kbd className="rounded border border-[#cfd8d1] bg-white px-1.5 py-0.5 font-mono text-[11px] text-[#17201d]">?</kbd>{" "}
+                  <kbd className="rounded border border-input bg-card px-1.5 py-0.5 font-mono text-[11px] text-foreground">?</kbd>{" "}
                   for all shortcuts.
                 </p>
               </div>
@@ -1061,9 +1061,9 @@ export function LaunchWorkspace({
                 <div
                   role="status"
                   aria-live="polite"
-                  className="mt-4 animate-[launchlens-fade-in-up_260ms_ease-out_both] rounded-md border border-[#d8ded4] bg-[#fbfcfa] p-3 motion-reduce:animate-none"
+                  className="mt-4 animate-[launchlens-fade-in-up_260ms_ease-out_both] rounded-md border border-card bg-[#fbfcfa] p-3 motion-reduce:animate-none"
                 >
-                  <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#17201d]">
+                  <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
                     <Loader2
                       className="size-4 animate-spin text-[#138a72]"
                       aria-hidden="true"
@@ -1074,7 +1074,7 @@ export function LaunchWorkspace({
                     {loadingSteps.map((step, idx) => (
                       <div key={step} className="flex items-center gap-3" style={{ animationDelay: `${idx * 60}ms` }}>
                         <span className="size-2 animate-[launchlens-dot-pulse_1.4s_ease-in-out_infinite] rounded-full bg-[#138a72]" style={{ animationDelay: `${idx * 120}ms` }} />
-                        <span className="text-sm text-[#40504a]">{step}</span>
+                        <span className="text-sm text-foreground/80">{step}</span>
                         <span className="ml-auto h-2 w-12 overflow-hidden rounded-full bg-[#d8ded4]">
                           <span className="block h-full w-1/3 rounded-full bg-[#138a72] motion-safe:animate-[launchlens-shimmer_1.4s_ease-in-out_infinite]" style={{ animationDelay: `${idx * 120}ms` }} />
                         </span>
@@ -1107,25 +1107,25 @@ export function LaunchWorkspace({
             />
             </div>
 
-            <section className="rounded-lg border border-[#d8ded4] bg-white p-5 shadow-sm">
-              <div className="mb-5 flex flex-col gap-3 border-b border-[#edf0ea] pb-4 xl:flex-row xl:items-center xl:justify-between">
-                <div className="flex flex-wrap items-center gap-3 text-sm text-[#40504a]">
+            <section className="rounded-lg border border-card bg-card p-5 shadow-sm">
+              <div className="mb-5 flex flex-col gap-3 border-b border-card pb-4 xl:flex-row xl:items-center xl:justify-between">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-foreground/80">
                   <span className="rounded-md bg-[#e5f4ef] px-3 py-2 font-medium text-[#0f766e]">
                     {workspace.backlog.length} backlog items
                   </span>
-                  <span className="rounded-md bg-[#eef0ed] px-3 py-2">
+                  <span className="rounded-md bg-muted px-3 py-2">
                     {workspace.tasks.length} launch tasks
                   </span>
-                  <span className="rounded-md bg-[#eef0ed] px-3 py-2">
+                  <span className="rounded-md bg-muted px-3 py-2">
                     {workspace.assumptions.length} assumptions
                   </span>
-                  <span className="rounded-md bg-[#eef0ed] px-3 py-2">
+                  <span className="rounded-md bg-muted px-3 py-2">
                     {generationModeLabel}
                   </span>
-                  <span className="rounded-md bg-[#eef0ed] px-3 py-2">
+                  <span className="rounded-md bg-muted px-3 py-2">
                     Generated {formatGeneratedTime(generationMeta.generatedAt)}
                   </span>
-                  <span className="rounded-md bg-[#eef0ed] px-3 py-2">
+                  <span className="rounded-md bg-muted px-3 py-2">
                     Quality {qualityResult.score}%
                   </span>
                   <span className="rounded-md bg-[#fff0eb] px-3 py-2 text-[#8b3d28]">
@@ -1141,7 +1141,7 @@ export function LaunchWorkspace({
                   <button
                     type="button"
                     onClick={() => setIsEditing((current) => !current)}
-                    className="flex h-10 items-center gap-2 rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm font-semibold text-[#17201d] transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                    className="flex h-10 items-center gap-2 rounded-md border border-input bg-[#fbfcfa] px-3 text-sm font-semibold text-foreground transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
                   >
                     {isEditing ? (
                       <Eye className="size-4" aria-hidden="true" />
@@ -1167,7 +1167,7 @@ export function LaunchWorkspace({
                     type="button"
                     onClick={copyJson}
                     aria-live="polite"
-                    className="flex h-10 items-center gap-2 rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm font-semibold text-[#17201d] transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                    className="flex h-10 items-center gap-2 rounded-md border border-input bg-[#fbfcfa] px-3 text-sm font-semibold text-foreground transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
                   >
                     {copyJustSucceeded === "json" ? (
                       <CheckCircle2 className="size-4 text-[#138a72]" aria-hidden="true" />
@@ -1180,7 +1180,7 @@ export function LaunchWorkspace({
                     type="button"
                     onClick={downloadMarkdownFile}
                     title="Download Markdown file"
-                    className="flex h-10 items-center gap-2 rounded-md border border-[#cfd8d1] bg-white px-3 text-sm font-semibold text-[#40504a] transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                    className="flex h-10 items-center gap-2 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground/80 transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
                   >
                     <Download className="size-4" aria-hidden="true" />
                     .md
@@ -1189,7 +1189,7 @@ export function LaunchWorkspace({
                     type="button"
                     onClick={downloadJsonFile}
                     title="Download JSON file"
-                    className="flex h-10 items-center gap-2 rounded-md border border-[#cfd8d1] bg-white px-3 text-sm font-semibold text-[#40504a] transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                    className="flex h-10 items-center gap-2 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground/80 transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
                   >
                     <Download className="size-4" aria-hidden="true" />
                     .json
@@ -1232,10 +1232,10 @@ export function LaunchWorkspace({
                     </div>
                   ) : (
                     <>
-                      <h2 className="text-2xl font-semibold leading-8 text-[#17201d]">
+                      <h2 className="text-2xl font-semibold leading-8 text-foreground">
                         {workspace.landingPage.headline}
                       </h2>
-                      <p className="mt-3 max-w-3xl text-sm leading-6 text-[#40504a]">
+                      <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/80">
                         {workspace.summary}
                       </p>
                     </>
@@ -1261,7 +1261,7 @@ export function LaunchWorkspace({
                       }
                     />
                   ) : (
-                    <p className="mt-2 text-lg font-semibold text-[#17201d]">
+                    <p className="mt-2 text-lg font-semibold text-foreground">
                       {workspace.landingPage.cta}
                     </p>
                   )}
@@ -1275,9 +1275,9 @@ export function LaunchWorkspace({
               {exportText && (
                 <div
                   role="status"
-                  className="mt-5 rounded-lg border border-[#d8ded4] bg-[#fbfcfa] p-4"
+                  className="mt-5 rounded-lg border border-card bg-[#fbfcfa] p-4"
                 >
-                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm font-semibold text-[#17201d]">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm font-semibold text-foreground">
                     <span className="flex items-center gap-2">
                       <FileText className="size-4" aria-hidden="true" />
                       Workspace export
@@ -1289,7 +1289,7 @@ export function LaunchWorkspace({
                       type="button"
                       onClick={() => { setExportText(""); setExportFormat(""); }}
                       aria-label="Dismiss export"
-                      className="text-[#8e9c93] transition hover:text-[#17201d]"
+                      className="text-[#8e9c93] transition hover:text-foreground"
                     >
                       <X className="size-4" aria-hidden="true" />
                     </button>
@@ -1301,14 +1301,14 @@ export function LaunchWorkspace({
                       value={exportText}
                       rows={8}
                       onFocus={(e) => e.currentTarget.select()}
-                      className="w-full resize-y rounded-md border border-[#cfd8d1] bg-white px-3 py-3 font-mono text-xs leading-5 text-[#40504a] focus:border-[#138a72] focus:outline-none"
+                      className="w-full resize-y rounded-md border border-input bg-card px-3 py-3 font-mono text-xs leading-5 text-foreground/80 focus:border-[#138a72] focus:outline-none"
                     />
                   )}
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button
                       type="button"
                       onClick={retryCopyFromTextarea}
-                      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-[#cfd8d1] bg-white px-2.5 text-xs font-medium text-[#17201d] transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-card px-2.5 text-xs font-medium text-foreground transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
                     >
                       <Copy className="size-3.5" aria-hidden="true" />
                       Copy selection
@@ -1316,7 +1316,7 @@ export function LaunchWorkspace({
                     <button
                       type="button"
                       onClick={downloadExport}
-                      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-[#cfd8d1] bg-white px-2.5 text-xs font-medium text-[#17201d] transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-card px-2.5 text-xs font-medium text-foreground transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
                     >
                       <Download className="size-3.5" aria-hidden="true" />
                       Download file
@@ -1413,8 +1413,8 @@ export function LaunchWorkspace({
                     />
                   </div>
                 ) : (
-                  <div className="space-y-3 text-sm leading-6 text-[#40504a]">
-                    <p className="font-semibold text-[#17201d]">
+                  <div className="space-y-3 text-sm leading-6 text-foreground/80">
+                    <p className="font-semibold text-foreground">
                       {workspace.landingPage.subheadline}
                     </p>
                     <BulletList items={workspace.landingPage.proofBullets} />
@@ -1428,17 +1428,17 @@ export function LaunchWorkspace({
                 {workspace.backlog.map((item, index) => (
                   <article
                     key={`${item.feature}-${index}`}
-                    className="rounded-md border border-[#d8ded4] bg-[#fbfcfa] p-4"
+                    className="rounded-md border border-card bg-[#fbfcfa] p-4"
                   >
                     <div className="mb-2 flex items-center justify-between gap-3">
-                      <h3 className="text-sm font-semibold text-[#17201d]">
+                      <h3 className="text-sm font-semibold text-foreground">
                         {item.feature}
                       </h3>
                       <span className="rounded-md bg-[#f6df8f] px-2 py-1 text-xs font-semibold text-[#493b08]">
                         {item.priority}
                       </span>
                     </div>
-                    <p className="text-sm leading-6 text-[#40504a]">
+                    <p className="text-sm leading-6 text-foreground/80">
                       {item.why}
                     </p>
                   </article>
@@ -1483,7 +1483,7 @@ export function LaunchWorkspace({
                   </div>
                 ) : (
                   <>
-                    <p className="mb-4 text-sm leading-6 text-[#40504a]">
+                    <p className="mb-4 text-sm leading-6 text-foreground/80">
                       {workspace.pricing.hypothesis}
                     </p>
                     <BulletList items={workspace.pricing.tiers} />
@@ -1507,7 +1507,7 @@ export function LaunchWorkspace({
             <div className="grid gap-6 xl:grid-cols-2">
               <Section title="Assumptions to validate" icon={AlertTriangle} collapsible sectionId="assumptions-to-validate" collapsed={collapsedSections.has("assumptions-to-validate")} onToggle={() => toggleSection("assumptions-to-validate")}>
                 <BulletList items={workspace.assumptions} />
-                <p className="mt-4 text-xs leading-5 text-[#607069]">
+                <p className="mt-4 text-xs leading-5 text-muted">
                   Assumptions remain anchored to the generated plan. Track
                   evidence, confidence, decisions, and linked work in the
                   validation loop above.
@@ -1542,17 +1542,17 @@ export function LaunchWorkspace({
                   {workspace.contentCalendar.map((item, index) => (
                     <article
                       key={`${item.channel}-${item.angle}-${index}`}
-                      className="rounded-md border border-[#d8ded4] bg-[#fbfcfa] p-4"
+                      className="rounded-md border border-card bg-[#fbfcfa] p-4"
                     >
                       <div className="mb-1 flex items-center justify-between gap-3">
-                        <h3 className="text-sm font-semibold text-[#17201d]">
+                        <h3 className="text-sm font-semibold text-foreground">
                           {item.channel}
                         </h3>
                         <span className="text-xs font-medium text-[#d85b3f]">
                           {item.cadence}
                         </span>
                       </div>
-                      <p className="text-sm leading-6 text-[#40504a]">
+                      <p className="text-sm leading-6 text-foreground/80">
                         {item.angle}
                       </p>
                     </article>
@@ -1565,17 +1565,17 @@ export function LaunchWorkspace({
                   {workspace.tasks.map((task, index) => (
                     <article
                       key={`${task.title}-${task.due}-${index}`}
-                      className="rounded-md border border-[#d8ded4] bg-[#fbfcfa] p-4"
+                      className="rounded-md border border-card bg-[#fbfcfa] p-4"
                     >
                       <div className="mb-2 flex flex-wrap items-center gap-2">
-                        <h3 className="text-sm font-semibold text-[#17201d]">
+                        <h3 className="text-sm font-semibold text-foreground">
                           {task.title}
                         </h3>
                         <span className="rounded-md bg-[#e5f4ef] px-2 py-1 text-xs font-medium text-[#0f766e]">
                           {task.due}
                         </span>
                       </div>
-                      <p className="text-sm leading-6 text-[#40504a]">
+                      <p className="text-sm leading-6 text-foreground/80">
                         {task.owner} owns {task.outcome}.
                       </p>
                     </article>
