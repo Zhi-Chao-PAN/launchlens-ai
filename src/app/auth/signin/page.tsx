@@ -67,7 +67,7 @@ export default async function SignInPage({
 
         <button
           type="submit"
-          className="inline-flex h-10 items-center justify-center rounded-md bg-[#17201d] px-5 text-sm font-semibold text-white transition hover:bg-[#24312d]"
+          className="inline-flex h-10 items-center justify-center rounded-md bg-[#17201d] px-5 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2"
         >
           Sign in
         </button>

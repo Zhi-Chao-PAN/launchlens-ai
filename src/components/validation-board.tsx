@@ -226,7 +226,7 @@ export function ValidationBoard({
                     }
                     aria-expanded={expanded}
                     aria-controls={`experiment-details-${experiment.id}`}
-                    className="flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfd8d1] bg-white px-3 text-sm font-semibold text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d]"
+                    className="flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfd8d1] bg-white px-3 text-sm font-semibold text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
                   >
                     {expanded ? (
                       <ChevronUp className="size-4" aria-hidden="true" />
@@ -241,7 +241,7 @@ export function ValidationBoard({
                     disabled={evidenceLimitReached}
                     aria-expanded={formOpen}
                     aria-controls={`evidence-form-${experiment.id}`}
-                    className="flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm font-semibold text-[#17201d] transition hover:border-[#138a72] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 items-center justify-center gap-2 rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm font-semibold text-[#17201d] transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Plus className="size-4" aria-hidden="true" />
                     {formOpen ? "Cancel" : "Add evidence"}
@@ -369,7 +369,7 @@ export function ValidationBoard({
                         }
                         title="Remove evidence"
                         aria-label={`Remove evidence from ${item.source}`}
-                        className="flex size-8 shrink-0 items-center justify-center rounded-md text-[#8b3d28] transition hover:bg-white"
+                        className="flex size-8 shrink-0 items-center justify-center rounded-md text-[#8b3d28] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d85b3f] focus-visible:ring-offset-1"
                       >
                         <Trash2 className="size-4" aria-hidden="true" />
                       </button>
@@ -450,7 +450,7 @@ export function ValidationBoard({
                   </div>
                   <button
                     type="submit"
-                    className="mt-6 flex h-10 items-center justify-center gap-2 rounded-md bg-[#17201d] px-4 text-sm font-semibold text-white transition hover:bg-[#24312d]"
+                    className="mt-6 flex h-10 items-center justify-center gap-2 rounded-md bg-[#17201d] px-4 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2"
                   >
                     <Plus className="size-4" aria-hidden="true" />
                     Record

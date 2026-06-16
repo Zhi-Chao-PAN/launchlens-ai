@@ -526,7 +526,7 @@ export function LaunchWorkspace({
               onClick={resetLocalWorkspace}
               title="Reset local draft"
               aria-label="Reset local draft"
-              className="flex size-10 items-center justify-center rounded-md border border-[#d8ded4] bg-white text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d]"
+              className="flex size-10 items-center justify-center rounded-md border border-[#d8ded4] bg-white text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
             >
               <RotateCcw className="size-4" aria-hidden="true" />
             </button>
@@ -540,7 +540,7 @@ export function LaunchWorkspace({
             </span>
             <a
               href="/pricing"
-              className="rounded-md border border-[#cfd8d1] bg-white px-3 py-2 text-[#17201d] transition hover:border-[#138a72]"
+              className="rounded-md border border-[#cfd8d1] bg-white px-3 py-2 text-[#17201d] transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
             >
               Pricing
             </a>
@@ -685,7 +685,7 @@ export function LaunchWorkspace({
                   type="button"
                   onClick={generate}
                   disabled={isGenerating}
-                  className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-[#17201d] px-4 text-sm font-semibold text-white transition hover:bg-[#24312d] disabled:cursor-not-allowed disabled:bg-[#7c8781]"
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-[#17201d] px-4 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#7c8781]"
                 >
                   {isGenerating ? (
                     <Loader2 className="size-4 animate-spin" aria-hidden="true" />
@@ -778,7 +778,7 @@ export function LaunchWorkspace({
                   <button
                     type="button"
                     onClick={() => setIsEditing((current) => !current)}
-                    className="flex h-10 items-center gap-2 rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm font-semibold text-[#17201d] transition hover:border-[#138a72]"
+                    className="flex h-10 items-center gap-2 rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm font-semibold text-[#17201d] transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
                   >
                     {isEditing ? (
                       <Eye className="size-4" aria-hidden="true" />
@@ -790,7 +790,7 @@ export function LaunchWorkspace({
                   <button
                     type="button"
                     onClick={copyMarkdown}
-                    className="flex h-10 items-center gap-2 rounded-md bg-[#17201d] px-3 text-sm font-semibold text-white transition hover:bg-[#24312d]"
+                    className="flex h-10 items-center gap-2 rounded-md bg-[#17201d] px-3 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2"
                   >
                     <Copy className="size-4" aria-hidden="true" />
                     Copy Markdown
@@ -798,7 +798,7 @@ export function LaunchWorkspace({
                   <button
                     type="button"
                     onClick={copyJson}
-                    className="flex h-10 items-center gap-2 rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm font-semibold text-[#17201d] transition hover:border-[#138a72]"
+                    className="flex h-10 items-center gap-2 rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm font-semibold text-[#17201d] transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
                   >
                     <Braces className="size-4" aria-hidden="true" />
                     Copy JSON

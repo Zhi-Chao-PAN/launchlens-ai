@@ -389,7 +389,7 @@ export function CloudWorkspaces({
             disabled={!ownerToken || isBusy}
             title="Refresh cloud history"
             aria-label="Refresh cloud history"
-            className="flex size-10 items-center justify-center rounded-md border border-[#cfd8d1] bg-[#fbfcfa] text-[#40504a] transition hover:border-[#138a72] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex size-10 items-center justify-center rounded-md border border-[#cfd8d1] bg-[#fbfcfa] text-[#40504a] transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <RefreshCw
               className={`size-4 ${busyAction === "refresh" ? "animate-spin" : ""}`}
@@ -400,7 +400,7 @@ export function CloudWorkspaces({
             type="button"
             onClick={saveSnapshot}
             disabled={cloudState !== "ready" || isBusy}
-            className="flex h-10 items-center gap-2 rounded-md bg-[#17201d] px-3 text-sm font-semibold text-white transition hover:bg-[#24312d] disabled:cursor-not-allowed disabled:bg-[#89938f]"
+            className="flex h-10 items-center gap-2 rounded-md bg-[#17201d] px-3 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#89938f]"
           >
             {busyAction === "save" ? (
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
@@ -495,7 +495,7 @@ export function CloudWorkspaces({
                           ? "Hide recovery key"
                           : "Show recovery key"
                       }
-                      className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfd8d1] bg-white text-[#40504a] transition hover:border-[#138a72]"
+                      className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfd8d1] bg-white text-[#40504a] transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
                     >
                       {showRecoveryKey ? (
                         <EyeOff className="size-4" aria-hidden="true" />
@@ -509,7 +509,7 @@ export function CloudWorkspaces({
                       disabled={!recoveryKey}
                       title="Copy recovery key"
                       aria-label="Copy recovery key"
-                      className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfd8d1] bg-white text-[#40504a] transition hover:border-[#138a72] disabled:opacity-50"
+                      className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#cfd8d1] bg-white text-[#40504a] transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:opacity-50"
                     >
                       <Copy className="size-4" aria-hidden="true" />
                     </button>
@@ -521,7 +521,7 @@ export function CloudWorkspaces({
                   type="button"
                   onClick={generateRecoveryKey}
                   disabled={isBusy}
-                  className="flex h-9 items-center gap-2 rounded-md border border-[#cfd8d1] bg-white px-3 text-sm font-semibold text-[#40504a] transition hover:border-[#138a72] disabled:opacity-50"
+                  className="flex h-9 items-center gap-2 rounded-md border border-[#cfd8d1] bg-white px-3 text-sm font-semibold text-[#40504a] transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:opacity-50"
                 >
                   <KeyRound className="size-4" aria-hidden="true" />
                   Generate key
@@ -530,7 +530,7 @@ export function CloudWorkspaces({
                   type="button"
                   onClick={linkRecoveryOwner}
                   disabled={isBusy || !recoveryLabel || !recoveryKey}
-                  className="h-9 rounded-md bg-[#17201d] px-3 text-sm font-semibold text-white transition hover:bg-[#24312d] disabled:cursor-not-allowed disabled:bg-[#89938f]"
+                  className="h-9 rounded-md bg-[#17201d] px-3 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#89938f]"
                 >
                   Link history
                 </button>
@@ -538,7 +538,7 @@ export function CloudWorkspaces({
                   type="button"
                   onClick={recoverOwner}
                   disabled={isBusy || !recoveryLabel || !recoveryKey}
-                  className="h-9 rounded-md border border-[#cfd8d1] bg-white px-3 text-sm font-semibold text-[#40504a] transition hover:border-[#138a72] disabled:opacity-50"
+                  className="h-9 rounded-md border border-[#cfd8d1] bg-white px-3 text-sm font-semibold text-[#40504a] transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:opacity-50"
                 >
                   Recover
                 </button>
@@ -577,7 +577,7 @@ export function CloudWorkspaces({
                   disabled={isBusy}
                   title="Restore snapshot"
                   aria-label={`Restore ${item.title}`}
-                  className="flex size-9 items-center justify-center rounded-md border border-[#cfd8d1] bg-white text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d] disabled:opacity-50"
+                  className="flex size-9 items-center justify-center rounded-md border border-[#cfd8d1] bg-white text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:opacity-50"
                 >
                   {busyAction === `restore:${item.id}` ? (
                     <Loader2
@@ -595,7 +595,7 @@ export function CloudWorkspaces({
                     disabled={isBusy}
                     title="Copy share link"
                     aria-label={`Copy share link for ${item.title}`}
-                    className="flex size-9 items-center justify-center rounded-md border border-[#cfd8d1] bg-white text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d] disabled:opacity-50"
+                    className="flex size-9 items-center justify-center rounded-md border border-[#cfd8d1] bg-white text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:opacity-50"
                   >
                     <Copy className="size-4" aria-hidden="true" />
                   </button>
@@ -610,7 +610,7 @@ export function CloudWorkspaces({
                       ? `Disable sharing for ${item.title}`
                       : `Share ${item.title}`
                   }
-                  className="flex size-9 items-center justify-center rounded-md border border-[#cfd8d1] bg-white text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d] disabled:opacity-50"
+                  className="flex size-9 items-center justify-center rounded-md border border-[#cfd8d1] bg-white text-[#40504a] transition hover:border-[#138a72] hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 disabled:opacity-50"
                 >
                   {item.isPublic ? (
                     <Unlink className="size-4" aria-hidden="true" />
@@ -624,7 +624,7 @@ export function CloudWorkspaces({
                   disabled={isBusy}
                   title="Delete snapshot"
                   aria-label={`Delete ${item.title}`}
-                  className="flex size-9 items-center justify-center rounded-md border border-[#cfd8d1] bg-white text-[#8b3d28] transition hover:border-[#c86b50] disabled:opacity-50"
+                  className="flex size-9 items-center justify-center rounded-md border border-[#cfd8d1] bg-white text-[#8b3d28] transition hover:border-[#c86b50] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d85b3f] focus-visible:ring-offset-1 disabled:opacity-50"
                 >
                   <Trash2 className="size-4" aria-hidden="true" />
                 </button>
