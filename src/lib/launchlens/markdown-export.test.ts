@@ -61,6 +61,24 @@ describe("workspaceToMarkdown", () => {
     expect(markdown).toContain("AI grounded claims:");
     expect(markdown).toContain("AI unresolved risks:");
   });
+
+  it("output always starts with a top-level heading", () => {
+    const md = workspaceToMarkdown(exampleWorkspaces[0].workspace);
+    expect(md.startsWith("# ")).toBe(true);
+  });
+
+  it("includes multiple section headings", () => {
+    const md = workspaceToMarkdown(exampleWorkspaces[0].workspace);
+    const sectionCount = (md.match(/^## /gm) || []).length;
+    expect(sectionCount).toBeGreaterThan(3);
+  });
+
+  it("produces consistent output for the same input", () => {
+    const ws = exampleWorkspaces[0].workspace;
+    const a = workspaceToMarkdown(ws);
+    const b = workspaceToMarkdown(ws);
+    expect(a).toBe(b);
+  });
 });
 
 describe("safeMarkdownFilename", () => {

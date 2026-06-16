@@ -34,4 +34,25 @@ describe("workspace RBAC", () => {
     expect(describeWorkspaceRole("editor")).toMatch(/save snapshots/);
     expect(describeWorkspaceRole("viewer")).toMatch(/read the workspace/);
   });
+
+  it("isWorkspaceRole returns false for empty string", () => {
+    expect(isWorkspaceRole("")).toBe(false);
+  });
+
+  it("isWorkspaceRole returns false for numeric strings", () => {
+    expect(isWorkspaceRole("123")).toBe(false);
+  });
+
+  it("describeWorkspaceRole returns a non-empty string for every role", () => {
+    for (const role of WORKSPACE_ROLES) {
+      const desc = describeWorkspaceRole(role);
+      expect(typeof desc).toBe("string");
+      expect(desc.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("describeWorkspaceRole returns the same value for the same input (stable)", () => {
+    expect(describeWorkspaceRole("owner")).toBe(describeWorkspaceRole("owner"));
+    expect(describeWorkspaceRole("editor")).toBe(describeWorkspaceRole("editor"));
+  });
 });

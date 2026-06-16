@@ -29,7 +29,9 @@ tags are cut for milestone demos.
 - Error code chip with one-click copy button on the cloud workspaces error panel
 - `aria-busy` attributes on decision copilot generate button and system status retry button during loading
 - `useSrAnnounce` hook (`src/hooks/use-sr-announce.ts`) for consistent screen-reader live-region announcements
-- Two-stage confirmation for evidence deletion to prevent mobile mis-taps
+- Collapsible workspace sections (click header / `[` & `]` keyboard shortcuts) with full ARIA semantics
+- Evidence editing support: pencil button opens pre-filled form, submit saves changes
+- Auto-save visual flash + screen-reader announcement when workspace is persisted\n- Two-stage confirmation for evidence deletion to prevent mobile mis-taps
 - Safe-area CSS variables + utility classes (`pt-safe`, `pb-safe`, etc.) with `viewport-fit=cover` for iOS PWA
 - Screen-reader live-region announcements for decision generation (start / success / failure) and system status retries
 
@@ -62,6 +64,10 @@ tags are cut for milestone demos.
 - iOS safe-area insets applied to body, toast, and skip-link ? full-screen PWA content no longer clipped
 - Workspace header uses compact layout on mobile (smaller logo, title, buttons, tighter spacing)
 - All screen-reader announcements consolidated through the `useSrAnnounce` hook
+- Workspace sections collapsible with click + keyboard shortcuts, including on shared read-only pages
+- Shared workspace page uses compact mobile layout with safe-area padding
+- Evidence entries editable inline via pencil button (form pre-fills with existing data)
+- "Saved locally" badge flashes green on autosave for clearer visual feedback
 - Validation-board header uses compact spacing and typography on mobile
 - Evidence list sorts newest-first, with 44px touch-target delete buttons on mobile
 

@@ -308,3 +308,13 @@
 - [x] Workspace header compact mobile layout: smaller logo, title, action buttons, and tighter spacing.
 - [x] Test count expanded from 240 to **250 tests / 41 files**: workspace-validation edge cases (missing fields, non-object values, bad backlog, isRecord), generated-time stability, useSrAnnounce hook surface.
 - [x] All four quality gates green: ESLint 0-warn, tsc strict, Vitest, Next.js build.
+
+## Section Collapsing & Evidence Editing (R121-R125, 2026-06-17)
+
+- [x] Workspace sections are now collapsible: click any section header to expand/collapse, keyboard Enter/Space supported, full aria-expanded / aria-controls semantics.
+- [x] Keyboard shortcuts `[` and `]` collapse / expand all sections at once.
+- [x] Shared workspace (read-only) page updated: mobile compact layout, collapsible sections, safe-area padding, keyboard-accessible section headers.
+- [x] Evidence entries can be edited: pencil button opens the form pre-filled, submit updates the entry with "Save" button text and screen-reader announcement.
+- [x] Auto-save visual feedback: "Saved locally" badge flashes green when a save completes, plus screen-reader announcement "Workspace saved locally."
+- [x] Test count expanded from 250 to **260 tests / 41 files**: RBAC role validation, markdown export structure, JSON export round-trip + generatedAt timestamp, RBAC description stability.
+- [x] All four quality gates green: ESLint 0-warn, tsc strict, Vitest, Next.js build.

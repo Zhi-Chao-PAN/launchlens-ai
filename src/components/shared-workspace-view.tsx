@@ -1,3 +1,5 @@
+"use client";
+
 ﻿import Link from "next/link";
 import { CopyLinkButton } from "@/components/copy-link-button";
 import { CopyMarkdownButton } from "@/components/copy-markdown-button";

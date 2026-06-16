@@ -35,6 +35,26 @@ describe("workspaceToJson", () => {
       workspace.assumptions.length,
     );
   });
+
+  it("produces valid JSON that can be round-tripped", () => {
+    const json = workspaceToJson(exampleWorkspaces[0].workspace);
+    const parsed = JSON.parse(json);
+    expect(parsed).toBeDefined();
+    expect(typeof parsed).toBe("object");
+  });
+
+  it("preserves the provider field through export", () => {
+    const json = workspaceToJson(exampleWorkspaces[0].workspace);
+    const parsed = JSON.parse(json);
+    expect(parsed.provider).toBe(exampleWorkspaces[0].workspace.provider);
+  });
+
+  it("includes a generatedAt timestamp", () => {
+    const json = workspaceToJson(exampleWorkspaces[0].workspace);
+    const parsed = JSON.parse(json);
+    expect(parsed.generatedAt).toBeDefined();
+    expect(new Date(parsed.generatedAt).toString()).not.toBe("Invalid Date");
+  });
 });
 
 describe("workspaceToJson edge cases", () => {
