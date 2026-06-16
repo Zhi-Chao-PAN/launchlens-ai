@@ -1,6 +1,7 @@
 ﻿import { describe, expect, it } from "vitest";
 
 import { API_ERROR_MESSAGES, friendlyApiMessage } from "./api-errors";
+import * as errorCodes from "./error-codes";
 import {
   ERROR_AUTH_MISSING,
   ERROR_BODY_TOO_LARGE,
@@ -31,6 +32,18 @@ describe("friendlyApiMessage", () => {
       expect(typeof msg).toBe("string");
       expect(msg.length).toBeGreaterThan(8);
       expect(code).toMatch(/^[a-z_]+$/);
+    }
+  });
+
+  it("covers every exported ERROR_* constant from error-codes", () => {
+    const exported = Object.entries(errorCodes)
+      .filter(([k]) => k.startsWith("ERROR_"))
+      .map(([, v]) => v as string);
+    expect(exported.length).toBeGreaterThan(20);
+    for (const code of exported) {
+      expect(API_ERROR_MESSAGES).toHaveProperty(code);
+      expect(typeof API_ERROR_MESSAGES[code]).toBe("string");
+      expect(API_ERROR_MESSAGES[code].length).toBeGreaterThan(8);
     }
   });
 });
