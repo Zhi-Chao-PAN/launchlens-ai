@@ -3,11 +3,18 @@
 type SkeletonProps = React.HTMLAttributes<HTMLDivElement> & {
   className?: string;
   rounded?: "none" | "sm" | "md" | "lg" | "full";
+  shimmer?: boolean;
 };
 
+/**
+ * Shared Skeleton primitive used across route-level loading states and
+ * async panels. Defaults to a soft Tailwind pulse; pass shimmer={true} for
+ * a higher-signal horizontal shimmer sweep used in the main app shell.
+ */
 export function Skeleton({
   className = "",
   rounded = "md",
+  shimmer = false,
   ...rest
 }: SkeletonProps) {
   const roundedClasses = {
@@ -17,6 +24,22 @@ export function Skeleton({
     lg: "rounded-lg",
     full: "rounded-full",
   };
+
+  if (shimmer) {
+    return (
+      <div
+        role="status"
+        aria-label="Loading"
+        className={`relative overflow-hidden bg-[#e2e8df] ${roundedClasses[rounded]} ${className}`}
+        {...rest}
+      >
+        <div
+          aria-hidden="true"
+          className="absolute inset-y-0 w-1/3 animate-[launchlens-shimmer_1.4s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/70 to-transparent motion-reduce:animate-none"
+        />
+      </div>
+    );
+  }
 
   return (
     <div
