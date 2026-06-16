@@ -39,6 +39,20 @@ Future commercial features still exist, but none are required to demonstrate the
 - [x] Product story clearly supports AI full-stack Solopreneur, TPM, and UTS Master of AI positioning.
 
 
+
+
+### Post-portfolio UX polish pass (2026-06-16)
+After the portfolio-ready gate was set, an additional polish pass was applied to strengthen the demonstration quality of the product:
+- Toast system: per-id timer map, shrinking progress bar, pause-on-hover, Shift+Esc dismiss-all, dismiss-all affordance at ≥2 toasts.
+- Animation system: page-entrance fade-in, grid-rows collapsible panels, copilot shimmer, staggered snapshot list entrance, loading dot-pulse, workspace-switch crossfade.
+- Overlay stack: `launchlens:escape` dispatcher plus `pushOverlay()` counter ensures Escape closes topmost overlay first; `inert` blocks focus into collapsed content.
+- Error resilience: system-status offline/error/retry states, AbortController timeouts, online/offline events, recovery form inline validation.
+- Export robustness: "Copied!" feedback, `.md`/`.json` download fallback, retry-copy from fallback textarea.
+- A11y: aria-describedby on wizard, role=dialog/aria-invalid on forms, chevron rotation on disclosures, reduced-motion respected globally.
+- Mobile: viewport-clamped panels, bottom padding for floating help button.
+
+These additions do not change the portfolio scope but raise the ceiling on demonstration polish so reviewers experience fewer seams when walking the product manually.
+
 ## Deliberate Non-Blocking Enhancements
 
 These are commercial expansion paths, not missing evidence for the current portfolio release. They are ranked from cheapest to most expensive, with the cheapest items deliberately left for a future "pricing and evaluation polish" pass because they are not portfolio blockers.
@@ -76,7 +90,7 @@ Honest scope estimate from a code review in mid-2026:
 Total re-entry estimate: 6 to 10 weeks for a small team to convert this portfolio release into a real commercial SaaS. The current code is intentionally designed to make that re-entry tractable (server-only DML, schema in a migration, owner-scoped queries, capability account on a single column) but it has not been built with billing in mind. The bar for portfolio-ready is met; the bar for ship to paying teams is not, and the difference is documented here so that the next reader does not mistake one for the other.
 
 ### P3 - Multi-tenant workspace isolation (2026-06-14)
-- Database migration adds launchlens_tenants table with UUID PK, owner_hash FK, and 	enant_id column on workspaces.
+- Database migration adds launchlens_tenants table with UUID PK, owner_hash FK, and tenant_id column on workspaces.
 - createWorkspace auto-creates a default tenant for new owners via INSERT ... WHERE NOT EXISTS.
 - All existing workspaces backfilled with tenant_id via migration script.
 - New API routes: GET/POST /api/tenants, GET /api/tenants/[id], GET/POST /api/tenants/[id]/workspaces.

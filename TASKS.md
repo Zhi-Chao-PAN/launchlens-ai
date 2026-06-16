@@ -130,6 +130,28 @@
 - [x] Final desktop and 390px mobile browser QA has no console errors or horizontal overflow.
 - [x] Project is marked portfolio-ready only after CI and production deployment verification.
 
+
+
+## UX Polish & Quality Rounds (2026-06-16)
+
+- [x] Shrinking toast progress bar (time-remaining indicator via rAF-driven CSS transition, pause-on-hover/focus, resume on leave).
+- [x] Shift+Esc to dismiss all toasts; "Dismiss all" button appears when >=2 toasts are queued.
+- [x] Enter dismisses onboarding wizard; primary CTA autoFocus; Esc/Enter hint added to wizard footer.
+- [x] Dot-pulse and staggered shimmer skeletons for generation loading states.
+- [x] Soft page-entrance fade-in on main routes (`/`, `/pricing`, `/signin`, shared view, not-found).
+- [x] Copilot analysis shimmer + staggered cloud snapshot list entrance (nth-child animation delay).
+- [x] Grid-rows smooth expand/collapse for validation experiment cards (with `inert` on collapsed).
+- [x] Overlay Escape priority stack (`pushOverlay()`/`hasOpenOverlay()`) — toasts defer to open modals/wizards/dropdowns; shortcuts modal and onboarding wizard register on open.
+- [x] Shortcuts modal X focus ring; Shift+Esc hint in footer.
+- [x] `Disclosure` component replacing native `<details>` on pricing FAQ: animated grid-rows 0fr→1fr, `inert` on collapsed panel, proper ARIA (`aria-expanded`, `aria-controls`, `role="region"`, `aria-labelledby`), chevron rotation, reduced-motion guard.
+- [x] System status graceful failure states: network-error alert with manual Retry, online/offline browser events, AbortController 8s timeout, `role="dialog"` panel, viewport-clamped dropdown width.
+- [x] Export polish: checkmark "Copied!" feedback on Markdown/JSON buttons (1.8s), `.md`/`.json` file download fallback, retry-copy from export textarea, format badge, aria-label on textarea.
+- [x] Cloud recovery form inline validation: aria-invalid, aria-describedby error messages, invalid_recovery_input differentiation, Link-vs-Recover helper copy, disabled-state clarity with onBlur triggering validation.
+- [x] Workspace-switch crossfade (120ms out / 200ms in) when loading example / resetting / restoring cloud snapshot; pointer-events gating; aria-busy; reduced-motion bypass; cleanup timer on unmount.
+- [x] Mobile responsive audit: viewport-clamped modal/dropdown widths (`min(20rem, calc(100vw - 2rem))`), bottom padding to clear floating help button on small screens across workspace, pricing, signin, and shared views.
+- [x] Vitest overlay stack invariants (2 new tests → 152 tests / 37 files passing).
+- [x] All quality gates pass: ESLint (0 warnings), TSC, Vitest (152/37), Next.js production build.
+
 ## Post-Portfolio Enhancements
 
 - [ ] Add optional OAuth/passkey identity for teams that prefer conventional accounts.
