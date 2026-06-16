@@ -1,7 +1,122 @@
-﻿"use client";
+"use client";
 
-import { useCallback, useId, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { ChevronDown } from "lucide-react";
+
+/* -------------------------------------------------------------------------- */
+/*  DisclosureGroup — provides arrow-key / Home / End navigation across a     */
+/*  set of Disclosure buttons. Uses React context so Disclosure children do   */
+/*  not need to be direct DOM siblings of the group.                          */
+/* -------------------------------------------------------------------------- */
+
+type DisclosureGroupContextValue = {
+  register: (id: string, button: HTMLButtonElement) => () => void;
+  onKey: (id: string, event: React.KeyboardEvent<HTMLButtonElement>) => void;
+};
+
+const DisclosureGroupContext =
+  createContext<DisclosureGroupContextValue | null>(null);
+
+type DisclosureGroupProps = {
+  children: React.ReactNode;
+  className?: string;
+} & React.HTMLAttributes<HTMLDivElement>;
+
+/**
+ * Wrap a list of <Disclosure> components in <DisclosureGroup> to enable
+ * WAI-ARIA accordion-style keyboard navigation: Up/Down moves focus between
+ * toggles, Home/End jump to first/last. Individual Disclosures still manage
+ * their own open/close state independently (no multi/single collapse lock
+ * unless you compose it on top).
+ */
+export function DisclosureGroup({
+  children,
+  className = "",
+  ...rest
+}: DisclosureGroupProps) {
+  const itemsRef = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const orderRef = useRef<string[]>([]);
+
+  const register = useCallback(
+    (id: string, button: HTMLButtonElement) => {
+      itemsRef.current.set(id, button);
+      if (!orderRef.current.includes(id)) {
+        orderRef.current.push(id);
+      }
+      return () => {
+        itemsRef.current.delete(id);
+        orderRef.current = orderRef.current.filter((x) => x !== id);
+      };
+    },
+    [],
+  );
+
+  const moveFocus = useCallback(
+    (currentId: string, delta: number) => {
+      const order = orderRef.current;
+      const idx = order.indexOf(currentId);
+      if (idx === -1) return;
+      const nextIdx = (idx + delta + order.length) % order.length;
+      const nextId = order[nextIdx];
+      itemsRef.current.get(nextId)?.focus();
+    },
+    [],
+  );
+
+  const jumpTo = useCallback((which: "first" | "last") => {
+    const order = orderRef.current;
+    if (order.length === 0) return;
+    const target =
+      which === "first" ? order[0] : order[order.length - 1];
+    itemsRef.current.get(target)?.focus();
+  }, []);
+
+  const onKey = useCallback(
+    (id: string, event: React.KeyboardEvent<HTMLButtonElement>) => {
+      const key = event.key;
+      if (key === "ArrowDown") {
+        event.preventDefault();
+        moveFocus(id, 1);
+      } else if (key === "ArrowUp") {
+        event.preventDefault();
+        moveFocus(id, -1);
+      } else if (key === "Home") {
+        event.preventDefault();
+        jumpTo("first");
+      } else if (key === "End") {
+        event.preventDefault();
+        jumpTo("last");
+      }
+    },
+    [moveFocus, jumpTo],
+  );
+
+  const ctx = useMemo<DisclosureGroupContextValue>(
+    () => ({ register, onKey }),
+    [register, onKey],
+  );
+
+  return (
+    <DisclosureGroupContext.Provider value={ctx}>
+      <div className={className} {...rest}>
+        {children}
+      </div>
+    </DisclosureGroupContext.Provider>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Disclosure — animated single panel                                        */
+/* -------------------------------------------------------------------------- */
 
 interface DisclosureProps {
   title: string;
@@ -16,30 +131,32 @@ interface DisclosureProps {
  * cannot receive focus or be read by screen readers until expanded.
  *
  * Accessibility: the toggle is a real <button>, the region exposes
- * aria-expanded/aria-controls, and the panel uses role="region" with an
- * aria-labelledby pointing at the button so screen readers can jump between
- * question and answer.
+ * aria-expanded/aria-controls, and the panel uses role="region" with
+ * aria-labelledby pointing at the button. When wrapped in a DisclosureGroup,
+ * Up/Down/Home/End move focus across sibling disclosures per WAI-ARIA.
  */
 export function Disclosure({ title, children, defaultOpen = false }: DisclosureProps) {
   const [open, setOpen] = useState<boolean>(defaultOpen);
   const panelId = useId();
   const buttonId = useId();
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const group = useContext(DisclosureGroupContext);
 
   const toggle = useCallback(() => {
     setOpen((prev) => !prev);
   }, []);
 
+  // Register with parent group (if any) to enable arrow-key nav.
+  useEffect(() => {
+    if (!group || !buttonRef.current) return;
+    return group.register(buttonId, buttonRef.current);
+  }, [group, buttonId]);
+
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLButtonElement>) => {
-      // Let native button activation handle Enter/Space already; nothing to do.
-      if (event.key === "Home") {
-        event.preventDefault();
-        (event.currentTarget as HTMLElement).focus();
-        // Home/End could move focus across a disclosure group in a future
-        // enhancement, but for isolated FAQ items we just stay put.
-      }
+      if (group) group.onKey(buttonId, event);
     },
-    [],
+    [group, buttonId],
   );
 
   return (
@@ -47,6 +164,7 @@ export function Disclosure({ title, children, defaultOpen = false }: DisclosureP
       <h3>
         <button
           id={buttonId}
+          ref={buttonRef}
           type="button"
           aria-expanded={open}
           aria-controls={panelId}

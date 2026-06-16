@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Rocket, Sparkles, Target, UsersRound, HelpCircle, X } from "lucide-react";
 import { registerShortcut } from "@/hooks/use-keyboard-shortcuts";
 import { pushOverlay } from "@/lib/launchlens/overlays";
@@ -43,11 +43,13 @@ function emitShow() {
 export function OnboardingWizard() {
   const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const dismissed = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
     if (!dismissed) {
       const timer = window.setTimeout(() => {
+        previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
         setVisible(true);
         window.requestAnimationFrame(() => setMounted(true));
       }, 400);
@@ -59,6 +61,7 @@ export function OnboardingWizard() {
   useEffect(() => {
     const unregister = registerShortcut("showTour", () => {
       localStorage.removeItem(STORAGE_KEY);
+      previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
       setVisible(true);
       window.requestAnimationFrame(() => setMounted(true));
     });
@@ -68,6 +71,7 @@ export function OnboardingWizard() {
   useEffect(() => {
     const listener: Listener = {
       show: () => {
+        previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
         setVisible(true);
         window.requestAnimationFrame(() => setMounted(true));
       },
@@ -119,7 +123,15 @@ export function OnboardingWizard() {
   function dismiss() {
     localStorage.setItem(STORAGE_KEY, "true");
     setMounted(false);
-    window.setTimeout(() => setVisible(false), 220);
+    const previously = previouslyFocusedRef.current;
+    window.setTimeout(() => {
+      setVisible(false);
+      // Return focus to the element that opened the wizard (if it is still in the DOM).
+      if (previously && typeof previously.focus === "function" && document.contains(previously)) {
+        previously.focus();
+      }
+      previouslyFocusedRef.current = null;
+    }, 220);
   }
 
   if (!visible) return null;

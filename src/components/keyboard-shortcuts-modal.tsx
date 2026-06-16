@@ -15,15 +15,24 @@ export function KeyboardShortcutsModal() {
   const [mounted, setMounted] = useState(false);
   const shortcuts = getShortcutList();
   const isOpenRef = useRef(isOpen);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   useEffect(() => { isOpenRef.current = isOpen; }, [isOpen]);
 
   function openModal() {
+    previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
     setIsOpen(true);
     window.requestAnimationFrame(() => setMounted(true));
   }
   function closeModal() {
     setMounted(false);
-    window.setTimeout(() => setIsOpen(false), 220);
+    const previously = previouslyFocusedRef.current;
+    window.setTimeout(() => {
+      setIsOpen(false);
+      if (previously && typeof previously.focus === "function" && document.contains(previously)) {
+        previously.focus();
+      }
+      previouslyFocusedRef.current = null;
+    }, 220);
   }
 
   useEffect(() => {
@@ -100,7 +109,7 @@ export function KeyboardShortcutsModal() {
                 onClick={closeModal}
                 aria-label="Close shortcuts"
                 className="rounded text-[#8e9c93] transition hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
-              >
+               autoFocus>
                 <X className="size-5" aria-hidden="true" />
               </button>
             </div>

@@ -1,7 +1,7 @@
 ﻿import { Check, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Disclosure } from "@/components/disclosure";
+import { Disclosure, DisclosureGroup } from "@/components/disclosure";
 
 export const metadata: Metadata = {
   title: "Pricing - LaunchLens AI",
@@ -84,7 +84,7 @@ const frequentlyAsked = [
 
 export default function PricingPage() {
   return (
-    <main id="main-content" className="min-h-screen animate-[launchlens-fade-in_280ms_ease-out_both] bg-[#f6f8f4] text-[#17201d] motion-reduce:animate-none">
+    <main id="main-content" className="min-h-screen animate-[fadeInDown_280ms_ease-out_both] bg-[#f6f8f4] text-[#17201d] motion-reduce:animate-none">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-4 py-12 pb-24 sm:px-6 sm:pb-12 lg:px-8">
         <header className="flex flex-col gap-3">
           <span className="inline-flex w-fit items-center gap-2 rounded-md bg-[#f6df8f] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#493b08]">
@@ -164,11 +164,18 @@ export default function PricingPage() {
           <h2 className="text-lg font-semibold text-[#17201d]">
             Pricing questions, answered honestly
           </h2>
-          {frequentlyAsked.map((item) => (
-            <Disclosure key={item.question} title={item.question}>
-              <p>{item.answer}</p>
-            </Disclosure>
-          ))}
+          <p className="text-xs text-[#607069]">
+            Tip: use <kbd className="rounded border border-[#d8ded4] bg-white px-1 py-0.5 font-mono text-[11px]">↑</kbd>{" "}
+            <kbd className="rounded border border-[#d8ded4] bg-white px-1 py-0.5 font-mono text-[11px]">↓</kbd>{" "}
+            to move between questions.
+          </p>
+          <DisclosureGroup className="grid gap-3">
+            {frequentlyAsked.map((item) => (
+              <Disclosure key={item.question} title={item.question}>
+                <p>{item.answer}</p>
+              </Disclosure>
+            ))}
+          </DisclosureGroup>
         </section>
 
         <footer className="rounded-md border border-dashed border-[#cfd8d1] bg-[#fbfcfa] p-4 text-sm leading-6 text-[#40504a]">
