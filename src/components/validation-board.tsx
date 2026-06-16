@@ -376,7 +376,7 @@ export function ValidationBoard({
 
               {experiment.evidence.length > 0 ? (
                 <ul className="mt-4 divide-y divide-[#dfe5dd] rounded-md bg-[#f6f8f4] px-4">
-                  {experiment.evidence.map((item) => (
+                  {experiment.evidence.slice().sort((a, b) => new Date(b.observedAt).getTime() - new Date(a.observedAt).getTime()).map((item) => (
                     <li
                       key={item.id}
                       className="flex items-start gap-3 py-3 text-sm"
@@ -400,7 +400,7 @@ export function ValidationBoard({
                             }).format(new Date(item.observedAt))}
                           </time>
                         </div>
-                        <p className="mt-1 leading-6 text-[#40504a]">
+                        <p className="mt-1 break-words leading-6 text-[#40504a]">
                           {item.note}
                         </p>
                       </div>
@@ -416,7 +416,7 @@ export function ValidationBoard({
                         }
                         title="Remove evidence"
                         aria-label={`Remove evidence from ${item.source}`}
-                        className="flex size-8 shrink-0 items-center justify-center rounded-md text-[#8b3d28] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d85b3f] focus-visible:ring-offset-1"
+                        className="flex size-11 shrink-0 items-center justify-center rounded-md text-[#8b3d28] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d85b3f] focus-visible:ring-offset-1 sm:size-8"
                       >
                         <Trash2 className="size-4" aria-hidden="true" />
                       </button>
