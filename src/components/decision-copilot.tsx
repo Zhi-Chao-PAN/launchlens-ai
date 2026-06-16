@@ -23,6 +23,7 @@ import type {
   ValidationExperiment,
   WorkspaceExecutionState,
 } from "@/lib/launchlens/execution";
+import { friendlyApiMessage } from "@/lib/launchlens/api-errors";
 
 type DecisionCopilotProps = {
   execution: WorkspaceExecutionState;
@@ -204,11 +205,16 @@ export function DecisionCopilot({
       });
       const data = (await response.json()) as Partial<DecisionGenerationResult> & {
         error?: string;
+        code?: string;
       };
-      const brief = normalizeDecisionBrief(data.brief, source);
+      const brief = data.brief ? normalizeDecisionBrief(data.brief, source) : null;
 
       if (!response.ok || data.error || !brief) {
-        throw new Error(data.error ?? "Decision brief generation failed.");
+        const fallback =
+          response.status === 429
+            ? "Too many decision requests - wait a moment and retry."
+            : "Decision brief generation failed.";
+        throw new Error(friendlyApiMessage(data.code, data.error ?? fallback));
       }
 
       saveBrief(experiment.id, brief);
