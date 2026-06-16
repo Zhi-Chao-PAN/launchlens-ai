@@ -112,4 +112,22 @@ describe("deriveRecoveryOwnerToken validation", () => {
       deriveRecoveryOwnerToken("a@b.co", "has spaces and!!"),
     ).rejects.toThrow("invalid_recovery_input");
   });
+
+  it("deriveRecoveryOwnerToken returns a consistent token for the same input", async () => {
+    const key = createRecoveryKey();
+    const t1 = await deriveRecoveryOwnerToken("workspace-label", key);
+    const t2 = await deriveRecoveryOwnerToken("workspace-label", key);
+    expect(t1).toBe(t2);
+    expect(typeof t1).toBe("string");
+    expect(t1.length).toBeGreaterThan(10);
+  });
+
+  it("different recovery keys produce different owner tokens", async () => {
+    const k1 = createRecoveryKey();
+    const k2 = createRecoveryKey();
+    const t1 = await deriveRecoveryOwnerToken("label", k1);
+    const t2 = await deriveRecoveryOwnerToken("label", k2);
+    expect(t1).not.toBe(t2);
+  });
+
 });

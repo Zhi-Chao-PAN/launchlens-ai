@@ -25,4 +25,21 @@ describe("sampleBriefs", () => {
       expect(brief.id).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
     }
   });
+
+  it("every sample brief has a non-empty input.idea, input.audience, and input.market", () => {
+    for (const brief of sampleBriefs) {
+      expect(typeof brief.input.idea).toBe("string");
+      expect(brief.input.idea.length).toBeGreaterThan(5);
+      expect(typeof brief.input.audience).toBe("string");
+      expect(brief.input.audience.length).toBeGreaterThan(2);
+      expect(typeof brief.input.market).toBe("string");
+      expect(brief.input.market.length).toBeGreaterThan(2);
+    }
+  });
+
+  it("sample brief ids are unique", () => {
+    const ids = sampleBriefs.map((b) => b.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
 });

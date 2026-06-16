@@ -90,4 +90,18 @@ describe("overlay stack defensive behavior", () => {
     }
     expect(hasOpenOverlay()).toBe(false);
   });
+
+  it("hasOpenOverlay returns false when no overlays are pushed", () => {
+    __resetOverlayStackForTests();
+    expect(hasOpenOverlay()).toBe(false);
+  });
+
+  it("hasOpenOverlay returns true after pushing an overlay", () => {
+    __resetOverlayStackForTests();
+    const pop = pushOverlay();
+    expect(hasOpenOverlay()).toBe(true);
+    pop();
+    expect(hasOpenOverlay()).toBe(false);
+  });
+
 });

@@ -75,4 +75,17 @@ describe("error codes contract", () => {
     }
   });
 
+
+  it("error code names follow the snake_case convention", () => {
+    for (const code of Object.values(errorCodes)) {
+      expect(code).toMatch(/^[a-z_]+$/);
+    }
+  });
+
+  it("no duplicate error codes across all constants", () => {
+    const all = Object.values(errorCodes);
+    const unique = new Set(all);
+    expect(unique.size).toBe(all.length);
+  });
+
 });

@@ -225,4 +225,15 @@ describe("markdown export empty-list robustness", () => {
     expect(result).toMatch(/^## /m);
     expect(result).toContain('- **');
   });
+
+  it("workspaceToMarkdown includes pricing section", () => {
+    const md = workspaceToMarkdown(exampleWorkspaces[0].workspace);
+    expect(md).toContain("Pricing");
+  });
+
+  it("workspaceToMarkdown includes content calendar section", () => {
+    const md = workspaceToMarkdown(exampleWorkspaces[0].workspace);
+    expect(md).toContain("Content");
+  });
+
 });
