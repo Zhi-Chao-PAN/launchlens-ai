@@ -204,7 +204,7 @@ export function OnboardingWizard() {
             type="button"
             onClick={dismiss}
             autoFocus
-            className="inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-[#17201d] px-5 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2"
+            className="inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-[#138a72] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
           >
             Get started
           </button>
@@ -245,3 +245,4 @@ export function ReplayTourButton({ className = "" }: { className?: string }) {
     </button>
   );
 }
+

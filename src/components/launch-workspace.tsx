@@ -803,7 +803,7 @@ export function LaunchWorkspace({
                   type="button"
                   onClick={generate}
                   disabled={isGenerating}
-                  className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-[#17201d] px-4 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#7c8781]"
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-[#138a72] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#7c8781]"
                 >
                   {isGenerating ? (
                     <span className="flex items-center gap-1" aria-hidden="true">
