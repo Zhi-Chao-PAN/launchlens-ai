@@ -10,10 +10,9 @@ permissions:
   contents: read
 
 jobs:
-  quality:
-    name: Lint, test, and build
+  lint-type:
+    name: Lint + Type check
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -29,8 +28,41 @@ jobs:
       - name: Lint
         run: npm run lint -- --max-warnings=0
 
+      - name: Type check
+        run: npx tsc --noEmit
+
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Test
         run: npm run test
+
+  eval:
+    name: Provider + decision eval
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Provider eval (mock, no secrets)
         run: npm run eval:provider
@@ -44,12 +76,6 @@ jobs:
       - name: Decision eval dashboard
         run: npm run decision:history -- --dashboard
 
-      - name: Build
-        run: npm run build
-
-      - name: Audit
-        run: npm audit --audit-level=moderate
-
       - name: Upload decision dashboard
         if: always()
         uses: actions/upload-artifact@v4
@@ -57,3 +83,24 @@ jobs:
           name: decision-dashboard
           path: docs/decision-dashboard.html
           if-no-files-found: warn
+
+  build:
+    name: Build + audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Audit
+        run: npm audit --audit-level=moderate
