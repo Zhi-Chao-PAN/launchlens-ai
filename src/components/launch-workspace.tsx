@@ -11,6 +11,7 @@ import {
   ClipboardList,
   Compass,
   Copy,
+  Download,
   Braces,
   Eye,
   FileText,
@@ -225,6 +226,8 @@ export function LaunchWorkspace({
   const [error, setError] = useState("");
   const [fallbackNotice, setFallbackNotice] = useState("");
   const [exportText, setExportText] = useState("");
+  const [exportFormat, setExportFormat] = useState<"markdown" | "json" | "">("");
+  const [copyJustSucceeded, setCopyJustSucceeded] = useState<"markdown" | "json" | "">("");
   const [isStorageReady, setIsStorageReady] = useState(false);
   const [isBriefOpen, setIsBriefOpen] = useState(false);
   const { showToast } = useToast();
@@ -377,6 +380,7 @@ export function LaunchWorkspace({
     setError("");
     setFallbackNotice("");
     setExportText("");
+    setExportFormat("");
     setIsEditing(false);
     setIsBriefOpen(false);
     showToast("Example workspace loaded.", "success");
@@ -395,6 +399,7 @@ export function LaunchWorkspace({
     setError("");
     setFallbackNotice("");
     setExportText("");
+    setExportFormat("");
     setIsEditing(false);
     setIsBriefOpen(false);
     showToast("Workspace reset to starter example.", "success");
@@ -413,6 +418,7 @@ export function LaunchWorkspace({
     setError("");
     setFallbackNotice("");
     setExportText("");
+    setExportFormat("");
     setIsEditing(false);
     setIsBriefOpen(false);
     showToast("Cloud snapshot restored successfully.", "success");
@@ -466,9 +472,17 @@ export function LaunchWorkspace({
     }
   }
 
+  function flashCopySuccess(kind: "markdown" | "json") {
+    setCopyJustSucceeded(kind);
+    window.setTimeout(() => {
+      setCopyJustSucceeded((current) => (current === kind ? "" : current));
+    }, 1800);
+  }
+
   async function copyMarkdown() {
     const markdown = workspaceToMarkdown(workspace, execution);
     setExportText(markdown);
+    setExportFormat("markdown");
 
     try {
       if (!navigator.clipboard?.writeText) {
@@ -477,14 +491,16 @@ export function LaunchWorkspace({
 
       await navigator.clipboard.writeText(markdown);
       showToast("Markdown copied to clipboard", "success");
+      flashCopySuccess("markdown");
     } catch {
-      showToast("Clipboard unavailable - Markdown shown below", "info");
+      showToast("Clipboard unavailable - Markdown shown below for manual copy", "info");
     }
   }
 
   async function copyJson() {
     const json = workspaceToJson(workspace, execution);
     setExportText(json);
+    setExportFormat("json");
 
     try {
       if (!navigator.clipboard?.writeText) {
@@ -493,8 +509,37 @@ export function LaunchWorkspace({
 
       await navigator.clipboard.writeText(json);
       showToast("JSON copied to clipboard", "success");
+      flashCopySuccess("json");
     } catch {
-      showToast("Clipboard unavailable - JSON shown below", "info");
+      showToast("Clipboard unavailable - JSON shown below for manual copy", "info");
+    }
+  }
+
+  function downloadExport() {
+    if (!exportText || !exportFormat) return;
+    const ext = exportFormat === "markdown" ? "md" : "json";
+    const mime = exportFormat === "markdown" ? "text/markdown" : "application/json";
+    const blob = new Blob([exportText], { type: `${mime};charset=utf-8` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const stamp = new Date().toISOString().slice(0, 10);
+    a.download = `launchlens-workspace-${stamp}.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast(`Exported as .${ext} file`, "success");
+  }
+
+  async function retryCopyFromTextarea() {
+    if (!exportText) return;
+    try {
+      await navigator.clipboard.writeText(exportText);
+      showToast("Copied from export panel", "success");
+      flashCopySuccess(exportFormat as "markdown" | "json");
+    } catch {
+      showToast("Clipboard still unavailable - use the Download button instead", "error");
     }
   }
 
@@ -810,18 +855,28 @@ export function LaunchWorkspace({
                   <button
                     type="button"
                     onClick={copyMarkdown}
+                    aria-live="polite"
                     className="flex h-10 items-center gap-2 rounded-md bg-[#17201d] px-3 text-sm font-semibold text-white transition hover:bg-[#24312d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-2"
                   >
-                    <Copy className="size-4" aria-hidden="true" />
-                    Copy Markdown
+                    {copyJustSucceeded === "markdown" ? (
+                      <CheckCircle2 className="size-4 text-[#9dd3c5]" aria-hidden="true" />
+                    ) : (
+                      <Copy className="size-4" aria-hidden="true" />
+                    )}
+                    {copyJustSucceeded === "markdown" ? "Copied!" : "Copy Markdown"}
                   </button>
                   <button
                     type="button"
                     onClick={copyJson}
+                    aria-live="polite"
                     className="flex h-10 items-center gap-2 rounded-md border border-[#cfd8d1] bg-[#fbfcfa] px-3 text-sm font-semibold text-[#17201d] transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
                   >
-                    <Braces className="size-4" aria-hidden="true" />
-                    Copy JSON
+                    {copyJustSucceeded === "json" ? (
+                      <CheckCircle2 className="size-4 text-[#138a72]" aria-hidden="true" />
+                    ) : (
+                      <Braces className="size-4" aria-hidden="true" />
+                    )}
+                    {copyJustSucceeded === "json" ? "Copied!" : "Copy JSON"}
                   </button>
                 </div>
               </div>
@@ -906,14 +961,17 @@ export function LaunchWorkspace({
                   role="status"
                   className="mt-5 rounded-lg border border-[#d8ded4] bg-[#fbfcfa] p-4"
                 >
-                  <div className="mb-3 flex items-center justify-between gap-2 text-sm font-semibold text-[#17201d]">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm font-semibold text-[#17201d]">
                     <span className="flex items-center gap-2">
                       <FileText className="size-4" aria-hidden="true" />
                       Workspace export
+                      <span className="rounded bg-[#e5f4ef] px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-[#0f766e]">
+                        {exportFormat === "json" ? "JSON" : "Markdown"}
+                      </span>
                     </span>
                     <button
                       type="button"
-                      onClick={() => setExportText("")}
+                      onClick={() => { setExportText(""); setExportFormat(""); }}
                       aria-label="Dismiss export"
                       className="text-[#8e9c93] transition hover:text-[#17201d]"
                     >
@@ -923,12 +981,34 @@ export function LaunchWorkspace({
                   {exportText && (
                     <textarea
                       readOnly
+                      aria-label={`Exported workspace in ${exportFormat === "json" ? "JSON" : "Markdown"} format, select and copy`}
                       value={exportText}
                       rows={8}
                       onFocus={(e) => e.currentTarget.select()}
                       className="w-full resize-y rounded-md border border-[#cfd8d1] bg-white px-3 py-3 font-mono text-xs leading-5 text-[#40504a] focus:border-[#138a72] focus:outline-none"
                     />
                   )}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={retryCopyFromTextarea}
+                      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-[#cfd8d1] bg-white px-2.5 text-xs font-medium text-[#17201d] transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                    >
+                      <Copy className="size-3.5" aria-hidden="true" />
+                      Copy selection
+                    </button>
+                    <button
+                      type="button"
+                      onClick={downloadExport}
+                      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-[#cfd8d1] bg-white px-2.5 text-xs font-medium text-[#17201d] transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                    >
+                      <Download className="size-3.5" aria-hidden="true" />
+                      Download file
+                    </button>
+                    <p className="self-center text-[11px] leading-4 text-[#8e9c93]">
+                      Focus the textarea to auto-select all text.
+                    </p>
+                  </div>
                 </div>
               )}
             </section>
