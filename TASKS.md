@@ -299,3 +299,12 @@
 - [x] Mobile safe-area insets added: `env(safe-area-inset-*)` CSS variables + utility classes (`pt-safe`, `pb-safe`, `px-safe`, etc.) and `viewport-fit=cover` for iOS PWA full-screen display.
 - [x] Test count expanded from 233 to **240 tests / 41 files**: `useSrAnnounce` hook tests, filename slugger edge cases (headline fallback, extension guarantees, priority order), execution summary stability.
 - [x] All four quality gates green: ESLint 0-warn, tsc strict, Vitest, Next.js build.
+
+## Hook Consolidation & Header Polish (R116-R120, 2026-06-17)
+
+- [x] Refactored screen-reader announcements to a single `useSrAnnounce` hook (`src/hooks/use-sr-announce.ts`); migrated validation-board, system-status, and decision-copilot components.
+- [x] Safe-area insets applied to page layout: body padding, toast container bottom offset, skip-link top offset ? iOS PWA full-screen no longer clips content.
+- [x] Evidence deletion now uses two-stage confirmation (tap trash ? confirm/cancel) to prevent mobile mis-taps.
+- [x] Workspace header compact mobile layout: smaller logo, title, action buttons, and tighter spacing.
+- [x] Test count expanded from 240 to **250 tests / 41 files**: workspace-validation edge cases (missing fields, non-object values, bad backlog, isRecord), generated-time stability, useSrAnnounce hook surface.
+- [x] All four quality gates green: ESLint 0-warn, tsc strict, Vitest, Next.js build.

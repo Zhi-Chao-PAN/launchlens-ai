@@ -29,6 +29,7 @@ tags are cut for milestone demos.
 - Error code chip with one-click copy button on the cloud workspaces error panel
 - `aria-busy` attributes on decision copilot generate button and system status retry button during loading
 - `useSrAnnounce` hook (`src/hooks/use-sr-announce.ts`) for consistent screen-reader live-region announcements
+- Two-stage confirmation for evidence deletion to prevent mobile mis-taps
 - Safe-area CSS variables + utility classes (`pt-safe`, `pb-safe`, etc.) with `viewport-fit=cover` for iOS PWA
 - Screen-reader live-region announcements for decision generation (start / success / failure) and system status retries
 
@@ -58,7 +59,9 @@ tags are cut for milestone demos.
 - Evidence form submission auto-focuses the evidence list for keyboard / screen-reader flow continuity
 - Evidence deletion preserves keyboard focus (moves to neighbor) and announces removal via screen reader
 - Decision-brief claim list items are keyboard-focusable with descriptive aria-labels
-- iOS safe-area insets supported via `viewport-fit=cover` and `pt-safe` / `pb-safe` utility classes
+- iOS safe-area insets applied to body, toast, and skip-link ? full-screen PWA content no longer clipped
+- Workspace header uses compact layout on mobile (smaller logo, title, buttons, tighter spacing)
+- All screen-reader announcements consolidated through the `useSrAnnounce` hook
 - Validation-board header uses compact spacing and typography on mobile
 - Evidence list sorts newest-first, with 44px touch-target delete buttons on mobile
 

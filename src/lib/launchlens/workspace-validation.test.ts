@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import { exampleWorkspaces } from "./example-workspaces";
 import { createExecutionState } from "./execution";
 import {
+  isLaunchLensInput,
   isLaunchLensWorkspace,
+  isRecord,
   isUuid,
   parseWorkspaceSnapshot,
 } from "./workspace-validation";
@@ -94,6 +96,37 @@ describe("workspace validation", () => {
     expect(isUuid("../private-workspace")).toBe(false);
     expect(isUuid("a5ff00db-60da-1b20-9468-751ce404b289")).toBe(false);
   });
+  it("rejects workspace objects with missing required fields", () => {
+    const incomplete = { provider: "mock" };
+    expect(isLaunchLensWorkspace(incomplete)).toBe(false);
+  });
+
+  it("rejects non-object values gracefully", () => {
+    expect(isLaunchLensWorkspace(null)).toBe(false);
+    expect(isLaunchLensWorkspace(undefined)).toBe(false);
+    expect(isLaunchLensWorkspace("string")).toBe(false);
+    expect(isLaunchLensWorkspace(42)).toBe(false);
+    expect(isLaunchLensWorkspace([])).toBe(false);
+  });
+
+  it("rejects input objects with missing required string fields", () => {
+    expect(isLaunchLensInput({ idea: "x" })).toBe(false);
+    expect(isLaunchLensInput({ idea: "", audience: "", market: "" })).toBe(false);
+  });
+
+  it("isRecord correctly identifies plain objects", () => {
+    expect(isRecord({})).toBe(true);
+    expect(isRecord({ a: 1 })).toBe(true);
+    expect(isRecord(null)).toBe(false);
+    expect(isRecord(undefined)).toBe(false);
+    expect(isRecord([])).toBe(false);
+    expect(isRecord("string")).toBe(false);
+  });
+
+  it("rejects workspaces where backlog is not an array", () => {
+    const ws = { ...example.workspace, backlog: "not an array" };
+    expect(isLaunchLensWorkspace(ws)).toBe(false);
+  });
 });
 
 describe("isUuid edge cases", () => {
@@ -116,4 +149,5 @@ describe("isUuid edge cases", () => {
     expect(isUuid("a5ff00db-60da-4b20-9468-751ce404b289 ")).toBe(false);
     expect(isUuid("a5ff00db-60da-4b20-9468-751ce404b289-extra")).toBe(false);
   });
+
 });

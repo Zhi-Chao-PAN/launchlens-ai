@@ -18,4 +18,22 @@ describe("formatGeneratedTime", () => {
     expect(formatGeneratedTime("not-a-date")).toBe("Unknown time");
     expect(formatGeneratedTime("2025-13-40T99:99:00Z")).toBe("Unknown time");
   });
+
+  it("produces a non-empty string for valid ISO timestamps", () => {
+    const result = formatGeneratedTime(new Date().toISOString());
+    expect(typeof result).toBe("string");
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it("handles the same timestamp consistently (stable output)", () => {
+    const ts = "2024-01-15T10:30:00Z";
+    const a = formatGeneratedTime(ts);
+    const b = formatGeneratedTime(ts);
+    expect(a).toBe(b);
+  });
+
+  it("does not throw on malformed input", () => {
+    expect(() => formatGeneratedTime("not-a-date")).not.toThrow();
+    expect(() => formatGeneratedTime("")).not.toThrow();
+  });
 });
