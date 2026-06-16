@@ -1,6 +1,14 @@
-﻿"use client";
+"use client";
 
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { CheckCircle2, AlertTriangle, Info, X } from "lucide-react";
 
 export type ToastType = "success" | "error" | "info";
@@ -10,6 +18,8 @@ export type Toast = {
   type: ToastType;
   message: string;
   durationMs?: number;
+  /** True while the toast is playing its exit animation (kept in DOM). */
+  leaving?: boolean;
 };
 
 type ToastContextValue = {
@@ -21,39 +31,77 @@ type ToastContextValue = {
 const ToastContext = createContext<ToastContextValue | null>(null);
 
 let toastIdCounter = 0;
+/** Milliseconds for the CSS exit animation before removal from DOM. */
+const TOAST_EXIT_MS = 220;
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  // Per-toast auto-dismiss timers, keyed by toast id ? new toasts never reset old timers.
+  const timersRef = useRef<Map<string, number>>(new Map());
+  const toastsRef = useRef<Toast[]>([]);
+
+  useEffect(() => {
+    toastsRef.current = toasts;
+  }, [toasts]);
 
   const dismissToast = useCallback((id: string) => {
-    setToasts((current) => current.filter((t) => t.id !== id));
+    // Clear the auto-dismiss timer for this toast.
+    const existing = timersRef.current.get(id);
+    if (existing) {
+      window.clearTimeout(existing);
+      timersRef.current.delete(id);
+    }
+    setToasts((current) => {
+      const target = current.find((t) => t.id === id);
+      if (!target || target.leaving) return current;
+      // Play exit animation, then remove.
+      window.setTimeout(() => {
+        setToasts((c) => c.filter((t) => t.id !== id));
+      }, TOAST_EXIT_MS);
+      return current.map((t) => (t.id === id ? { ...t, leaving: true } : t));
+    });
   }, []);
 
-  const showToast = useCallback((message: string, type: ToastType = "info", durationMs = 4000) => {
-    const id = `toast-${++toastIdCounter}`;
-    setToasts((current) => [...current, { id, type, message, durationMs }]);
-  }, []);
+  const scheduleDismiss = useCallback((id: string, durationMs: number) => {
+    const handle = window.setTimeout(() => {
+      dismissToast(id);
+    }, durationMs);
+    timersRef.current.set(id, handle);
+  }, [dismissToast]);
 
-  // Auto-dismiss toasts
-  useEffect(() => {
-    if (toasts.length === 0) return;
+  const showToast = useCallback(
+    (message: string, type: ToastType = "info", durationMs = 4000) => {
+      const id = `toast-${++toastIdCounter}`;
+      setToasts((current) => [...current, { id, type, message, durationMs, leaving: false }]);
+      if (durationMs && durationMs > 0) {
+        scheduleDismiss(id, durationMs);
+      }
+    },
+    [scheduleDismiss],
+  );
 
-    const timers = toasts
-      .filter((t) => t.durationMs && t.durationMs > 0)
-      .map((t) => window.setTimeout(() => dismissToast(t.id), t.durationMs));
-
-    return () => {
-      timers.forEach(clearTimeout);
-    };
-  }, [toasts, dismissToast]);
-
-  // Dismiss latest toast on Escape key
+  // Dismiss latest non-leaving toast on Escape key
   useEffect(() => {
     function handleEscape() {
-      setToasts((current) => current.slice(0, -1));
+      const current = toastsRef.current;
+      for (let i = current.length - 1; i >= 0; i--) {
+        if (!current[i].leaving) {
+          dismissToast(current[i].id);
+          return;
+        }
+      }
     }
     window.addEventListener("launchlens:escape", handleEscape);
     return () => window.removeEventListener("launchlens:escape", handleEscape);
+  }, [dismissToast]);
+
+  // Cleanup all timers on unmount.
+  useEffect(() => {
+    const timers = timersRef.current;
+    return () => {
+      timers.forEach((h) => window.clearTimeout(h));
+      timers.clear();
+    };
   }, []);
 
   return (
@@ -91,6 +139,14 @@ function ToastContainer() {
 }
 
 function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
+  // Animate in on mount (respects prefers-reduced-motion via motion-safe:).
+  const [entered, setEntered] = useState(false);
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => setEntered(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+  const visible = entered && !toast.leaving;
+
   const icons = {
     success: <CheckCircle2 className="size-5 shrink-0 text-[#138a72]" aria-hidden="true" />,
     error: <AlertTriangle className="size-5 shrink-0 text-[#d85b3f]" aria-hidden="true" />,
@@ -106,7 +162,14 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
   return (
     <div
       role={toast.type === "error" ? "alert" : "status"}
-      className={`flex items-start gap-3 rounded-md border border-[#d8ded4] border-l-4 bg-white px-4 py-3 shadow-lg ${borders[toast.type]}`}
+      className={[
+        "flex items-start gap-3 rounded-md border border-[#d8ded4] border-l-4 bg-white px-4 py-3 shadow-lg",
+        borders[toast.type],
+        visible
+          ? "opacity-100 translate-x-0"
+          : "pointer-events-none opacity-0 translate-x-3",
+        "motion-safe:transition-all motion-safe:duration-200 motion-safe:ease-out",
+      ].join(" ")}
     >
       {icons[toast.type]}
       <p className="flex-1 text-sm leading-5 text-[#17201d]">{toast.message}</p>
@@ -114,7 +177,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
         type="button"
         onClick={onDismiss}
         aria-label="Dismiss notification"
-        className="shrink-0 text-[#8e9c93] transition hover:text-[#17201d]"
+        className="shrink-0 rounded text-[#8e9c93] transition hover:text-[#17201d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
       >
         <X className="size-4" aria-hidden="true" />
       </button>

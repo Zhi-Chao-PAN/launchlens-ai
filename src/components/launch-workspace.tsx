@@ -30,6 +30,7 @@ import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 import { CloudWorkspaces } from "@/components/cloud-workspaces";
 import { SystemStatus } from "@/components/system-status";
+import { ReplayTourButton } from "@/components/onboarding-wizard";
 import { useToast } from "@/components/toast";
 import { DecisionCopilot } from "@/components/decision-copilot";
 import { ValidationBoard } from "@/components/validation-board";
@@ -533,6 +534,7 @@ export function LaunchWorkspace({
             <span className="rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-[#40504a]">
               {providerLabel}
             </span>
+            <ReplayTourButton className="hidden sm:inline-flex" />
             <span className="hidden rounded-md bg-[#f6df8f] px-3 py-2 font-medium text-[#493b08] sm:inline-flex">
               Portfolio-ready build
             </span>
