@@ -30,7 +30,7 @@ export function Skeleton({
       <div
         role="status"
         aria-label="Loading"
-        className={`relative overflow-hidden bg-[#e2e8df] ${roundedClasses[rounded]} ${className}`}
+        className={`relative overflow-hidden bg-[var(--skeleton-from)] ${roundedClasses[rounded]} ${className}`}
         {...rest}
       >
         <div
@@ -43,7 +43,7 @@ export function Skeleton({
 
   return (
     <div
-      className={`animate-pulse bg-[#d8ded4] ${roundedClasses[rounded]} ${className}`}
+      className={`animate-pulse bg-[var(--skeleton-to)] ${roundedClasses[rounded]} ${className}`}
       role="status"
       aria-label="Loading"
       {...rest}

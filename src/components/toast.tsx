@@ -349,7 +349,7 @@ function ToastContainer() {
   const icons = {
     success: <CheckCircle2 className="size-5 shrink-0 text-accent" aria-hidden="true" />,
     error: <AlertTriangle className="size-5 shrink-0 text-signal-challenges" aria-hidden="true" />,
-    info: <Info className="size-5 shrink-0 text-[#4f7fb8]" aria-hidden="true" />,
+    info: <Info className="size-5 shrink-0 text-info" aria-hidden="true" />,
   };
 
   const borders = {
@@ -360,8 +360,8 @@ function ToastContainer() {
 
   const progressColors = {
     success: "bg-primary",
-    error: "bg-[#d85b3f]",
-    info: "bg-[#4f7fb8]",
+    error: "bg-signal-challenges",
+    info: "bg-info",
   };
 
   return (
@@ -391,7 +391,7 @@ function ToastContainer() {
         <X className="size-4" aria-hidden="true" />
       </button>
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-0.5 bg-[#e6ebe4]"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-0.5 bg-muted"
         role="progressbar"
         aria-valuemin={0}
         aria-valuemax={100}

@@ -465,7 +465,7 @@ export function CloudWorkspaces({
             type="button"
             onClick={saveSnapshot}
             disabled={cloudState !== "ready" || isBusy}
-            className="flex h-10 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#89938f]"
+            className="flex h-10 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-muted"
           >
             {busyAction === "save" ? (
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
@@ -492,14 +492,14 @@ export function CloudWorkspaces({
           <p>{cloudError?.message || "Cloud history could not be reached. Your local draft remains available."}</p>
           {cloudError?.code && (
             <div className="mt-2 flex items-center justify-between gap-2 border-t border-signal-challenges pt-2 text-xs">
-              <code className="rounded bg-[#ffe5d7] px-1.5 py-0.5 font-mono text-signal-challenges">{cloudError.code}</code>
+              <code className="rounded bg-signal-challenges px-1.5 py-0.5 font-mono text-signal-challenges">{cloudError.code}</code>
               <button
                 type="button"
                 onClick={() => {
                   copyTextToClipboard(cloudError.code);
                   showToast("Error code copied to clipboard.", "success");
                 }}
-                className="rounded border border-signal-challenges bg-card px-2 py-1 font-medium transition hover:bg-signal-challenges focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d85b3f] focus-visible:ring-offset-1"
+                className="rounded border border-signal-challenges bg-card px-2 py-1 font-medium transition hover:bg-signal-challenges focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1"
               >
                 Copy code
               </button>
@@ -567,7 +567,7 @@ export function CloudWorkspaces({
                     aria-describedby={recoveryTouched && labelError ? "recovery-label-error" : undefined}
                     className={`h-10 w-full rounded-md border bg-card px-3 text-sm text-foreground outline-none ${
                       recoveryTouched && labelError
-                        ? "border-[#d85b3f] focus:border-[#d85b3f] focus:ring-2 focus:ring-[#f2d4c8]"
+                        ? "border-signal-challenges focus:border-signal-challenges focus:ring-2 focus:ring-signal-challenges/40"
                         : "border-input focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                     }`}
                   />
@@ -592,7 +592,7 @@ export function CloudWorkspaces({
                       aria-describedby={recoveryTouched && keyError ? "recovery-key-error" : undefined}
                       className={`h-10 min-w-0 flex-1 rounded-md border bg-card px-3 font-mono text-sm text-foreground outline-none ${
                         recoveryTouched && keyError
-                          ? "border-[#d85b3f] focus:border-[#d85b3f] focus:ring-2 focus:ring-[#f2d4c8]"
+                          ? "border-signal-challenges focus:border-signal-challenges focus:ring-2 focus:ring-signal-challenges/40"
                           : "border-input focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                       }`}
                     />
@@ -648,7 +648,7 @@ export function CloudWorkspaces({
                   onClick={linkRecoveryOwner}
                   disabled={isBusy || (recoveryTouched ? !recoveryReady : (!recoveryLabel || !recoveryKey))}
                   aria-disabled={isBusy || (recoveryTouched ? !recoveryReady : (!recoveryLabel || !recoveryKey))}
-                  className="h-9 rounded-md bg-primary px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#89938f]"
+                  className="h-9 rounded-md bg-primary px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-muted"
                 >
                   Link history
                 </button>
@@ -744,7 +744,7 @@ export function CloudWorkspaces({
                   disabled={isBusy}
                   title="Delete snapshot"
                   aria-label={`Delete ${item.title}`}
-                  className="flex size-9 items-center justify-center rounded-md border border-input bg-card text-signal-challenges transition hover:border-[#c86b50] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d85b3f] focus-visible:ring-offset-1 disabled:opacity-50"
+                  className="flex size-9 items-center justify-center rounded-md border border-input bg-card text-signal-challenges transition hover:border-signal-challenges focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1 disabled:opacity-50"
                 >
                   <Trash2 className="size-4" aria-hidden="true" />
                 </button>

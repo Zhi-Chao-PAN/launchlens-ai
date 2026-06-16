@@ -284,7 +284,7 @@ export function DecisionCopilot({
     <section className="rounded-lg border border-card bg-card shadow-sm">
       <div className="flex flex-col gap-4 border-b border-card p-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-start gap-3">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-[#e9e7f7] text-[#554a8b]">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-ai text-ai">
             <BrainCircuit className="size-4" aria-hidden="true" />
           </span>
           <div>
@@ -359,7 +359,7 @@ export function DecisionCopilot({
             }
             aria-busy={isGenerating}
             aria-describedby="decision-generation-status"
-            className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-text shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-text shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isGenerating ? (
               <span className="flex items-center gap-1" aria-hidden="true">
@@ -427,7 +427,7 @@ export function DecisionCopilot({
               <Skeleton shimmer className="h-3 w-9/12" />
             </div>
             <p className="mt-5 flex items-center gap-2 text-xs text-muted">
-              <BrainCircuit className="size-4 animate-pulse text-[#8378aa]" aria-hidden="true" />
+              <BrainCircuit className="size-4 animate-pulse text-ai-muted" aria-hidden="true" />
               Weighing signals against counter-signals…
             </p>
           </div>
@@ -479,7 +479,7 @@ export function DecisionCopilot({
           <div className="flex min-h-64 items-center justify-center rounded-md border border-dashed border-input bg-input p-8 text-center">
             <div className="max-w-md">
               <BrainCircuit
-                className="mx-auto size-8 text-[#8378aa]"
+                className="mx-auto size-8 text-ai-muted"
                 aria-hidden="true"
               />
               <h3 className="mt-3 text-base font-semibold text-foreground">

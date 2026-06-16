@@ -907,7 +907,7 @@ export function LaunchWorkspace({
                       onClick={() => applyExample(example)}
                       disabled={isSwitching}
                       className={[
-                        "flex items-center justify-between rounded-md border px-3 py-2 text-left text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60",
+                        "flex items-center justify-between rounded-md border px-3 py-2 text-left text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60",
                         isSelected
                           ? "border-accent bg-signal-supports text-signal-supports"
                           : "border-card bg-input text-foreground/80 hover:border-accent hover:text-foreground",
@@ -1029,7 +1029,7 @@ export function LaunchWorkspace({
                   type="button"
                   onClick={generate}
                   disabled={isGenerating}
-                  className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-muted"
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-muted"
                 >
                   {isGenerating ? (
                     <span className="flex items-center gap-1" aria-hidden="true">
@@ -1087,7 +1087,7 @@ export function LaunchWorkspace({
               {(error || fallbackNotice) && (
                 <div
                   role={error ? "alert" : "status"}
-                  className="mt-4 rounded-md border border-[#e7c9bd] bg-signal-challenges p-3 text-sm leading-6 text-signal-challenges"
+                  className="mt-4 rounded-md border border-signal-challenges bg-signal-challenges p-3 text-sm leading-6 text-signal-challenges"
                 >
                   {error || fallbackNotice}
                 </div>

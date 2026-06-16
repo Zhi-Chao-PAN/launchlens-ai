@@ -43,8 +43,8 @@ export function DownloadMarkdownButton({
       className={[
         "inline-flex h-10 items-center gap-1.5 rounded-md border px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
         downloaded
-          ? "border-[#554a8b] bg-[#e9e7f7] text-[#554a8b] focus-visible:ring-[#cbe8df]"
-          : "border-input bg-card text-foreground hover:border-accent hover:text-accent focus-visible:ring-[#cbe8df]",
+          ? "border-ai bg-ai text-ai focus-visible:ring-[var(--ring-color)]"
+          : "border-input bg-card text-foreground hover:border-accent hover:text-accent focus-visible:ring-[var(--ring-color)]",
         className,
       ].join(" ")}
     >

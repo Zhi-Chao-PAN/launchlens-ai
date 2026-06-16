@@ -181,7 +181,7 @@ export function SystemStatus() {
                 type="button"
                 onClick={manualRetry}
                 disabled={retrying}
-                className="inline-flex shrink-0 items-center gap-1 rounded border border-signal-challenges bg-card px-2 py-0.5 text-[11px] font-medium text-signal-challenges transition hover:bg-signal-challenges focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d85b3f] focus-visible:ring-offset-1 disabled:opacity-50"
+                className="inline-flex shrink-0 items-center gap-1 rounded border border-signal-challenges bg-card px-2 py-0.5 text-[11px] font-medium text-signal-challenges transition hover:bg-signal-challenges focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1 disabled:opacity-50"
               >
                 <RefreshCw className={`size-3 ${retrying ? "animate-spin" : ""}`} aria-hidden="true" />
                 Retry
@@ -235,7 +235,7 @@ export function SystemStatus() {
                 </span>
               </div>
               {systemStatus.vercelEnv !== "production" && (
-                <div className="mt-3 border-t border-[#edf0ea] pt-2 text-xs text-muted">
+                <div className="mt-3 border-t border-card pt-2 text-xs text-muted">
                   Environment: {systemStatus.vercelEnv}
                 </div>
               )}

@@ -43,7 +43,7 @@ export function EmptyState({
     >
       {icon && (
         <div
-          className={`mb-3 flex ${iconSizes[size]} items-center justify-center rounded-full bg-[#eef2eb] text-muted`}
+          className={`mb-3 flex ${iconSizes[size]} items-center justify-center rounded-full bg-muted text-muted`}
         >
           {icon}
         </div>

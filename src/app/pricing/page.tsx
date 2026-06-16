@@ -87,7 +87,7 @@ export default function PricingPage() {
     <main id="main-content" className="min-h-screen animate-[fadeInDown_280ms_ease-out_both] bg-background text-foreground motion-reduce:animate-none">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-4 py-12 pb-24 sm:px-6 sm:pb-12 lg:px-8">
         <header className="flex flex-col gap-3">
-          <span className="inline-flex w-fit items-center gap-2 rounded-md bg-[#f6df8f] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#493b08]">
+          <span className="inline-flex w-fit items-center gap-2 rounded-md bg-signal-neutral px-3 py-1 text-xs font-semibold uppercase tracking-wide text-signal-neutral">
             <Sparkles className="size-3" aria-hidden="true" />
             Portfolio pricing page
           </span>
@@ -104,7 +104,7 @@ export default function PricingPage() {
           </p>
           <Link
             href="/"
-            className="mt-1 rounded text-sm font-semibold text-accent underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+            className="mt-1 rounded text-sm font-semibold text-accent underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
           >
             Back to the product workspace
           </Link>
@@ -119,7 +119,7 @@ export default function PricingPage() {
               key={tier.name}
               className={
                 tier.highlight
-                  ? "flex flex-col gap-4 rounded-lg border-2 border-[#138a72] bg-card p-6 shadow-sm"
+                  ? "flex flex-col gap-4 rounded-lg border-2 border-accent bg-card p-6 shadow-sm"
                   : "flex flex-col gap-4 rounded-lg border border-card bg-card p-6 shadow-sm"
               }
             >

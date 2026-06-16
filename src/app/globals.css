@@ -193,3 +193,33 @@ html {
     transition: none !important;
   }
 }
+  --ai-purple: #554a8b;
+  --ai-purple-bg: #e9e7f7;
+  --ai-purple-muted: #8378aa;
+  --info-blue: #4f7fb8;
+  --skeleton-from: #e2e8df;
+  --skeleton-to: #d8ded4;
+
+  --ai-purple: #a78bfa;
+  --ai-purple-bg: #2e2240;
+  --ai-purple-muted: #7c6ba8;
+  --info-blue: #60a5fa;
+  --skeleton-from: #1f2925;
+  --skeleton-to: #2a3530;
+
+    --ai-purple: #a78bfa;
+    --ai-purple-bg: #2e2240;
+    --ai-purple-muted: #7c6ba8;
+    --info-blue: #60a5fa;
+    --skeleton-from: #1f2925;
+    --skeleton-to: #2a3530;
+
+.bg-ai { background-color: var(--ai-purple-bg, #e9e7f7); }
+.text-ai { color: var(--ai-purple, #554a8b); }
+.text-ai-muted { color: var(--ai-purple-muted, #8378aa); }
+.border-ai { border-color: var(--ai-purple, #554a8b); }
+.bg-info { background-color: var(--info-blue, #4f7fb8); }
+.text-info { color: var(--info-blue, #4f7fb8); }
+.border-info { border-color: var(--info-blue, #4f7fb8); }
+
+

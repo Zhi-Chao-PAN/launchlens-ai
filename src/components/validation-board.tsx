@@ -315,7 +315,7 @@ export function ValidationBoard({
                     }
                     aria-expanded={expanded}
                     aria-controls={`experiment-details-${experiment.id}`}
-                    className="flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground/80 transition hover:border-[#138a72] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                    className="flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                   >
                     {expanded ? (
                       <ChevronUp className="size-4" aria-hidden="true" />
@@ -330,7 +330,7 @@ export function ValidationBoard({
                     disabled={evidenceLimitReached}
                     aria-expanded={formOpen}
                     aria-controls={`evidence-form-${experiment.id}`}
-                    className="flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-input px-3 text-sm font-semibold text-foreground transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-input px-3 text-sm font-semibold text-foreground transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Plus className="size-4" aria-hidden="true" />
                     {formOpen ? "Cancel" : "Add evidence"}
