@@ -357,7 +357,7 @@ export function LaunchWorkspace({
 
   // Save label with relative time that updates periodically
   const [nowTick, setNowTick] = useState(0);
-  const savedAtRef = useRef<string | null>(null);
+  const [savedAt, setSavedAt] = useState<string | null>(null);
 
   // Update relative time display every 30 seconds
   useEffect(() => {
@@ -366,10 +366,11 @@ export function LaunchWorkspace({
   }, []);
 
   const saveLabel = useMemo(() => {
+    void nowTick; // used as a periodic refresh tick
     if (!isStorageReady) return "Preparing save";
-    if (!savedAtRef.current) return "Saved locally";
-    return `Saved ${formatRelativeTime(savedAtRef.current)}`;
-  }, [isStorageReady, nowTick]);
+    if (!savedAt) return "Saved locally";
+    return `Saved ${formatRelativeTime(savedAt)}`;
+  }, [isStorageReady, savedAt, nowTick]);
 
 
   const generationModeLabel =
@@ -448,7 +449,7 @@ export function LaunchWorkspace({
     if (rawSnapshot) {
       try {
         const parsed = JSON.parse(rawSnapshot);
-        if (parsed.savedAt) savedAtRef.current = parsed.savedAt;
+        if (parsed.savedAt) setSavedAt(parsed.savedAt);
       } catch {
         // ignore parse errors
       }
@@ -499,11 +500,11 @@ export function LaunchWorkspace({
       };
 
       localStorage.setItem(LOCAL_WORKSPACE_KEY, JSON.stringify(snapshot));
-      savedAtRef.current = nextSavedAt;
 
-      // Flash the saved indicator so users see the save took effect.
+      // Flash the saved indicator and update timestamp label.
       // Defer to next tick to avoid cascading re-renders inside the effect.
       window.setTimeout(() => {
+        setSavedAt(nextSavedAt);
         setSaveFlash(true);
         window.setTimeout(() => setSaveFlash(false), 900);
         srSave("Workspace saved locally.");

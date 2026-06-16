@@ -1,4 +1,4 @@
-ï»¿"use client";
+"use client";
 
 import { pushOverlay } from "@/lib/launchlens/overlays";
 import { useFocusTrap } from "@/hooks/use-focus-trap";
@@ -69,12 +69,12 @@ export function KeyboardShortcutsModal() {
 
   return (
     <>
-      {/* Floating help button â€” placed at bottom-left so it does not overlap
+      {/* Floating help button ¡ª placed at bottom-left so it does not overlap
           with toasts which appear at bottom-right. */}
       <button
         onClick={openModal}
         aria-label="Show keyboard shortcuts"
-        className="fixed bottom-4 left-4 z-40 flex h-9 w-9 items-center justify-center rounded-full border border-[#cfd8d1] bg-white/90 text-sm font-semibold text-[#40504a] shadow-sm backdrop-blur transition hover:border-[#138a72] hover:text-[#138a72] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+        className="fixed bottom-4 left-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-[#cfd8d1] bg-white/90 text-base font-semibold text-[#40504a] shadow-sm backdrop-blur transition hover:border-[#138a72] hover:text-[#138a72] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 print:hidden sm:h-9 sm:w-9 sm:text-sm" style={{ paddingBottom: "env(safe-area-inset-bottom, 0)" }}
       >
         ?
       </button>
@@ -99,10 +99,10 @@ export function KeyboardShortcutsModal() {
             ].join(" ")}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-[#d8ded4] px-6 py-4">
+            <div className="flex items-center justify-between border-b border-[#d8ded4] px-5 py-3 sm:px-6 sm:py-4">
               <h2
                 id="shortcuts-title"
-                className="text-lg font-semibold text-[#17201d]"
+                className="text-base font-semibold text-[#17201d] sm:text-lg"
               >
                 Keyboard Shortcuts
               </h2>
@@ -116,7 +116,7 @@ export function KeyboardShortcutsModal() {
               </button>
             </div>
 
-            <div className="max-h-[60vh] overflow-y-auto px-6 py-4">
+            <div className="flex-1 overflow-y-auto px-5 py-4 sm:px-6">
               {Object.entries(grouped).map(([category, items]) => (
                 <div key={category} className="mb-5 last:mb-0">
                   <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#607069]">
@@ -146,7 +146,7 @@ export function KeyboardShortcutsModal() {
               )}
             </div>
 
-            <div className="border-t border-[#d8ded4] px-6 py-3 text-xs leading-5 text-[#607069]">
+            <div className="border-t border-[#d8ded4] px-5 py-3 text-xs leading-5 text-[#607069] sm:px-6">
               Press{" "}
               <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1.5 py-0.5 font-mono text-[#17201d]">?</kbd>,{" "}
               <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1.5 py-0.5 font-mono text-[#17201d]">/</kbd>, or{" "}
