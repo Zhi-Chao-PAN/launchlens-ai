@@ -164,6 +164,19 @@
 - [x] Test suite: **152 -> 164 tests / 37 -> 38 files passing**.
 - [x] All quality gates pass: ESLint (0 warnings), TSC, Vitest (164/38), Next.js production build.
 
+## Brand System & Global Polish (R55-R63, 2026-06-16)
+
+- [x] Register `launchlens-fade-in` keyframe defensively in `@theme` so any future `animate-[launchlens-fade-in_...]` utility resolves to a real animation instead of silently failing.
+- [x] Shared read-only workspace header now includes a Copy Link button (client component, Clipboard API + execCommand fallback, 1.8s checkmark feedback matching export-copy).
+- [x] Primary CTAs globally aligned to the brand green (`#138a72` / hover `#0f7665`) with mint ring (`#cbe8df`): Generate workspace, Save snapshot, Link history, Regenerate brief, Add evidence, pricing highlight CTA, onboarding Get Started, signin Submit, not-found Open-demo, error Try again, shared-view Open-demo.
+- [x] Signin page recolored and given a Back-to-demo secondary action so accidentally-landed reviewers can return without using browser back.
+- [x] Sample-brief selector upgraded to `role="group"` with `aria-pressed`, selected-state styling (mint background, green border, green text), and `disabled` during workspace crossfade.
+- [x] Cloud recovery form onChange handlers cleaned of no-op `if (touched) setTouched(true)`; toggle-share button title fixed from incorrect "Copy share link" to "Enable sharing" when the snapshot is private.
+- [x] Overlay stack unit tests extended (nesting to depth 10, out-of-order pop, reset helper) — suite now at **166 tests / 38 files**.
+- [x] README keyboard-shortcut table expanded to document Cmd/Ctrl+Enter (generate), Cmd/Ctrl+H (replay tour), and Shift+Esc (dismiss all toasts).
+- [x] PROJECT_MATURITY.md updated with a "Post-portfolio quality iteration" section narrating the R46-R54 polish pass.
+- [x] All quality gates green: ESLint (0 warnings), TypeScript strict, Vitest 166/166, Next.js production build.
+
 ## Post-Portfolio Enhancements
 
 - [ ] Add optional OAuth/passkey identity for teams that prefer conventional accounts.
