@@ -195,9 +195,9 @@ function Section({ title, icon: Icon, children, collapsible = false, sectionId, 
           onKeyDown={handleKeyDown}
           aria-expanded={isOpen}
           aria-controls={contentId}
-          className="w-full flex items-center gap-2 p-5 text-left transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-inset"
+          className="w-full flex items-center gap-2 p-5 text-left transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
         >
-          <span className="flex size-8 items-center justify-center rounded-md bg-[#e5f4ef] text-[#0f766e]">
+          <span className="flex size-8 items-center justify-center rounded-md bg-signal-supports text-signal-supports">
             <Icon className="size-4" aria-hidden="true" />
           </span>
           <h2 className="flex-1 text-base font-semibold text-foreground">{title}</h2>
@@ -208,7 +208,7 @@ function Section({ title, icon: Icon, children, collapsible = false, sectionId, 
         </button>
       ) : (
         <div className="flex items-center gap-2 p-5 pb-0">
-          <span className="flex size-8 items-center justify-center rounded-md bg-[#e5f4ef] text-[#0f766e]">
+          <span className="flex size-8 items-center justify-center rounded-md bg-signal-supports text-signal-supports">
             <Icon className="size-4" aria-hidden="true" />
           </span>
           <h2 className="text-base font-semibold text-foreground">{title}</h2>
@@ -235,7 +235,7 @@ function EditableText({ label, value, rows = 3, onCommit }: EditableTextProps) {
       value={value}
       rows={rows}
       onChange={(event) => onCommit(event.target.value)}
-      className="w-full resize-y rounded-md border border-input bg-[#fbfcfa] px-3 py-3 text-sm leading-6 text-foreground outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+      className="w-full resize-y rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 text-foreground outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
     />
   );
 }
@@ -265,7 +265,7 @@ function BulletList({ items }: { items: string[] }) {
           className="flex gap-3 text-sm leading-6 text-foreground/80"
         >
           <CheckCircle2
-            className="mt-1 size-4 shrink-0 text-[#138a72]"
+            className="mt-1 size-4 shrink-0 text-accent"
             aria-hidden="true"
           />
           <span>{item}</span>
@@ -824,19 +824,19 @@ export function LaunchWorkspace({
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 pb-20 sm:gap-6 sm:px-6 sm:py-6 sm:pb-6 lg:px-8">
         <header className="flex flex-col gap-3 border-b border-card pb-4 sm:gap-4 sm:pb-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
-            <span className="flex size-9 items-center justify-center rounded-lg bg-[#17201d] text-white sm:size-11">
+            <span className="flex size-9 items-center justify-center rounded-lg bg-foreground text-white sm:size-11">
               <Compass className="size-4 sm:size-5" aria-hidden="true" />
             </span>
             <div>
-              <p className="text-xs font-medium text-[#d85b3f] sm:text-sm">LaunchLens AI</p>
+              <p className="text-xs font-medium text-signal-challenges sm:text-sm">LaunchLens AI</p>
               <h1 className="text-lg font-semibold text-foreground sm:text-2xl">
                 Go-to-market workspace
               </h1>
             </div>
           </div>
           <div className="flex items-center gap-2 overflow-x-auto pb-1 text-sm sm:flex-wrap sm:overflow-visible sm:pb-0">
-            <span className={`hidden items-center gap-2 rounded-md border border-card bg-card px-3 py-2 text-foreground/80 transition-colors sm:flex ${saveFlash ? "bg-[#e5f4ef] text-[#0f766e] border-[#138a72]" : ""}`}>
-              <Save className="size-4 text-[#138a72]" aria-hidden="true" />
+            <span className={`hidden items-center gap-2 rounded-md border border-card bg-card px-3 py-2 text-foreground/80 transition-colors sm:flex ${saveFlash ? "bg-signal-supports text-signal-supports border-accent" : ""}`}>
+              <Save className="size-4 text-accent" aria-hidden="true" />
               {saveLabel}
             </span>
             <button
@@ -844,7 +844,7 @@ export function LaunchWorkspace({
               onClick={resetLocalWorkspace}
               title="Reset local draft"
               aria-label="Reset local draft"
-              className="flex size-9 items-center justify-center rounded-md border border-card bg-card text-foreground/80 transition hover:border-[#138a72] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 sm:size-10"
+              className="flex size-9 items-center justify-center rounded-md border border-card bg-card text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:size-10"
             >
               <RotateCcw className="size-4" aria-hidden="true" />
             </button>
@@ -854,12 +854,12 @@ export function LaunchWorkspace({
               {providerLabel}
             </span>
             <ReplayTourButton />
-            <span className="hidden rounded-md bg-[#f6df8f] px-3 py-2 font-medium text-[#493b08] md:inline-flex">
+            <span className="hidden rounded-md bg-signal-neutral px-3 py-2 font-medium text-signal-neutral md:inline-flex">
               Portfolio-ready build
             </span>
             <a
               href="/pricing"
-              className="rounded-md border border-input bg-card px-3 py-2 text-foreground transition hover:border-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+              className="rounded-md border border-input bg-card px-3 py-2 text-foreground transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
             >
               Pricing
             </a>
@@ -870,7 +870,7 @@ export function LaunchWorkspace({
           <aside className="min-w-0 rounded-lg border border-card bg-card p-5 shadow-sm lg:sticky lg:top-6 lg:self-start">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Sparkles className="size-5 text-[#d85b3f]" aria-hidden="true" />
+                <Sparkles className="size-5 text-signal-challenges" aria-hidden="true" />
                 <h2 className="text-lg font-semibold">Founder brief</h2>
               </div>
               <button
@@ -878,7 +878,7 @@ export function LaunchWorkspace({
                 aria-controls="founder-brief-controls"
                 aria-expanded={isBriefOpen}
                 onClick={() => setIsBriefOpen((current) => !current)}
-                className="flex h-9 items-center gap-2 rounded-md border border-input bg-[#fbfcfa] px-3 text-sm font-semibold text-foreground transition hover:border-[#138a72] lg:hidden"
+                className="flex h-9 items-center gap-2 rounded-md border border-input bg-input px-3 text-sm font-semibold text-foreground transition hover:border-accent lg:hidden"
               >
                 <PencilLine className="size-4" aria-hidden="true" />
                 {isBriefOpen ? "Hide brief" : "Edit brief"}
@@ -909,8 +909,8 @@ export function LaunchWorkspace({
                       className={[
                         "flex items-center justify-between rounded-md border px-3 py-2 text-left text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60",
                         isSelected
-                          ? "border-[#138a72] bg-[#e5f4ef] text-[#0f766e]"
-                          : "border-card bg-[#fbfcfa] text-foreground/80 hover:border-[#138a72] hover:text-foreground",
+                          ? "border-accent bg-signal-supports text-signal-supports"
+                          : "border-card bg-input text-foreground/80 hover:border-accent hover:text-foreground",
                       ].join(" ")}
                     >
                       {example.label}
@@ -942,9 +942,9 @@ export function LaunchWorkspace({
                     }}
                     rows={5}
                     placeholder="Describe the product you are validating..."
-                    className="w-full resize-none rounded-md border border-input bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none transition placeholder:text-[#8e9c93] focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    className="w-full resize-none rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
-                  <p className="mt-1 text-xs text-[#8e9c93]">
+                  <p className="mt-1 text-xs text-muted">
                     Tip: press{" "}
                     <kbd className="rounded border border-input bg-muted px-1 font-mono">
                       {formatShortcut({ key: "Enter", meta: true, ctrl: true, description: "", category: "" })}
@@ -966,7 +966,7 @@ export function LaunchWorkspace({
                       }))
                     }
                     rows={3}
-                    className="w-full resize-none rounded-md border border-input bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    className="w-full resize-none rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
                 </label>
 
@@ -982,7 +982,7 @@ export function LaunchWorkspace({
                         market: event.target.value,
                       }))
                     }
-                    className="w-full rounded-md border border-input bg-[#fbfcfa] px-3 py-3 text-sm outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    className="w-full rounded-md border border-input bg-input px-3 py-3 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
                 </label>
 
@@ -998,7 +998,7 @@ export function LaunchWorkspace({
                         tone: event.target.value,
                       }))
                     }
-                    className="w-full rounded-md border border-input bg-[#fbfcfa] px-3 py-3 text-sm outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    className="w-full rounded-md border border-input bg-input px-3 py-3 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   >
                     {tones.map((tone) => (
                       <option key={tone} value={tone}>
@@ -1021,7 +1021,7 @@ export function LaunchWorkspace({
                       }))
                     }
                     rows={4}
-                    className="w-full resize-none rounded-md border border-input bg-[#fbfcfa] px-3 py-3 text-sm leading-6 outline-none transition focus:border-[#138a72] focus:ring-2 focus:ring-[#cbe8df]"
+                    className="w-full resize-none rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
                 </label>
 
@@ -1029,7 +1029,7 @@ export function LaunchWorkspace({
                   type="button"
                   onClick={generate}
                   disabled={isGenerating}
-                  className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-[#138a72] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#7c8781]"
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-muted"
                 >
                   {isGenerating ? (
                     <span className="flex items-center gap-1" aria-hidden="true">
@@ -1061,11 +1061,11 @@ export function LaunchWorkspace({
                 <div
                   role="status"
                   aria-live="polite"
-                  className="mt-4 animate-[launchlens-fade-in-up_260ms_ease-out_both] rounded-md border border-card bg-[#fbfcfa] p-3 motion-reduce:animate-none"
+                  className="mt-4 animate-[launchlens-fade-in-up_260ms_ease-out_both] rounded-md border border-card bg-input p-3 motion-reduce:animate-none"
                 >
                   <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
                     <Loader2
-                      className="size-4 animate-spin text-[#138a72]"
+                      className="size-4 animate-spin text-accent"
                       aria-hidden="true"
                     />
                     Generating workspace
@@ -1073,10 +1073,10 @@ export function LaunchWorkspace({
                   <div className="space-y-2">
                     {loadingSteps.map((step, idx) => (
                       <div key={step} className="flex items-center gap-3" style={{ animationDelay: `${idx * 60}ms` }}>
-                        <span className="size-2 animate-[launchlens-dot-pulse_1.4s_ease-in-out_infinite] rounded-full bg-[#138a72]" style={{ animationDelay: `${idx * 120}ms` }} />
+                        <span className="size-2 animate-[launchlens-dot-pulse_1.4s_ease-in-out_infinite] rounded-full bg-primary" style={{ animationDelay: `${idx * 120}ms` }} />
                         <span className="text-sm text-foreground/80">{step}</span>
-                        <span className="ml-auto h-2 w-12 overflow-hidden rounded-full bg-[#d8ded4]">
-                          <span className="block h-full w-1/3 rounded-full bg-[#138a72] motion-safe:animate-[launchlens-shimmer_1.4s_ease-in-out_infinite]" style={{ animationDelay: `${idx * 120}ms` }} />
+                        <span className="ml-auto h-2 w-12 overflow-hidden rounded-full bg-card">
+                          <span className="block h-full w-1/3 rounded-full bg-primary motion-safe:animate-[launchlens-shimmer_1.4s_ease-in-out_infinite]" style={{ animationDelay: `${idx * 120}ms` }} />
                         </span>
                       </div>
                     ))}
@@ -1087,7 +1087,7 @@ export function LaunchWorkspace({
               {(error || fallbackNotice) && (
                 <div
                   role={error ? "alert" : "status"}
-                  className="mt-4 rounded-md border border-[#e7c9bd] bg-[#fff6f1] p-3 text-sm leading-6 text-[#8b3d28]"
+                  className="mt-4 rounded-md border border-[#e7c9bd] bg-signal-challenges p-3 text-sm leading-6 text-signal-challenges"
                 >
                   {error || fallbackNotice}
                 </div>
@@ -1110,7 +1110,7 @@ export function LaunchWorkspace({
             <section className="rounded-lg border border-card bg-card p-5 shadow-sm">
               <div className="mb-5 flex flex-col gap-3 border-b border-card pb-4 xl:flex-row xl:items-center xl:justify-between">
                 <div className="flex flex-wrap items-center gap-3 text-sm text-foreground/80">
-                  <span className="rounded-md bg-[#e5f4ef] px-3 py-2 font-medium text-[#0f766e]">
+                  <span className="rounded-md bg-signal-supports px-3 py-2 font-medium text-signal-supports">
                     {workspace.backlog.length} backlog items
                   </span>
                   <span className="rounded-md bg-muted px-3 py-2">
@@ -1128,11 +1128,11 @@ export function LaunchWorkspace({
                   <span className="rounded-md bg-muted px-3 py-2">
                     Quality {qualityResult.score}%
                   </span>
-                  <span className="rounded-md bg-[#fff0eb] px-3 py-2 text-[#8b3d28]">
+                  <span className="rounded-md bg-signal-challenges px-3 py-2 text-signal-challenges">
                     Validation {executionProgress.score}%
                   </span>
                   {generationMeta.usedFallback && generationMeta.fallbackReason && (
-                    <span className="rounded-md bg-[#fff6f1] px-3 py-2 font-medium text-[#8b3d28]">
+                    <span className="rounded-md bg-signal-challenges px-3 py-2 font-medium text-signal-challenges">
                       Fallback: {generationMeta.fallbackReason}
                     </span>
                   )}
@@ -1157,7 +1157,7 @@ export function LaunchWorkspace({
                     className="flex h-9 items-center gap-2 rounded-md bg-foreground px-2 text-sm font-semibold text-background transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 sm:h-10 sm:px-3"
                   >
                     {copyJustSucceeded === "markdown" ? (
-                      <CheckCircle2 className="size-4 text-[#9dd3c5]" aria-hidden="true" />
+                      <CheckCircle2 className="size-4 text-signal-supports" aria-hidden="true" />
                     ) : (
                       <Copy className="size-4" aria-hidden="true" />
                     )}
@@ -1170,7 +1170,7 @@ export function LaunchWorkspace({
                     className="flex h-9 items-center gap-2 rounded-md border border-input bg-input px-2 text-sm font-semibold text-foreground transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:h-10 sm:px-3"
                   >
                     {copyJustSucceeded === "json" ? (
-                      <CheckCircle2 className="size-4 text-[#138a72]" aria-hidden="true" />
+                      <CheckCircle2 className="size-4 text-accent" aria-hidden="true" />
                     ) : (
                       <Braces className="size-4" aria-hidden="true" />
                     )}
@@ -1199,7 +1199,7 @@ export function LaunchWorkspace({
 
               <div className="grid gap-4 lg:grid-cols-[1fr_220px]">
                 <div>
-                  <p className="mb-2 text-sm font-medium text-[#d85b3f]">
+                  <p className="mb-2 text-sm font-medium text-signal-challenges">
                     Workspace summary
                   </p>
                   {isEditing ? (
@@ -1241,8 +1241,8 @@ export function LaunchWorkspace({
                     </>
                   )}
                 </div>
-                <div className="rounded-lg bg-[#e5f4ef] p-4">
-                  <p className="text-sm font-medium text-[#0f766e]">
+                <div className="rounded-lg bg-signal-supports p-4">
+                  <p className="text-sm font-medium text-signal-supports">
                     Launch CTA
                   </p>
                   {isEditing ? (
@@ -1265,7 +1265,7 @@ export function LaunchWorkspace({
                       {workspace.landingPage.cta}
                     </p>
                   )}
-                  <div className="mt-4 flex items-center text-sm font-medium text-[#0f766e]">
+                  <div className="mt-4 flex items-center text-sm font-medium text-signal-supports">
                     Next action
                     <ArrowRight className="ml-2 size-4" aria-hidden="true" />
                   </div>
@@ -1275,13 +1275,13 @@ export function LaunchWorkspace({
               {exportText && (
                 <div
                   role="status"
-                  className="mt-5 rounded-lg border border-card bg-[#fbfcfa] p-4"
+                  className="mt-5 rounded-lg border border-card bg-input p-4"
                 >
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm font-semibold text-foreground">
                     <span className="flex items-center gap-2">
                       <FileText className="size-4" aria-hidden="true" />
                       Workspace export
-                      <span className="rounded bg-[#e5f4ef] px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-[#0f766e]">
+                      <span className="rounded bg-signal-supports px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-signal-supports">
                         {exportFormat === "json" ? "JSON" : "Markdown"}
                       </span>
                     </span>
@@ -1289,7 +1289,7 @@ export function LaunchWorkspace({
                       type="button"
                       onClick={() => { setExportText(""); setExportFormat(""); }}
                       aria-label="Dismiss export"
-                      className="text-[#8e9c93] transition hover:text-foreground"
+                      className="text-muted transition hover:text-foreground"
                     >
                       <X className="size-4" aria-hidden="true" />
                     </button>
@@ -1301,14 +1301,14 @@ export function LaunchWorkspace({
                       value={exportText}
                       rows={8}
                       onFocus={(e) => e.currentTarget.select()}
-                      className="w-full resize-y rounded-md border border-input bg-card px-3 py-3 font-mono text-xs leading-5 text-foreground/80 focus:border-[#138a72] focus:outline-none"
+                      className="w-full resize-y rounded-md border border-input bg-card px-3 py-3 font-mono text-xs leading-5 text-foreground/80 focus:border-accent focus:outline-none"
                     />
                   )}
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button
                       type="button"
                       onClick={retryCopyFromTextarea}
-                      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-card px-2.5 text-xs font-medium text-foreground transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-card px-2.5 text-xs font-medium text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                     >
                       <Copy className="size-3.5" aria-hidden="true" />
                       Copy selection
@@ -1316,12 +1316,12 @@ export function LaunchWorkspace({
                     <button
                       type="button"
                       onClick={downloadExport}
-                      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-card px-2.5 text-xs font-medium text-foreground transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+                      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-card px-2.5 text-xs font-medium text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                     >
                       <Download className="size-3.5" aria-hidden="true" />
                       Download file
                     </button>
-                    <p className="self-center text-[11px] leading-4 text-[#8e9c93]">
+                    <p className="self-center text-[11px] leading-4 text-muted">
                       Focus the textarea to auto-select all text.
                     </p>
                   </div>
@@ -1428,13 +1428,13 @@ export function LaunchWorkspace({
                 {workspace.backlog.map((item, index) => (
                   <article
                     key={`${item.feature}-${index}`}
-                    className="rounded-md border border-card bg-[#fbfcfa] p-4"
+                    className="rounded-md border border-card bg-input p-4"
                   >
                     <div className="mb-2 flex items-center justify-between gap-3">
                       <h3 className="text-sm font-semibold text-foreground">
                         {item.feature}
                       </h3>
-                      <span className="rounded-md bg-[#f6df8f] px-2 py-1 text-xs font-semibold text-[#493b08]">
+                      <span className="rounded-md bg-signal-neutral px-2 py-1 text-xs font-semibold text-signal-neutral">
                         {item.priority}
                       </span>
                     </div>
@@ -1542,13 +1542,13 @@ export function LaunchWorkspace({
                   {workspace.contentCalendar.map((item, index) => (
                     <article
                       key={`${item.channel}-${item.angle}-${index}`}
-                      className="rounded-md border border-card bg-[#fbfcfa] p-4"
+                      className="rounded-md border border-card bg-input p-4"
                     >
                       <div className="mb-1 flex items-center justify-between gap-3">
                         <h3 className="text-sm font-semibold text-foreground">
                           {item.channel}
                         </h3>
-                        <span className="text-xs font-medium text-[#d85b3f]">
+                        <span className="text-xs font-medium text-signal-challenges">
                           {item.cadence}
                         </span>
                       </div>
@@ -1565,13 +1565,13 @@ export function LaunchWorkspace({
                   {workspace.tasks.map((task, index) => (
                     <article
                       key={`${task.title}-${task.due}-${index}`}
-                      className="rounded-md border border-card bg-[#fbfcfa] p-4"
+                      className="rounded-md border border-card bg-input p-4"
                     >
                       <div className="mb-2 flex flex-wrap items-center gap-2">
                         <h3 className="text-sm font-semibold text-foreground">
                           {task.title}
                         </h3>
-                        <span className="rounded-md bg-[#e5f4ef] px-2 py-1 text-xs font-medium text-[#0f766e]">
+                        <span className="rounded-md bg-signal-supports px-2 py-1 text-xs font-medium text-signal-supports">
                           {task.due}
                         </span>
                       </div>
