@@ -25,6 +25,7 @@ type ToastContextValue = {
   toasts: Toast[];
   showToast: (message: string, type?: ToastType, durationMs?: number) => void;
   dismissToast: (id: string) => void;
+  dismissAllToasts: () => void;
 };
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -72,6 +73,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     timersRef.current.set(id, { handle, startedAt: performance.now(), waitMs, totalMs });
   }, [dismissToast]);
 
+  const dismissAllToasts = useCallback(() => {
+    const snapshot = [...toastsRef.current];
+    for (const t of snapshot) {
+      if (!t.leaving) dismissToast(t.id);
+    }
+  }, [dismissToast]);
+
   const showToast = useCallback(
     (message: string, type: ToastType = "info", durationMs = 4000) => {
       const id = `toast-${++toastIdCounter}`;
@@ -83,8 +91,31 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     [startTimer],
   );
 
+  // Track Shift so Shift+Escape can dismiss all toasts.
+  const shiftHeldRef = useRef(false);
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => { if (e.key === "Shift") shiftHeldRef.current = true; };
+    const onKeyUp = (e: KeyboardEvent) => { if (e.key === "Shift") shiftHeldRef.current = false; };
+    const onBlur = () => { shiftHeldRef.current = false; };
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onBlur);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onBlur);
+    };
+  }, []);
+
   useEffect(() => {
     function handleEscape() {
+      if (shiftHeldRef.current) {
+        const snapshot = [...toastsRef.current];
+        for (const t of snapshot) {
+          if (!t.leaving) dismissToast(t.id);
+        }
+        return;
+      }
       const current = toastsRef.current;
       for (let i = current.length - 1; i >= 0; i--) {
         if (!current[i].leaving) {
@@ -146,7 +177,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <ToastContext.Provider value={{ toasts, showToast, dismissToast }}>
+    <ToastContext.Provider value={{ toasts, showToast, dismissToast, dismissAllToasts }}>
       {children}
       <ToastContainer />
     </ToastContext.Provider>
@@ -162,19 +193,32 @@ export function useToast() {
 }
 
 function ToastContainer() {
-  const { toasts, dismissToast } = useToast();
+  const { toasts, dismissToast, dismissAllToasts } = useToast();
+  const activeCount = toasts.filter((t) => !t.leaving).length;
 
   if (toasts.length === 0) return null;
 
   return (
-    <div
-      aria-live="polite"
-      aria-atomic="true"
-      className="fixed bottom-4 right-4 z-[100] flex max-w-sm flex-col gap-2"
-    >
-      {toasts.map((toast) => (
-        <ToastItem key={toast.id} toast={toast} onDismiss={() => dismissToast(toast.id)} />
-      ))}
+    <div className="fixed bottom-4 right-4 z-[100] flex max-w-sm flex-col items-end gap-2">
+      {activeCount >= 2 && (
+        <button
+          type="button"
+          onClick={dismissAllToasts}
+          className="mr-1 rounded-md border border-[#cfd8d1] bg-white/95 px-2 py-0.5 text-[11px] font-medium text-[#607069] shadow-sm backdrop-blur transition hover:border-[#138a72] hover:text-[#138a72] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1"
+          aria-label="Dismiss all notifications"
+        >
+          Dismiss all
+        </button>
+      )}
+      <div
+        aria-live="polite"
+        aria-atomic="true"
+        className="flex w-full max-w-sm flex-col gap-2"
+      >
+        {toasts.map((toast) => (
+          <ToastItem key={toast.id} toast={toast} onDismiss={() => dismissToast(toast.id)} />
+        ))}
+      </div>
     </div>
   );
 }
