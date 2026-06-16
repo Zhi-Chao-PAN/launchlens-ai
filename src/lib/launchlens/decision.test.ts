@@ -286,4 +286,18 @@ describe("decision brief", () => {
     ).toBeNull();
   });
 
+
+  it('strips leading/trailing whitespace from headline', () => {
+    const valid = buildMockDecisionBrief(source);
+    const padded = { ...valid, headline: '   Great Decision   ' };
+    const result = normalizeDecisionBrief(padded, source);
+    expect(result).not.toBeNull();
+    expect(result!.headline).toBe('Great Decision');
+  });
+
+  it('rejects briefs with empty headline after trimming', () => {
+    const valid = buildMockDecisionBrief(source);
+    expect(normalizeDecisionBrief({ ...valid, headline: '   ' }, source)).toBeNull();
+    expect(normalizeDecisionBrief({ ...valid, headline: '' }, source)).toBeNull();
+  });
 });

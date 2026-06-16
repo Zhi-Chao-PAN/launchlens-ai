@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { API_ERROR_MESSAGES, friendlyApiMessage } from "./api-errors";
 import * as errorCodes from "./error-codes";
@@ -74,4 +74,14 @@ describe("friendlyApiMessage", () => {
     expect(unique.size).toBeGreaterThan(messages.length * 0.7);
   });
 
+
+  it("returns undefined when fallback is undefined and code is unknown", () => {
+    const result = friendlyApiMessage("unknown_code", undefined as unknown as string);
+    expect(result).toBeUndefined();
+  });
+
+  it("handles null/empty error code gracefully with fallback", () => {
+    expect(friendlyApiMessage("", "oops")).toBe("oops");
+    expect(friendlyApiMessage(null as unknown as string, "oops")).toBe("oops");
+  });
 });

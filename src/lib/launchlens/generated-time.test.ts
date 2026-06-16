@@ -79,4 +79,33 @@ describe("formatRelativeTime", () => {
   it("does not throw on empty input", () => {
     expect(() => formatRelativeTime("")).not.toThrow();
   });
+
+  it("falls back to absolute date for entries older than a week", () => {
+    const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+    const result = formatRelativeTime(twoWeeksAgo);
+    // Should not contain any of the relative suffixes
+    expect(result).not.toContain("s ago");
+    expect(result).not.toContain("m ago");
+    expect(result).not.toContain("h ago");
+    expect(result).not.toContain("d ago");
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it("handles exactly 10 seconds boundary as 10s ago", () => {
+    const now = new Date();
+    const tenSecAgo = new Date(now.getTime() - 10 * 1000).toISOString();
+    expect(formatRelativeTime(tenSecAgo)).toBe("10s ago");
+  });
+
+  it("handles exactly 60 seconds boundary as 1m ago", () => {
+    const now = new Date();
+    const sixtySecAgo = new Date(now.getTime() - 60 * 1000).toISOString();
+    expect(formatRelativeTime(sixtySecAgo)).toBe("1m ago");
+  });
+
+  it("handles exactly 24 hours boundary as 1d ago", () => {
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+    expect(formatRelativeTime(oneDayAgo)).toBe("1d ago");
+  });
 });

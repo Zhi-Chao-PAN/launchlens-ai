@@ -70,4 +70,19 @@ describe("cross-exporter filename parity", () => {
     expect(safeMarkdownFilename(both)).toBe("project-alpha.md");
     expect(safeJsonFilename(both)).toBe("project-alpha.json");
   });
+
+  it("handles very long names by truncating to exactly 60 chars of slug", () => {
+    const long = "abcdefghij".repeat(20); // 200 chars
+    const md = safeMarkdownFilename({ projectName: long });
+    const json = safeJsonFilename({ projectName: long });
+    expect(md.endsWith(".md")).toBe(true);
+    expect(json.endsWith(".json")).toBe(true);
+    expect(md.replace(/\.md$/, "").length).toBe(60);
+    expect(json.replace(/\.json$/, "").length).toBe(60);
+  });
+
+  it("returns default filename when only punctuation is provided", () => {
+    expect(safeMarkdownFilename({ projectName: "!!!???..." })).toBe("launchlens-workspace.md");
+    expect(safeJsonFilename({ projectName: "---___===" })).toBe("launchlens-workspace.json");
+  });
 });
