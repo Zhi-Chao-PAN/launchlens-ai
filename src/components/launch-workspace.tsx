@@ -115,6 +115,7 @@ const tones = [
 ];
 
 const LOCAL_WORKSPACE_KEY = "launchlens.currentWorkspace.v1";
+const COLLAPSED_SECTIONS_KEY = "launchlens:collapsed-sections";
 const loadingSteps = [
   "Reading founder brief",
   "Structuring GTM workspace",
@@ -285,6 +286,24 @@ export function LaunchWorkspace({
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+
+  // Load collapsed section state from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(COLLAPSED_SECTIONS_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          // Defer to next tick to avoid cascading renders from mount
+          window.setTimeout(() => {
+            setCollapsedSections(new Set(parsed));
+          }, 0);
+        }
+      }
+    } catch {
+      // ignore parse errors
+    }
+  }, []);
   const [error, setError] = useState("");
   const [fallbackNotice, setFallbackNotice] = useState("");
   const [exportText, setExportText] = useState("");
@@ -394,6 +413,19 @@ export function LaunchWorkspace({
       return next;
     });
   }, []);
+
+  // Persist collapsed sections to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        COLLAPSED_SECTIONS_KEY,
+        JSON.stringify(Array.from(collapsedSections)),
+      );
+    } catch {
+      // ignore storage errors (e.g. private mode)
+    }
+  }, [collapsedSections]);
+
 
   const focusBrief = useCallback(() => {
     setIsBriefOpen(true);
