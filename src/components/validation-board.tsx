@@ -8,6 +8,7 @@ import {
   CircleGauge,
   FlaskConical,
   Link2,
+  PencilLine,
   Plus,
   Trash2,
   X,
@@ -89,6 +90,7 @@ export function ValidationBoard({
   const { announce: srAnnounce, message: srEvidenceAnnouncement } = useSrAnnounce();
   const evidenceListRef = useRef<HTMLUListElement | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [editingEvidenceId, setEditingEvidenceId] = useState<string | null>(null);
   const sourceError = draftTouched.source && draft.source.trim().length < 2 ? "Source needs at least 2 characters." : "";
   const noteError = draftTouched.note && draft.note.trim().length < 8 ? "Observation needs at least 8 characters." : "";
   const progress = useMemo(
@@ -126,6 +128,19 @@ export function ValidationBoard({
       current === experimentId ? "" : experimentId,
     );
     setDraft(emptyDraft);
+    setEditingEvidenceId(null);
+  }
+
+  function startEditingEvidence(experimentId: string, evidenceId: string) {
+    const experiment = execution.experiments.find((e) => e.id === experimentId);
+    const evidence = experiment?.evidence.find((e) => e.id === evidenceId);
+    if (!evidence) return;
+
+    setRequestedExpandedExperimentId(experimentId);
+    setActiveExperimentId(experimentId);
+    setDraft({ signal: evidence.signal ?? "supports", source: evidence.source, note: evidence.note });
+    setEditingEvidenceId(evidenceId);
+    setDraftTouched({ source: false, note: false });
   }
 
   function addEvidence(
@@ -413,7 +428,17 @@ export function ValidationBoard({
                           {item.note}
                         </p>
                       </div>
-                      {pendingDeleteId === item.id ? (
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => startEditingEvidence(experiment.id, item.id)}
+                          title="Edit evidence"
+                          aria-label={`Edit evidence from ${item.source}`}
+                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-[#40504a] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#138a72] focus-visible:ring-offset-1 sm:size-8"
+                        >
+                          <PencilLine className="size-4" aria-hidden="true" />
+                        </button>
+                        {pendingDeleteId === item.id ? (
                         <div className="flex items-center gap-1">
                           <button
                             type="button"
@@ -478,6 +503,7 @@ export function ValidationBoard({
                           <Trash2 className="size-4" aria-hidden="true" />
                         </button>
                       )}
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -592,7 +618,7 @@ export function ValidationBoard({
                       className="flex h-10 items-center justify-center gap-2 rounded-md bg-[#138a72] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
                     >
                       <Plus className="size-4" aria-hidden="true" />
-                      Record
+                      {editingEvidenceId ? "Save" : "Record"}
                     </button>
                   </div>
                 </form>
