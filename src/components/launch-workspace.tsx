@@ -231,6 +231,7 @@ export function LaunchWorkspace({
   const [isStorageReady, setIsStorageReady] = useState(false);
   const [isBriefOpen, setIsBriefOpen] = useState(false);
   const [isSwitching, setIsSwitching] = useState(false);
+  const [srAnnouncement, setSrAnnouncement] = useState("");
   const switchTimerRef = useRef<number | null>(null);
   const { showToast } = useToast();
 
@@ -489,7 +490,11 @@ export function LaunchWorkspace({
       }
 
       setWorkspace(data.workspace);
-      setExecution(createExecutionState(data.workspace));
+      const freshExecution = createExecutionState(data.workspace);
+      setExecution(freshExecution);
+      setSrAnnouncement(
+        `Workspace ready. ${data.workspace.targetUsers.length} audience segments, ${data.workspace.tasks.length} execution tasks, ${freshExecution.experiments.length} validation hypotheses.`,
+      );
       setGenerationMeta({
         mode: data.mode ?? "demo",
         provider: data.workspace.provider,
@@ -506,11 +511,12 @@ export function LaunchWorkspace({
       }
       setIsBriefOpen(false);
     } catch (caught) {
-      setError(
+      const msg =
         caught instanceof Error
           ? caught.message
-          : "Something went wrong during generation.",
-      );
+          : "Something went wrong during generation.";
+      setError(msg);
+      setSrAnnouncement(`Generation failed: ${msg}`);
     } finally {
       setIsGenerating(false);
     }
@@ -588,6 +594,15 @@ export function LaunchWorkspace({
   }
 
   return (
+    <>
+    <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden"
+    >
+      {srAnnouncement}
+    </div>
     <main id="main-content"
       aria-busy={isGenerating || isSwitching}
       className={[
@@ -1330,6 +1345,7 @@ export function LaunchWorkspace({
         </div>
       </div>
     </main>
+    </>
   );
 }
 
