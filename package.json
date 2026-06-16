@@ -19,7 +19,7 @@
     "test:e2e": "playwright test",
     "test:all": "npm test && npm run test:e2e",
     "smoke:e2e": "playwright test e2e/happy-path.e2e.test.ts --retries=0",
-    "quality": "npm run lint -- --max-warnings=0 && npm run test && npx tsc --noEmit && npm run build",
+    "quality": "npm run lint -- --max-warnings=0 && npm run test && npm run typecheck && npm run eval:provider && npm run eval:decision && npm run build && npm audit --audit-level=moderate",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
