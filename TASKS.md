@@ -318,3 +318,12 @@
 - [x] Auto-save visual feedback: "Saved locally" badge flashes green when a save completes, plus screen-reader announcement "Workspace saved locally."
 - [x] Test count expanded from 250 to **260 tests / 41 files**: RBAC role validation, markdown export structure, JSON export round-trip + generatedAt timestamp, RBAC description stability.
 - [x] All four quality gates green: ESLint 0-warn, tsc strict, Vitest, Next.js build.
+
+## Relative Time, Print Styles & Evidence Reordering (R126-R130, 2026-06-17)
+
+- [x] Save badge shows relative time ("Saved 2m ago") with a 30-second refresh tick, plus formatRelativeTime utility.
+- [x] Print styles: hide all buttons/toolbars, remove shadows/animations, section page-break avoidance, visible link URLs.
+- [x] Keyboard shortcuts modal mobile density + print:hidden, safe-area padding, flexible layout for small screens.
+- [x] Evidence move up/down reordering with ChevronUp/ChevronDown buttons, disabled at boundaries, screen-reader announcements.
+- [x] Test count expanded from 260 to **270 tests / 41 files**: formatRelativeTime (7 cases), summarizeExecutionState structure, reconcileExecutionState evidence preservation, evaluateExecutionProgress properties.
+- [x] All four quality gates green: ESLint 0-warn, tsc strict, Vitest, Next.js build.

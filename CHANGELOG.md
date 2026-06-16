@@ -34,6 +34,11 @@ tags are cut for milestone demos.
 - Auto-save visual flash + screen-reader announcement when workspace is persisted\n- Two-stage confirmation for evidence deletion to prevent mobile mis-taps
 - Safe-area CSS variables + utility classes (`pt-safe`, `pb-safe`, etc.) with `viewport-fit=cover` for iOS PWA
 - Screen-reader live-region announcements for decision generation (start / success / failure) and system status retries
+- ormatRelativeTime utility and relative-time save badge ("Saved 2m ago") with a 30-second refresh tick
+- Print styles: hidden toolbars/buttons, removed shadows/animations, section page-break avoidance, visible link URLs
+- Mobile density improvements for the keyboard shortcuts modal (larger help button, flexible layout, safe-area padding)
+- Evidence move up/down reordering with ChevronUp/ChevronDown buttons, disabled at boundaries, screen-reader announcements
+- 10 new tests bringing total to 270 across 41 test files (formatRelativeTime, summarizeExecutionState, reconcileExecutionState, evaluateExecutionProgress)
 
 ### Changed
 - Global primary-CTA color aligned to the brand green (#138a72) with mint focus ring

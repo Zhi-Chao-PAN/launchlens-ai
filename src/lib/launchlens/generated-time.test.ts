@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatGeneratedTime } from "./generated-time";
+import { formatGeneratedTime, formatRelativeTime } from "./generated-time";
 
 describe("formatGeneratedTime", () => {
   it("formats an ISO timestamp as HH:MM UTC (en-GB)", () => {
@@ -35,5 +35,48 @@ describe("formatGeneratedTime", () => {
   it("does not throw on malformed input", () => {
     expect(() => formatGeneratedTime("not-a-date")).not.toThrow();
     expect(() => formatGeneratedTime("")).not.toThrow();
+  });
+});
+
+
+describe("formatRelativeTime", () => {
+  it('returns "just now" for times within 10 seconds', () => {
+    const now = new Date();
+    const fiveSecondsAgo = new Date(now.getTime() - 5 * 1000).toISOString();
+    expect(formatRelativeTime(fiveSecondsAgo)).toBe("just now");
+  });
+
+  it("returns seconds ago for times under a minute", () => {
+    const now = new Date();
+    const thirtySecAgo = new Date(now.getTime() - 30 * 1000).toISOString();
+    expect(formatRelativeTime(thirtySecAgo)).toBe("30s ago");
+  });
+
+  it("returns minutes ago for times under an hour", () => {
+    const now = new Date();
+    const fiveMinAgo = new Date(now.getTime() - 5 * 60 * 1000).toISOString();
+    expect(formatRelativeTime(fiveMinAgo)).toBe("5m ago");
+  });
+
+  it("returns hours ago for times under a day", () => {
+    const now = new Date();
+    const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000).toISOString();
+    expect(formatRelativeTime(threeHoursAgo)).toBe("3h ago");
+  });
+
+  it("returns days ago for times under a week", () => {
+    const now = new Date();
+    const fourDaysAgo = new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000).toISOString();
+    expect(formatRelativeTime(fourDaysAgo)).toBe("4d ago");
+  });
+
+  it('returns "just now" for invalid or future dates', () => {
+    expect(formatRelativeTime("not-a-date")).toBe("just now");
+    const future = new Date(Date.now() + 3600000).toISOString();
+    expect(formatRelativeTime(future)).toBe("just now");
+  });
+
+  it("does not throw on empty input", () => {
+    expect(() => formatRelativeTime("")).not.toThrow();
   });
 });

@@ -228,4 +228,42 @@ describe("workspace execution state", () => {
     expect(typeof id1).toBe("string");
     expect(id1.length).toBeGreaterThan(5);
   });
+
+  it("summarizeExecutionState produces shared format with evidenceCount", () => {
+    const summary = summarizeExecutionState(execution);
+    expect(summary).toHaveProperty("experiments");
+    expect(summary.experiments.length).toBeGreaterThan(0);
+    for (const exp of summary.experiments) {
+      expect(exp).toHaveProperty("evidenceCount");
+      expect(typeof exp.evidenceCount).toBe("number");
+      expect(exp).not.toHaveProperty("evidence");
+      expect(exp).not.toHaveProperty("decisionBrief");
+    }
+  });
+
+  it("reconcileExecutionState preserves user evidence", () => {
+    const base = createExecutionState(workspace);
+    const withEvidence = JSON.parse(JSON.stringify(base));
+    withEvidence.experiments[0].evidence.push({
+      id: "test-evidence",
+      note: "User added this evidence",
+      source: "Manual test",
+      signal: "supports",
+      observedAt: new Date().toISOString(),
+    });
+    const reconciled = reconcileExecutionState(withEvidence, workspace);
+    expect(reconciled.experiments[0].evidence.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("evaluateExecutionProgress returns score 0-100", () => {
+    const empty = createExecutionState(workspace);
+    const progress = evaluateExecutionProgress(empty);
+    expect(progress.score).toBeGreaterThanOrEqual(0);
+    expect(progress.score).toBeLessThanOrEqual(100);
+    expect(typeof progress.total).toBe("number");
+    expect(typeof progress.withEvidence).toBe("number");
+    expect(typeof progress.decided).toBe("number");
+    expect(typeof progress.evidenceCount).toBe("number");
+  });
+
 });
