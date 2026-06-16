@@ -53,14 +53,17 @@ LaunchLens includes power-user keyboard shortcuts for fast workflow navigation:
 
 | Shortcut | Action |
 |----------|--------|
+| `Cmd/Ctrl + Enter` | Generate workspace while the brief textarea is focused |
 | `G` | Generate workspace from current brief |
 | `E` | Toggle edit / preview mode |
 | `Cmd/Ctrl + S` | Scroll to cloud save section |
 | `B` | Open founder brief and focus input |
 | `Cmd/Ctrl + M` | Copy workspace as Markdown |
 | `Cmd/Ctrl + Shift + R` | Reset workspace to initial example |
-| `Shift + ?` | Show this keyboard shortcuts panel |
-| `Esc` | Close open modals and dialogs |
+| `Cmd/Ctrl + H` | Replay the quick-start tour |
+| `?` / `Shift + ?` | Show this keyboard shortcuts panel |
+| `Esc` | Close the topmost open modal / dialog / toast |
+| `Shift + Esc` | Dismiss all toasts at once |
 
 Press `?` anywhere in the app to see the shortcuts help panel. Shortcuts are automatically disabled when typing in inputs or textareas to avoid conflicts.
 
