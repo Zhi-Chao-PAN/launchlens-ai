@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to LaunchLens AI are documented in this file. The format is
 loosely based on Keep a Changelog. Releases are pushed to `main` continuously;

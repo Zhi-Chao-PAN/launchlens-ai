@@ -300,4 +300,21 @@ describe("decision brief", () => {
     expect(normalizeDecisionBrief({ ...valid, headline: '   ' }, source)).toBeNull();
     expect(normalizeDecisionBrief({ ...valid, headline: '' }, source)).toBeNull();
   });
+
+  it('rejects briefs with empty claims array', () => {
+    const valid = buildMockDecisionBrief(source);
+    expect(normalizeDecisionBrief({ ...valid, claims: [] }, source)).toBeNull();
+  });
+
+  it('rejects briefs with duplicate evidence IDs within a claim', () => {
+    const valid = buildMockDecisionBrief(source);
+    const dupClaim = { ...valid.claims[0], evidenceIds: [valid.claims[0].evidenceIds[0], valid.claims[0].evidenceIds[0]] };
+    expect(normalizeDecisionBrief({ ...valid, claims: [dupClaim] }, source)).toBeNull();
+  });
+
+  it('rejects briefs with claims referencing non-existent evidence IDs', () => {
+    const valid = buildMockDecisionBrief(source);
+    const badClaim = { ...valid.claims[0], evidenceIds: ['non-existent-id'] };
+    expect(normalizeDecisionBrief({ ...valid, claims: [badClaim] }, source)).toBeNull();
+  });
 });

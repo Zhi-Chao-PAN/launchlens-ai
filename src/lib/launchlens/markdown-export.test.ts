@@ -212,4 +212,17 @@ describe("markdown export empty-list robustness", () => {
     expect(md).toContain("Content");
     expect(ws.contentCalendar.length).toBeGreaterThan(0);
   });
+
+  it('produces non-empty output for mock workspace', () => {
+    const result = workspaceToMarkdown(buildMockWorkspace(input));
+    expect(typeof result).toBe('string');
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it('output contains expected markdown structure with headings', () => {
+    const result = workspaceToMarkdown(buildMockWorkspace(input));
+    expect(result).toMatch(/^# /m);
+    expect(result).toMatch(/^## /m);
+    expect(result).toContain('- **');
+  });
 });
