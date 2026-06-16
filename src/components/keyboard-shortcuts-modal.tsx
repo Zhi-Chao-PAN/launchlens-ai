@@ -114,9 +114,9 @@ export function KeyboardShortcutsModal() {
             <div className="border-t border-[#d8ded4] px-6 py-3 text-xs text-[#607069]">
               Press{" "}
               <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1.5 py-0.5 font-mono text-[#17201d]">
-                Shift + ?
+                {formatShortcut({ key: "?", shift: true, description: "", category: "" })}
               </kbd>{" "}
-              to show this panel. Press{" "}
+              to open this panel. Press{" "}
               <kbd className="rounded border border-[#cfd8d1] bg-[#f6f8f4] px-1.5 py-0.5 font-mono text-[#17201d]">
                 Esc
               </kbd>{" "}
