@@ -95,3 +95,25 @@ describe("workspace validation", () => {
     expect(isUuid("a5ff00db-60da-1b20-9468-751ce404b289")).toBe(false);
   });
 });
+
+describe("isUuid edge cases", () => {
+  it("rejects empty strings and non-string inputs", () => {
+    expect(isUuid("")).toBe(false);
+    expect(isUuid("   ")).toBe(false);
+  });
+
+  it("rejects UUIDs with wrong version nibble or variant bits", () => {
+    // v1 (time-based) UUID should be rejected (we require v4)
+    expect(isUuid("a5ff00db-60da-1b20-9468-751ce404b289")).toBe(false);
+    // v4 with bad variant (8 -> reserved)
+    expect(isUuid("a5ff00db-60da-4b20-c468-751ce404b289")).toBe(false);
+    // correct v4 RFC variant
+    expect(isUuid("a5ff00db-60da-4b20-9468-751ce404b289")).toBe(true);
+  });
+
+  it("rejects UUIDs with surrounding whitespace or extra characters", () => {
+    expect(isUuid(" a5ff00db-60da-4b20-9468-751ce404b289")).toBe(false);
+    expect(isUuid("a5ff00db-60da-4b20-9468-751ce404b289 ")).toBe(false);
+    expect(isUuid("a5ff00db-60da-4b20-9468-751ce404b289-extra")).toBe(false);
+  });
+});
