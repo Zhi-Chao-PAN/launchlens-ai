@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatShortcut, useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { useSrAnnounce } from "@/hooks/use-sr-announce";
 
 import { CloudWorkspaces } from "@/components/cloud-workspaces";
 import { SystemStatus } from "@/components/system-status";
@@ -351,6 +352,9 @@ export function LaunchWorkspace({
     return "Demo mock provider";
   }, [workspace.provider]);
 
+  const [saveFlash, setSaveFlash] = useState(false);
+  const { announce: srSave } = useSrAnnounce();
+
   const saveLabel = isStorageReady ? "Saved locally" : "Preparing save";
 
   const generationModeLabel =
@@ -472,12 +476,28 @@ export function LaunchWorkspace({
       };
 
       localStorage.setItem(LOCAL_WORKSPACE_KEY, JSON.stringify(snapshot));
+
+      // Flash the saved indicator so users see the save took effect.
+      // Defer to next tick to avoid cascading re-renders inside the effect.
+      window.setTimeout(() => {
+        setSaveFlash(true);
+        window.setTimeout(() => setSaveFlash(false), 900);
+        srSave("Workspace saved locally.");
+      }, 0);
+
+      // Flash the saved indicator so users see the save took effect.
+      // Defer to next tick to avoid cascading re-renders inside the effect.
+      window.setTimeout(() => {
+        setSaveFlash(true);
+        window.setTimeout(() => setSaveFlash(false), 900);
+        srSave("Workspace saved locally.");
+      }, 0);
     } catch {
       window.setTimeout(() => {
         showToast("Local storage unavailable - changes may not persist.", "error");
       }, 0);
     }
-  }, [execution, input, isStorageReady, showToast, workspace]);
+  }, [execution, input, isStorageReady, setSaveFlash, showToast, srSave, workspace]);
 
   function updateList(key: WorkspaceListKey, items: string[]) {
     setWorkspace((current) => ({
@@ -757,7 +777,7 @@ export function LaunchWorkspace({
             </div>
           </div>
           <div className="flex items-center gap-2 overflow-x-auto pb-1 text-sm sm:flex-wrap sm:overflow-visible sm:pb-0">
-            <span className="hidden items-center gap-2 rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-[#40504a] sm:flex">
+            <span className={`hidden items-center gap-2 rounded-md border border-[#d8ded4] bg-white px-3 py-2 text-[#40504a] transition-colors sm:flex ${saveFlash ? "bg-[#e5f4ef] text-[#0f766e] border-[#138a72]" : ""}`}>
               <Save className="size-4 text-[#138a72]" aria-hidden="true" />
               {saveLabel}
             </span>
