@@ -129,6 +129,15 @@ export function useWorkspaceCommands(options: {
 
     // Board power-user commands (dispatch custom events ValidationBoard listens to)
     actions.push({
+      id: "action:new-hypothesis",
+      label: "New hypothesis",
+      description: "Open the add-hypothesis input and focus it",
+      category: "Actions",
+      icon: "action",
+      keywords: ["new", "add", "create", "hypothesis", "assumption", "experiment"],
+      onSelect: () => window.dispatchEvent(new Event("launchlens:new-experiment")),
+    });
+    actions.push({
       id: "action:focus-search",
       label: "Focus board search",
       description: "Jump to the validation board search input",

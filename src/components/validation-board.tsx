@@ -189,6 +189,7 @@ export function ValidationBoard({
   const { announce: srAnnounce, message: srEvidenceAnnouncement } = useSrAnnounce();
   const { showToast } = useToast();
   const evidenceListRef = useRef<HTMLUListElement | null>(null);
+  const newExperimentInputRef = useRef<HTMLInputElement | null>(null);
   const [timelinePulseKey, setTimelinePulseKey] = useState<string | null>(null);
   const [flashEvidenceId, setFlashEvidenceId] = useState<string | null>(null);
   const timelinePulseTimer = useRef<number | null>(null);
@@ -1267,6 +1268,7 @@ export function ValidationBoard({
     const onBulkUnarchive = () => batchArchive(false);
     const onBulkSelectAll = () => toggleSelectAllExperiments();
     const onBulkClear = () => { setSelectedExperimentIds(new Set()); setSelectMode(false); };
+    const onNewExperiment = () => { setIsAddingExperiment(true); window.setTimeout(() => newExperimentInputRef.current?.focus(), 50); newExperimentInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }); };
     window.addEventListener("launchlens:focus-search", onFocusEvent);
     window.addEventListener("launchlens:toggle-select-mode", onToggleEvent);
     window.addEventListener("launchlens:clear-filters", onClearFilters);
@@ -1276,7 +1278,8 @@ export function ValidationBoard({
     window.addEventListener("launchlens:bulk-unarchive", onBulkUnarchive);
     window.addEventListener("launchlens:bulk-select-all", onBulkSelectAll);
     window.addEventListener("launchlens:bulk-clear", onBulkClear);
-    return () => { off1?.(); off2?.(); const w = window; w.removeEventListener("launchlens:focus-search", onFocusEvent); w.removeEventListener("launchlens:toggle-select-mode", onToggleEvent); w.removeEventListener("launchlens:clear-filters", onClearFilters); w.removeEventListener("launchlens:collapse-all", onCollapseAll); w.removeEventListener("launchlens:bulk-status", onBulkStatus as EventListener); w.removeEventListener("launchlens:bulk-archive", onBulkArchive); w.removeEventListener("launchlens:bulk-unarchive", onBulkUnarchive); w.removeEventListener("launchlens:bulk-select-all", onBulkSelectAll); w.removeEventListener("launchlens:bulk-clear", onBulkClear); };
+    window.addEventListener("launchlens:new-experiment", onNewExperiment);
+    return () => { off1?.(); off2?.(); const w = window; w.removeEventListener("launchlens:focus-search", onFocusEvent); w.removeEventListener("launchlens:toggle-select-mode", onToggleEvent); w.removeEventListener("launchlens:clear-filters", onClearFilters); w.removeEventListener("launchlens:collapse-all", onCollapseAll); w.removeEventListener("launchlens:bulk-status", onBulkStatus as EventListener); w.removeEventListener("launchlens:bulk-archive", onBulkArchive); w.removeEventListener("launchlens:bulk-unarchive", onBulkUnarchive); w.removeEventListener("launchlens:bulk-select-all", onBulkSelectAll); w.removeEventListener("launchlens:bulk-clear", onBulkClear); w.removeEventListener("launchlens:new-experiment", onNewExperiment); };
   }, [doFocusSearch, doToggleSelectMode, doClearFilters, doCollapseAll, setSelectedStatus, batchArchive, toggleSelectAllExperiments]);
 
   function addEvidence(
@@ -1815,6 +1818,7 @@ export function ValidationBoard({
               onChange={(e) => setNewExperimentDraft(e.target.value)}
               placeholder="What assumption do you want to validate?"
               autoFocus
+              ref={newExperimentInputRef}
               data-new-experiment-input
               className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
               onKeyDown={(e) => {
