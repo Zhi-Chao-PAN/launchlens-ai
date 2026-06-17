@@ -14,6 +14,24 @@ export type ExperimentStatus =
   | "refuted";
 export type ConfidenceLevel = "low" | "medium" | "high";
 
+export type HypothesisChangeKind =
+  | "created"
+  | "status"
+  | "confidence"
+  | "decision"
+  | "archived"
+  | "evidence_added"
+  | "evidence_removed";
+
+export type HypothesisChangeEvent = {
+  id: string;
+  kind: HypothesisChangeKind;
+  at: string;
+  from?: string;
+  to?: string;
+  source?: string;
+};
+
 export type ValidationEvidence = {
   id: string;
   note: string;
@@ -35,6 +53,7 @@ export type ValidationExperiment = {
   linkedTaskId: string;
   evidence: ValidationEvidence[];
   archived?: boolean;
+  history?: HypothesisChangeEvent[];
   tags: string[];
   decisionBrief?: DecisionBrief;
 };
@@ -135,7 +154,9 @@ function defaultExperiment(
   assumption: string,
   index: number,
   tasks: LaunchTask[],
+  at?: string,
 ): ValidationExperiment {
+  const createdAt = at ?? new Date().toISOString();
   return {
     id: assumptionIdentity(assumption, index),
     assumption,
@@ -146,6 +167,7 @@ function defaultExperiment(
     nextAction: "",
     linkedTaskId: tasks[index] ? taskIdentity(tasks[index], index) : "",
     evidence: [],
+    history: [{ id: "evt-created-" + assumptionIdentity(assumption, index), kind: "created", at: createdAt, source: "initial" }],
     tags: [],
   };
 }
@@ -174,7 +196,7 @@ export function createExecutionState(
 ): WorkspaceExecutionState {
   return {
     experiments: workspace.assumptions.map((assumption, index) =>
-      defaultExperiment(assumption, index, workspace.tasks),
+      defaultExperiment(assumption, index, workspace.tasks, workspace.generatedAt),
     ),
     updatedAt: workspace.generatedAt,
   };
@@ -237,6 +259,14 @@ function normalizeExperiment(
   const evidence = value.evidence.map(normalizeEvidence);
 
   const archived = value.archived === true;
+  const rawHistory = Array.isArray(value.history) ? (value.history as unknown[]).slice(0, 50) : [];
+  const normalizedHistory = rawHistory.filter((h): h is HypothesisChangeEvent => {
+    if (!isRecord(h)) return false;
+    if (typeof h.id !== "string" || !h.id) return false;
+    if (typeof h.kind !== "string" || typeof h.at !== "string") return false;
+    if (!normalizedDate(h.at)) return false;
+    return true;
+  });
   if (
     id === null ||
     !EXPERIMENT_STATUSES.has(status) ||
@@ -268,6 +298,7 @@ function normalizeExperiment(
     evidence: evidence as ValidationEvidence[],
     tags: Array.from(new Set(rawTags)),
     archived,
+    history: normalizedHistory.length ? normalizedHistory : [],
   };
   const decisionBrief = normalizeDecisionBrief(
     value.decisionBrief,
@@ -315,7 +346,7 @@ export function normalizeExecutionState(
   );
   const remaining = [...value.experiments];
   const experiments = workspace.assumptions.map((assumption, index) => {
-    const fallback = defaultExperiment(assumption, index, workspace.tasks);
+    const fallback = defaultExperiment(assumption, index, workspace.tasks, workspace.generatedAt);
     const matchIndex = remaining.findIndex(
       (item) => isRecord(item) && item.assumption === assumption,
     );
@@ -380,7 +411,7 @@ export function reconcileExecutionState(
       matchIndex >= 0 ? remaining.splice(matchIndex, 1)[0] : undefined;
 
     if (!existing) {
-      return defaultExperiment(assumption, index, workspace.tasks);
+      return defaultExperiment(assumption, index, workspace.tasks, workspace.generatedAt);
     }
 
     return {

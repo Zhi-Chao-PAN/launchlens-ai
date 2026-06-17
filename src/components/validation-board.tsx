@@ -2706,6 +2706,37 @@ export function ValidationBoard({
                     {experiment.nextAction.length}/800 characters
                   </p>
                 </label>
+                {experiment.history && experiment.history.length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="mb-2 text-xs font-semibold uppercase text-muted">Timeline</h3>
+                    <ol className="space-y-1.5 border-l border-border/60 pl-3">
+                      {experiment.history.slice(-8).reverse().map((evt) => {
+                        const when = new Date(evt.at);
+                        const timeLabel = when.toLocaleString();
+                        const kindLabel: Record<string, string> = {
+                          created: "Created",
+                          status: "Status",
+                          confidence: "Confidence",
+                          decision: "Decision updated",
+                          archived: evt.to === "true" ? "Archived" : "Unarchived",
+                          evidence_added: "Evidence added",
+                          evidence_removed: "Evidence removed",
+                        };
+                        const detail = evt.kind === "status" || evt.kind === "confidence"
+                          ? (evt.from ?? "?") + " → " + (evt.to ?? "?")
+                          : evt.kind === "archived" ? "" : (evt.source ?? "");
+                        return (
+                          <li key={evt.id} className="relative text-xs leading-5">
+                            <span className="absolute -left-[15px] top-2 size-2 rounded-full bg-accent/70 ring-2 ring-background" aria-hidden="true" />
+                            <span className="font-medium text-foreground/80">{kindLabel[evt.kind] || evt.kind}</span>
+                            {detail ? <span className="ml-1.5 text-muted">{detail}</span> : null}
+                            <span className="ml-1 text-[10px] text-muted/80">· {timeLabel}</span>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  </div>
+                )}
               </div>
                 </div>
               </div>
