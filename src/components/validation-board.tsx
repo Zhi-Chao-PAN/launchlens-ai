@@ -269,6 +269,46 @@ export function ValidationBoard({
     srAnnounce("Evidence signal changed to " + nextSignal + ".");
   }
 
+  function cycleEvidenceWeight(experimentId: string, evidenceId: string) {
+    const experiment = execution.experiments.find((e) => e.id === experimentId);
+    const evidence = experiment?.evidence.find((e) => e.id === evidenceId);
+    if (!experiment || !evidence) return;
+
+    const order: EvidenceWeight[] = ["anecdotal", "moderate", "strong"];
+    const currentIdx = order.indexOf(evidence.weight);
+    const nextWeight = order[(currentIdx + 1) % order.length];
+
+    const oldConfidence = experiment.confidence;
+    const isManual = experiment.confidenceManual;
+
+    updateExperiment(experimentId, (exp) => {
+      const newEvidence = exp.evidence.map((e) =>
+        e.id === evidenceId ? { ...e, weight: nextWeight } : e,
+      );
+      return {
+        ...exp,
+        evidence: newEvidence,
+        confidence: isManual
+          ? exp.confidence
+          : computeExperimentConfidence(newEvidence),
+      };
+    });
+
+    // Notify confidence change if auto
+    if (!isManual) {
+      const updatedExperiment = execution.experiments.find((e) => e.id === experimentId);
+      const newEvidence = updatedExperiment?.evidence.map((e) =>
+        e.id === evidenceId ? { ...e, weight: nextWeight } : e,
+      ) ?? [];
+      const newConfidence = computeExperimentConfidence(newEvidence);
+      if (oldConfidence !== newConfidence) {
+        notifyConfidenceChange(experimentId, oldConfidence, newConfidence);
+      }
+    }
+
+    srAnnounce("Evidence weight changed to " + nextWeight + ".");
+  }
+
   function moveEvidence(
     experimentId: string,
     evidenceId: string,
@@ -1311,10 +1351,10 @@ export function ValidationBoard({
                           >
                             {signalLabels[item.signal]}
                           </button>
-                          <span
+                          <button type="button" onClick={() => cycleEvidenceWeight(experiment.id, item.id)}
                             aria-label={`Evidence weight: ${item.weight}`}
                             title={item.weight.charAt(0).toUpperCase() + item.weight.slice(1)}
-                            className="inline-flex items-center gap-0.5"
+                            className="inline-flex items-center gap-0.5 transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 rounded-sm"
                           >
                             {(["anecdotal", "moderate", "strong"] as const).map((lvl) => (
                               <span
@@ -1327,7 +1367,7 @@ export function ValidationBoard({
                                 }
                               />
                             ))}
-                          </span>
+                          </button>
                           <time className="text-muted">
                             {new Intl.DateTimeFormat("en", {
                               month: "short",
@@ -1565,7 +1605,7 @@ export function ValidationBoard({
                             </span>
                             <span
                               aria-label={`Evidence weight: ${draft.weight}`}
-                              className="inline-flex items-center gap-0.5"
+                              className="inline-flex items-center gap-0.5 transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 rounded-sm"
                             >
                               {(["anecdotal", "moderate", "strong"] as const).map((lvl) => (
                                 <span
