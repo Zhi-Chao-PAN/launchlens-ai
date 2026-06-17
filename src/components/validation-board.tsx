@@ -14,7 +14,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
 import { useToast } from "@/components/toast";
 
@@ -101,6 +101,8 @@ export function ValidationBoard({
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [recentlyDeleted, setRecentlyDeleted] = useState<{ experimentId: string; evidence: ValidationEvidence; index: number } | null>(null);
   const [recentlyDeletedExperiment, setRecentlyDeletedExperiment] = useState<{ experiment: ValidationExperiment; index: number } | null>(null);
+  const evidenceUndoTimerRef = useRef<number | null>(null);
+  const experimentUndoTimerRef = useRef<number | null>(null);
   const [editingEvidenceId, setEditingEvidenceId] = useState<string | null>(null);
   const sourceError = draftTouched.source && draft.source.trim().length < 2 ? "Source needs at least 2 characters." : "";
   const noteError = draftTouched.note && draft.note.trim().length < 8 ? "Observation needs at least 8 characters." : "";
@@ -110,7 +112,15 @@ export function ValidationBoard({
   const [isAddingExperiment, setIsAddingExperiment] = useState(false);
   const [newExperimentDraft, setNewExperimentDraft] = useState("");
 
-  const currentWeights: ExecutionProgressWeights = useMemo(() => {
+  // Clean up undo timers on unmount
+  useEffect(() => {
+    return () => {
+      if (evidenceUndoTimerRef.current) window.clearTimeout(evidenceUndoTimerRef.current);
+      if (experimentUndoTimerRef.current) window.clearTimeout(experimentUndoTimerRef.current);
+    };
+  }, []);
+
+    const currentWeights: ExecutionProgressWeights = useMemo(() => {
     if (weightPreset === "evidence") return EVIDENCE_BIASED_WEIGHTS;
     if (weightPreset === "decision") return DECISION_BIASED_WEIGHTS;
     return DEFAULT_PROGRESS_WEIGHTS;
@@ -252,6 +262,11 @@ export function ValidationBoard({
       label: "Undo",
       onClick: () => undoDeleteExperiment(),
     });
+    if (experimentUndoTimerRef.current) window.clearTimeout(experimentUndoTimerRef.current);
+    experimentUndoTimerRef.current = window.setTimeout(() => {
+      setRecentlyDeletedExperiment(null);
+      experimentUndoTimerRef.current = null;
+    }, 5000);
     srAnnounce("Hypothesis " + experiment.assumption + " removed.");
   }
 
@@ -265,6 +280,10 @@ export function ValidationBoard({
       experiments: next,
       updatedAt: new Date().toISOString(),
     });
+    if (experimentUndoTimerRef.current) {
+      window.clearTimeout(experimentUndoTimerRef.current);
+      experimentUndoTimerRef.current = null;
+    }
     setRecentlyDeletedExperiment(null);
     srAnnounce("Hypothesis " + experiment.assumption + " restored.");
   }
@@ -277,6 +296,10 @@ export function ValidationBoard({
       next.splice(index, 0, evidence);
       return { ...exp, evidence: next };
     });
+    if (evidenceUndoTimerRef.current) {
+      window.clearTimeout(evidenceUndoTimerRef.current);
+      evidenceUndoTimerRef.current = null;
+    }
     srAnnounce("Evidence from " + evidence.source + " restored.");
     setRecentlyDeleted(null);
   }
@@ -335,6 +358,9 @@ export function ValidationBoard({
       if (recentlyDeleted) {
         e.preventDefault();
         undoDeleteEvidence();
+      } else if (recentlyDeletedExperiment) {
+        e.preventDefault();
+        undoDeleteExperiment();
       }
     }
   }
