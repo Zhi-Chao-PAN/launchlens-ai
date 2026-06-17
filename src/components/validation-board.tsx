@@ -114,6 +114,7 @@ export function ValidationBoard({
   const evidenceUndoTimerRef = useRef<number | null>(null);
   const experimentUndoTimerRef = useRef<number | null>(null);
   const [editingEvidenceId, setEditingEvidenceId] = useState<string | null>(null);
+  const [manualConfidenceIds, setManualConfidenceIds] = useState<Set<string>>(new Set());
   const sourceError = draftTouched.source && draft.source.trim().length < 2 ? "Source needs at least 2 characters." : "";
   const noteError = draftTouched.note && draft.note.trim().length < 8 ? "Observation needs at least 8 characters." : "";
   const [weightPreset, setWeightPreset] = useState<"default" | "evidence" | "decision">("default");
@@ -241,10 +242,13 @@ export function ValidationBoard({
       evidenceListRef.current;
     updateExperiment(experimentId, (exp) => {
       const newEvidence = exp.evidence.filter((e) => e.id !== evidenceId);
+      const isManual = manualConfidenceIds.has(exp.id);
       return {
         ...exp,
         evidence: newEvidence,
-        confidence: computeExperimentConfidence(newEvidence),
+        confidence: isManual
+          ? exp.confidence
+          : computeExperimentConfidence(newEvidence),
       };
     });
     srAnnounce("Evidence from " + evidence.source + " removed. Press Ctrl+Z to undo.");
@@ -308,7 +312,14 @@ export function ValidationBoard({
     updateExperiment(experimentId, (exp) => {
       const next = [...exp.evidence];
       next.splice(index, 0, evidence);
-      return { ...exp, evidence: next, confidence: computeExperimentConfidence(next) };
+      const isManual = manualConfidenceIds.has(exp.id);
+      return {
+        ...exp,
+        evidence: next,
+        confidence: isManual
+          ? exp.confidence
+          : computeExperimentConfidence(next),
+      };
     });
     if (evidenceUndoTimerRef.current) {
       window.clearTimeout(evidenceUndoTimerRef.current);
@@ -457,33 +468,59 @@ export function ValidationBoard({
     }
     setDraftSubmitError("");
 
-    updateExperiment(experimentId, (experiment) => {
-      const newEvidence = [
-        ...experiment.evidence,
-        {
-          id: evidenceId(),
-          note,
-          source,
-          signal: draft.signal,
-          weight: draft.weight,
-          observedAt: new Date().toISOString(),
-        },
-      ];
-      return {
-        ...experiment,
-        status: experiment.status === "untested" ? "testing" : experiment.status,
-        evidence: newEvidence,
-        confidence: computeExperimentConfidence(newEvidence),
-      };
-    });
+    if (editingEvidenceId) {
+      // Update existing evidence
+      updateExperiment(experimentId, (experiment) => {
+        const newEvidence = experiment.evidence.map((item) =>
+          item.id === editingEvidenceId
+            ? { ...item, note, source, signal: draft.signal, weight: draft.weight }
+            : item,
+        );
+        const isManual = manualConfidenceIds.has(experiment.id);
+        return {
+          ...experiment,
+          evidence: newEvidence,
+          confidence: isManual
+            ? experiment.confidence
+            : computeExperimentConfidence(newEvidence),
+        };
+      });
+      srAnnounce(`Evidence from ${source} updated.`);
+      setEditingEvidenceId(null);
+    } else {
+      // Add new evidence
+      updateExperiment(experimentId, (experiment) => {
+        const newEvidence = [
+          ...experiment.evidence,
+          {
+            id: evidenceId(),
+            note,
+            source,
+            signal: draft.signal,
+            weight: draft.weight,
+            observedAt: new Date().toISOString(),
+          },
+        ];
+        const isManual = manualConfidenceIds.has(experiment.id);
+        return {
+          ...experiment,
+          status: experiment.status === "untested" ? "testing" : experiment.status,
+          evidence: newEvidence,
+          confidence: isManual
+            ? experiment.confidence
+            : computeExperimentConfidence(newEvidence),
+        };
+      });
+      const updatedExperiment = execution.experiments.find((e) => e.id === experimentId);
+      const count = updatedExperiment ? updatedExperiment.evidence.length + 1 : 1;
+      srAnnounce(
+        `Evidence recorded: ${source}. ${count} items total.`,
+      );
+    }
+
     setDraft(emptyDraft);
     setDraftTouched({ source: false, note: false });
     setDraftSubmitError("");
-    const updatedExperiment = execution.experiments.find((e) => e.id === experimentId);
-    const count = updatedExperiment ? updatedExperiment.evidence.length + 1 : 1;
-    srAnnounce(
-      `Evidence recorded: ${source}. ${count} items total.`,
-    );
     setActiveExperimentId("");
     // Move focus to the evidence list region for keyboard / screen-reader users
     if (evidenceListRef.current) {
@@ -847,18 +884,49 @@ export function ValidationBoard({
                 </label>
 
                 <label className="block">
-                  <span className="mb-2 block text-xs font-semibold uppercase text-muted">
+                  <span className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-muted">
                     Confidence
+                    {!manualConfidenceIds.has(experiment.id) && experiment.evidence.length > 0 && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-signal-supports/15 px-2 py-0.5 text-[10px] font-semibold uppercase text-signal-supports">
+                        Auto
+                      </span>
+                    )}
+                    {manualConfidenceIds.has(experiment.id) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setManualConfidenceIds((prev) => {
+                            const next = new Set(prev);
+                            next.delete(experiment.id);
+                            return next;
+                          });
+                          // Recompute immediately
+                          updateExperiment(experiment.id, (current) => ({
+                            ...current,
+                            confidence: computeExperimentConfidence(current.evidence),
+                          }));
+                        }}
+                        className="inline-flex items-center gap-1 rounded-full border border-dashed border-muted px-2 py-0.5 text-[10px] font-semibold uppercase text-muted transition hover:border-accent hover:text-accent"
+                        aria-label="Reset confidence to auto-calculated"
+                      >
+                        Manual
+                      </button>
+                    )}
                   </span>
                   <select
                     value={experiment.confidence}
-                    onChange={(event) =>
+                    onChange={(event) => {
+                      setManualConfidenceIds((prev) => {
+                        const next = new Set(prev);
+                        next.add(experiment.id);
+                        return next;
+                      });
                       updateExperiment(experiment.id, (current) => ({
                         ...current,
                         confidence: event.target
                           .value as ValidationExperiment["confidence"],
-                      }))
-                    }
+                      }));
+                    }}
                     className="h-12 w-full rounded-md border border-input bg-input px-3 text-sm capitalize text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)] sm:h-10"
                   >
                     <option value="low">Low</option>
