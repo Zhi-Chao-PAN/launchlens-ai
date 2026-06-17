@@ -1,5 +1,5 @@
 "use client";
-import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { registerShortcut, useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 import {
   Check,
@@ -1091,6 +1091,24 @@ export function ValidationBoard({
     );
   }
 
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  useEffect(() => {
+    const off1 = registerShortcut('focusSearch', (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
+      event.preventDefault();
+      searchInputRef.current?.focus();
+      searchInputRef.current?.select();
+    });
+    const off2 = registerShortcut('toggleSelectMode', (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
+      event.preventDefault();
+      setSelectMode((v) => { const next = !v; if (!next) setSelectedExperimentIds(new Set()); return next; });
+    });
+    return () => { off1?.(); off2?.(); };
+  }, []);
+
   function addEvidence(
     event: React.FormEvent<HTMLFormElement>,
     experimentId: string,
@@ -1462,6 +1480,7 @@ export function ValidationBoard({
         <div className="relative">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted" aria-hidden="true" />
           <input
+            ref={searchInputRef}
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
