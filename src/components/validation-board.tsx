@@ -480,7 +480,7 @@ export function ValidationBoard({
                   </h3>
                 </div>
 
-                <div className="flex shrink-0 items-center gap-2">
+                <div className="flex w-full shrink-0 flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
                   <button
                     type="button"
                     onClick={() =>
@@ -490,7 +490,7 @@ export function ValidationBoard({
                     }
                     aria-expanded={expanded}
                     aria-controls={`experiment-details-${experiment.id}`}
-                    className="flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                    className="flex h-11 items-center justify-center gap-2 rounded-md border border-input bg-card px-4 text-sm font-semibold text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:h-10"
                   >
                     {expanded ? (
                       <ChevronUp className="size-4" aria-hidden="true" />
@@ -505,7 +505,7 @@ export function ValidationBoard({
                     disabled={evidenceLimitReached}
                     aria-expanded={formOpen}
                     aria-controls={`evidence-form-${experiment.id}`}
-                    className="flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-input px-3 text-sm font-semibold text-foreground transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-11 items-center justify-center gap-2 rounded-md border border-input bg-input px-4 text-sm font-semibold text-foreground transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 sm:h-10"
                   >
                     <Plus className="size-4" aria-hidden="true" />
                     {formOpen ? "Cancel" : "Add evidence"}
@@ -557,7 +557,7 @@ export function ValidationBoard({
                           .value as ValidationExperiment["confidence"],
                       }))
                     }
-                    className="h-10 w-full rounded-md border border-input bg-input px-3 text-sm capitalize text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                    className="h-12 w-full rounded-md border border-input bg-input px-3 text-sm capitalize text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)] sm:h-10"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -634,7 +634,7 @@ export function ValidationBoard({
                           disabled={experiment.evidence.findIndex((e) => e.id === item.id) === 0}
                           title="Move evidence up"
                           aria-label={`Move evidence from ${item.source} up`}
-                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent sm:size-8"
+                          className="flex size-12 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent sm:size-9"
                         >
                           <ChevronUp className="size-4" aria-hidden="true" />
                         </button>
@@ -644,7 +644,7 @@ export function ValidationBoard({
                           disabled={experiment.evidence.findIndex((e) => e.id === item.id) === experiment.evidence.length - 1}
                           title="Move evidence down"
                           aria-label={`Move evidence from ${item.source} down`}
-                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent sm:size-8"
+                          className="flex size-12 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent sm:size-9"
                         >
                           <ChevronDown className="size-4" aria-hidden="true" />
                         </button>
