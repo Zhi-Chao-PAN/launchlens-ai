@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { registerShortcut, useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 import {
@@ -2895,20 +2895,45 @@ export function ValidationBoard({
                 </label>
                 {(() => {
                   const confEvents = (experiment.history || []).filter((h) => h.kind === "confidence" || h.kind === "created");
-                  if (confEvents.length < 2) return null;
+                  const statusEvents = (experiment.history || []).filter((h) => h.kind === "created" || h.kind === "status").sort((a, b) => +new Date(a.at) - +new Date(b.at));
+                  const statusColor = (s?: string) => ({ supported: "bg-signal-supports", refuted: "bg-signal-challenges", testing: "bg-signal-pending", untested: "bg-muted-foreground/40" } as Record<string, string>)[s ?? ""] ?? "bg-muted-foreground/40";
+                  const segments = statusEvents.map((h, i) => {
+                    const start = i / Math.max(1, statusEvents.length);
+                    const end = (i + 1) / Math.max(1, statusEvents.length);
+                    const w = Math.max(0, Math.min(1, end - start)) * 60;
+                    const color = h.to ? statusColor(h.to) : "bg-muted-foreground/40";
+                    return { x: start * 60, w, color, status: h.to ?? "" };
+                  });
+                  const haveSpark = confEvents.length >= 2;
+                  const haveRibbon = segments.length > 0;
+                  if (!haveSpark && !haveRibbon) return null;
                   const levels: Record<string, number> = { low: 0, medium: 0.5, high: 1 };
-                  const pts = confEvents.map((h, i) => {
+                  const pts = haveSpark ? confEvents.map((h, i) => {
                     const v = h.to ? levels[h.to] ?? 0 : levels["low"];
                     const x = (i / Math.max(1, confEvents.length - 1)) * 60;
                     const y = 12 - v * 10;
                     return `${x.toFixed(1)},${y.toFixed(1)}`;
-                  }).join(" ");
+                  }).join(" ") : "";
                   return (
-                    <div className="mt-4 flex items-center gap-2">
-                      <span className="text-[10px] uppercase text-muted">Confidence trend</span>
-                      <svg width={64} height={14} viewBox="0 0 64 14" aria-hidden="true" className="text-accent">
-                        <polyline fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" points={pts} />
-                      </svg>
+                    <div className="mt-4 space-y-1">
+                      {haveSpark && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] uppercase text-muted">Confidence</span>
+                          <svg width={64} height={14} viewBox="0 0 64 14" aria-hidden="true" className="text-accent">
+                            <polyline fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" points={pts} />
+                          </svg>
+                        </div>
+                      )}
+                      {haveRibbon && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] uppercase text-muted">Status</span>
+                          <svg width={64} height={6} viewBox="0 0 64 6" role="img" aria-label="Status over time">
+                            {segments.map((seg, i) => (
+                              <rect key={i} x={seg.x.toFixed(1)} y={1} width={Math.max(seg.w, 1).toFixed(1)} height={4} rx={1} className={seg.color} opacity={0.85} />
+                            ))}
+                          </svg>
+                        </div>
+                      )}
                     </div>
                   );
                 })()}
