@@ -1857,6 +1857,25 @@ export function LaunchWorkspace({
                         className="rounded-md border border-card bg-input p-4 space-y-2"
                       >
                         <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setWorkspace((current) => ({
+                                ...current,
+                                tasks: current.tasks.map((t, i) =>
+                                  i === index ? { ...t, completed: !t.completed } : t,
+                                ),
+                              }))
+                            }
+                            className={`flex size-6 shrink-0 items-center justify-center rounded transition ${
+                              task.completed
+                                ? "bg-accent text-white"
+                                : "border-2 border-muted text-transparent hover:border-accent"
+                            }`}
+                            aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
+                          >
+                            <CheckCircle2 className="size-3.5" aria-hidden="true" />
+                          </button>
                           <input
                             type="text"
                             value={task.title}
@@ -1869,7 +1888,7 @@ export function LaunchWorkspace({
                               }))
                             }
                             placeholder="Task title"
-                            className="flex-1 rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                            className={`flex-1 rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold ${task.completed ? "text-foreground/50 line-through" : "text-foreground"} outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]`}
                           />
                           <button
                             type="button"
@@ -1938,7 +1957,7 @@ export function LaunchWorkspace({
                           ...current,
                           tasks: [
                             ...current.tasks,
-                            { title: "", owner: "", due: "Week 1", outcome: "" },
+                            { title: "", owner: "", due: "Week 1", outcome: "", completed: false },
                           ],
                         }))
                       }
