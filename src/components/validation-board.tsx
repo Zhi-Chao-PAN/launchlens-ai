@@ -2884,9 +2884,16 @@ export function ValidationBoard({
                         const detail = evt.kind === "status" || evt.kind === "confidence"
                           ? (evt.from ?? "?") + " → " + (evt.to ?? "?")
                           : evt.kind === "archived" ? "" : (evt.source ?? "");
+                        const dotColor = evt.kind === "status" && evt.to
+                          ? ({ supported: "bg-signal-supports", refuted: "bg-signal-challenges", testing: "bg-signal-pending", untested: "bg-muted-foreground/50" } as Record<string, string>)[evt.to] ?? "bg-accent/70"
+                          : evt.kind === "archived" ? "bg-muted-foreground/40"
+                          : evt.kind === "evidence_added" ? "bg-emerald-500/80"
+                          : evt.kind === "evidence_removed" ? "bg-amber-500/80"
+                          : evt.kind === "created" ? "bg-accent/70"
+                          : "bg-accent/70";
                         return (
                           <li key={evt.id} className="relative text-xs leading-5">
-                            <span className="absolute -left-[15px] top-2 size-2 rounded-full bg-accent/70 ring-2 ring-background" aria-hidden="true" />
+                            <span className={"absolute -left-[15px] top-2 size-2 rounded-full ring-2 ring-background " + dotColor} aria-hidden="true" />
                             <span className="font-medium text-foreground/80">{kindLabel[evt.kind] || evt.kind}</span>
                             {detail ? <span className="ml-1.5 text-muted">{detail}</span> : null}
                             <span className="ml-1 text-[10px] text-muted/80">· {timeLabel}</span>
