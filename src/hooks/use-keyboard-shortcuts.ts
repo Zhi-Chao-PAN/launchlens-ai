@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 
@@ -182,6 +182,8 @@ export function matchesConfig(event: KeyboardEvent, config: ShortcutConfig) {
 
   return true;
 }
+
+export const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
 
 export function formatShortcut(config: ShortcutConfig) {
   // Detect platform at call time (not module load) to avoid SSR hydration

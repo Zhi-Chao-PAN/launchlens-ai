@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { X, Command } from "lucide-react";
+import { X } from "lucide-react";
 import { registerShortcut, getShortcutList, formatShortcut } from "@/hooks/use-keyboard-shortcuts";
 
 export function ShortcutsHelp() {
@@ -64,7 +64,7 @@ export function ShortcutsHelp() {
             </div>
           ))}
         </div>
-        <p className="mt-4 text-[11px] text-muted">Press <kbd className="rounded border border-border bg-muted px-1 font-mono">?</kbd> any time to toggle this panel. On Windows use <Command className="inline size-3" /> for Ctrl, on macOS use ⌘.</p>
+<p className="mt-4 text-[11px] text-muted">Press <kbd className="rounded border border-border bg-muted px-1 font-mono">?</kbd> any time to toggle this panel. Key labels match your operating system.</p>
       </div>
     </div>
   );
