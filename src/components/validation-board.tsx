@@ -300,6 +300,123 @@ export function ValidationBoard({
   }
 
   const [exportMenuId, setExportMenuId] = useState<string | null>(null);
+  const [boardExportOpen, setBoardExportOpen] = useState(false);
+
+  function boardToMarkdown() {
+    const signalLabel: Record<EvidenceSignal, string> = {
+      supports: "Supports",
+      challenges: "Challenges",
+      neutral: "Neutral",
+    };
+    const weightLabel: Record<EvidenceWeight, string> = {
+      anecdotal: "Anecdotal",
+      moderate: "Moderate",
+      strong: "Strong",
+    };
+    const statusLabel: Record<string, string> = {
+      untested: "Untested",
+      testing: "Testing",
+      supported: "Supported",
+      refuted: "Refuted",
+    };
+    const confidenceLabel: Record<ConfidenceLevel, string> = {
+      low: "Low",
+      medium: "Medium",
+      high: "High",
+    };
+
+    const lines: string[] = [];
+    lines.push("# Validation Board");
+    lines.push("");
+    lines.push(
+      "- **Hypotheses**: " +
+        execution.experiments.length +
+        " total — " +
+        execution.experiments.filter((e) => e.status === "supported").length +
+        " supported, " +
+        execution.experiments.filter((e) => e.status === "refuted").length +
+        " refuted, " +
+        execution.experiments.filter((e) => e.status === "testing").length +
+        " testing, " +
+        execution.experiments.filter((e) => e.status === "untested").length +
+        " untested",
+    );
+    lines.push("");
+
+    execution.experiments.forEach((experiment, expIdx) => {
+      const status = statusLabel[experiment.status] || experiment.status;
+      const confidence = confidenceLabel[experiment.confidence] || experiment.confidence;
+      lines.push("## " + (expIdx + 1) + ". " + experiment.assumption);
+      lines.push("");
+      lines.push("- **Status**: " + status);
+      lines.push(
+        "- **Confidence**: " +
+          confidence +
+          (experiment.confidenceManual ? " (manual)" : " (auto)"),
+      );
+      lines.push("- **Evidence**: " + experiment.evidence.length + " items");
+      lines.push("");
+
+      if (experiment.evidence.length === 0) {
+        lines.push("_No evidence recorded yet._");
+        lines.push("");
+      } else {
+        experiment.evidence.forEach((item, itemIdx) => {
+          lines.push(
+            "### " +
+              (itemIdx + 1) +
+              ". " +
+              signalLabel[item.signal] +
+              " — " +
+              item.source,
+          );
+          lines.push("");
+          lines.push("- **Weight**: " + weightLabel[item.weight]);
+          lines.push(
+            "- **Observed**: " + new Date(item.observedAt).toLocaleDateString(),
+          );
+          lines.push("");
+          lines.push(item.note);
+          lines.push("");
+        });
+      }
+    });
+
+    return lines.join("\n");
+  }
+
+  function boardToJson() {
+    return JSON.stringify(execution.experiments, null, 2);
+  }
+
+  async function copyBoardMarkdown() {
+    const md = boardToMarkdown();
+    const ok = await copyTextToClipboard(md);
+    if (ok) {
+      showToast("Validation board copied as markdown", "success", 2500);
+      srAnnounce("Validation board markdown copied to clipboard.");
+    } else {
+      showToast("Could not copy to clipboard", "error", 3000);
+    }
+    setBoardExportOpen(false);
+  }
+
+  function downloadBoardMarkdown() {
+    const md = boardToMarkdown();
+    downloadTextFile(md, "validation-board.md", "text/markdown");
+    showToast("Markdown downloaded", "success", 2000);
+    srAnnounce("Validation board markdown downloaded.");
+    setBoardExportOpen(false);
+  }
+
+  function downloadBoardJson() {
+    const json = boardToJson();
+    downloadTextFile(json, "validation-board.json", "application/json");
+    showToast("JSON downloaded", "success", 2000);
+    srAnnounce("Validation board JSON downloaded.");
+    setBoardExportOpen(false);
+  }
+
 
 
   function startEditingEvidence(experimentId: string, evidenceId: string) {
@@ -1055,6 +1172,58 @@ export function ValidationBoard({
           <option value="status">By status</option>
           <option value="progress">Most evidence</option>
         </select>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setBoardExportOpen(!boardExportOpen)}
+            aria-expanded={boardExportOpen}
+            aria-haspopup="true"
+            aria-label="Export validation board"
+            title="Export all hypotheses"
+            className="flex items-center gap-1 rounded-md border border-input bg-card px-2 py-1 text-xs font-medium text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+          >
+            <Download className="size-3.5" aria-hidden="true" />
+            <span className="hidden sm:inline">Export</span>
+          </button>
+          {boardExportOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setBoardExportOpen(false)}
+                aria-hidden="true"
+              />
+              <div
+                role="menu"
+                className="absolute right-0 top-full z-20 mt-1 w-48 overflow-hidden rounded-md border border-input bg-card py-1 text-sm shadow-lg"
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={copyBoardMarkdown}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-foreground/80 transition hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground focus:outline-none"
+                >
+                  Copy Markdown
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={downloadBoardMarkdown}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-foreground/80 transition hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground focus:outline-none"
+                >
+                  Download Markdown
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={downloadBoardJson}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-foreground/80 transition hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground focus:outline-none"
+                >
+                  Download JSON
+                </button>
+              </div>
+            </>
+          )}
+        </div>
         <button
           type="button"
           onClick={() => setIsAddingExperiment(!isAddingExperiment)}
