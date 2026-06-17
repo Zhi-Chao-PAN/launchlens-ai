@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import type { CommandPaletteAction } from "@/components/command-palette";
@@ -139,6 +139,32 @@ export function useWorkspaceCommands(options: {
       onSelect: () => window.dispatchEvent(new CustomEvent("launchlens:focus-search")),
     });
     actions.push({
+      id: "action:clear-filters",
+      label: "Clear board filters",
+      description: "Reset search, status filter, tag filter, and sort",
+      category: "Actions",
+      icon: "action",
+      keywords: ["clear", "reset", "filter", "search", "sort", "tag"],
+      onSelect: () => window.dispatchEvent(new CustomEvent("launchlens:clear-filters")),
+    });
+    actions.push({
+      id: "action:collapse-all",
+      label: "Collapse all hypothesis cards",
+      description: "Close every expanded card on the board",
+      category: "Actions",
+      icon: "action",
+      keywords: ["collapse", "close", "cards", "fold", "expand"],
+      onSelect: () => window.dispatchEvent(new CustomEvent("launchlens:collapse-all")),
+    });
+    actions.push({
+      id: "nav:export",
+      label: "Go to export & share",
+      description: "Jump to the Export & Share section",
+      category: "Navigate",
+      icon: "navigate",
+      keywords: ["export", "share", "download", "copy", "publish"],
+      onSelect: () => onNavigate?.("export"),
+    });    actions.push({
       id: "action:toggle-select-mode",
       label: "Toggle multi-select",
       description: "Enter or exit bulk selection mode on the validation board",

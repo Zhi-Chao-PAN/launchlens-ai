@@ -1205,6 +1205,16 @@ export function ValidationBoard({
   const doToggleSelectMode = useCallback(() => {
     setSelectMode((v) => { const next = !v; if (!next) setSelectedExperimentIds(new Set()); return next; });
   }, []);
+  const doClearFilters = useCallback(() => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setTagFilter(null);
+    setSortBy("default");
+    setSelectMode(false);
+    setSelectedExperimentIds(new Set());
+    searchInputRef.current?.blur();
+  }, [setSearchQuery, setStatusFilter, setTagFilter, setSortBy, setSelectMode, setSelectedExperimentIds]);
+  const doCollapseAll = useCallback(() => setRequestedExpandedExperimentId(null), [setRequestedExpandedExperimentId]);
   useEffect(() => {
     const off1 = registerShortcut('focusSearch', (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
@@ -1220,10 +1230,14 @@ export function ValidationBoard({
     });
     const onFocusEvent = () => doFocusSearch();
     const onToggleEvent = () => doToggleSelectMode();
+    const onClearFilters = () => doClearFilters();
+    const onCollapseAll = () => doCollapseAll();
     window.addEventListener("launchlens:focus-search", onFocusEvent);
     window.addEventListener("launchlens:toggle-select-mode", onToggleEvent);
-    return () => { off1?.(); off2?.(); window.removeEventListener("launchlens:focus-search", onFocusEvent); window.removeEventListener("launchlens:toggle-select-mode", onToggleEvent); };
-  }, [doFocusSearch, doToggleSelectMode]);
+    window.addEventListener("launchlens:clear-filters", onClearFilters);
+    window.addEventListener("launchlens:collapse-all", onCollapseAll);
+    return () => { off1?.(); off2?.(); window.removeEventListener("launchlens:focus-search", onFocusEvent); window.removeEventListener("launchlens:toggle-select-mode", onToggleEvent); window.removeEventListener("launchlens:clear-filters", onClearFilters); window.removeEventListener("launchlens:collapse-all", onCollapseAll); };
+  }, [doFocusSearch, doToggleSelectMode, doClearFilters, doCollapseAll]);
 
   function addEvidence(
     event: React.FormEvent<HTMLFormElement>,
