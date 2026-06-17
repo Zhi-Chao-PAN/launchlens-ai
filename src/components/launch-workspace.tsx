@@ -103,7 +103,8 @@ type WorkspaceListKey =
   | "targetUsers"
   | "pains"
   | "mvpScope"
-  | "launchPlan";
+  | "launchPlan"
+  | "assumptions";
 
 type GenerationMeta = {
   mode: "demo" | "real";
@@ -1680,12 +1681,29 @@ export function LaunchWorkspace({
 
             <div className="grid gap-6 xl:grid-cols-2">
               <Section title="Assumptions to validate" icon={AlertTriangle} collapsible sectionId="assumptions-to-validate" collapsed={collapsedSections.has("assumptions-to-validate")} onToggle={() => toggleSection("assumptions-to-validate")}>
-                <BulletList items={workspace.assumptions} />
-                <p className="mt-4 text-xs leading-5 text-muted">
-                  Assumptions remain anchored to the generated plan. Track
-                  evidence, confidence, decisions, and linked work in the
-                  validation loop above.
-                </p>
+                {isEditing ? (
+                  <div className="space-y-3">
+                    <EditableLines
+                      label="Assumptions"
+                      items={workspace.assumptions}
+                      onCommit={(items) => updateList("assumptions", items)}
+                    />
+                    <p className="text-xs leading-5 text-signal-challenges">
+                      Editing assumptions here does not automatically update
+                      validation experiments below. Regenerate the workspace
+                      or add hypotheses manually in the validation loop.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <BulletList items={workspace.assumptions} />
+                    <p className="mt-4 text-xs leading-5 text-muted">
+                      Assumptions remain anchored to the generated plan. Track
+                      evidence, confidence, decisions, and linked work in the
+                      validation loop above.
+                    </p>
+                  </>
+                )}
               </Section>
 
               <Section title="Pricing risks" icon={AlertTriangle} collapsible sectionId="pricing-risks" collapsed={collapsedSections.has("pricing-risks")} onToggle={() => toggleSection("pricing-risks")}>
