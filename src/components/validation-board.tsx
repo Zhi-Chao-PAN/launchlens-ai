@@ -473,6 +473,8 @@ export function ValidationBoard({
 
   const [exportMenuId, setExportMenuId] = useState<string | null>(null);
   const [boardExportOpen, setBoardExportOpen] = useState(false);
+  const [batchTagInput, setBatchTagInput] = useState("");
+  const [batchTagMode, setBatchTagMode] = useState<null | "add" | "remove">(null);
 
   function boardToMarkdown() {
     const signalLabel: Record<EvidenceSignal, string> = {
@@ -744,6 +746,32 @@ export function ValidationBoard({
       updatedAt: new Date().toISOString(),
     });
     srAnnounce(archived ? `Archived ${batchCount} hypotheses.` : `Unarchived ${batchCount} hypotheses.`);
+  }
+  function batchAddTag(tag: string) {
+    const t = tag.trim();
+    if (!t || batchCount === 0) return;
+    onChange({
+      ...execution,
+      experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, tags: Array.from(new Set([...(e.tags || []), t])) } : e),
+      updatedAt: new Date().toISOString(),
+    });
+    srAnnounce(`Added tag "${t}" to ${batchCount} hypotheses.`);
+  }
+  function batchRemoveTag(tag: string) {
+    const t = tag.trim();
+    if (!t || batchCount === 0) return;
+    onChange({
+      ...execution,
+      experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, tags: (e.tags || []).filter((x) => x !== t) } : e),
+      updatedAt: new Date().toISOString(),
+    });
+    srAnnounce(`Removed tag "${t}" from ${batchCount} hypotheses.`);
+  }
+  function applyBatchTagFromInput(mode: "add" | "remove") {
+    const tags = batchTagInput.split(/[,;\s]+/).map((t) => t.trim()).filter(Boolean);
+    tags.forEach((t) => (mode === "add" ? batchAddTag(t) : batchRemoveTag(t)));
+    setBatchTagInput("");
+    setBatchTagMode(null);
   }
   function batchDeleteExperiments() {
     if (batchCount === 0) return;
@@ -1519,6 +1547,14 @@ export function ValidationBoard({
             <button type="button" onClick={() => setSelectedStatus("supported")} className="rounded px-2 py-1 text-signal-supports hover:bg-muted">Mark supported</button>
             <button type="button" onClick={() => setSelectedStatus("refuted")} className="rounded px-2 py-1 text-signal-challenges hover:bg-muted">Mark refuted</button>
             <span className="mx-1 h-4 w-px bg-border" />
+            <div className="relative">
+              <button type="button" onClick={() => setBatchTagMode(batchTagMode === "add" ? null : "add")} aria-expanded={batchTagMode === "add"} className={"rounded px-2 py-1 " + (batchTagMode === "add" ? "bg-accent text-white" : "hover:bg-muted")}>+ Tag</button>
+              {batchTagMode === "add" && (<div className="absolute left-0 top-full z-20 mt-1 flex items-center gap-1 rounded-md border border-input bg-card p-1 shadow-lg"><input autoFocus value={batchTagInput} onChange={(e) => setBatchTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") applyBatchTagFromInput("add"); if (e.key === "Escape") setBatchTagMode(null); }} placeholder="tag1, tag2" className="w-36 rounded bg-input px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-accent" /><button type="button" onClick={() => applyBatchTagFromInput("add")} className="rounded bg-accent px-2 py-1 text-xs text-white">Add</button></div>)}
+            </div>
+            <div className="relative">
+              <button type="button" onClick={() => setBatchTagMode(batchTagMode === "remove" ? null : "remove")} aria-expanded={batchTagMode === "remove"} className={"rounded px-2 py-1 " + (batchTagMode === "remove" ? "bg-signal-challenges text-white" : "hover:bg-muted")}>- Tag</button>
+              {batchTagMode === "remove" && (<div className="absolute left-0 top-full z-20 mt-1 flex items-center gap-1 rounded-md border border-input bg-card p-1 shadow-lg"><input autoFocus value={batchTagInput} onChange={(e) => setBatchTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") applyBatchTagFromInput("remove"); if (e.key === "Escape") setBatchTagMode(null); }} placeholder="tag to remove" className="w-36 rounded bg-input px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-accent" /><button type="button" onClick={() => applyBatchTagFromInput("remove")} className="rounded bg-signal-challenges px-2 py-1 text-xs text-white">Remove</button></div>)}
+            </div>
             <button type="button" onClick={() => batchArchive(true)} className="rounded px-2 py-1 hover:bg-muted">Archive</button>
             <button type="button" onClick={batchDeleteExperiments} className="rounded px-2 py-1 text-signal-challenges hover:bg-signal-challenges/10">Delete</button>
             <button type="button" onClick={() => setSelectedExperimentIds(new Set())} className="ml-auto rounded px-2 py-1 text-muted hover:bg-muted hover:text-foreground">Clear</button>
