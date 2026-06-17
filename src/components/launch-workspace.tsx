@@ -37,6 +37,7 @@ import { SystemStatus } from "@/components/system-status";
 import { ReplayTourButton } from "@/components/onboarding-wizard";
 import { useToast } from "@/components/toast";
 import { DecisionCopilot } from "@/components/decision-copilot";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { ValidationBoard } from "@/components/validation-board";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
 import { safeMarkdownFilename, workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
@@ -1329,16 +1330,20 @@ export function LaunchWorkspace({
               )}
             </section>
 
-            <ValidationBoard
-              execution={execution}
-              tasks={workspace.tasks}
-              onChange={setExecution}
-            />
+            <ErrorBoundary label="Validation board">
+              <ValidationBoard
+                execution={execution}
+                tasks={workspace.tasks}
+                onChange={setExecution}
+              />
+            </ErrorBoundary>
 
-            <DecisionCopilot
-              execution={execution}
-              onChange={setExecution}
-            />
+            <ErrorBoundary label="Decision copilot">
+              <DecisionCopilot
+                execution={execution}
+                onChange={setExecution}
+              />
+            </ErrorBoundary>
 
             <div className="grid gap-6 xl:grid-cols-2">
               <Section title="Target users" icon={UsersRound} collapsible sectionId="target-users" collapsed={collapsedSections.has("target-users")} onToggle={() => toggleSection("target-users")}>
