@@ -121,6 +121,7 @@ export function ValidationBoard({
   const [weightPreset, setWeightPreset] = useState<"default" | "evidence" | "decision">("default");
   const [showWeightPicker, setShowWeightPicker] = useState(false);
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "decided">("all");
+  const [sortBy, setSortBy] = useState<"default" | "confidence" | "status" | "progress">("default");
   const [isAddingExperiment, setIsAddingExperiment] = useState(false);
   const [newExperimentDraft, setNewExperimentDraft] = useState("");
 
@@ -144,16 +145,42 @@ export function ValidationBoard({
   );
 
   const filteredExperiments = useMemo(() => {
-    if (statusFilter === "all") return execution.experiments;
+    let list = execution.experiments;
     if (statusFilter === "active") {
-      return execution.experiments.filter(
+      list = list.filter(
         (exp) => exp.status === "untested" || exp.status === "testing",
       );
+    } else if (statusFilter === "decided") {
+      list = list.filter(
+        (exp) => exp.status === "supported" || exp.status === "refuted",
+      );
     }
-    return execution.experiments.filter(
-      (exp) => exp.status === "supported" || exp.status === "refuted",
-    );
-  }, [execution.experiments, statusFilter]);
+
+    if (sortBy === "confidence") {
+      const order = { high: 3, medium: 2, low: 1 };
+      list = [...list].sort(
+        (a, b) =>
+          order[b.confidence] - order[a.confidence] ||
+          b.evidence.length - a.evidence.length,
+      );
+    } else if (sortBy === "status") {
+      const order = {
+        supported: 0,
+        testing: 1,
+        untested: 2,
+        refuted: 3,
+      };
+      list = [...list].sort(
+        (a, b) => order[a.status] - order[b.status],
+      );
+    } else if (sortBy === "progress") {
+      list = [...list].sort(
+        (a, b) => b.evidence.length - a.evidence.length,
+      );
+    }
+
+    return list;
+  }, [execution.experiments, statusFilter, sortBy]);
 
   const expandedExperimentId =
     requestedExpandedExperimentId === null
@@ -749,6 +776,21 @@ export function ValidationBoard({
           ))}
           </div>
         </div>
+        <select
+          value={sortBy}
+          onChange={(e) =>
+            setSortBy(
+              e.target.value as "default" | "confidence" | "status" | "progress",
+            )
+          }
+          className="rounded-md border border-input bg-card px-2 py-1 text-xs font-semibold text-foreground/70 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+          aria-label="Sort hypotheses"
+        >
+          <option value="default">Default order</option>
+          <option value="confidence">Highest confidence</option>
+          <option value="status">By status</option>
+          <option value="progress">Most evidence</option>
+        </select>
         <button
           type="button"
           onClick={() => setIsAddingExperiment(!isAddingExperiment)}
@@ -884,6 +926,32 @@ export function ValidationBoard({
                       className={`rounded-md px-2 py-1 text-xs font-semibold ${statusClass(experiment.status)}`}
                     >
                       {statusLabels[experiment.status]}
+                    </span>
+                    <span
+                      aria-label={`Confidence: ${experiment.confidence}`}
+                      className={
+                        "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold " +
+                        (experiment.confidence === "low"
+                          ? "bg-signal-challenges/15 text-signal-challenges"
+                          : experiment.confidence === "medium"
+                          ? "bg-signal-supports/30 text-signal-supports"
+                          : "bg-signal-supports text-white")
+                      }
+                    >
+                      <span
+                        className={
+                          "size-1.5 rounded-full " +
+                          (experiment.confidence === "low"
+                            ? "bg-signal-challenges"
+                            : experiment.confidence === "medium"
+                            ? "bg-signal-supports/70"
+                            : "bg-white")
+                        }
+                      />
+                      {experiment.confidence.charAt(0).toUpperCase() + experiment.confidence.slice(1)}
+                      {!experiment.confidenceManual && experiment.evidence.length > 0 && (
+                        <span className="text-[10px] font-medium opacity-75">• auto</span>
+                      )}
                     </span>
                     <span className="text-xs text-muted" aria-label={`${experiment.evidence.length} evidence item${experiment.evidence.length === 1 ? "" : "s"}`}>
                       {experiment.evidence.length} evidence item
