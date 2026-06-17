@@ -1509,26 +1509,115 @@ export function LaunchWorkspace({
             </div>
 
             <Section title="Feature backlog" icon={ClipboardCheck} collapsible sectionId="feature-backlog" collapsed={collapsedSections.has("feature-backlog")} onToggle={() => toggleSection("feature-backlog")}>
-              <div className="grid gap-3 lg:grid-cols-2">
-                {workspace.backlog.map((item, index) => (
-                  <article
-                    key={`${item.feature}-${index}`}
-                    className="rounded-md border border-card bg-input p-4"
-                  >
-                    <div className="mb-2 flex items-center justify-between gap-3">
-                      <h3 className="text-sm font-semibold text-foreground">
-                        {item.feature}
-                      </h3>
-                      <span className="rounded-md bg-signal-neutral px-2 py-1 text-xs font-semibold text-signal-neutral">
-                        {item.priority}
-                      </span>
+              {isEditing ? (
+                <div className="grid gap-3 lg:grid-cols-2">
+                  {workspace.backlog.map((item, index) => (
+                    <div
+                      key={`${item.feature}-${index}`}
+                      className="rounded-md border border-card bg-input p-4 space-y-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={item.feature}
+                          onChange={(e) =>
+                            setWorkspace((current) => ({
+                              ...current,
+                              backlog: current.backlog.map((b, i) =>
+                                i === index ? { ...b, feature: e.target.value } : b,
+                              ),
+                            }))
+                          }
+                          placeholder="Feature"
+                          className="flex-1 rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                        />
+                        <select
+                          value={item.priority}
+                          onChange={(e) =>
+                            setWorkspace((current) => ({
+                              ...current,
+                              backlog: current.backlog.map((b, i) =>
+                                i === index ? { ...b, priority: e.target.value as "P0" | "P1" | "P2" } : b,
+                              ),
+                            }))
+                          }
+                          className="rounded-md border border-input bg-card px-2 py-1.5 text-xs font-semibold text-signal-neutral outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                        >
+                          <option value="P0">P0</option>
+                          <option value="P1">P1</option>
+                          <option value="P2">P2</option>
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setWorkspace((current) => ({
+                              ...current,
+                              backlog: current.backlog.filter((_, i) => i !== index),
+                            }))
+                          }
+                          className="rounded-md p-1.5 text-muted transition hover:bg-muted hover:text-signal-challenges"
+                          aria-label="Remove backlog item"
+                        >
+                          <X className="size-4" aria-hidden="true" />
+                        </button>
+                      </div>
+                      <textarea
+                        value={item.why}
+                        onChange={(e) =>
+                          setWorkspace((current) => ({
+                            ...current,
+                            backlog: current.backlog.map((b, i) =>
+                              i === index ? { ...b, why: e.target.value } : b,
+                            ),
+                          }))
+                        }
+                        rows={2}
+                        placeholder="Why this matters"
+                        className="w-full resize-y rounded-md border border-input bg-card px-3 py-2 text-sm leading-6 text-foreground/80 outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                      />
                     </div>
-                    <p className="text-sm leading-6 text-foreground/80">
-                      {item.why}
-                    </p>
-                  </article>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid gap-3 lg:grid-cols-2">
+                  {workspace.backlog.map((item, index) => (
+                    <article
+                      key={`${item.feature}-${index}`}
+                      className="rounded-md border border-card bg-input p-4"
+                    >
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <h3 className="text-sm font-semibold text-foreground">
+                          {item.feature}
+                        </h3>
+                        <span className="rounded-md bg-signal-neutral px-2 py-1 text-xs font-semibold text-signal-neutral">
+                          {item.priority}
+                        </span>
+                      </div>
+                      <p className="text-sm leading-6 text-foreground/80">
+                        {item.why}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              )}
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setWorkspace((current) => ({
+                      ...current,
+                      backlog: [
+                        ...current.backlog,
+                        { feature: "", why: "", priority: "P1" as const },
+                      ],
+                    }))
+                  }
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-input py-2 text-xs font-medium text-muted transition hover:border-accent hover:text-accent"
+                >
+                  <Plus className="size-3.5" aria-hidden="true" />
+                  Add backlog item
+                </button>
+              )}
             </Section>
 
             <div className="grid gap-6 xl:grid-cols-2">
