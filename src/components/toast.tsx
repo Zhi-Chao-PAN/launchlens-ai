@@ -14,17 +14,23 @@ import { hasOpenOverlay } from "@/lib/launchlens/overlays";
 
 export type ToastType = "success" | "error" | "info";
 
-export type Toast = {
+export type ToastAction = {
+  label: string;
+  onClick: () => void;
+};
+
+type Toast = {
   id: string;
   type: ToastType;
   message: string;
   durationMs?: number;
   leaving?: boolean;
+  action?: ToastAction;
 };
 
 type ToastContextValue = {
   toasts: Toast[];
-  showToast: (message: string, type?: ToastType, durationMs?: number) => void;
+  showToast: (message: string, type?: ToastType, durationMs?: number, action?: ToastAction) => void;
   dismissToast: (id: string) => void;
   dismissAllToasts: () => void;
 };
@@ -82,9 +88,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, [dismissToast]);
 
   const showToast = useCallback(
-    (message: string, type: ToastType = "info", durationMs = 4000) => {
+    (message: string, type: ToastType = "info", durationMs = 4000, action?: ToastAction) => {
       const id = `toast-${++toastIdCounter}`;
-      setToasts((current) => [...current, { id, type, message, durationMs, leaving: false }]);
+      setToasts((current) => [...current, { id, type, message, durationMs, leaving: false, action }]);
       if (durationMs && durationMs > 0) {
         startTimer(id, durationMs, durationMs);
       }

@@ -285,7 +285,36 @@ export function CloudWorkspaces({
           showToast(`Share link ready: ${shareUrl}`, "info");
         }
       } else {
-        showToast("Public sharing disabled.", "info");
+        showToast(
+          "Public sharing disabled.",
+          "info",
+          6000,
+          {
+            label: "Undo",
+            onClick: async () => {
+              try {
+                setBusyAction(`share:${item.id}`);
+                await cloudRequest<CloudWorkspaceResponse>(
+                  `/api/workspaces/${item.id}/share`,
+                  {
+                    method: "POST",
+                    body: JSON.stringify({ enabled: true }),
+                  },
+                );
+                showToast("Sharing re-enabled.", "success");
+                await refresh();
+              } catch (err) {
+                const code = err instanceof Error ? err.message : "";
+                showToast(
+                  friendlyApiMessage(code, "Could not re-enable sharing."),
+                  "error",
+                );
+              } finally {
+                setBusyAction("");
+              }
+            },
+          },
+        );
       }
 
       await refresh();
