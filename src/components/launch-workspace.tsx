@@ -2024,6 +2024,7 @@ export function LaunchWorkspace({
         <CommandPalette
           actions={useWorkspaceCommands({
             workspace,
+            execution,
             onNavigate: navigateToSection,
             onToggleEdit: () => setIsEditing(!isEditing),
             onGenerate: generate,

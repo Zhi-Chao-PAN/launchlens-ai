@@ -21,6 +21,7 @@ const SECTION_IDS = [
 
 export function useWorkspaceCommands(options: {
   workspace?: LaunchLensWorkspace;
+  execution?: { experiments: Array<{ assumption: string; status: string }> };
   onNavigate?: (sectionId: string) => void;
   onToggleEdit?: () => void;
   onGenerate?: () => void;
@@ -30,6 +31,7 @@ export function useWorkspaceCommands(options: {
 }): CommandPaletteAction[] {
   const {
     workspace,
+    execution,
     onNavigate,
     onToggleEdit,
     onGenerate,
@@ -177,9 +179,37 @@ export function useWorkspaceCommands(options: {
           keywords: ["task", "launch", "todo", task.owner],
           onSelect: () => onNavigate?.("tasks"),
         });
+
+      // Add content calendar items
+      workspace.contentCalendar.forEach((item, i) => {
+        actions.push({
+          id: `content:${i}`,
+          label: item.angle,
+          description: `${item.channel} ? ${item.cadence}`,
+          category: "Workspace content",
+          icon: "search",
+          keywords: ["content", "calendar", item.channel, item.cadence],
+          onSelect: () => onNavigate?.("content-calendar"),
+        });
+      });
+
+      // Add validation experiments
+      if (execution) {
+        execution.experiments.forEach((exp, i) => {
+          actions.push({
+            id: `experiment:${i}`,
+            label: exp.assumption,
+            description: `${exp.status} experiment`,
+            category: "Workspace content",
+            icon: "search",
+            keywords: ["experiment", "validation", "hypothesis", exp.status],
+            onSelect: () => onNavigate?.("validation"),
+          });
+        });
+      }
       });
     }
 
     return actions;
-  }, [workspace, onNavigate, onToggleEdit, onGenerate, onSave, onReset, onCopyMarkdown, shortcutMap]);
+  }, [workspace, execution, onNavigate, onToggleEdit, onGenerate, onSave, onReset, onCopyMarkdown, shortcutMap]);
 }
