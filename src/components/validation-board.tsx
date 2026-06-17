@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { registerShortcut, useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 import {
@@ -3041,8 +3041,8 @@ export function ValidationBoard({
       )}
       </div>
       <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-[11px] text-muted">
-        <span>Tip: press <kbd className="rounded bg-muted px-1 font-mono">/</kbd> to search, <kbd className="rounded bg-muted px-1 font-mono">Shift</kbd>+<kbd className="rounded bg-muted px-1 font-mono">S</kbd> to multi-select, <kbd className="rounded bg-muted px-1 font-mono">-tag</kbd> or <kbd className="rounded bg-muted px-1 font-mono">&quot;phrase&quot;</kbd> in search.</span>
-        <span>Shortcuts: <kbd className="rounded bg-muted px-1 font-mono">Ctrl/⌘</kbd>+<kbd className="rounded bg-muted px-1 font-mono">K</kbd> palette · <kbd className="rounded bg-muted px-1 font-mono">Shift+?</kbd> help</span>
+        <span>Tip: press <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">/</kbd> to search, <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">Shift</kbd>+<kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">S</kbd> to multi-select, <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">-tag</kbd> or <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">&quot;phrase&quot;</kbd> in search.</span>
+        <span>Shortcuts: <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">Ctrl/⌘</kbd>+<kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">K</kbd> palette · <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">Shift+?</kbd> help</span>
       </div>
     </section>
   );
