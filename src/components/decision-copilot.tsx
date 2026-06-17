@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/skeleton";
 import {
   decisionBriefIsCurrent,
   decisionSourceFromExperiment,
-  normalizeDecisionBrief,
+  normalizeDecisionBrief, type EvidenceStrength,
   type DecisionGenerationResult,
   type DecisionRecommendation,
   type GroundedClaim,
@@ -29,6 +29,13 @@ import { friendlyApiMessage } from "@/lib/launchlens/api-errors";
 type DecisionCopilotProps = {
   execution: WorkspaceExecutionState;
   onChange: (execution: WorkspaceExecutionState) => void;
+};
+
+const evidenceStrengthMeta: Record<EvidenceStrength, { label: string; pct: number; color: string; bg: string }> = {
+  insufficient: { label: "Insufficient evidence", pct: 25, color: "text-signal-challenges", bg: "bg-signal-challenges" },
+  mixed: { label: "Mixed signals", pct: 50, color: "text-signal-neutral", bg: "bg-signal-neutral" },
+  directional: { label: "Directional evidence", pct: 75, color: "text-signal-supports", bg: "bg-signal-supports" },
+  strong: { label: "Strong evidence", pct: 100, color: "text-signal-supports", bg: "bg-signal-supports" },
 };
 
 const recommendationLabels: Record<DecisionRecommendation, string> = {
@@ -507,7 +514,30 @@ export function DecisionCopilot({
                 {recommendationLabels[currentBrief.recommendation]}
               </span>
               <span className="text-xs capitalize text-muted">
-                {currentBrief.evidenceStrength} evidence
+                
+                <div className="w-full">
+                  <div className="mb-1 flex items-center justify-between text-xs">
+                    <span className="font-medium text-foreground">
+                      Evidence strength
+                    </span>
+                    <span className={`font-semibold ${evidenceStrengthMeta[currentBrief.evidenceStrength].color}`}>
+                      {evidenceStrengthMeta[currentBrief.evidenceStrength].label}
+                    </span>
+                  </div>
+                  <div
+                    role="progressbar"
+                    aria-valuenow={evidenceStrengthMeta[currentBrief.evidenceStrength].pct}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label="Evidence strength"
+                    className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
+                  >
+                    <div
+                      className={`h-full rounded-full ${evidenceStrengthMeta[currentBrief.evidenceStrength].bg} transition-all duration-500 ease-out`}
+                      style={{ width: `${evidenceStrengthMeta[currentBrief.evidenceStrength].pct}%` }}
+                    />
+                  </div>
+                </div>
               </span>
               <span className="text-xs text-muted">
                 {currentBrief.provider} | {citationCount} cited
