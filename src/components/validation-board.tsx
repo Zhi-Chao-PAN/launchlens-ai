@@ -2099,14 +2099,33 @@ export function ValidationBoard({
                     {label} ({count})
                   </button>
                 );
-                return (
+                return (<>
                   <div className="mt-3 flex flex-wrap items-center gap-1">
                     {chip(ef.signal === "all", "All", experiment.evidence.length, "all")}
                     {chip(ef.signal === "supports", "Supports", supportsCount, "supports")}
                     {chip(ef.signal === "challenges", "Challenges", challengesCount, "challenges")}
                     {chip(ef.signal === "neutral", "Neutral", neutralCount, "neutral")}
                   </div>
-                );
+                  <div className="mt-0.5 flex flex-wrap items-center gap-1">
+                    {(() => {
+                      const strongCount = experiment.evidence.filter((e) => e.weight === "strong").length;
+                      const moderateCount = experiment.evidence.filter((e) => e.weight === "moderate").length;
+                      const anecdotalCount = experiment.evidence.filter((e) => e.weight === "anecdotal").length;
+                      const setWt = (w: "all" | EvidenceWeight) => setEvidenceFilters((prev) => ({ ...prev, [experiment.id]: { ...getEvidenceFilter(experiment.id), weight: w } }));
+                      const wchip = (active: boolean, label: string, count: number, w: "all" | EvidenceWeight) => (
+                        <button type="button" onClick={() => setWt(w)} aria-pressed={active} className={"rounded-full px-2 py-0.5 text-[10px] font-medium transition " + (active ? "bg-card ring-1 ring-accent text-foreground" : "bg-transparent text-muted hover:text-foreground")}>
+                          {label} ({count})
+                        </button>
+                      );
+                      return (<>
+                        {wchip(ef.weight === "all", "All wts", experiment.evidence.length, "all")}
+                        {wchip(ef.weight === "strong", "Strong", strongCount, "strong")}
+                        {wchip(ef.weight === "moderate", "Moderate", moderateCount, "moderate")}
+                        {wchip(ef.weight === "anecdotal", "Anecdotal", anecdotalCount, "anecdotal")}
+                      </>);
+                    })()}
+                  </div>
+                  </>);
               })()}
               {experiment.evidence.length > 0 ? (
                 <ul ref={evidenceListRef} data-experiment-id={experiment.id} tabIndex={-1} aria-label="Evidence items" aria-live="polite" onKeyDown={handleEvidenceKeyDown} className="mt-4 divide-y divide-card rounded-md bg-muted px-4 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1">
