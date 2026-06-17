@@ -383,7 +383,7 @@ export function ValidationBoard({
     } else {
       [...experiment.evidence].sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned)).forEach((item, itemIdx) => {
         lines.push(
-          "### " + (item.pinned ? "⭐ " : "") + (itemIdx + 1) + ". " + signalLabel[item.signal] + " 闂?" + item.source,
+          "### " + (item.pinned ? "鐚?" : "") + (itemIdx + 1) + ". " + signalLabel[item.signal] + " 闂?" + item.source,
         );
         lines.push("");
         lines.push("- **Weight**: " + weightLabel[item.weight]);
@@ -1029,28 +1029,32 @@ export function ValidationBoard({
           let signal: EvidenceSignal = draft.signal;
           let weight: EvidenceWeight = draft.weight;
           let rest = line;
-          const prefixSignalChar = line[0];
-          const prefixWeightChar = line.length >= 2 ? line[1].toLowerCase() : "";
-          const hasSignalPrefix = prefixSignalChar === "+" || prefixSignalChar === "-" || prefixSignalChar === "~";
-          const hasWeightSuffix = hasSignalPrefix && (prefixWeightChar === "s" || prefixWeightChar === "m" || prefixWeightChar === "a");
-          if (hasWeightSuffix) {
-            if (line[0] === "+") signal = "supports";
-            else if (line[0] === "-") signal = "challenges";
-            else signal = "neutral";
-            const w = line[1].toLowerCase();
-            weight = w === "s" ? "strong" : w === "m" ? "moderate" : "anecdotal";
-            rest = line.slice(2).trim();
-          } else if (line.startsWith("+")) {
-            signal = "supports";
-            rest = line.slice(1).trim();
-          } else if (line.startsWith("-")) {
-            signal = "challenges";
-            rest = line.slice(1).trim();
-          } else if (line.startsWith("~")) {
-            signal = "neutral";
-            rest = line.slice(1).trim();
+          // Prefix signals: +/-/~ or Chinese 鏀?姝?鍙?璐?涓??. Optional weight letter s/m/a or Chinese 寮?寮?
+          const signalMap: Record<string, EvidenceSignal> = {
+            "+": "supports", "支": "supports", "正": "supports",
+            "-": "challenges", "反": "challenges", "负": "challenges",
+            "~": "neutral", "?": "neutral", "中": "neutral",
+          };
+          const weightMap: Record<string, EvidenceWeight> = {
+            s: "strong", S: "strong", "强": "strong",
+            m: "moderate", M: "moderate", "重": "moderate",
+            a: "anecdotal", A: "anecdotal", "弱": "anecdotal",
+          };
+          const c0 = line[0];
+          if (c0 in signalMap) {
+            signal = signalMap[c0];
+            let consume = 1;
+            const c1 = line[1];
+            if (c1 && c1 in weightMap) {
+              const c2 = line[2];
+              const isSep = !c2 || c2 === " " || c2 === ":" || c2 === "-" || c2 === "\t";
+              if (isSep) {
+                weight = weightMap[c1];
+                consume = 2;
+              }
+            }
+            rest = line.slice(consume).trim();
           }
-
           // Split on " - " or first ":" for source/note
           let source = "";
           let note = "";
