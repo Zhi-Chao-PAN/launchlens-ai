@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
+import { parseInlineMarkdown } from "@/lib/launchlens/inline-markdown";
 import { useToast } from "@/components/toast";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
 
@@ -71,6 +72,47 @@ const weightLabels: Record<EvidenceWeight, string> = {
   moderate: "Moderate",
   strong: "Strong",
 };
+
+function InlineMarkdown({ text }: { text: string }) {
+  const segments = parseInlineMarkdown(text);
+  return (
+    <>
+      {segments.map((seg, idx) => {
+        if (seg.type === "bold") {
+          return <strong key={idx} className="font-semibold text-foreground">{seg.value}</strong>;
+        }
+        if (seg.type === "italic") {
+          return <em key={idx} className="italic text-foreground/85">{seg.value}</em>;
+        }
+        if (seg.type === "code") {
+          return (
+            <code key={idx} className="rounded bg-muted px-1 py-0.5 font-mono text-[11px] text-accent">
+              {seg.value}
+            </code>
+          );
+        }
+        if (seg.type === "link") {
+          const isSafe = /^https?:\/\//i.test(seg.href);
+          if (isSafe) {
+            return (
+              <a
+                key={idx}
+                href={seg.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent underline decoration-accent/40 underline-offset-2 hover:decoration-accent"
+              >
+                {seg.value}
+              </a>
+            );
+          }
+          return <span key={idx}>{seg.value}</span>;
+        }
+        return <span key={idx}>{seg.value}</span>;
+      })}
+    </>
+  );
+}
 
 const signalLabels = {
   supports: "Supports",
@@ -1764,7 +1806,7 @@ export function ValidationBoard({
                           </time>
                         </div>
                         <p className="mt-1 break-words leading-6 text-foreground/80">
-                          {item.note}
+                          <InlineMarkdown text={item.note} />
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
