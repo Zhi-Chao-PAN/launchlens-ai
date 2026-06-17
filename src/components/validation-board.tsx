@@ -653,7 +653,8 @@ export function ValidationBoard({
                   setNewExperimentDraft("");
                   setIsAddingExperiment(false);
                   setRequestedExpandedExperimentId(newExp.id);
-                  srAnnounce("New hypothesis added: " + newExp.assumption);
+                  if (statusFilter !== "all") setStatusFilter("all");
+              srAnnounce("New hypothesis added: " + newExp.assumption);
                 }
               }}
             />
@@ -692,7 +693,8 @@ export function ValidationBoard({
                 setNewExperimentDraft("");
                 setIsAddingExperiment(false);
                 setRequestedExpandedExperimentId(newExp.id);
-                srAnnounce("New hypothesis added: " + newExp.assumption);
+                if (statusFilter !== "all") setStatusFilter("all");
+              srAnnounce("New hypothesis added: " + newExp.assumption);
               }}
               disabled={newExperimentDraft.trim().length < 5}
               className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
