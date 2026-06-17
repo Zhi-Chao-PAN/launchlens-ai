@@ -40,6 +40,7 @@ describe("workspace execution state", () => {
       ...execution.experiments[0],
       status: "supported",
       confidence: "high",
+      confidenceManual: false,
       decision: "Keep the fast activation workflow in MVP scope.",
       nextAction: "Run three more activation interviews.",
       evidence: [
@@ -209,6 +210,7 @@ describe("workspace execution state", () => {
           assumption: "Test",
           status: "testing" as const,
           confidence: "medium" as const,
+          confidenceManual: false,
           decision: "",
           nextAction: "",
           linkedTaskId: "",
@@ -245,6 +247,7 @@ describe("workspace execution state", () => {
           assumption: "Test",
           status: "supported" as const,
           confidence: "high" as const,
+          confidenceManual: false,
           decision: "Validated",
           nextAction: "",
           linkedTaskId: "",

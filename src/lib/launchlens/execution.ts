@@ -28,6 +28,7 @@ export type ValidationExperiment = {
   assumption: string;
   status: ExperimentStatus;
   confidence: ConfidenceLevel;
+  confidenceManual: boolean;
   decision: string;
   nextAction: string;
   linkedTaskId: string;
@@ -137,6 +138,7 @@ function defaultExperiment(
     assumption,
     status: "untested",
     confidence: "low",
+    confidenceManual: false,
     decision: "",
     nextAction: "",
     linkedTaskId: tasks[index] ? taskIdentity(tasks[index], index) : "",
@@ -245,6 +247,7 @@ function normalizeExperiment(
     assumption,
     status,
     confidence,
+    confidenceManual: value.confidenceManual === true,
     decision,
     nextAction,
     linkedTaskId: taskIds.has(linkedTaskId) ? linkedTaskId : "",
@@ -503,6 +506,7 @@ export function summarizeExecutionState(
       decision: experiment.decision,
       nextAction: experiment.nextAction,
       linkedTaskId: experiment.linkedTaskId,
+      confidenceManual: experiment.confidenceManual,
       evidenceCount: experiment.evidence.length,
     })),
     updatedAt: execution.updatedAt,
@@ -550,6 +554,7 @@ export function normalizeSharedExecutionState(
     const id = boundedString(item.id, MAX_ID_CHARS);
     const status = item.status as ExperimentStatus;
     const confidence = item.confidence as ConfidenceLevel;
+    const confidenceManual = item.confidenceManual === true;
     const decision = boundedString(item.decision, MAX_TEXT_CHARS);
     const nextAction = boundedString(item.nextAction, MAX_TEXT_CHARS);
     const linkedTaskId = boundedString(item.linkedTaskId, MAX_ID_CHARS);
@@ -575,6 +580,7 @@ export function normalizeSharedExecutionState(
       assumption,
       status,
       confidence,
+      confidenceManual,
       decision,
       nextAction,
       linkedTaskId,

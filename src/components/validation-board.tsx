@@ -114,8 +114,7 @@ export function ValidationBoard({
   const evidenceUndoTimerRef = useRef<number | null>(null);
   const experimentUndoTimerRef = useRef<number | null>(null);
   const [editingEvidenceId, setEditingEvidenceId] = useState<string | null>(null);
-  const [manualConfidenceIds, setManualConfidenceIds] = useState<Set<string>>(new Set());
-  const sourceError = draftTouched.source && draft.source.trim().length < 2 ? "Source needs at least 2 characters." : "";
+    const sourceError = draftTouched.source && draft.source.trim().length < 2 ? "Source needs at least 2 characters." : "";
   const noteError = draftTouched.note && draft.note.trim().length < 8 ? "Observation needs at least 8 characters." : "";
   const [weightPreset, setWeightPreset] = useState<"default" | "evidence" | "decision">("default");
   const [showWeightPicker, setShowWeightPicker] = useState(false);
@@ -242,7 +241,7 @@ export function ValidationBoard({
       evidenceListRef.current;
     updateExperiment(experimentId, (exp) => {
       const newEvidence = exp.evidence.filter((e) => e.id !== evidenceId);
-      const isManual = manualConfidenceIds.has(exp.id);
+      const isManual = exp.confidenceManual;
       return {
         ...exp,
         evidence: newEvidence,
@@ -312,7 +311,7 @@ export function ValidationBoard({
     updateExperiment(experimentId, (exp) => {
       const next = [...exp.evidence];
       next.splice(index, 0, evidence);
-      const isManual = manualConfidenceIds.has(exp.id);
+      const isManual = exp.confidenceManual;
       return {
         ...exp,
         evidence: next,
@@ -476,7 +475,7 @@ export function ValidationBoard({
             ? { ...item, note, source, signal: draft.signal, weight: draft.weight }
             : item,
         );
-        const isManual = manualConfidenceIds.has(experiment.id);
+        const isManual = experiment.confidenceManual;
         return {
           ...experiment,
           evidence: newEvidence,
@@ -501,7 +500,7 @@ export function ValidationBoard({
             observedAt: new Date().toISOString(),
           },
         ];
-        const isManual = manualConfidenceIds.has(experiment.id);
+        const isManual = experiment.confidenceManual;
         return {
           ...experiment,
           status: experiment.status === "untested" ? "testing" : experiment.status,
@@ -696,6 +695,7 @@ export function ValidationBoard({
                     assumption,
                     status: "untested",
                     confidence: "low",
+      confidenceManual: false,
                     decision: "",
                     nextAction: "",
                     linkedTaskId: "",
@@ -736,6 +736,7 @@ export function ValidationBoard({
                   assumption,
                   status: "untested",
                   confidence: "low",
+      confidenceManual: false,
                   decision: "",
                   nextAction: "",
                   linkedTaskId: "",
@@ -886,24 +887,19 @@ export function ValidationBoard({
                 <label className="block">
                   <span className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-muted">
                     Confidence
-                    {!manualConfidenceIds.has(experiment.id) && experiment.evidence.length > 0 && (
+                    {!experiment.confidenceManual && experiment.evidence.length > 0 && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-signal-supports/15 px-2 py-0.5 text-[10px] font-semibold uppercase text-signal-supports">
                         Auto
                       </span>
                     )}
-                    {manualConfidenceIds.has(experiment.id) && (
+                    {experiment.confidenceManual && (
                       <button
                         type="button"
                         onClick={() => {
-                          setManualConfidenceIds((prev) => {
-                            const next = new Set(prev);
-                            next.delete(experiment.id);
-                            return next;
-                          });
-                          // Recompute immediately
                           updateExperiment(experiment.id, (current) => ({
                             ...current,
                             confidence: computeExperimentConfidence(current.evidence),
+                            confidenceManual: false,
                           }));
                         }}
                         className="inline-flex items-center gap-1 rounded-full border border-dashed border-muted px-2 py-0.5 text-[10px] font-semibold uppercase text-muted transition hover:border-accent hover:text-accent"
@@ -915,18 +911,14 @@ export function ValidationBoard({
                   </span>
                   <select
                     value={experiment.confidence}
-                    onChange={(event) => {
-                      setManualConfidenceIds((prev) => {
-                        const next = new Set(prev);
-                        next.add(experiment.id);
-                        return next;
-                      });
+                    onChange={(event) =>
                       updateExperiment(experiment.id, (current) => ({
                         ...current,
                         confidence: event.target
                           .value as ValidationExperiment["confidence"],
-                      }));
-                    }}
+                        confidenceManual: true,
+                      }))
+                    }
                     className="h-12 w-full rounded-md border border-input bg-input px-3 text-sm capitalize text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)] sm:h-10"
                   >
                     <option value="low">Low</option>
