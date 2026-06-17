@@ -33,6 +33,7 @@ export type ValidationExperiment = {
   nextAction: string;
   linkedTaskId: string;
   evidence: ValidationEvidence[];
+  tags: string[];
   decisionBrief?: DecisionBrief;
 };
 
@@ -58,21 +59,21 @@ export type ExecutionProgressWeights = {
   decided: number;
 };
 
-/** Default weights — all three checkpoints are equally weighted. */
+/** Default weights 鈥?all three checkpoints are equally weighted. */
 export const DEFAULT_PROGRESS_WEIGHTS: ExecutionProgressWeights = {
   started: 1,
   evidenceWithSignal: 1,
   decided: 1,
 };
 
-/** Preset: "bias-toward-evidence" — evidence gathering counts more. */
+/** Preset: "bias-toward-evidence" 鈥?evidence gathering counts more. */
 export const EVIDENCE_BIASED_WEIGHTS: ExecutionProgressWeights = {
   started: 1,
   evidenceWithSignal: 2,
   decided: 1,
 };
 
-/** Preset: "bias-toward-decisions" — reaching conclusions counts more. */
+/** Preset: "bias-toward-decisions" 鈥?reaching conclusions counts more. */
 export const DECISION_BIASED_WEIGHTS: ExecutionProgressWeights = {
   started: 1,
   evidenceWithSignal: 1,
@@ -143,6 +144,7 @@ function defaultExperiment(
     nextAction: "",
     linkedTaskId: tasks[index] ? taskIdentity(tasks[index], index) : "",
     evidence: [],
+    tags: [],
   };
 }
 
@@ -242,6 +244,13 @@ function normalizeExperiment(
     return null;
   }
 
+  const rawTags = Array.isArray(value.tags)
+    ? value.tags
+        .map((t: unknown) => boundedString(t, 32))
+        .filter((t: string | null): t is string => t !== null && t.trim().length > 0)
+        .map((t: string) => t.trim())
+        .slice(0, 8)
+    : [];
   const experiment = {
     id: id || fallback.id,
     assumption,
@@ -252,6 +261,7 @@ function normalizeExperiment(
     nextAction,
     linkedTaskId: taskIds.has(linkedTaskId) ? linkedTaskId : "",
     evidence: evidence as ValidationEvidence[],
+    tags: Array.from(new Set(rawTags)),
   };
   const decisionBrief = normalizeDecisionBrief(
     value.decisionBrief,
@@ -329,13 +339,14 @@ export function normalizeExecutionState(
   }
 
 
-  // v0 -> v1 migration: add default weight to evidence items
+  // v0 -> v1 migration: add default weight to evidence items, default tags
   const migratedExperiments = normalizedExperiments.map((experiment) => ({
     ...experiment,
     evidence: experiment.evidence.map((ev) => ({
       ...ev,
       weight: "moderate" as EvidenceWeight,
     })),
+    tags: Array.isArray(experiment.tags) ? experiment.tags : [],
   }));
   const normalized = {
     experiments: migratedExperiments,
@@ -393,9 +404,9 @@ const EVIDENCE_WEIGHT_VALUES: Record<EvidenceWeight, number> = {
  * Compute an experiment's confidence level from its evidence.
  *
  * Algorithm:
- * - Total weighted score = sum of weight values (supports = +, challenges = -, neutral = +0.5×)
- * - Consensus = abs(total) / totalWeight — how aligned the evidence is
- * - Confidence threshold: low < 3 weight ≤ medium < 7 weight ≤ high
+ * - Total weighted score = sum of weight values (supports = +, challenges = -, neutral = +0.5脳)
+ * - Consensus = abs(total) / totalWeight 鈥?how aligned the evidence is
+ * - Confidence threshold: low < 3 weight 鈮?medium < 7 weight 鈮?high
  * - Mixed signals (consensus < 0.4) pull confidence down one tier
  */
 export function computeExperimentConfidence(
@@ -507,6 +518,7 @@ export function summarizeExecutionState(
       nextAction: experiment.nextAction,
       linkedTaskId: experiment.linkedTaskId,
       confidenceManual: experiment.confidenceManual,
+      tags: experiment.tags,
       evidenceCount: experiment.evidence.length,
     })),
     updatedAt: execution.updatedAt,
@@ -559,6 +571,7 @@ export function normalizeSharedExecutionState(
     const nextAction = boundedString(item.nextAction, MAX_TEXT_CHARS);
     const linkedTaskId = boundedString(item.linkedTaskId, MAX_ID_CHARS);
     const evidenceCount = item.evidenceCount;
+    const sharedTags = Array.isArray(item.tags) ? item.tags.map((t: unknown) => boundedString(t, 32)).filter((t: unknown): t is string => typeof t === "string" && t.length > 0).slice(0, 8) : [];
 
     if (
       id === null ||
@@ -584,6 +597,7 @@ export function normalizeSharedExecutionState(
       decision,
       nextAction,
       linkedTaskId,
+      tags: sharedTags,
       evidenceCount: Number(evidenceCount),
     };
   });

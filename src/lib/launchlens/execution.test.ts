@@ -214,6 +214,7 @@ describe("workspace execution state", () => {
           decision: "",
           nextAction: "",
           linkedTaskId: "",
+          tags: [],
           evidence: [
             {
               id: "e1",
@@ -251,6 +252,7 @@ describe("workspace execution state", () => {
           decision: "Validated",
           nextAction: "",
           linkedTaskId: "",
+          tags: [],
           evidence: [
             {
               id: "e1",

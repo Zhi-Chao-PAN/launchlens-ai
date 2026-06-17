@@ -173,6 +173,16 @@ export function ValidationBoard({
   const [showWeightPicker, setShowWeightPicker] = useState(false);
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "decided">("all");
   const [sortBy, setSortBy] = useState<"default" | "confidence" | "status" | "progress">("default");
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
+  const [newExperimentTagDraft, setNewExperimentTagDraft] = useState("");
+  const [newExperimentTags, setNewExperimentTags] = useState<string[]>([]);
+  const allTags = useMemo(() => {
+    const set = new Set<string>();
+    for (const exp of execution.experiments) {
+      for (const t of exp.tags ?? []) set.add(t);
+    }
+    return Array.from(set).sort();
+  }, [execution.experiments]);
   const [isAddingExperiment, setIsAddingExperiment] = useState(false);
   const [newExperimentDraft, setNewExperimentDraft] = useState("");
 
@@ -257,6 +267,25 @@ export function ValidationBoard({
     });
   }
 
+  function removeExperimentTag(experimentId: string, tag: string) {
+    updateExperiment(experimentId, (exp) => ({
+      ...exp,
+      tags: (exp.tags ?? []).filter((t) => t !== tag),
+    }));
+    if (tagFilter === tag) setTagFilter(null);
+  }
+
+  function commitNewExperimentTag() {
+    const raw = newExperimentTagDraft.trim().replace(/^#/, "").trim();
+    if (!raw) return;
+    if (newExperimentTags.includes(raw) || newExperimentTags.length >= 8) {
+      setNewExperimentTagDraft("");
+      return;
+    }
+    setNewExperimentTags([...newExperimentTags, raw]);
+    setNewExperimentTagDraft("");
+  }
+
   function openEvidenceForm(experimentId: string) {
     setRequestedExpandedExperimentId(experimentId);
     setActiveExperimentId((current) =>
@@ -293,7 +322,7 @@ export function ValidationBoard({
     } else {
       experiment.evidence.forEach((item, itemIdx) => {
         lines.push(
-          "### " + (itemIdx + 1) + ". " + signalLabel[item.signal] + " — " + item.source,
+          "### " + (itemIdx + 1) + ". " + signalLabel[item.signal] + " 闁?" + item.source,
         );
         lines.push("");
         lines.push("- **Weight**: " + weightLabel[item.weight]);
@@ -378,7 +407,7 @@ export function ValidationBoard({
     lines.push(
       "- **Hypotheses**: " +
         execution.experiments.length +
-        " total — " +
+        " total 闁?" +
         execution.experiments.filter((e) => e.status === "supported").length +
         " supported, " +
         execution.experiments.filter((e) => e.status === "refuted").length +
@@ -414,7 +443,7 @@ export function ValidationBoard({
               (itemIdx + 1) +
               ". " +
               signalLabel[item.signal] +
-              " — " +
+              " 闁?" +
               item.source,
           );
           lines.push("");
@@ -860,7 +889,7 @@ export function ValidationBoard({
     // Toast notification - subtle, auto-dismisses
     const labels: Record<ConfidenceLevel, string> = { low: "Low", medium: "Medium", high: "High" };
     showToast(
-      `Confidence updated: ${labels[oldConfidence]} �?${labels[newConfidence]}`,
+      `Confidence updated: ${labels[oldConfidence]} 闁?${labels[newConfidence]}`,
       "info",
       2200,
     );
@@ -1219,6 +1248,15 @@ export function ValidationBoard({
             </button>
           ))}
           </div>
+          {allTags.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1">
+              <span className="pr-1 text-[11px] font-semibold uppercase text-muted">Tags:</span>
+              <button type="button" onClick={() => setTagFilter(null)} className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition ${tagFilter === null ? "bg-accent text-white" : "bg-muted text-muted hover:text-foreground"}`}>all</button>
+              {allTags.map((tag) => (
+                <button key={tag} type="button" onClick={() => setTagFilter(tagFilter === tag ? null : tag)} className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition ${tagFilter === tag ? "bg-accent text-white" : "bg-muted text-muted hover:text-foreground"}`}>#{tag}</button>
+              ))}
+            </div>
+          )}
         </div>
         <select
           value={sortBy}
@@ -1325,6 +1363,7 @@ export function ValidationBoard({
                     nextAction: "",
                     linkedTaskId: "",
                     evidence: [],
+                    tags: newExperimentTags.slice(0, 8),
                   };
                   onChange({
                     ...execution,
@@ -1339,6 +1378,34 @@ export function ValidationBoard({
                 }
               }}
             />
+          {newExperimentTags.length > 0 && (
+            <div className="mt-2 flex flex-wrap items-center gap-1">
+              {newExperimentTags.map((t) => (
+                <span key={t} className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted">
+                  #{t}
+                  <button type="button" aria-label={`Remove tag ${t}`} onClick={() => setNewExperimentTags(newExperimentTags.filter((x) => x !== t))} className="text-muted/60 hover:text-foreground"><X className="size-2.5" /></button>
+                </span>
+              ))}
+            </div>
+          )}
+          <div className="mt-2 flex items-center gap-2">
+            <input
+              type="text"
+              value={newExperimentTagDraft}
+              onChange={(e) => setNewExperimentTagDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === ",") {
+                  e.preventDefault();
+                  commitNewExperimentTag();
+                } else if (e.key === "Backspace" && newExperimentTagDraft.length === 0 && newExperimentTags.length > 0) {
+                  setNewExperimentTags(newExperimentTags.slice(0, -1));
+                }
+              }}
+              onBlur={() => commitNewExperimentTag()}
+              placeholder="Add tags (press Enter to add, e.g. acquisition)"
+              className="h-8 flex-1 rounded-md border border-input bg-card px-3 text-xs text-foreground outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+            />
+          </div>
           </label>
           <div className="mt-3 flex justify-end gap-2">
             <button
@@ -1366,6 +1433,7 @@ export function ValidationBoard({
                   nextAction: "",
                   linkedTaskId: "",
                   evidence: [],
+                  tags: [],
                 };
                 onChange({
                   ...execution,
@@ -1446,7 +1514,7 @@ export function ValidationBoard({
                       />
                       {experiment.confidence.charAt(0).toUpperCase() + experiment.confidence.slice(1)}
                       {!experiment.confidenceManual && experiment.evidence.length > 0 && (
-                        <span className="text-[10px] font-medium opacity-75">�?auto</span>
+                        <span className="text-[10px] font-medium opacity-75">闁?auto</span>
                       )}
                     </span>
                     <span className="text-xs text-muted" aria-label={`${experiment.evidence.length} evidence item${experiment.evidence.length === 1 ? "" : "s"}`}>
@@ -1454,6 +1522,29 @@ export function ValidationBoard({
                       {experiment.evidence.length === 1 ? "" : "s"}
                     </span>
                   </div>
+                  {experiment.tags.length > 0 && (
+                    <div className="mt-2 flex flex-wrap items-center gap-1">
+                      {experiment.tags.map((t) => (
+                        <span key={t} className="group inline-flex items-center gap-0.5 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted">
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setTagFilter(tagFilter === t ? null : t); }}
+                            className="hover:text-accent"
+                          >
+                            #{t}
+                          </button>
+                          <button
+                            type="button"
+                            aria-label={`Remove tag ${t}`}
+                            onClick={(e) => { e.stopPropagation(); removeExperimentTag(experiment.id, t); }}
+                            className="ml-0.5 rounded-full text-muted/50 opacity-0 transition hover:text-foreground group-hover:opacity-100 focus:opacity-100"
+                          >
+                            <X className="size-2.5" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   <h3 className="mt-2 max-w-4xl text-sm font-semibold leading-6 text-foreground">
                     {experiment.assumption}
                   </h3>
@@ -2021,7 +2112,7 @@ export function ValidationBoard({
                           }
                           aria-hidden="true"
                         >
-                          �?                        </span>
+                          闁?                        </span>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2 text-xs">
                             <span className="font-semibold text-foreground">
