@@ -951,6 +951,7 @@ export function ValidationBoard({
         confidence: isManual
           ? exp.confidence
           : computeExperimentConfidence(newEvidence),
+        history: [...(exp.history || []), { id: "evt-" + Math.random().toString(36).slice(2, 9), at: new Date().toISOString(), kind: "evidence_removed", source: evidence.source, targetId: evidence.id, label: evidence.note.slice(0, 60) }],
       };
     });
 
