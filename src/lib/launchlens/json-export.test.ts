@@ -179,7 +179,7 @@ describe("safeJsonFilename", () => {
 
   it("workspaceFromJson warns about missing optional fields", () => {
     const ws = exampleWorkspaces[0].workspace;
-    const rest = { ...ws, generatedAt: undefined, provider: undefined } as typeof ws;
+    const rest = { ...ws, generatedAt: undefined, provider: undefined } as unknown as typeof ws;
     const result = workspaceFromJson(JSON.stringify(rest));
     expect(result.warnings.length).toBeGreaterThan(0);
     expect(result.workspace.generatedAt).toBeTruthy();

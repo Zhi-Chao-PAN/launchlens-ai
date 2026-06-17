@@ -17,9 +17,13 @@ import { useMemo, useRef, useState } from "react";
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
 
 import {
+  DEFAULT_PROGRESS_WEIGHTS,
+  DECISION_BIASED_WEIGHTS,
+  EVIDENCE_BIASED_WEIGHTS,
   evaluateExecutionProgress,
   taskIdentity,
   type EvidenceSignal,
+  type ExecutionProgressWeights,
   type ValidationEvidence,
   type ValidationExperiment,
   type WorkspaceExecutionState,
@@ -95,9 +99,18 @@ export function ValidationBoard({
   const [editingEvidenceId, setEditingEvidenceId] = useState<string | null>(null);
   const sourceError = draftTouched.source && draft.source.trim().length < 2 ? "Source needs at least 2 characters." : "";
   const noteError = draftTouched.note && draft.note.trim().length < 8 ? "Observation needs at least 8 characters." : "";
+  const [weightPreset, setWeightPreset] = useState<"default" | "evidence" | "decision">("default");
+  const [showWeightPicker, setShowWeightPicker] = useState(false);
+
+  const currentWeights: ExecutionProgressWeights = useMemo(() => {
+    if (weightPreset === "evidence") return EVIDENCE_BIASED_WEIGHTS;
+    if (weightPreset === "decision") return DECISION_BIASED_WEIGHTS;
+    return DEFAULT_PROGRESS_WEIGHTS;
+  }, [weightPreset]);
+
   const progress = useMemo(
-    () => evaluateExecutionProgress(execution),
-    [execution],
+    () => evaluateExecutionProgress(execution, currentWeights),
+    [execution, currentWeights],
   );
 
   const expandedExperimentId =
@@ -416,6 +429,58 @@ export function ValidationBoard({
               </strong>
               decided
             </div>
+          </div>
+
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowWeightPicker(!showWeightPicker)}
+              aria-haspopup="menu"
+              aria-expanded={showWeightPicker}
+              aria-label="Progress weight preset"
+              className="flex w-full items-center justify-between gap-2 rounded-md border border-input bg-card px-3 py-1.5 text-xs text-foreground/70 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+            >
+              <span className="font-medium">
+                Weights: {weightPreset === "default" ? "Balanced" : weightPreset === "evidence" ? "Evidence-heavy" : "Decision-heavy"}
+              </span>
+              <ChevronDown
+                className={`size-3.5 transition-transform ${showWeightPicker ? "rotate-180" : ""}`}
+                aria-hidden="true"
+              />
+            </button>
+
+            {showWeightPicker && (
+              <div
+                role="menu"
+                className="absolute right-0 top-full z-10 mt-1 w-48 overflow-hidden rounded-md border border-card bg-card shadow-lg"
+              >
+                {([
+                  ["default", "Balanced", "All checkpoints equal"],
+                  ["evidence", "Evidence-heavy", "Evidence gathering counts more"],
+                  ["decision", "Decision-heavy", "Reaching conclusions counts more"],
+                ] as const).map(([value, label, desc]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setWeightPreset(value);
+                      setShowWeightPicker(false);
+                    }}
+                    aria-current={weightPreset === value}
+                    className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-xs text-foreground/80 transition hover:bg-muted hover:text-foreground"
+                  >
+                    <div>
+                      <div className="font-semibold">{label}</div>
+                      <div className="text-[10px] text-muted">{desc}</div>
+                    </div>
+                    {weightPreset === value && (
+                      <Check className="size-3.5 text-accent" aria-hidden="true" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <div
             role="progressbar"
