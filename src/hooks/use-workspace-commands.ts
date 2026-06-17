@@ -165,6 +165,19 @@ export function useWorkspaceCommands(options: {
           onSelect: () => onNavigate?.("backlog"),
         });
       });
+
+      // Add launch tasks
+      workspace.tasks.forEach((task, i) => {
+        actions.push({
+          id: `task:${i}`,
+          label: task.title,
+          description: `Due ${task.due}`,
+          category: "Workspace content",
+          icon: "search",
+          keywords: ["task", "launch", "todo", task.owner],
+          onSelect: () => onNavigate?.("tasks"),
+        });
+      });
     }
 
     return actions;
