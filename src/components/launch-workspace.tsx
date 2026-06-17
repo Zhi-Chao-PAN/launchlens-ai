@@ -733,21 +733,29 @@ export function LaunchWorkspace({
 
   async function copyMarkdown() {
     const markdown = workspaceToMarkdown(workspace, execution);
-    setExportText(markdown);
+    let outText = markdown;
+    let mime = "text/markdown;charset=utf-8";
+    let label = "Markdown";
+    if (exportEncrypted && exportPassword.trim()) {
+      outText = await encryptJson(markdown, exportPassword.trim());
+      label = "Encrypted Markdown";
+      mime = "text/plain;charset=utf-8";
+    }
+    setExportText(outText);
     setExportFormat("markdown");
 
     if (navigator.clipboard?.writeText) {
       try {
-        await navigator.clipboard.writeText(markdown);
-        showToast("Markdown copied to clipboard", "success");
+        await navigator.clipboard.writeText(outText);
+        showToast(exportEncrypted ? `${label} copied (password not stored)` : `${label} copied to clipboard`, "success");
         flashCopySuccess("markdown");
         return;
       } catch {
         // fall through to sync path
       }
     }
-    if (await copyTextToClipboard(markdown)) {
-      showToast("Markdown copied to clipboard", "success");
+    if (await copyTextToClipboard(outText)) {
+      showToast(exportEncrypted ? `${label} copied (password not stored)` : `${label} copied to clipboard`, "success");
       flashCopySuccess("markdown");
       return;
     }
@@ -757,37 +765,45 @@ export function LaunchWorkspace({
       projectName: null,
       landingPage: { headline: workspace.landingPage.headline },
     });
-    downloadTextFile(filename, markdown, "text/markdown;charset=utf-8");
-    showToast("Clipboard unavailable - downloaded Markdown file instead", "info");
+    downloadTextFile(filename, outText, mime);
+    showToast(exportEncrypted ? `Clipboard unavailable - downloaded ${label} file instead` : "Clipboard unavailable - downloaded Markdown file instead", "info");
   }
 
   async function copyJson() {
     const json = workspaceToJson(workspace, execution);
-    setExportText(json);
+    let outText = json;
+    let mime = "application/json;charset=utf-8";
+    let label = "JSON";
+    if (exportEncrypted && exportPassword.trim()) {
+      outText = await encryptJson(json, exportPassword.trim());
+      label = "Encrypted JSON";
+      mime = "text/plain;charset=utf-8";
+    }
+    setExportText(outText);
     setExportFormat("json");
 
     if (navigator.clipboard?.writeText) {
       try {
-        await navigator.clipboard.writeText(json);
-        showToast("JSON copied to clipboard", "success");
+        await navigator.clipboard.writeText(outText);
+        showToast(exportEncrypted ? `${label} copied (password not stored)` : `${label} copied to clipboard`, "success");
         flashCopySuccess("json");
         return;
       } catch {
         // fall through to sync path
       }
     }
-    if (await copyTextToClipboard(json)) {
-      showToast("JSON copied to clipboard", "success");
+    if (await copyTextToClipboard(outText)) {
+      showToast(exportEncrypted ? `${label} copied (password not stored)` : `${label} copied to clipboard`, "success");
       flashCopySuccess("json");
       return;
     }
     const stamp = new Date().toISOString().slice(0, 10);
     downloadTextFile(
-      `launchlens-workspace-${stamp}.json`,
-      json,
-      "application/json;charset=utf-8",
+      exportEncrypted ? `launchlens-workspace-${stamp}.launchlens.enc` : `launchlens-workspace-${stamp}.json`,
+      outText,
+      mime,
     );
-    showToast("Clipboard unavailable - downloaded JSON file instead", "info");
+    showToast(exportEncrypted ? `Clipboard unavailable - downloaded ${label} file instead` : "Clipboard unavailable - downloaded JSON file instead", "info");
   }
 
   function downloadExport() {
