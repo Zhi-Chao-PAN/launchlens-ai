@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { registerShortcut, useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 import {
@@ -26,6 +26,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
 import { parseInlineMarkdown } from "@/lib/launchlens/inline-markdown";
+import { decisionSourceFromExperiment, normalizeDecisionBrief } from "@/lib/launchlens/decision";
 import { useToast } from "@/components/toast";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
 
@@ -517,6 +518,8 @@ export function ValidationBoard({
   const [boardExportOpen, setBoardExportOpen] = useState(false);
   const [batchTagInput, setBatchTagInput] = useState("");
   const [batchTagMode, setBatchTagMode] = useState<null | "add" | "remove">(null);
+  const [isBatchBriefing, setIsBatchBriefing] = useState(false);
+  const [batchBriefProgress, setBatchBriefProgress] = useState({ done: 0, total: 0 });
 
   function boardToMarkdown() {
     const signalLabel: Record<EvidenceSignal, string> = {
@@ -808,6 +811,39 @@ export function ValidationBoard({
       updatedAt: new Date().toISOString(),
     });
     srAnnounce(`Removed tag "${t}" from ${batchCount} hypotheses.`);
+  }
+  async function batchGenerateBriefs() {
+    if (batchCount === 0 || isBatchBriefing) return;
+    const selectedExps = execution.experiments.filter((e) => selectedExperimentIds.has(e.id) && e.evidence.length > 0 && !e.decisionBrief);
+    if (selectedExps.length === 0) {
+      showToast("All selected hypotheses already have briefs or have no evidence.", "info");
+      return;
+    }
+    setIsBatchBriefing(true);
+    setBatchBriefProgress({ done: 0, total: selectedExps.length });
+    let success = 0;
+    let failed = 0;
+    const updated = [...execution.experiments];
+    for (let i = 0; i < selectedExps.length; i++) {
+      const item = selectedExps[i];
+      try {
+        const source = decisionSourceFromExperiment(item);
+        const res = await fetch("/api/decision", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ experiment: source }) });
+        const data = await res.json();
+        const brief = data.brief ? normalizeDecisionBrief(data.brief, source) : null;
+        if (res.ok && brief) {
+          const idx = updated.findIndex((e) => e.id === item.id);
+          if (idx >= 0) updated[idx] = { ...updated[idx], decisionBrief: brief };
+          success += 1;
+        } else { failed += 1; }
+      } catch { failed += 1; }
+      setBatchBriefProgress({ done: i + 1, total: selectedExps.length });
+    }
+    onChange({ ...execution, experiments: updated, updatedAt: new Date().toISOString() });
+    setIsBatchBriefing(false);
+    const summary = `Generated ${success} brief${success === 1 ? "" : "s"}${failed > 0 ? `; ${failed} failed` : ""}.`;
+    showToast(summary, failed > 0 ? "error" : "success");
+    srAnnounce(summary);
   }
   function applyBatchTagFromInput(mode: "add" | "remove") {
     const tags = batchTagInput.split(/[,;\s]+/).map((t) => t.trim()).filter(Boolean);
@@ -1631,6 +1667,7 @@ export function ValidationBoard({
                 </div>
               </div>)}
             </div>
+            {!isBatchBriefing ? (<button type="button" onClick={() => void batchGenerateBriefs()} className="rounded px-2 py-1 hover:bg-muted" title="Generate decision briefs for selected hypotheses with evidence and no brief">Briefs</button>) : (<span className="rounded px-2 py-1 text-xs text-muted">{batchBriefProgress.done}/{batchBriefProgress.total}</span>)}
             <button type="button" onClick={() => batchArchive(true)} className="rounded px-2 py-1 hover:bg-muted">Archive</button>
             <button type="button" onClick={batchDeleteExperiments} className="rounded px-2 py-1 text-signal-challenges hover:bg-signal-challenges/10">Delete</button>
             <button type="button" onClick={() => setSelectedExperimentIds(new Set())} className="ml-auto rounded px-2 py-1 text-muted hover:bg-muted hover:text-foreground">Clear</button>
@@ -2985,5 +3022,6 @@ export function ValidationBoard({
     </section>
   );
 }
+
 
 
