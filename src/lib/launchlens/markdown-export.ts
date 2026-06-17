@@ -40,11 +40,11 @@ export function workspaceToMarkdown(
   const tasks = workspace.tasks
     .map(
       (task) =>
-        `- **${task.title}** | ${task.owner} | ${task.due} | ${task.outcome}`,
+        `- [${task.completed ? 'x' : ' '}] **${task.title}** | ${task.owner} | ${task.due} | ${task.outcome}`,
     )
     .join("\n");
   const validation = execution
-    ? execution.experiments
+    ? `${execution.experiments.length} hypotheses — ${execution.experiments.filter((e) => e.status === 'supported').length} supported, ${execution.experiments.filter((e) => e.status === 'refuted').length} refuted, ${execution.experiments.filter((e) => e.status === 'testing').length} testing, ${execution.experiments.filter((e) => e.status === 'untested').length} untested\n\n` + execution.experiments
         .map((experiment, index) => {
           const linkedTask = workspace.tasks.find(
             (task, taskIndex) =>
@@ -137,6 +137,8 @@ ${bullets(workspace.launchPlan)}
 ${content}
 
 ## Execution Tasks
+
+${workspace.tasks.filter((t) => t.completed).length} of ${workspace.tasks.length} tasks complete.
 
 ${tasks}
 
