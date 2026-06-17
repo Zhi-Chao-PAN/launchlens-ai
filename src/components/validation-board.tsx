@@ -114,6 +114,17 @@ function InlineMarkdown({ text }: { text: string }) {
   );
 }
 
+const EVIDENCE_SNIPPETS: { label: string; source: string; note: string }[] = [
+  { label: "Interview", source: "User interview #", note: "Said they " },
+  { label: "Survey", source: "Survey Q", note: "Of respondents, % said " },
+  { label: "Review", source: "App Store review", note: "User reported: " },
+  { label: "Support", source: "Support ticket #", note: "Customer wrote: " },
+  { label: "Analytics", source: "Analytics", note: "Metric moved from ___ to ___: " },
+  { label: "Usability", source: "Usability test", note: "Participant struggled with " },
+  { label: "Sales call", source: "Sales call", note: "Prospect said " },
+  { label: "Churn", source: "Churn interview", note: "Left because " },
+];
+
 const signalLabels = {
   supports: "Supports",
   challenges: "Challenges",
@@ -2025,6 +2036,30 @@ export function ValidationBoard({
                       </button>
                     </div>
                   </div>
+
+                  {!isBatchMode && !editingEvidenceId && (
+                    <div className="flex flex-wrap items-center gap-1 md:col-span-3">
+                      <span className="pr-1 text-[10px] font-semibold uppercase text-muted">Snippets:</span>
+                      {EVIDENCE_SNIPPETS.map((s) => (
+                        <button
+                          key={s.label}
+                          type="button"
+                          onClick={() => {
+                            setDraft((d) => ({
+                              ...d,
+                              source: d.source.trim() ? d.source : s.source,
+                              note: d.note.trim() ? d.note : s.note,
+                            }));
+                            setDraftTouched({ source: true, note: true });
+                          }}
+                          className="rounded-full border border-input bg-card px-2 py-0.5 text-[10px] font-medium text-muted transition hover:border-accent hover:text-accent"
+                          title={"Insert template: " + s.source + " - " + s.note}
+                        >
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
 
                   {isBatchMode ? (
                     <div className="md:col-span-3">
