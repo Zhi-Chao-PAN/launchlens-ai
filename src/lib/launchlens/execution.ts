@@ -6,6 +6,7 @@ import {
 } from "./decision";
 
 export type EvidenceSignal = "supports" | "challenges" | "neutral";
+export type EvidenceWeight = "anecdotal" | "moderate" | "strong";
 export type ExperimentStatus =
   | "untested"
   | "testing"
@@ -18,6 +19,7 @@ export type ValidationEvidence = {
   note: string;
   source: string;
   signal: EvidenceSignal;
+  weight: EvidenceWeight;
   observedAt: string;
 };
 
@@ -100,6 +102,7 @@ const EVIDENCE_SIGNALS = new Set<EvidenceSignal>([
   "challenges",
   "neutral",
 ]);
+const EVIDENCE_WEIGHTS = new Set<EvidenceWeight>(["anecdotal", "moderate", "strong"]);
 const MAX_EXPERIMENTS = 24;
 const MAX_EVIDENCE_PER_EXPERIMENT = 8;
 const MAX_EXECUTION_STATE_CHARS = 80_000;
@@ -181,6 +184,7 @@ function normalizeEvidence(value: unknown): ValidationEvidence | null {
   const source = boundedString(value.source, MAX_SHORT_TEXT_CHARS);
   const observedAt = normalizedDate(value.observedAt);
   const signal = value.signal as EvidenceSignal;
+  const weight = (typeof value.weight === "string" && EVIDENCE_WEIGHTS.has(value.weight as EvidenceWeight)) ? value.weight as EvidenceWeight : "moderate";
 
   if (
     id === null ||
@@ -198,6 +202,7 @@ function normalizeEvidence(value: unknown): ValidationEvidence | null {
     source,
     observedAt,
     signal,
+    weight,
   };
 }
 
@@ -320,8 +325,17 @@ export function normalizeExecutionState(
     return null;
   }
 
+
+  // v0 -> v1 migration: add default weight to evidence items
+  const migratedExperiments = normalizedExperiments.map((experiment) => ({
+    ...experiment,
+    evidence: experiment.evidence.map((ev) => ({
+      ...ev,
+      weight: "moderate" as EvidenceWeight,
+    })),
+  }));
   const normalized = {
-    experiments: normalizedExperiments,
+    experiments: migratedExperiments,
     updatedAt,
   };
 

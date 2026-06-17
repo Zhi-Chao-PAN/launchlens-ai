@@ -43,6 +43,7 @@ describe("workspaceToMarkdown", () => {
           note: "Four of five founders ranked activation fixes first.",
           source: "Founder interviews",
           signal: "supports",
+          weight: "moderate" as const,
           observedAt: "2026-06-13T01:00:00.000Z",
         },
       ],

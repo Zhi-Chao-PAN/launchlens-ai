@@ -118,6 +118,7 @@ describe("decision brief", () => {
           source: "Follow-up interview",
           note: "A new contradictory observation.",
           signal: "challenges" as const,
+          weight: "moderate" as const,
           observedAt: "2026-06-13T08:05:00.000Z",
         },
       ],
@@ -146,6 +147,7 @@ describe("decision brief", () => {
       evidence: source.evidence.map((item) => ({
         observedAt: item.observedAt,
         signal: item.signal,
+        weight: item.weight,
         source: item.source,
         note: item.note,
         id: item.id,
@@ -244,6 +246,7 @@ describe("decision brief", () => {
           note: "New finding",
           source: "New source",
           signal: "supports" as const,
+          weight: "moderate" as const,
           observedAt: new Date().toISOString(),
         },
       ],

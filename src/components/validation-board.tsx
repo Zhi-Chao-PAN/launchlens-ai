@@ -25,6 +25,7 @@ import {
   evaluateExecutionProgress,
   taskIdentity,
   type EvidenceSignal,
+  type EvidenceWeight,
   type ExecutionProgressWeights,
   type ValidationEvidence,
   type ValidationExperiment,
@@ -43,12 +44,14 @@ type EvidenceDraft = {
   note: string;
   source: string;
   signal: EvidenceSignal;
+  weight: EvidenceWeight;
 };
 
 const emptyDraft: EvidenceDraft = {
   note: "",
   source: "",
   signal: "supports",
+  weight: "moderate",
 };
 
 const statusLabels = {
@@ -57,6 +60,12 @@ const statusLabels = {
   supported: "Supported",
   refuted: "Refuted",
 } as const;
+
+const weightLabels: Record<EvidenceWeight, string> = {
+  anecdotal: "Anecdotal",
+  moderate: "Moderate",
+  strong: "Strong",
+};
 
 const signalLabels = {
   supports: "Supports",
@@ -183,7 +192,7 @@ export function ValidationBoard({
 
     setRequestedExpandedExperimentId(experimentId);
     setActiveExperimentId(experimentId);
-    setDraft({ signal: evidence.signal ?? "supports", source: evidence.source, note: evidence.note });
+    setDraft({ signal: evidence.signal ?? "supports", weight: evidence.weight ?? "moderate", source: evidence.source, note: evidence.note });
     setEditingEvidenceId(evidenceId);
     setDraftTouched({ source: false, note: false });
   }
@@ -453,6 +462,7 @@ export function ValidationBoard({
           note,
           source,
           signal: draft.signal,
+          weight: draft.weight,
           observedAt: new Date().toISOString(),
         },
       ],
@@ -1025,6 +1035,31 @@ export function ValidationBoard({
                     </select>
                     <p id={`evidence-signal-hint-${experiment.id}`} className="sr-only">
                       Choose the evidence signal strength for this validation finding.
+                    </p>
+                  </label>
+                  <label className="block">
+                    <span className="mb-2 block text-xs font-semibold uppercase text-muted">
+                      Weight
+                    </span>
+                    <select
+                      value={draft.weight}
+                      onChange={(event) =>
+                        setDraft((current) => ({
+                          ...current,
+                          weight: event.target.value as EvidenceWeight,
+                        }))
+                      }
+                      aria-describedby={`evidence-weight-hint-${experiment.id}`}
+                      className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                    >
+                      {Object.entries(weightLabels).map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                    <p id={`evidence-weight-hint-${experiment.id}`} className="sr-only">
+                      Choose the evidence weight / strength for this validation finding.
                     </p>
                   </label>
                   <div className="grid gap-3 sm:grid-cols-[180px_1fr]">

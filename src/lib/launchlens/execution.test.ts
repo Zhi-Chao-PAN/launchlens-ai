@@ -47,6 +47,7 @@ describe("workspace execution state", () => {
           note: "Four founders ranked weekly activation fixes as urgent.",
           source: "Founder interviews",
           signal: "supports",
+          weight: "moderate" as const,
           observedAt: "2026-06-13T01:00:00.000Z",
           ignored: "strip me",
         } as (typeof execution.experiments)[number]["evidence"][number],
@@ -71,6 +72,7 @@ describe("workspace execution state", () => {
       note: "Interview evidence",
       source: "Call notes",
       signal: "supports",
+      weight: "moderate" as const,
       observedAt: "2026-06-13T01:00:00.000Z",
     });
     const editedWorkspace = {
@@ -93,6 +95,7 @@ describe("workspace execution state", () => {
       note: "Bounded note",
       source: "Test",
       signal: "neutral" as const,
+      weight: "moderate" as const,
       observedAt: "2026-06-13T01:00:00.000Z",
     }));
 
@@ -107,6 +110,7 @@ describe("workspace execution state", () => {
       note: "Original assumption evidence",
       source: "Interview",
       signal: "supports",
+      weight: "moderate" as const,
       observedAt: "2026-06-13T01:00:00.000Z",
     });
     const reorderedWorkspace = {
@@ -146,6 +150,7 @@ describe("workspace execution state", () => {
       note: "Private interview note",
       source: "Private founder call",
       signal: "supports",
+      weight: "moderate" as const,
       observedAt: "2026-06-13T01:00:00.000Z",
     });
     execution.experiments[0].decisionBrief = buildMockDecisionBrief(
@@ -170,6 +175,7 @@ describe("workspace execution state", () => {
       note: "Current evidence",
       source: "Interview",
       signal: "supports",
+      weight: "moderate" as const,
       observedAt: "2026-06-13T01:00:00.000Z",
     });
     execution.experiments[0].decisionBrief = buildMockDecisionBrief(
@@ -211,6 +217,7 @@ describe("workspace execution state", () => {
               source: "Test",
               note: "Test evidence",
               signal: "supports" as const,
+              weight: "moderate" as const,
               observedAt: "2024-01-01T00:00:00Z",
               confidence: "medium" as const,
             },
@@ -246,6 +253,7 @@ describe("workspace execution state", () => {
               source: "Test",
               note: "Evidence",
               signal: "supports" as const,
+              weight: "moderate" as const,
               observedAt: "2024-01-01T00:00:00Z",
               confidence: "high" as const,
             },
@@ -331,6 +339,7 @@ describe("workspace execution state", () => {
       note: "User added this evidence",
       source: "Manual test",
       signal: "supports",
+      weight: "moderate" as const,
       observedAt: new Date().toISOString(),
     });
     const reconciled = reconcileExecutionState(withEvidence, workspace);
@@ -390,6 +399,7 @@ describe("workspace execution state", () => {
                   source: "Test Source",
                   note: "Extra evidence note",
                   signal: "supports" as const,
+                  weight: "moderate" as const,
                   observedAt: "2026-01-01T00:00:00.000Z",
                 },
               ],

@@ -1,6 +1,7 @@
 import type {
   ConfidenceLevel,
   EvidenceSignal,
+  EvidenceWeight,
   ExperimentStatus,
   ValidationExperiment,
 } from "./execution";
@@ -21,6 +22,7 @@ export type DecisionSourceEvidence = {
   note: string;
   source: string;
   signal: EvidenceSignal;
+  weight: EvidenceWeight;
   observedAt: string;
 };
 
@@ -233,6 +235,12 @@ export function normalizeDecisionSource(value: unknown): DecisionSource | null {
     const note = boundedString(item.note, MAX_TEXT_CHARS);
     const source = boundedString(item.source, MAX_SHORT_TEXT_CHARS);
     const signal = item.signal as EvidenceSignal;
+    const weightRaw = item.weight;
+    const weight =
+      typeof weightRaw === "string" &&
+      (weightRaw === "anecdotal" || weightRaw === "moderate" || weightRaw === "strong")
+        ? (weightRaw as EvidenceWeight)
+        : "moderate";
     const observedAt = normalizedDate(item.observedAt);
 
     if (
@@ -245,7 +253,7 @@ export function normalizeDecisionSource(value: unknown): DecisionSource | null {
       return null;
     }
 
-    return { id, note, source, signal, observedAt };
+    return { id, note, source, signal, weight, observedAt };
   });
 
   if (
