@@ -95,30 +95,49 @@ function ClaimList({
   claims: GroundedClaim[];
   experiment: ValidationExperiment;
 }) {
+  const [expandedClaim, setExpandedClaim] = useState<number | null>(null);
+
+  const stanceClass = (stance: string) => {
+    if (stance === "supports") return "bg-signal-supports text-signal-supports";
+    if (stance === "challenges")
+      return "bg-signal-challenges text-signal-challenges";
+    return "bg-signal-neutral text-signal-neutral";
+  };
+
   return (
     <div>
       <h3 className="text-xs font-semibold uppercase text-muted">
         Grounded claims
       </h3>
-      <ul aria-label="Evidence-grounded claims" className="mt-2 space-y-3">
+      <ul
+        aria-label="Evidence-grounded claims"
+        className="relative mt-2 space-y-3 pl-4 before:absolute before:left-1.5 before:top-1 before:bottom-1 before:w-px before:bg-input"
+      >
         {claims.map((claim, index) => {
-          const sources = claim.evidenceIds
-            .map(
-              (id) =>
-                experiment.evidence.find((item) => item.id === id)?.source,
-            )
+          const citedEvidence = claim.evidenceIds
+            .map((id) => experiment.evidence.find((item) => item.id === id))
             .filter(Boolean);
+          const sources = citedEvidence.map((item) => item!.source);
+          const expanded = expandedClaim === index;
 
           return (
             <li
               key={`${claim.text}-${index}`}
-              role="group"
               tabIndex={0}
               aria-label={`${claim.stance} claim: ${claim.text}. ${claim.evidenceIds.length} citation${claim.evidenceIds.length === 1 ? "" : "s"} from ${sources.join(", ")}.`}
-              className="rounded-md bg-muted p-3 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+              onClick={() => setExpandedClaim(expanded ? null : index)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setExpandedClaim(expanded ? null : index);
+                }
+              }}
+              className="relative cursor-pointer rounded-md bg-muted p-3 outline-none transition hover:bg-muted/80 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 before:absolute before:-left-4 before:top-4 before:size-2.5 before:rounded-full before:border-2 before:border-card before:bg-accent"
             >
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-md bg-card px-2 py-1 text-xs font-semibold capitalize text-foreground/80">
+                <span
+                  className={`rounded-md px-2 py-1 text-xs font-semibold capitalize ${stanceClass(claim.stance)}`}
+                >
                   {claim.stance}
                 </span>
                 <span className="text-xs text-muted">
@@ -130,8 +149,52 @@ function ClaimList({
                 {claim.text}
               </p>
               <p className="mt-1 text-xs leading-5 text-muted">
-                Source: {sources.join(", ")}
+                Source: {sources.join(", ") || "none cited"}
               </p>
+
+              <div
+                className={`grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none ${
+                  expanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                }`}
+                aria-hidden={!expanded}
+              >
+                <div className="min-h-0 overflow-hidden">
+                  <div className="mt-3 space-y-2 border-t border-input pt-3">
+                    {citedEvidence.length === 0 ? (
+                      <p className="text-xs text-muted">
+                        No matching evidence records found.
+                      </p>
+                    ) : (
+                      citedEvidence.map((item) => (
+                        <div
+                          key={item!.id}
+                          className="rounded-md bg-card px-3 py-2"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs font-semibold text-foreground">
+                              {item!.source}
+                            </span>
+                            <span
+                              className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
+                                item!.signal === "supports"
+                                  ? "bg-signal-supports text-signal-supports"
+                                  : item!.signal === "challenges"
+                                    ? "bg-signal-challenges text-signal-challenges"
+                                    : "bg-signal-neutral text-signal-neutral"
+                              }`}
+                            >
+                              {item!.signal}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-xs leading-5 text-foreground/70">
+                            {item!.note}
+                          </p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
             </li>
           );
         })}
