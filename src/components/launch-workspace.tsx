@@ -134,6 +134,7 @@ type LocalWorkspaceSnapshot = {
   workspace: LaunchLensWorkspace;
   execution: WorkspaceExecutionState;
   savedAt: string;
+  schemaVersion: number;
 };
 
 function parseLocalWorkspaceSnapshot(
@@ -150,12 +151,25 @@ function parseLocalWorkspaceSnapshot(
 
   const execution = normalizeExecutionState(value.execution, value.workspace);
 
+  // v0 -> v1 migration: add completed=false to tasks without the field
+  // (runs idempotently - spread preserves existing completed values)
+  const ws = value.workspace as Record<string, unknown> | undefined;
+  if (ws && Array.isArray(ws.tasks)) {
+    ws.tasks = ws.tasks.map((t) => ({
+      completed: false,
+      ...t,
+    }));
+  }
+
+  const parsedSchemaVersion = typeof value.schemaVersion === "number" ? value.schemaVersion : 0;
+
   return execution
     ? {
         input: value.input,
         workspace: value.workspace,
         execution,
         savedAt: value.savedAt,
+        schemaVersion: parsedSchemaVersion,
       }
     : null;
 }
@@ -547,6 +561,7 @@ export function LaunchWorkspace({
         workspace,
         execution,
         savedAt: nextSavedAt,
+        schemaVersion: 1,
       };
 
       localStorage.setItem(LOCAL_WORKSPACE_KEY, JSON.stringify(snapshot));
