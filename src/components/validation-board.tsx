@@ -996,23 +996,37 @@ export function ValidationBoard({
                       </button>
                     )}
                   </span>
-                  <select
-                    value={experiment.confidence}
-                    data-flash={confidenceFlashIds.has(experiment.id) ? "true" : "false"}
-                    onChange={(event) =>
-                      updateExperiment(experiment.id, (current) => ({
-                        ...current,
-                        confidence: event.target
-                          .value as ValidationExperiment["confidence"],
-                        confidenceManual: true,
-                      }))
-                    }
-                    className="h-12 w-full rounded-md border border-input bg-input px-3 text-sm capitalize text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)] transition-all duration-500 sm:h-10 data-[flash=true]:border-accent data-[flash=true]:ring-2 data-[flash=true]:ring-[var(--ring-color)] data-[flash=true]:scale-[1.02]"
-                  >
+                  <div className="relative">
+                    <span
+                      aria-hidden="true"
+                      className={
+                        "pointer-events-none absolute left-3 top-1/2 size-2.5 -translate-y-1/2 rounded-full " +
+                        (experiment.confidence === "low"
+                          ? "bg-signal-challenges"
+                          : experiment.confidence === "medium"
+                          ? "bg-signal-supports/60"
+                          : "bg-signal-supports")
+                      }
+                    />
+                    <select
+                      value={experiment.confidence}
+                      data-conf={experiment.confidence}
+                      data-flash={confidenceFlashIds.has(experiment.id) ? "true" : "false"}
+                      onChange={(event) =>
+                        updateExperiment(experiment.id, (current) => ({
+                          ...current,
+                          confidence: event.target
+                            .value as ValidationExperiment["confidence"],
+                          confidenceManual: true,
+                        }))
+                      }
+                      className="h-12 w-full appearance-none rounded-md border border-input bg-input pl-10 pr-8 text-sm font-semibold capitalize text-foreground outline-none transition-all duration-500 focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)] sm:h-10 data-[flash=true]:scale-[1.02] data-[conf=low]:text-signal-challenges data-[conf=medium]:text-signal-supports data-[conf=high]:text-signal-supports"
+                    >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
                     <option value="high">High</option>
                   </select>
+                  </div>
                   <span className="mt-1 block text-xs leading-5 text-muted">
                     Product judgment, not statistical certainty.
                   </span>
@@ -1055,7 +1069,14 @@ export function ValidationBoard({
                       className="flex items-start gap-3 py-3 text-sm"
                     >
                       <CheckCircle2
-                        className="mt-0.5 size-4 shrink-0 text-accent"
+                        className={
+                          "mt-0.5 size-4 shrink-0 " +
+                          (item.signal === "supports"
+                            ? "text-signal-supports"
+                            : item.signal === "challenges"
+                            ? "text-signal-challenges"
+                            : "text-muted-foreground/40")
+                        }
                         aria-hidden="true"
                       />
                       <div className="min-w-0 flex-1">
@@ -1063,8 +1084,33 @@ export function ValidationBoard({
                           <span className="font-semibold text-foreground">
                             {item.source}
                           </span>
-                          <span className="rounded-md bg-card px-2 py-1 font-medium text-muted">
+                          <span
+                            className={
+                              item.signal === "supports"
+                                ? "rounded-md bg-signal-supports/15 px-2 py-1 text-[11px] font-semibold uppercase text-signal-supports"
+                                : item.signal === "challenges"
+                                ? "rounded-md bg-signal-challenges/15 px-2 py-1 text-[11px] font-semibold uppercase text-signal-challenges"
+                                : "rounded-md bg-muted px-2 py-1 text-[11px] font-semibold uppercase text-muted"
+                            }
+                          >
                             {signalLabels[item.signal]}
+                          </span>
+                          <span
+                            aria-label={`Evidence weight: ${item.weight}`}
+                            title={item.weight.charAt(0).toUpperCase() + item.weight.slice(1)}
+                            className="inline-flex items-center gap-0.5"
+                          >
+                            {(["anecdotal", "moderate", "strong"] as const).map((lvl) => (
+                              <span
+                                key={lvl}
+                                className={
+                                  ["anecdotal", "moderate", "strong"].indexOf(item.weight) >=
+                                  ["anecdotal", "moderate", "strong"].indexOf(lvl)
+                                    ? "size-1.5 rounded-full bg-signal-supports"
+                                    : "size-1.5 rounded-full bg-muted-foreground/20"
+                                }
+                              />
+                            ))}
                           </span>
                           <time className="text-muted">
                             {new Intl.DateTimeFormat("en", {
