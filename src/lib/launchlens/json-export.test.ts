@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { safeJsonFilename, workspaceFromJson, workspaceToJson } from "./json-export";
+import { safeJsonFilename, SCHEMA_VERSION, workspaceFromJson, workspaceToJson } from "./json-export";
 import { buildMockWorkspace } from "./mock-provider";
 import { exampleWorkspaces } from "./example-workspaces";
 import { createExecutionState } from "./execution";
@@ -23,6 +23,7 @@ describe("workspaceToJson", () => {
     expect(parsed.summary).toBe(workspace.summary);
     expect(parsed.backlog).toHaveLength(workspace.backlog.length);
     expect(parsed.tasks).toHaveLength(workspace.tasks.length);
+    expect(parsed.schemaVersion).toBe(SCHEMA_VERSION);
   });
 
   it("exports the complete execution handoff when supplied", () => {
@@ -192,3 +193,57 @@ describe("safeJsonFilename", () => {
   });
 
 });
+
+describe("schema migration", () => {
+  it("migrates v0 (no version) wrapped workspace to v1 with completed=false on tasks", () => {
+    const v0 = JSON.stringify({
+      workspace: {
+        summary: "Test",
+        targetUsers: ["a"],
+        pains: ["b"],
+        backlog: [],
+        landingPage: { headline: "h", subheadline: "s", cta: "c", proofBullets: [] },
+        assumptions: ["x"],
+        tasks: [{ title: "Task 1", owner: "Me", due: "Week 1", outcome: "done" }],
+      },
+    });
+    const result = workspaceFromJson(v0);
+    expect(result.warnings.length).toBeGreaterThanOrEqual(1);
+    expect(result.warnings.some((w) => w.includes("Upgraded"))).toBe(true);
+    expect(result.workspace.tasks[0].completed).toBe(false);
+  });
+
+  it("migrates v0 bare workspace (unwrapped) to v1", () => {
+    const v0 = JSON.stringify({
+      summary: "Test",
+      targetUsers: ["a"],
+      pains: ["b"],
+      backlog: [],
+      landingPage: { headline: "h", subheadline: "s", cta: "c", proofBullets: [] },
+      assumptions: ["x"],
+      tasks: [{ title: "T1", owner: "O", due: "W1", outcome: "O" }],
+    });
+    const result = workspaceFromJson(v0);
+    expect(result.workspace.tasks[0].completed).toBe(false);
+  });
+
+  it("leaves v1 workspaces unchanged (no migration warning)", () => {
+    const v1 = JSON.stringify({
+      schemaVersion: 1,
+      workspace: {
+        summary: "Test",
+        targetUsers: ["a"],
+        pains: ["b"],
+        backlog: [],
+        landingPage: { headline: "h", subheadline: "s", cta: "c", proofBullets: [] },
+        assumptions: ["x"],
+        tasks: [{ title: "T1", owner: "O", due: "W1", outcome: "O", completed: true }],
+      },
+    });
+    const result = workspaceFromJson(v1);
+    const hasUpgradeWarning = result.warnings.some((w) => w.includes("Upgraded"));
+    expect(hasUpgradeWarning).toBe(false);
+    expect(result.workspace.tasks[0].completed).toBe(true);
+  });
+});
+

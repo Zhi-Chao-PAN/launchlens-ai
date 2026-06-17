@@ -13,6 +13,7 @@ export type ImportError = {
 };
 
 const MAX_IMPORT_SIZE = 512 * 1024; // 512 KB
+export const SCHEMA_VERSION = 1;
 const REQUIRED_WORKSPACE_FIELDS = [
   "summary",
   "targetUsers",
@@ -21,6 +22,25 @@ const REQUIRED_WORKSPACE_FIELDS = [
   "landingPage",
   "assumptions",
 ] as const;
+
+type MigrationFn = (data: Record<string, unknown>) => Record<string, unknown>;
+
+const migrations: Record<number, MigrationFn> = {
+  1: (data) => {
+    // Handle both wrapped ({ workspace, execution }) and bare workspace shapes
+    const hasWorkspaceKey = "workspace" in data && typeof data.workspace === "object" && data.workspace !== null;
+    const w = hasWorkspaceKey
+      ? (data.workspace as Record<string, unknown>)
+      : (data as Record<string, unknown>);
+    if (w && Array.isArray(w.tasks)) {
+      w.tasks = w.tasks.map((t) => ({
+        completed: false,
+        ...(t as object),
+      }));
+    }
+    return data;
+  },
+};
 
 /**
  * Parse and validate a JSON string into a workspace (plus optional execution state).
@@ -66,6 +86,28 @@ export function workspaceFromJson(json: string): WorkspaceImportResult {
       message: "JSON does not contain a LaunchLens workspace.",
     };
     throw err satisfies ImportError;
+  }
+
+  // Schema version check and migrations
+  const importedVersion = typeof raw.schemaVersion === "number" ? raw.schemaVersion : 0;
+  if (importedVersion < SCHEMA_VERSION) {
+    let migrated = raw;
+    for (let v = importedVersion + 1; v <= SCHEMA_VERSION; v++) {
+      if (migrations[v]) {
+        migrated = migrations[v](migrated) as Record<string, unknown>;
+      }
+    }
+    if ("workspace" in migrated && typeof migrated.workspace === "object" && migrated.workspace !== null) {
+      workspaceRaw = migrated.workspace as Record<string, unknown>;
+      if ("execution" in migrated && migrated.execution !== null && typeof migrated.execution === "object") {
+        executionRaw = migrated.execution as WorkspaceExecutionState;
+      }
+    } else if ("summary" in migrated || "targetUsers" in migrated || "assumptions" in migrated) {
+      workspaceRaw = migrated as Record<string, unknown>;
+    }
+    warnings.push(
+      `Upgraded workspace from schema v${importedVersion} to v${SCHEMA_VERSION}.`,
+    );
   }
 
   // Validate required fields
@@ -142,9 +184,8 @@ export function workspaceToJson(
   workspace: LaunchLensWorkspace,
   execution?: WorkspaceExecutionState,
 ) {
-  return `${JSON.stringify(
-    execution ? { workspace, execution } : workspace,
-    null,
-    2,
-  )}\n`;
+  const payload: Record<string, unknown> = execution
+    ? { workspace, execution, schemaVersion: SCHEMA_VERSION }
+    : { ...workspace, schemaVersion: SCHEMA_VERSION };
+  return `${JSON.stringify(payload, null, 2)}\n`;
 }
