@@ -2,6 +2,7 @@
 
 import {
   AlertTriangle,
+  Upload,
   ArrowRight,
   X,
   CalendarDays,
@@ -43,7 +44,7 @@ import { useWorkspaceCommands } from "@/hooks/use-workspace-commands";
 import { ValidationBoard } from "@/components/validation-board";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
 import { safeMarkdownFilename, workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
-import { workspaceToJson } from "@/lib/launchlens/json-export";
+import { workspaceFromJson, workspaceToJson, type WorkspaceImportResult } from "@/lib/launchlens/json-export";
 import type { CloudWorkspaceRecord } from "@/lib/launchlens/cloud-workspace";
 import {
   createExecutionState,
@@ -313,6 +314,8 @@ export function LaunchWorkspace({
   const [exportText, setExportText] = useState("");
   const [exportFormat, setExportFormat] = useState<"markdown" | "json" | "">("");
   const [copyJustSucceeded, setCopyJustSucceeded] = useState<"markdown" | "json" | "">("");
+  const [importPreview, setImportPreview] = useState<WorkspaceImportResult | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isStorageReady, setIsStorageReady] = useState(false);
   const [isBriefOpen, setIsBriefOpen] = useState(false);
   const [isSwitching, setIsSwitching] = useState(false);
@@ -659,7 +662,7 @@ export function LaunchWorkspace({
       if (!response.ok || data.error || !data.workspace) {
         const fallback =
           response.status === 429
-            ? "Too many requests �?please wait a moment and try again."
+            ? "Too many requests —please wait a moment and try again."
             : "Generation failed.";
         const message = friendlyApiMessage(data.code, data.error ?? fallback);
         const err = new Error(message);
@@ -802,6 +805,50 @@ export function LaunchWorkspace({
     ) {
       showToast("JSON file downloaded", "success");
     }
+  }
+
+  async function handleImportFile(file: File) {
+    try {
+      const text = await file.text();
+      const result = workspaceFromJson(text);
+      setImportPreview(result);
+      showToast("File parsed successfully — review and confirm", "info");
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Unknown import error";
+      showToast(`Import failed: ${msg}`, "error");
+    }
+  }
+
+  function applyImport() {
+    if (!importPreview) return;
+    setWorkspace(importPreview.workspace);
+    if (importPreview.execution) {
+      setExecution(importPreview.execution);
+    } else {
+      setExecution(createExecutionState(importPreview.workspace));
+    }
+    setImportPreview(null);
+    const warningCount = importPreview.warnings.length;
+    if (warningCount > 0) {
+      showToast(
+        `Workspace imported (${warningCount} warning${warningCount === 1 ? "" : "s"})`,
+        "info",
+      );
+    } else {
+      showToast("Workspace imported successfully", "success");
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function cancelImport() {
+    setImportPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
+
+  function triggerImport() {
+    fileInputRef.current?.click();
   }
 
   async function retryCopyFromTextarea() {
@@ -1206,6 +1253,27 @@ export function LaunchWorkspace({
                     <Download className="size-4" aria-hidden="true" />
                     .json
                   </button>
+                  <button
+                    type="button"
+                    onClick={triggerImport}
+                    title="Import JSON workspace"
+                    className="flex h-9 items-center gap-1 rounded-md border border-accent/40 bg-accent/10 px-2 text-sm font-semibold text-accent transition hover:border-accent hover:bg-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:h-10 sm:gap-2 sm:px-3"
+                  >
+                    <Upload className="size-4" aria-hidden="true" />
+                    <span className="hidden sm:inline">Import</span>
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".json,application/json"
+                    className="hidden"
+                    aria-hidden="true"
+                    tabIndex={-1}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) void handleImportFile(file);
+                    }}
+                  />
                 </div>
               </div>
 
@@ -1603,6 +1671,80 @@ export function LaunchWorkspace({
         </div>
       </div>
     </main>
+        {importPreview && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="import-dialog-title"
+            className="fixed inset-0 z-50 flex items-center justify-center px-4 py-12"
+          >
+            <button
+              type="button"
+              aria-label="Cancel import"
+              onClick={cancelImport}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            />
+            <div
+              className="relative w-full max-w-md overflow-hidden rounded-xl border border-card bg-card shadow-2xl"
+              style={{ animation: "fadeInDown 200ms ease-out both" }}
+            >
+              <div className="border-b border-input px-6 py-4">
+                <h3 id="import-dialog-title" className="text-lg font-semibold text-foreground">
+                  Import workspace
+                </h3>
+              </div>
+              <div className="space-y-4 px-6 py-4">
+                <p className="text-sm text-foreground/80">
+                  This will replace your current workspace and validation state.
+                  This cannot be undone.
+                </p>
+                <div className="rounded-md bg-muted p-3 text-xs text-muted">
+                  <p className="font-medium text-foreground/70">Summary</p>
+                  <p className="mt-1 line-clamp-3">
+                    {importPreview.workspace.summary}
+                  </p>
+                </div>
+                {importPreview.execution && (
+                  <p className="text-xs text-signal-supports">
+                    Includes validation state with{" "}
+                    {importPreview.execution.experiments.length} experiments.
+                  </p>
+                )}
+                {importPreview.warnings.length > 0 && (
+                  <div className="rounded-md border border-signal-challenges bg-signal-challenges/5 p-3 text-xs text-signal-challenges">
+                    <p className="font-semibold">
+                      {importPreview.warnings.length} warning
+                      {importPreview.warnings.length === 1 ? "" : "s"}:
+                    </p>
+                    <ul className="mt-1 list-disc space-y-0.5 pl-4">
+                      {importPreview.warnings.map((w, i) => (
+                        <li key={i}>{w}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2 border-t border-input px-6 py-4 sm:justify-end">
+                <button
+                  type="button"
+                  onClick={cancelImport}
+                  className="flex h-9 items-center gap-1.5 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={applyImport}
+                  className="flex h-9 items-center gap-1.5 rounded-md bg-accent px-3 text-sm font-semibold text-white transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                >
+                  <Upload className="size-3.5" aria-hidden="true" />
+                  Import
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <CommandPalette
           actions={useWorkspaceCommands({
             workspace,
