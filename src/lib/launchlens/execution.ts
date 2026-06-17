@@ -34,6 +34,7 @@ export type ValidationExperiment = {
   nextAction: string;
   linkedTaskId: string;
   evidence: ValidationEvidence[];
+  archived?: boolean;
   tags: string[];
   decisionBrief?: DecisionBrief;
 };
@@ -60,21 +61,21 @@ export type ExecutionProgressWeights = {
   decided: number;
 };
 
-/** Default weights 闁?all three checkpoints are equally weighted. */
+/** Default weights 闂?all three checkpoints are equally weighted. */
 export const DEFAULT_PROGRESS_WEIGHTS: ExecutionProgressWeights = {
   started: 1,
   evidenceWithSignal: 1,
   decided: 1,
 };
 
-/** Preset: "bias-toward-evidence" 闁?evidence gathering counts more. */
+/** Preset: "bias-toward-evidence" 闂?evidence gathering counts more. */
 export const EVIDENCE_BIASED_WEIGHTS: ExecutionProgressWeights = {
   started: 1,
   evidenceWithSignal: 2,
   decided: 1,
 };
 
-/** Preset: "bias-toward-decisions" 闁?reaching conclusions counts more. */
+/** Preset: "bias-toward-decisions" 闂?reaching conclusions counts more. */
 export const DECISION_BIASED_WEIGHTS: ExecutionProgressWeights = {
   started: 1,
   evidenceWithSignal: 1,
@@ -235,6 +236,7 @@ function normalizeExperiment(
   const linkedTaskId = boundedString(value.linkedTaskId, MAX_ID_CHARS);
   const evidence = value.evidence.map(normalizeEvidence);
 
+  const archived = value.archived === true;
   if (
     id === null ||
     !EXPERIMENT_STATUSES.has(status) ||
@@ -265,6 +267,7 @@ function normalizeExperiment(
     linkedTaskId: taskIds.has(linkedTaskId) ? linkedTaskId : "",
     evidence: evidence as ValidationEvidence[],
     tags: Array.from(new Set(rawTags)),
+    archived,
   };
   const decisionBrief = normalizeDecisionBrief(
     value.decisionBrief,
@@ -407,9 +410,9 @@ const EVIDENCE_WEIGHT_VALUES: Record<EvidenceWeight, number> = {
  * Compute an experiment's confidence level from its evidence.
  *
  * Algorithm:
- * - Total weighted score = sum of weight values (supports = +, challenges = -, neutral = +0.5閼?
- * - Consensus = abs(total) / totalWeight 闁?how aligned the evidence is
- * - Confidence threshold: low < 3 weight 闁?medium < 7 weight 闁?high
+ * - Total weighted score = sum of weight values (supports = +, challenges = -, neutral = +0.5闂?
+ * - Consensus = abs(total) / totalWeight 闂?how aligned the evidence is
+ * - Confidence threshold: low < 3 weight 闂?medium < 7 weight 闂?high
  * - Mixed signals (consensus < 0.4) pull confidence down one tier
  */
 export function computeExperimentConfidence(
@@ -575,6 +578,7 @@ export function normalizeSharedExecutionState(
     const linkedTaskId = boundedString(item.linkedTaskId, MAX_ID_CHARS);
     const evidenceCount = item.evidenceCount;
     const sharedTags = Array.isArray(item.tags) ? item.tags.map((t: unknown) => boundedString(t, 32)).filter((t: unknown): t is string => typeof t === "string" && t.length > 0).slice(0, 8) : [];
+    const sharedArchived = item.archived === true;
 
     if (
       id === null ||
@@ -601,6 +605,7 @@ export function normalizeSharedExecutionState(
       nextAction,
       linkedTaskId,
       tags: sharedTags,
+      ...(sharedArchived ? { archived: true } : {}),
       evidenceCount: Number(evidenceCount),
     };
   });

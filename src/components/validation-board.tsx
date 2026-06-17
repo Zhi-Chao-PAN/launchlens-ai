@@ -9,6 +9,7 @@ import {
   ChevronUp,
   CircleGauge,
   FlaskConical,
+  Archive,
   GripVertical,
   Download,
   Link2,
@@ -169,6 +170,7 @@ export function ValidationBoard({
   const [draggedEvidenceId, setDraggedEvidenceId] = useState<string | null>(null);
   const [draggedExperimentId, setDraggedExperimentId] = useState<string | null>(null);
   const [dragOverExperimentId, setDragOverExperimentId] = useState<string | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
   const [dragOverEvidenceId, setDragOverEvidenceId] = useState<string | null>(null);
 
 
@@ -299,6 +301,8 @@ export function ValidationBoard({
 
     return list;
   }, [execution.experiments, statusFilter, sortBy]);
+  const activeExperiments = filteredExperiments.filter((e) => !e.archived);
+  const archivedExperiments = filteredExperiments.filter((e) => e.archived);
 
   const expandedExperimentId =
     requestedExpandedExperimentId === null
@@ -1568,7 +1572,7 @@ export function ValidationBoard({
             </p>
           </div>
         ) : null}
-        {filteredExperiments.map((experiment, index) => {
+        {[...activeExperiments].map((experiment, index) => {
           const formOpen = activeExperimentId === experiment.id;
           const expanded = expandedExperimentId === experiment.id;
           const evidenceLimitReached = experiment.evidence.length >= 8;
@@ -1695,7 +1699,20 @@ export function ValidationBoard({
                 </div>
 
                 <div className="flex w-full shrink-0 flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
-                  <button
+                                    <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateExperiment(experiment.id, (exp) => ({ ...exp, archived: !exp.archived }));
+                      srAnnounce(experiment.archived ? "Hypothesis unarchived." : "Hypothesis archived.");
+                    }}
+                    title={experiment.archived ? "Unarchive" : "Archive hypothesis"}
+                    aria-label={experiment.archived ? "Unarchive" : "Archive hypothesis"}
+                    className={"flex h-11 w-11 items-center justify-center rounded-md border border-input bg-card text-foreground/60 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:h-10 sm:w-10 " + (experiment.archived ? "text-accent" : "")}
+                  >
+                    <Archive className="size-4" aria-hidden="true" />
+                  </button>
+<button
                     type="button"
                     onClick={() =>
                       setRequestedExpandedExperimentId((current) =>
@@ -2527,6 +2544,45 @@ export function ValidationBoard({
             </article>
           );
         })}
+
+      {archivedExperiments.length > 0 && (
+        <div className="mt-4 rounded-lg border border-dashed border-input bg-muted/30 p-3">
+          <button
+            type="button"
+            onClick={() => setShowArchived((v) => !v)}
+            aria-expanded={showArchived}
+            className="flex w-full items-center justify-between gap-2 text-left text-xs font-semibold uppercase text-muted transition hover:text-foreground"
+          >
+            <span>Archived ({archivedExperiments.length})</span>
+            {showArchived ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
+          </button>
+          {showArchived && (
+            <div className="mt-2 divide-y divide-border/50">
+              {archivedExperiments.map((experiment) => {
+                const gIdx = execution.experiments.findIndex((e) => e.id === experiment.id);
+                const stCls = experiment.status === "supported" ? "bg-signal-supports/20 text-signal-supports"
+                  : experiment.status === "refuted" ? "bg-signal-challenges/20 text-signal-challenges"
+                  : experiment.status === "testing" ? "bg-accent/20 text-accent"
+                  : "bg-muted text-muted";
+                return (
+                  <div key={experiment.id} className="flex items-center gap-2 py-2 text-sm opacity-70">
+                    <button
+                      type="button"
+                      onClick={() => updateExperiment(experiment.id, (exp) => ({ ...exp, archived: false }))}
+                      className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted transition hover:bg-muted hover:text-foreground"
+                    >
+                      Unarchive
+                    </button>
+                    <span className="font-mono text-[10px] text-signal-challenges/70">H{gIdx + 1}</span>
+                    <span className={"rounded px-1.5 py-0.5 text-[10px] font-semibold " + stCls}>{statusLabels[experiment.status]}</span>
+                    <span className="truncate text-foreground/70">{experiment.assumption}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
       </div>
     </section>
   );
