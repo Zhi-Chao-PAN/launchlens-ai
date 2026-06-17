@@ -427,4 +427,83 @@ describe("decision brief", () => {
       expect(evidenceStrengthFor(fiveAnecdotal)).toBe("directional");
     });
   });
+
+  describe("recommendationFor edge cases", () => {
+    it("returns pause for empty evidence", () => {
+      const source = {
+        experimentId: "test",
+        assumption: "Test",
+        status: "testing" as const,
+        confidence: "low" as const,
+        decision: "",
+        nextAction: "",
+        evidence: [],
+      };
+      expect(recommendationFor(source)).toBe("pause");
+    });
+
+    it("returns pivot for strong challenging evidence", () => {
+      const source = {
+        experimentId: "test",
+        assumption: "Test",
+        status: "testing" as const,
+        confidence: "low" as const,
+        decision: "",
+        nextAction: "",
+        evidence: [
+          { id: "1", signal: "challenges" as const, weight: "strong" as const, note: "Bad", source: "Test", observedAt: "2024-01-01" },
+          { id: "2", signal: "challenges" as const, weight: "strong" as const, note: "Worse", source: "Test", observedAt: "2024-01-02" },
+        ],
+      };
+      expect(recommendationFor(source)).toBe("pivot");
+    });
+
+    it("returns iterate for mixed moderate evidence", () => {
+      const source = {
+        experimentId: "test",
+        assumption: "Test",
+        status: "testing" as const,
+        confidence: "low" as const,
+        decision: "",
+        nextAction: "",
+        evidence: [
+          { id: "1", signal: "supports" as const, weight: "moderate" as const, note: "Good", source: "Test", observedAt: "2024-01-01" },
+          { id: "2", signal: "challenges" as const, weight: "moderate" as const, note: "Bad", source: "Test", observedAt: "2024-01-02" },
+        ],
+      };
+      expect(recommendationFor(source)).toBe("iterate");
+    });
+  });
+
+  describe("evidenceStrengthFor edge cases", () => {
+    it("returns none for empty evidence", () => {
+      const source = {
+        experimentId: "test",
+        assumption: "Test",
+        status: "testing" as const,
+        confidence: "low" as const,
+        decision: "",
+        nextAction: "",
+        evidence: [],
+      };
+      expect(evidenceStrengthFor(source)).toBe("insufficient");
+    });
+
+    it("returns strong for three strong supporting pieces", () => {
+      const source = {
+        experimentId: "test",
+        assumption: "Test",
+        status: "testing" as const,
+        confidence: "low" as const,
+        decision: "",
+        nextAction: "",
+        evidence: [
+          { id: "1", signal: "supports" as const, weight: "strong" as const, note: "A", source: "T", observedAt: "2024-01-01" },
+          { id: "2", signal: "supports" as const, weight: "strong" as const, note: "B", source: "T", observedAt: "2024-01-02" },
+          { id: "3", signal: "supports" as const, weight: "strong" as const, note: "C", source: "T", observedAt: "2024-01-03" },
+        ],
+      };
+      expect(evidenceStrengthFor(source)).toBe("strong");
+    });
+  });
 });

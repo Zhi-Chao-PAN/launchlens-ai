@@ -482,5 +482,23 @@ describe("workspace execution state", () => {
         ]),
       ).toBe("medium");
     });
+
+    it("returns medium at exact threshold (weight 3 with one strong)", () => {
+      // strong = 4 weight, but just one piece — check if it hits medium
+      expect(
+        computeExperimentConfidence([
+          { signal: "supports", weight: "strong" },
+        ]),
+      ).toBe("medium");
+    });
+
+    it("stays low with only neutral anecdotal evidence", () => {
+      expect(
+        computeExperimentConfidence([
+          { signal: "neutral", weight: "anecdotal" },
+          { signal: "neutral", weight: "anecdotal" },
+        ]),
+      ).toBe("low");
+    });
   });
 });
