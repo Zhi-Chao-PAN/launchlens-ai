@@ -7,7 +7,7 @@ import {
 } from "./decision";
 import {
   createExecutionState,
-  evaluateExecutionProgress,
+  evaluateExecutionProgress, EVIDENCE_BIASED_WEIGHTS, DECISION_BIASED_WEIGHTS,
   normalizeExecutionState,
   normalizeSharedExecutionState,
   reconcileExecutionState,
@@ -181,6 +181,88 @@ describe("workspace execution state", () => {
 
     expect(normalized).not.toBeNull();
     expect(normalized?.experiments[0].decisionBrief).toBeUndefined();
+  });
+
+  it("default weights match original 3-checkpoint behavior", () => {
+    const ex = createExecutionState(workspace);
+    // Default = 3 equal checkpoints per experiment
+    const p = evaluateExecutionProgress(ex);
+    expect(p.score).toBeGreaterThanOrEqual(0);
+    expect(p.score).toBeLessThanOrEqual(100);
+    // Fresh execution with all untested should be 0
+    const allUntested = { experiments: [], updatedAt: new Date().toISOString() };
+    expect(evaluateExecutionProgress(allUntested).score).toBe(0);
+  });
+
+  it("evidence-biased weights give higher score when evidence is present", () => {
+    const execution = {
+      experiments: [
+        {
+          id: "h1",
+          assumption: "Test",
+          status: "testing" as const,
+          confidence: "medium" as const,
+          decision: "",
+          nextAction: "",
+          linkedTaskId: "",
+          evidence: [
+            {
+              id: "e1",
+              source: "Test",
+              note: "Test evidence",
+              signal: "supports" as const,
+              observedAt: "2024-01-01T00:00:00Z",
+              confidence: "medium" as const,
+            },
+          ],
+        },
+      ],
+      updatedAt: "2024-01-01T00:00:00Z",
+    };
+
+    const defaultScore = evaluateExecutionProgress(execution).score;
+    const biasedScore = evaluateExecutionProgress(
+      execution,
+      EVIDENCE_BIASED_WEIGHTS,
+    ).score;
+    // evidence-biased should give more weight to the evidence checkpoint
+    expect(biasedScore).toBeGreaterThan(defaultScore);
+  });
+
+  it("decision-biased weights give higher score when a decision is reached", () => {
+    const execution = {
+      experiments: [
+        {
+          id: "h1",
+          assumption: "Test",
+          status: "supported" as const,
+          confidence: "high" as const,
+          decision: "Validated",
+          nextAction: "",
+          linkedTaskId: "",
+          evidence: [
+            {
+              id: "e1",
+              source: "Test",
+              note: "Evidence",
+              signal: "supports" as const,
+              observedAt: "2024-01-01T00:00:00Z",
+              confidence: "high" as const,
+            },
+          ],
+        },
+      ],
+      updatedAt: "2024-01-01T00:00:00Z",
+    };
+
+    const defaultScore = evaluateExecutionProgress(execution).score;
+    const biasedScore = evaluateExecutionProgress(
+      execution,
+      DECISION_BIASED_WEIGHTS,
+    ).score;
+    // When all 3 checkpoints are met, both should be 100
+    expect(biasedScore).toBe(100);
+    expect(defaultScore).toBe(100);
   });
 
   it("evaluateExecutionProgress returns 0 for no experiments", () => {

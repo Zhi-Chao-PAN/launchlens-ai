@@ -46,6 +46,36 @@ export type ExecutionProgress = {
   evidenceCount: number;
 };
 
+export type ExecutionProgressWeights = {
+  /** Weight for starting testing (status != untested) */
+  started: number;
+  /** Weight for having at least one non-neutral evidence item */
+  evidenceWithSignal: number;
+  /** Weight for reaching a final status with a decision */
+  decided: number;
+};
+
+/** Default weights — all three checkpoints are equally weighted. */
+export const DEFAULT_PROGRESS_WEIGHTS: ExecutionProgressWeights = {
+  started: 1,
+  evidenceWithSignal: 1,
+  decided: 1,
+};
+
+/** Preset: "bias-toward-evidence" — evidence gathering counts more. */
+export const EVIDENCE_BIASED_WEIGHTS: ExecutionProgressWeights = {
+  started: 1,
+  evidenceWithSignal: 2,
+  decided: 1,
+};
+
+/** Preset: "bias-toward-decisions" — reaching conclusions counts more. */
+export const DECISION_BIASED_WEIGHTS: ExecutionProgressWeights = {
+  started: 1,
+  evidenceWithSignal: 1,
+  decided: 2,
+};
+
 export type SharedValidationExperiment = Omit<
   ValidationExperiment,
   "evidence" | "decisionBrief"
@@ -338,6 +368,7 @@ export function reconcileExecutionState(
 
 export function evaluateExecutionProgress(
   execution: WorkspaceExecutionState,
+  weights: ExecutionProgressWeights = DEFAULT_PROGRESS_WEIGHTS,
 ): ExecutionProgress {
   const total = execution.experiments.length;
   const withEvidence = execution.experiments.filter(
@@ -352,25 +383,26 @@ export function evaluateExecutionProgress(
     (sum, experiment) => sum + experiment.evidence.length,
     0,
   );
-  const completedCheckpoints = execution.experiments.reduce(
-    (sum, experiment) =>
-      sum +
-      Number(experiment.status !== "untested") +
-      Number(
-        experiment.evidence.some((item) => item.signal !== "neutral"),
-      ) +
-      Number(
-        ["supported", "refuted"].includes(experiment.status) &&
-          experiment.decision.trim().length > 0,
-      ),
-    0,
-  );
+  const maxWeightPerExperiment =
+    weights.started + weights.evidenceWithSignal + weights.decided;
+  const completedWeight = execution.experiments.reduce((sum, experiment) => {
+    let weight = 0;
+    if (experiment.status !== "untested") weight += weights.started;
+    if (experiment.evidence.some((item) => item.signal !== "neutral"))
+      weight += weights.evidenceWithSignal;
+    if (
+      ["supported", "refuted"].includes(experiment.status) &&
+      experiment.decision.trim().length > 0
+    )
+      weight += weights.decided;
+    return sum + weight;
+  }, 0);
 
   return {
     score:
       total === 0
         ? 0
-        : Math.round((completedCheckpoints / (total * 3)) * 100),
+        : Math.round((completedWeight / (total * maxWeightPerExperiment)) * 100),
     total,
     withEvidence,
     decided,
