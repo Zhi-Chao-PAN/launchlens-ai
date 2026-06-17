@@ -41,6 +41,7 @@ import { useToast } from "@/components/toast";
 import { DecisionCopilot } from "@/components/decision-copilot";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { CommandPalette } from "@/components/command-palette";
+import { ShortcutsHelp } from "@/components/shortcuts-help";
 import { useWorkspaceCommands } from "@/hooks/use-workspace-commands";
 import { ValidationBoard } from "@/components/validation-board";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
@@ -2143,6 +2144,7 @@ export function LaunchWorkspace({
           </div>
         )}
 
+        <ShortcutsHelp />
         <CommandPalette
           actions={useWorkspaceCommands({
             workspace,
