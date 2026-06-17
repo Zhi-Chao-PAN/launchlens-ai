@@ -31,4 +31,23 @@ describe("persisted MiniMax fixture", () => {
 
     expect(() => assertSafeProviderFixture(typedFixture)).not.toThrow();
   });
+
+  it("fixture cases all have sectionCounts with valid numbers", () => {
+    const typedFixture = fixture as ProviderEvalFixture;
+    for (const evalCase of typedFixture.cases) {
+      expect(evalCase.sectionCounts.assumptions).toBeGreaterThan(0);
+      expect(evalCase.sectionCounts.targetUsers).toBeGreaterThan(0);
+      expect(evalCase.sectionCounts.pains).toBeGreaterThan(0);
+      expect(evalCase.sectionCounts.backlog).toBeGreaterThan(0);
+    }
+  });
+
+  it("fixture schemaVersion and promptVersion are consistent", () => {
+    const typedFixture = fixture as ProviderEvalFixture;
+    expect(typeof typedFixture.schemaVersion).toBe("number");
+    expect(typedFixture.schemaVersion).toBeGreaterThanOrEqual(1);
+    expect(typeof typedFixture.promptVersion).toBe("string");
+    expect(typedFixture.promptVersion.startsWith("launchlens-workspace-")).toBe(true);
+  });
+
 });

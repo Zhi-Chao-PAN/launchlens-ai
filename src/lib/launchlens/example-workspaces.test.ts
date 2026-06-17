@@ -50,4 +50,17 @@ describe("exampleWorkspaces", () => {
     }
   });
 
+
+  it("all example workspaces have a valid generatedAt timestamp", () => {
+    for (const item of exampleWorkspaces) {
+      expect(() => new Date(item.workspace.generatedAt)).not.toThrow();
+      expect(item.workspace.generatedAt).toMatch(/^\d{4}-/);
+    }
+  });
+
+  it("each example workspace has a unique summary", () => {
+    const summaries = exampleWorkspaces.map((item) => item.workspace.summary);
+    expect(new Set(summaries).size).toBe(summaries.length);
+  });
+
 });

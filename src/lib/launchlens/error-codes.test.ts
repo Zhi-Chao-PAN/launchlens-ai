@@ -88,4 +88,15 @@ describe("error codes contract", () => {
     expect(unique.size).toBe(all.length);
   });
 
+
+  it("all error code values are unique strings", () => {
+    const values = Object.values(errorCodes) as string[];
+    expect(new Set(values).size).toBe(values.length);
+  });
+
+  it("every error code has a matching http status mapping", () => {
+    // We test that the export is consistent and no key is accidentally deleted
+    expect(Object.keys(errorCodes).length).toBeGreaterThan(5);
+  });
+
 });

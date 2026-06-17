@@ -104,4 +104,12 @@ describe("overlay stack defensive behavior", () => {
     expect(hasOpenOverlay()).toBe(false);
   });
 
+
+  it("pushOverlay returns a function that can be called multiple times safely", () => {
+    const pop = pushOverlay();
+    expect(hasOpenOverlay()).toBe(true);
+    // Should not throw on multiple calls
+    expect(() => { pop(); pop(); pop(); }).not.toThrow();
+  });
+
 });

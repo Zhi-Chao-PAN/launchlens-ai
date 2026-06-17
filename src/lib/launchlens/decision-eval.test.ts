@@ -140,4 +140,38 @@ describe("decision eval edge cases", () => {
     ).toThrow();
   });
 
+
+  it("every scenario check has a descriptive label", () => {
+    const result = buildDecisionEvalCase(
+      "activation-analyst",
+      source,
+      {
+        brief: buildMockDecisionBrief(source),
+        mode: "demo",
+        usedFallback: false,
+      },
+      12,
+    );
+    for (const check of result.scenarioChecks) {
+      expect(typeof check.label).toBe("string");
+      expect(check.label.length).toBeGreaterThan(3);
+    }
+  });
+
+  it("evaluation always produces a qualityScore between 0 and 100", () => {
+    const result = buildDecisionEvalCase(
+      "activation-analyst",
+      source,
+      {
+        brief: buildMockDecisionBrief(source),
+        mode: "demo",
+        usedFallback: false,
+      },
+      12,
+    );
+    expect(result.qualityScore).toBeGreaterThanOrEqual(0);
+    expect(result.qualityScore).toBeLessThanOrEqual(100);
+    expect(Number.isInteger(result.qualityScore)).toBe(true);
+  });
+
 });

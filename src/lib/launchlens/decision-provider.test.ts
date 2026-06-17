@@ -173,4 +173,10 @@ describe("generateDecisionBrief", () => {
       "sensitive-upstream-body",
     );
   });
+
+  it("generateDecisionBrief returns a result with valid schema version", async () => {
+    const result = await generateDecisionBrief(source);
+    expect(result.brief.schemaVersion).toBe(1);
+  });
+
 });
