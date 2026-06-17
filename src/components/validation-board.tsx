@@ -4,6 +4,7 @@ import {
   Check,
   CheckCircle2,
   ChevronDown,
+  Filter,
   ChevronUp,
   CircleGauge,
   FlaskConical,
@@ -101,6 +102,7 @@ export function ValidationBoard({
   const noteError = draftTouched.note && draft.note.trim().length < 8 ? "Observation needs at least 8 characters." : "";
   const [weightPreset, setWeightPreset] = useState<"default" | "evidence" | "decision">("default");
   const [showWeightPicker, setShowWeightPicker] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "decided">("all");
 
   const currentWeights: ExecutionProgressWeights = useMemo(() => {
     if (weightPreset === "evidence") return EVIDENCE_BIASED_WEIGHTS;
@@ -112,6 +114,18 @@ export function ValidationBoard({
     () => evaluateExecutionProgress(execution, currentWeights),
     [execution, currentWeights],
   );
+
+  const filteredExperiments = useMemo(() => {
+    if (statusFilter === "all") return execution.experiments;
+    if (statusFilter === "active") {
+      return execution.experiments.filter(
+        (exp) => exp.status === "untested" || exp.status === "testing",
+      );
+    }
+    return execution.experiments.filter(
+      (exp) => exp.status === "supported" || exp.status === "refuted",
+    );
+  }, [execution.experiments, statusFilter]);
 
   const expandedExperimentId =
     requestedExpandedExperimentId === null
@@ -498,8 +512,33 @@ export function ValidationBoard({
         </div>
       </div>
 
+      <div className="flex items-center gap-1 border-b border-card px-3 py-2 sm:px-5">
+        <Filter className="size-3.5 text-muted" aria-hidden="true" />
+        <div role="tablist" aria-label="Filter experiments by status" className="flex gap-0.5">
+          {[
+            { id: "all", label: "All", count: execution.experiments.length },
+            { id: "active", label: "Active", count: execution.experiments.filter((e) => e.status === "untested" || e.status === "testing").length },
+            { id: "decided", label: "Decided", count: execution.experiments.filter((e) => e.status === "supported" || e.status === "refuted").length },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              role="tab"
+              aria-selected={statusFilter === tab.id}
+              onClick={() => setStatusFilter(tab.id as typeof statusFilter)}
+              className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${
+                statusFilter === tab.id
+                  ? "bg-accent text-white"
+                  : "text-muted hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              {tab.label}
+              <span className="ml-1 opacity-70">({tab.count})</span>
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="divide-y divide-[#edf0ea]">
-        {execution.experiments.length === 0 ? (
+        {filteredExperiments.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-sm font-semibold text-foreground">No validation experiments yet</p>
             <p className="mt-0.5 text-xs leading-5 text-muted sm:mt-1 sm:text-sm sm:leading-6">
@@ -507,7 +546,7 @@ export function ValidationBoard({
             </p>
           </div>
         ) : null}
-        {execution.experiments.map((experiment, index) => {
+        {filteredExperiments.map((experiment, index) => {
           const formOpen = activeExperimentId === experiment.id;
           const expanded = expandedExperimentId === experiment.id;
           const evidenceLimitReached = experiment.evidence.length >= 8;
