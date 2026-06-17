@@ -76,7 +76,7 @@ type LaunchWorkspaceProps = {
 };
 
 type SectionProps = {
-  title: string;
+  title: React.ReactNode;
   icon: LucideIcon;
   children: React.ReactNode;
   collapsible?: boolean;
@@ -1837,7 +1837,18 @@ export function LaunchWorkspace({
                 )}
               </Section>
 
-              <Section title="Execution tasks" icon={CheckCircle2} collapsible sectionId="execution-tasks" collapsed={collapsedSections.has("execution-tasks")} onToggle={() => toggleSection("execution-tasks")}>
+              <Section
+                title={
+                  <div className="flex items-center gap-2">
+                    <span>Execution tasks</span>
+                    <span className="text-xs font-normal text-muted">
+                      {workspace.tasks.filter((t) => t.completed).length}/{workspace.tasks.length} completed
+                    </span>
+                  </div>
+                }
+                icon={CheckCircle2}
+                collapsible sectionId="execution-tasks" collapsed={collapsedSections.has("execution-tasks")} onToggle={() => toggleSection("execution-tasks")}
+              >
                 {isEditing ? (
                   <div className="space-y-3">
                     {workspace.tasks.map((task, index) => (
@@ -1942,19 +1953,46 @@ export function LaunchWorkspace({
                     {workspace.tasks.map((task, index) => (
                       <article
                         key={`${task.title}-${task.due}-${index}`}
-                        className="rounded-md border border-card bg-input p-4"
+                        className={`rounded-md border border-card bg-input p-4 transition ${
+                          task.completed ? "opacity-60" : ""
+                        }`}
                       >
-                        <div className="mb-2 flex flex-wrap items-center gap-2">
-                          <h3 className="text-sm font-semibold text-foreground">
-                            {task.title}
-                          </h3>
-                          <span className="rounded-md bg-signal-supports px-2 py-1 text-xs font-medium text-signal-supports">
-                            {task.due}
-                          </span>
+                        <div className="flex items-start gap-3">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setWorkspace((current) => ({
+                                ...current,
+                                tasks: current.tasks.map((t, i) =>
+                                  i === index ? { ...t, completed: !t.completed } : t,
+                                ),
+                              }))
+                            }
+                            className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded transition ${
+                              task.completed
+                                ? "bg-accent text-white"
+                                : "border-2 border-muted text-transparent hover:border-accent"
+                            }`}
+                            aria-label={task.completed ? "Mark task incomplete" : "Mark task complete"}
+                          >
+                            <CheckCircle2 className="size-3" aria-hidden="true" />
+                          </button>
+                          <div className="min-w-0 flex-1">
+                            <div className="mb-1 flex flex-wrap items-center gap-2">
+                              <h3 className={`text-sm font-semibold ${
+                                task.completed ? "text-foreground/60 line-through" : "text-foreground"
+                              }`}>
+                                {task.title}
+                              </h3>
+                              <span className="rounded-md bg-signal-supports px-2 py-1 text-xs font-medium text-signal-supports">
+                                {task.due}
+                              </span>
+                            </div>
+                            <p className={`text-sm leading-6 ${task.completed ? "text-foreground/50" : "text-foreground/80"}`}>
+                              {task.owner} owns {task.outcome}.
+                            </p>
+                          </div>
                         </div>
-                        <p className="text-sm leading-6 text-foreground/80">
-                          {task.owner} owns {task.outcome}.
-                        </p>
                       </article>
                     ))}
                   </div>
