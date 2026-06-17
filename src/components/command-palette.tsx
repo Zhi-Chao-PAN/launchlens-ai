@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable react-hooks/refs */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Search, X, Command, ArrowRight } from "lucide-react";
 import { useFocusTrap } from "@/hooks/use-focus-trap";
@@ -55,6 +56,37 @@ export function CommandPalette({
       .map((item) => item.action)
       .slice(0, 12);
   }, [actions, query]);
+
+  // Group filtered actions by category for display
+  const { grouped, flatIndexMap } = useMemo(() => {
+    const groups = new Map<string, CommandPaletteAction[]>();
+    const indexMap: Record<string, number> = {};
+    let flatIdx = 0;
+
+    const categoryOrder = ["Actions", "Navigate", "Workspace content"];
+
+    for (const action of filtered) {
+      const cat = action.category || "Other";
+      if (!groups.has(cat)) groups.set(cat, []);
+      groups.get(cat)!.push(action);
+      indexMap[action.id] = flatIdx;
+      flatIdx++;
+    }
+
+    const sortedEntries = Array.from(groups.entries()).sort(([a], [b]) => {
+      const aIdx = categoryOrder.indexOf(a);
+      const bIdx = categoryOrder.indexOf(b);
+      if (aIdx === -1 && bIdx === -1) return a.localeCompare(b);
+      if (aIdx === -1) return 1;
+      if (bIdx === -1) return -1;
+      return aIdx - bIdx;
+    });
+
+    return {
+      grouped: Object.fromEntries(sortedEntries) as Record<string, CommandPaletteAction[]>,
+      flatIndexMap: indexMap,
+    };
+  }, [filtered]);
 
   const open = useCallback(() => {
     previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
@@ -199,53 +231,68 @@ export function CommandPalette({
           role="listbox"
           className="max-h-80 overflow-y-auto py-1"
         >
+          
           {filtered.length === 0 ? (
             <li className="px-4 py-6 text-center text-sm text-muted">
               No commands found for &ldquo;{query}&rdquo;
             </li>
           ) : (
-            filtered.map((action, index) => (
-              <li key={action.id} id={`cmd-${action.id}`} role="option" aria-selected={index === selectedIndex}>
-                <button
-                  type="button"
-                  onClick={() => selectItem(index)}
-                  onMouseEnter={() => setSelectedIndex(index)}
-                  className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition ${
-                    index === selectedIndex
-                      ? "bg-muted text-foreground"
-                      : "text-foreground/80 hover:bg-muted/60"
-                  }`}
-                >
-                  <span
-                    className={`flex size-7 shrink-0 items-center justify-center rounded-md ${
-                      action.icon === "navigate"
-                        ? "bg-signal-supports text-signal-supports"
-                        : action.icon === "action"
-                          ? "bg-signal-neutral text-signal-neutral"
-                          : "bg-muted text-muted"
-                    }`}
-                    aria-hidden="true"
-                  >
-                    {action.icon === "navigate" ? (
-                      <ArrowRight className="size-3.5" />
-                    ) : action.icon === "action" ? (
-                      <Command className="size-3.5" />
-                    ) : (
-                      <Search className="size-3.5" />
-                    )}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate font-medium">{action.label}</div>
-                    {action.description && (
-                      <div className="truncate text-xs text-muted">{action.description}</div>
-                    )}
-                  </div>
-                  {action.shortcut && (
-                    <kbd className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted">
-                      {action.shortcut}
-                    </kbd>
-                  )}
-                </button>
+            Object.entries(grouped).map(([category, categoryActions]) => (
+              <li key={category} role="presentation">
+                <div className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted/70">
+                  {category}
+                </div>
+                <ul role="group" aria-label={category} className="list-none">
+                  {categoryActions.map((action) => (
+                      <li
+                        key={action.id}
+                        id={`cmd-${action.id}`}
+                        role="option"
+                        aria-selected={flatIndexMap[action.id] === selectedIndex}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => { action.onSelect(); close(); }}
+                          onMouseEnter={() => setSelectedIndex(flatIndexMap[action.id])}
+                          className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition ${
+                            flatIndexMap[action.id] === selectedIndex
+                              ? "bg-muted text-foreground"
+                              : "text-foreground/80 hover:bg-muted/60"
+                          }`}
+                        >
+                          <span
+                            className={`flex size-7 shrink-0 items-center justify-center rounded-md ${
+                              action.icon === "navigate"
+                                ? "bg-signal-supports text-signal-supports"
+                                : action.icon === "action"
+                                  ? "bg-signal-neutral text-signal-neutral"
+                                  : "bg-muted text-muted"
+                            }`}
+                            aria-hidden="true"
+                          >
+                            {action.icon === "navigate" ? (
+                              <ArrowRight className="size-3.5" />
+                            ) : action.icon === "action" ? (
+                              <Command className="size-3.5" />
+                            ) : (
+                              <Search className="size-3.5" />
+                            )}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate font-medium">{action.label}</div>
+                            {action.description && (
+                              <div className="truncate text-xs text-muted">{action.description}</div>
+                            )}
+                          </div>
+                          {action.shortcut && (
+                            <kbd className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted">
+                              {action.shortcut}
+                            </kbd>
+                          )}
+                        </button>
+                      </li>
+                    ))}
+                </ul>
               </li>
             ))
           )}
@@ -254,7 +301,7 @@ export function CommandPalette({
         {/* Footer hint */}
         <div className="flex items-center gap-4 border-t border-input px-4 py-2 text-[10px] text-muted">
           <span>
-            <kbd className="rounded bg-muted px-1 py-0.5 font-mono">¡ü¡ý</kbd> navigate
+            <kbd className="rounded bg-muted px-1 py-0.5 font-mono">??</kbd> navigate
           </span>
           <span>
             <kbd className="rounded bg-muted px-1 py-0.5 font-mono">?</kbd> select
