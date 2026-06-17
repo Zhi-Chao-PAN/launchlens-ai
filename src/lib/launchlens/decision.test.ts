@@ -10,6 +10,8 @@ import {
   decisionSourceFromExperiment,
   normalizeDecisionBrief,
   normalizeDecisionSource,
+recommendationFor,
+evidenceStrengthFor,
 } from "./decision";
 
 describe("decision brief", () => {
@@ -360,4 +362,69 @@ describe("decision brief", () => {
     expect(normalizeDecisionBrief({ ...valid, recommendation: 'maybe' }, source)).toBeNull();
   });
 
+
+  describe("weighted evidence impact", () => {
+    it("ranks strong evidence higher than anecdotal for recommendations", () => {
+      // 1 strong supporting = weight 4 → proceed
+      const strongSupport = {
+        ...source,
+        evidence: [
+          { id: "s1", source: "A", note: "...", signal: "supports" as const, weight: "strong" as const, observedAt: "2024-01-01" },
+        ],
+      };
+      expect(recommendationFor(strongSupport)).toBe("proceed");
+
+      // 3 anecdotal supporting = weight 3 → proceed
+      const anecdotalSupport = {
+        ...source,
+        evidence: [
+          { id: "a1", source: "A", note: "...", signal: "supports" as const, weight: "anecdotal" as const, observedAt: "2024-01-01" },
+          { id: "a2", source: "B", note: "...", signal: "supports" as const, weight: "anecdotal" as const, observedAt: "2024-01-01" },
+          { id: "a3", source: "C", note: "...", signal: "supports" as const, weight: "anecdotal" as const, observedAt: "2024-01-01" },
+        ],
+      };
+      expect(recommendationFor(anecdotalSupport)).toBe("proceed");
+    });
+
+    it("a single strong challenge outweighs multiple anecdotal supports", () => {
+      const mixed = {
+        ...source,
+        evidence: [
+          { id: "a1", source: "A", note: "...", signal: "supports" as const, weight: "anecdotal" as const, observedAt: "2024-01-01" },
+          { id: "a2", source: "B", note: "...", signal: "supports" as const, weight: "anecdotal" as const, observedAt: "2024-01-01" },
+          { id: "c1", source: "C", note: "...", signal: "challenges" as const, weight: "strong" as const, observedAt: "2024-01-01" },
+        ],
+      };
+      // strong challenge (4) > 2 anecdotal supports (2) → pivot
+      expect(recommendationFor(mixed)).toBe("pivot");
+    });
+
+    it("strong evidence raises evidenceStrength to strong faster", () => {
+      const twoStrong = {
+        ...source,
+        evidence: [
+          { id: "s1", source: "A", note: "...", signal: "supports" as const, weight: "strong" as const, observedAt: "2024-01-01" },
+          { id: "s2", source: "B", note: "...", signal: "supports" as const, weight: "strong" as const, observedAt: "2024-01-01" },
+        ],
+      };
+      // 2 strong = 8 weight → strong
+      expect(evidenceStrengthFor(twoStrong)).toBe("strong");
+    });
+
+    it("anecdotal-only evidence caps at directional", () => {
+      const fiveAnecdotal = {
+        ...source,
+        evidence: Array.from({ length: 5 }, (_, i) => ({
+          id: `a${i}`,
+          source: `Source ${i}`,
+          note: "...",
+          signal: "supports" as const,
+          weight: "anecdotal" as const,
+          observedAt: "2024-01-01",
+        })),
+      };
+      // 5 anecdotal = 5 weight → directional (needs 6 for strong)
+      expect(evidenceStrengthFor(fiveAnecdotal)).toBe("directional");
+    });
+  });
 });

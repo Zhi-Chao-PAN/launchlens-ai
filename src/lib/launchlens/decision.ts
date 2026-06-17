@@ -7,6 +7,12 @@ import type {
 } from "./execution";
 import type { ProviderName } from "./types";
 
+const EVIDENCE_WEIGHT_VALUES: Record<EvidenceWeight, number> = {
+  anecdotal: 1,
+  moderate: 2,
+  strong: 4,
+};
+
 export const DECISION_PROMPT_VERSION = "launchlens-decision-v1";
 
 export type DecisionRecommendation = "proceed" | "iterate" | "pivot" | "pause";
@@ -404,47 +410,59 @@ export function normalizeDecisionBrief(
   }
 }
 
-function recommendationFor(source: DecisionSource): DecisionRecommendation {
-  const supporting = source.evidence.filter(
-    (item) => item.signal === "supports",
-  ).length;
-  const challenging = source.evidence.filter(
-    (item) => item.signal === "challenges",
-  ).length;
+export function recommendationFor(source: DecisionSource): DecisionRecommendation {
+  let supportingWeight = 0;
+  let challengingWeight = 0;
 
-  if (challenging > supporting) {
+  for (const item of source.evidence) {
+    const w = EVIDENCE_WEIGHT_VALUES[item.weight] ?? 2;
+    if (item.signal === "supports") {
+      supportingWeight += w;
+    } else if (item.signal === "challenges") {
+      challengingWeight += w;
+    }
+  }
+
+  if (challengingWeight > supportingWeight) {
     return "pivot";
   }
 
-  if (supporting >= 2 && challenging === 0) {
+  // "Proceed" needs at least moderate-weight supporting evidence with no challenges
+  if (supportingWeight >= 3 && challengingWeight === 0) {
     return "proceed";
   }
 
-  if (supporting === 0 && challenging === 0) {
+  if (supportingWeight === 0 && challengingWeight === 0) {
     return "pause";
   }
 
   return "iterate";
 }
 
-function evidenceStrengthFor(source: DecisionSource): EvidenceStrength {
-  const supporting = source.evidence.filter(
-    (item) => item.signal === "supports",
-  ).length;
-  const challenging = source.evidence.filter(
-    (item) => item.signal === "challenges",
-  ).length;
-  const directional = supporting + challenging;
+export function evidenceStrengthFor(source: DecisionSource): EvidenceStrength {
+  let supportingWeight = 0;
+  let challengingWeight = 0;
 
-  if (directional === 0) {
+  for (const item of source.evidence) {
+    const w = EVIDENCE_WEIGHT_VALUES[item.weight] ?? 2;
+    if (item.signal === "supports") {
+      supportingWeight += w;
+    } else if (item.signal === "challenges") {
+      challengingWeight += w;
+    }
+  }
+
+  const directionalWeight = supportingWeight + challengingWeight;
+
+  if (directionalWeight === 0) {
     return "insufficient";
   }
 
-  if (supporting > 0 && challenging > 0) {
+  if (supportingWeight > 0 && challengingWeight > 0) {
     return "mixed";
   }
 
-  if (directional >= 4) {
+  if (directionalWeight >= 6) {
     return "strong";
   }
 
