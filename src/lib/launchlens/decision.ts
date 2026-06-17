@@ -13,7 +13,7 @@ const EVIDENCE_WEIGHT_VALUES: Record<EvidenceWeight, number> = {
   strong: 4,
 };
 
-export const DECISION_PROMPT_VERSION = "launchlens-decision-v1";
+export const DECISION_PROMPT_VERSION = "launchlens-decision-v2";
 
 export type DecisionRecommendation = "proceed" | "iterate" | "pivot" | "pause";
 export type EvidenceStrength =
