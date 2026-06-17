@@ -1462,8 +1462,10 @@ export function ValidationBoard({
               }}
               onBlur={() => commitNewExperimentTag()}
               placeholder="Add tags (press Enter to add, e.g. acquisition)"
+              list="existing-tags-datalist"
               className="h-8 flex-1 rounded-md border border-input bg-card px-3 text-xs text-foreground outline-none focus:border-accent focus:ring-1 focus:ring-accent"
             />
+            <datalist id="existing-tags-datalist">{allTags.map((t) => <option key={t} value={t} />)}</datalist>
           </div>
           </label>
           <div className="mt-3 flex justify-end gap-2">
