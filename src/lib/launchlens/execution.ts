@@ -1,4 +1,4 @@
-import type { LaunchLensWorkspace, LaunchTask } from "./types";
+﻿import type { LaunchLensWorkspace, LaunchTask } from "./types";
 import {
   decisionSourceFromExperiment,
   normalizeDecisionBrief,
@@ -30,6 +30,8 @@ export type HypothesisChangeEvent = {
   from?: string;
   to?: string;
   source?: string;
+  targetId?: string;
+  label?: string;
 };
 
 export type ValidationEvidence = {

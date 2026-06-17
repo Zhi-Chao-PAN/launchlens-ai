@@ -41,6 +41,7 @@ import {
   type ExperimentStatus,
   type ExecutionProgressWeights,
   type ConfidenceLevel,
+  type HypothesisChangeEvent,
   type ValidationEvidence,
   type ValidationExperiment,
   assumptionIdentity,
@@ -189,13 +190,29 @@ export function ValidationBoard({
   const { showToast } = useToast();
   const evidenceListRef = useRef<HTMLUListElement | null>(null);
   const [timelinePulseKey, setTimelinePulseKey] = useState<string | null>(null);
+  const [flashEvidenceId, setFlashEvidenceId] = useState<string | null>(null);
   const timelinePulseTimer = useRef<number | null>(null);
-  function onTimelineEventClick(experimentId: string, kind: string) {
+  const flashEvidenceTimer = useRef<number | null>(null);
+  function onTimelineEventClick(experimentId: string, kind: string, targetId?: string) {
     setTimelinePulseKey(experimentId);
     if (timelinePulseTimer.current) window.clearTimeout(timelinePulseTimer.current);
     timelinePulseTimer.current = window.setTimeout(() => setTimelinePulseKey(null), 1200);
-    if (kind === "evidence_added") {
-      window.setTimeout(() => evidenceListRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 30);
+    if (flashEvidenceTimer.current) window.clearTimeout(flashEvidenceTimer.current);
+    setFlashEvidenceId(null);
+    if (kind === "evidence_added" || kind === "evidence_removed") {
+      window.setTimeout(() => {
+        const root = document.querySelector(`[data-experiment-article][data-experiment-id-card="${experimentId}"]`) || evidenceListRef.current?.closest(`[data-experiment-article]`);
+        if (targetId) {
+          const row = (root || document).querySelector(`[data-evidence-id="${targetId}"]`) as HTMLElement | null;
+          if (row) {
+            setFlashEvidenceId(targetId);
+            flashEvidenceTimer.current = window.setTimeout(() => setFlashEvidenceId(null), 1600);
+            row.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+          }
+        }
+        evidenceListRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 30);
     }
   }
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -384,6 +401,17 @@ export function ValidationBoard({
           )
         ? requestedExpandedExperimentId
         : (execution.experiments[0]?.id ?? "");
+
+  function pushHistoryEvent(experimentId: string, evt: Omit<HypothesisChangeEvent, "id" | "at">) {
+    onChange({
+      ...execution,
+      experiments: execution.experiments.map((e) => e.id === experimentId ? {
+        ...e,
+        history: [...(e.history || []), { id: "evt-" + Math.random().toString(36).slice(2, 9), at: new Date().toISOString(), kind: evt.kind, from: evt.from, to: evt.to, source: evt.source, targetId: evt.targetId, label: evt.label }],
+      } : e),
+      updatedAt: new Date().toISOString(),
+    });
+  }
 
   function updateExperiment(
     experimentId: string,
@@ -1370,6 +1398,7 @@ export function ValidationBoard({
         }
       }
 
+      items.forEach((it) => pushHistoryEvent(experimentId, { kind: "evidence_added", source: it.source, targetId: it.id, label: it.note.slice(0, 60) }));
       srAnnounce(`Added ${items.length} evidence items.`);
       showToast(`Added ${items.length} evidence items.`, "success", 3000);
       return;
@@ -1419,7 +1448,7 @@ export function ValidationBoard({
         const newEvidence = [
           ...experiment.evidence,
           {
-            id: evidenceId(),
+            id: newEvidenceId,
             note,
             source,
             signal: draft.signal,
@@ -1439,6 +1468,8 @@ export function ValidationBoard({
       });
       const updatedExperiment = execution.experiments.find((e) => e.id === experimentId);
       const count = updatedExperiment ? updatedExperiment.evidence.length + 1 : 1;
+      const newEvidenceId = evidenceId();
+      pushHistoryEvent(experimentId, { kind: "evidence_added", source, targetId: newEvidenceId, label: note.slice(0, 60) });
       srAnnounce(
         `Evidence recorded: ${source}. ${count} items total.`,
       );
@@ -2364,9 +2395,8 @@ export function ValidationBoard({
                       className={
                         "flex items-start gap-3 py-3 text-sm transition " +
                         (draggedEvidenceId === item.id ? "opacity-40 " : "") +
-                        (dragOverEvidenceId === item.id && draggedEvidenceId !== item.id
-                          ? "border-t-2 border-accent "
-                          : "")
+                        (dragOverEvidenceId === item.id && draggedEvidenceId !== item.id ? "border-t-2 border-accent " : "") +
+                        (flashEvidenceId === item.id ? " ring-2 ring-accent/60 ring-inset rounded-sm " : "")
                       }
                     >
                       <button
@@ -2990,9 +3020,9 @@ export function ValidationBoard({
                           : "bg-accent/70";
                         return (
                           <li key={evt.id} className="relative text-xs leading-5">
-                            <span role="button" tabIndex={0} onClick={(ev) => { ev.stopPropagation(); onTimelineEventClick(experiment.id, evt.kind); }} onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onTimelineEventClick(experiment.id, evt.kind); } }} className={"absolute -left-[15px] top-2 size-2 cursor-pointer rounded-full ring-2 ring-background transition hover:scale-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + dotColor} aria-label="Timeline event" />
+                            <span role="button" tabIndex={0} onClick={(ev) => { ev.stopPropagation(); onTimelineEventClick(experiment.id, evt.kind, evt.targetId); }} onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onTimelineEventClick(experiment.id, evt.kind, evt.targetId); } }} className={"absolute -left-[15px] top-2 size-2 cursor-pointer rounded-full ring-2 ring-background transition hover:scale-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + dotColor} aria-label="Timeline event" />
                             <span className="font-medium text-foreground/80">{kindLabel[evt.kind] || evt.kind}</span>
-                            {detail ? <span className="ml-1.5 text-muted">{detail}</span> : null}
+                            {evt.label ? <span className="ml-1.5 max-w-[180px] truncate text-muted" title={evt.label}>&ldquo;{evt.label}&rdquo;</span> : (detail ? <span className="ml-1.5 text-muted">{detail}</span> : null)}
                             <span className="ml-1 text-[10px] text-muted/80">· {timeLabel}</span>
                           </li>
                         );
