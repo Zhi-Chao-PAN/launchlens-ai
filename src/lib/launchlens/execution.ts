@@ -21,6 +21,7 @@ export type ValidationEvidence = {
   signal: EvidenceSignal;
   weight: EvidenceWeight;
   observedAt: string;
+  pinned?: boolean;
 };
 
 export type ValidationExperiment = {
@@ -59,21 +60,21 @@ export type ExecutionProgressWeights = {
   decided: number;
 };
 
-/** Default weights 鈥?all three checkpoints are equally weighted. */
+/** Default weights 闁?all three checkpoints are equally weighted. */
 export const DEFAULT_PROGRESS_WEIGHTS: ExecutionProgressWeights = {
   started: 1,
   evidenceWithSignal: 1,
   decided: 1,
 };
 
-/** Preset: "bias-toward-evidence" 鈥?evidence gathering counts more. */
+/** Preset: "bias-toward-evidence" 闁?evidence gathering counts more. */
 export const EVIDENCE_BIASED_WEIGHTS: ExecutionProgressWeights = {
   started: 1,
   evidenceWithSignal: 2,
   decided: 1,
 };
 
-/** Preset: "bias-toward-decisions" 鈥?reaching conclusions counts more. */
+/** Preset: "bias-toward-decisions" 闁?reaching conclusions counts more. */
 export const DECISION_BIASED_WEIGHTS: ExecutionProgressWeights = {
   started: 1,
   evidenceWithSignal: 1,
@@ -189,6 +190,7 @@ function normalizeEvidence(value: unknown): ValidationEvidence | null {
   const observedAt = normalizedDate(value.observedAt);
   const signal = value.signal as EvidenceSignal;
   const weight = (typeof value.weight === "string" && EVIDENCE_WEIGHTS.has(value.weight as EvidenceWeight)) ? value.weight as EvidenceWeight : "moderate";
+  const pinned = value.pinned === true;
 
   if (
     id === null ||
@@ -205,6 +207,7 @@ function normalizeEvidence(value: unknown): ValidationEvidence | null {
     note,
     source,
     observedAt,
+    pinned,
     signal,
     weight,
   };
@@ -404,9 +407,9 @@ const EVIDENCE_WEIGHT_VALUES: Record<EvidenceWeight, number> = {
  * Compute an experiment's confidence level from its evidence.
  *
  * Algorithm:
- * - Total weighted score = sum of weight values (supports = +, challenges = -, neutral = +0.5脳)
- * - Consensus = abs(total) / totalWeight 鈥?how aligned the evidence is
- * - Confidence threshold: low < 3 weight 鈮?medium < 7 weight 鈮?high
+ * - Total weighted score = sum of weight values (supports = +, challenges = -, neutral = +0.5閼?
+ * - Consensus = abs(total) / totalWeight 闁?how aligned the evidence is
+ * - Confidence threshold: low < 3 weight 闁?medium < 7 weight 闁?high
  * - Mixed signals (consensus < 0.4) pull confidence down one tier
  */
 export function computeExperimentConfidence(

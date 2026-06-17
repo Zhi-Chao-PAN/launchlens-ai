@@ -15,6 +15,7 @@ import {
   PencilLine,
   Plus,
   Trash2,
+  Star,
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -664,6 +665,14 @@ export function ValidationBoard({
     }
   }
 
+  function toggleEvidencePin(experimentId: string, evidenceId: string) {
+    updateExperiment(experimentId, (exp) => ({
+      ...exp,
+      evidence: exp.evidence.map((ev) =>
+        ev.id === evidenceId ? { ...ev, pinned: !ev.pinned } : ev,
+      ),
+    }));
+  }
   function deleteEvidence(experimentId: string, evidenceId: string) {
     const experiment = execution.experiments.find((e) => e.id === experimentId);
     if (!experiment) return;
@@ -1965,7 +1974,7 @@ export function ValidationBoard({
                         <button
                           type="button"
                           onClick={() => moveEvidence(experiment.id, item.id, "up")}
-                          disabled={experiment.evidence.findIndex((e) => e.id === item.id) === 0}
+                          disabled={(() => { const sorted=[...experiment.evidence].sort((a,b)=>Number(!!b.pinned)-Number(!!a.pinned)); return sorted.findIndex((e) => e.id === item.id) === 0 || (itemIdx > 0 && !!(experiment.evidence.find((e)=>e.id===item.id)?.pinned) !== !!sorted[itemIdx-1].pinned); })()}
                           title="Move evidence up"
                           aria-label={`Move evidence from ${item.source} up`}
                           className="flex size-12 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent sm:size-9"
@@ -1975,12 +1984,22 @@ export function ValidationBoard({
                         <button
                           type="button"
                           onClick={() => moveEvidence(experiment.id, item.id, "down")}
-                          disabled={experiment.evidence.findIndex((e) => e.id === item.id) === experiment.evidence.length - 1}
+                          disabled={(() => { const sorted=[...experiment.evidence].sort((a,b)=>Number(!!b.pinned)-Number(!!a.pinned)); const i = sorted.findIndex((e) => e.id === item.id); return i === sorted.length - 1 || (i < sorted.length - 1 && !!sorted[i].pinned !== !!sorted[i+1].pinned); })()}
                           title="Move evidence down"
                           aria-label={`Move evidence from ${item.source} down`}
                           className="flex size-12 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent sm:size-9"
                         >
                           <ChevronDown className="size-4" aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); toggleEvidencePin(experiment.id, item.id); }}
+                          title={item.pinned ? "Unpin evidence" : "Pin to top"}
+                          aria-label={item.pinned ? ("Unpin evidence from " + item.source) : ("Pin evidence from " + item.source)}
+                          aria-pressed={!!item.pinned}
+                          className={"flex size-11 shrink-0 items-center justify-center rounded-md transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:size-8 " + (item.pinned ? "text-amber-500" : "text-foreground/80")}
+                        >
+                          <Star className={"size-4 " + (item.pinned ? "fill-current" : "")} aria-hidden="true" />
                         </button>
                         <button
                           type="button"
