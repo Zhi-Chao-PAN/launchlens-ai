@@ -38,6 +38,8 @@ import { ReplayTourButton } from "@/components/onboarding-wizard";
 import { useToast } from "@/components/toast";
 import { DecisionCopilot } from "@/components/decision-copilot";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { CommandPalette } from "@/components/command-palette";
+import { useWorkspaceCommands } from "@/hooks/use-workspace-commands";
 import { ValidationBoard } from "@/components/validation-board";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
 import { safeMarkdownFilename, workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
@@ -324,6 +326,15 @@ export function LaunchWorkspace({
    * in (200ms). Avoids the content-pop that happens when all sections change
    * in a single paint.
    */
+  function navigateToSection(sectionId: string) {
+    const el = document.getElementById(sectionId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      el.setAttribute("tabindex", "-1");
+      el.focus({ preventScroll: true });
+    }
+  }
+
   function switchWorkspace(apply: () => void) {
     if (switchTimerRef.current) {
       window.clearTimeout(switchTimerRef.current);
@@ -648,7 +659,7 @@ export function LaunchWorkspace({
       if (!response.ok || data.error || !data.workspace) {
         const fallback =
           response.status === 429
-            ? "Too many requests â€” please wait a moment and try again."
+            ? "Too many requests â€?please wait a moment and try again."
             : "Generation failed.";
         const message = friendlyApiMessage(data.code, data.error ?? fallback);
         const err = new Error(message);
@@ -1592,7 +1603,18 @@ export function LaunchWorkspace({
         </div>
       </div>
     </main>
-    </>
+        <CommandPalette
+          actions={useWorkspaceCommands({
+            workspace,
+            onNavigate: navigateToSection,
+            onToggleEdit: () => setIsEditing(!isEditing),
+            onGenerate: generate,
+            onSave: () => showToast("Saved locally", "success"),
+            onReset: resetLocalWorkspace,
+            onCopyMarkdown: copyMarkdown,
+          })}
+        />
+      </>
   );
 }
 
