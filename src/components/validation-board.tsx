@@ -177,6 +177,8 @@ export function ValidationBoard({
   const [showArchived, setShowArchived] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedExperimentIds, setSelectedExperimentIds] = useState<Set<string>>(new Set());
+  const [evidenceFilters, setEvidenceFilters] = useState<Record<string, { signal: "all" | EvidenceSignal; weight: "all" | EvidenceWeight }>>({});
+  function getEvidenceFilter(id: string) { return evidenceFilters[id] ?? { signal: "all" as const, weight: "all" as const }; }
   const batchCount = selectedExperimentIds.size;
   const [dragOverEvidenceId, setDragOverEvidenceId] = useState<string | null>(null);
 
@@ -2053,9 +2055,29 @@ export function ValidationBoard({
                 </label>
               </div>
 
+              {(() => {
+                const ef = getEvidenceFilter(experiment.id);
+                const supportsCount = experiment.evidence.filter((e) => e.signal === "supports").length;
+                const challengesCount = experiment.evidence.filter((e) => e.signal === "challenges").length;
+                const neutralCount = experiment.evidence.filter((e) => e.signal === "neutral").length;
+                const setSig = (s: "all" | EvidenceSignal) => setEvidenceFilters((prev) => ({ ...prev, [experiment.id]: { ...getEvidenceFilter(experiment.id), signal: s } }));
+                const chip = (active: boolean, label: string, count: number, sig: "all" | EvidenceSignal) => (
+                  <button type="button" onClick={() => setSig(sig)} aria-pressed={active} className={"rounded-full px-2 py-0.5 text-[10px] font-medium transition " + (active ? "bg-accent text-white" : "bg-card text-muted hover:text-foreground")}>
+                    {label} ({count})
+                  </button>
+                );
+                return (
+                  <div className="mt-3 flex flex-wrap items-center gap-1">
+                    {chip(ef.signal === "all", "All", experiment.evidence.length, "all")}
+                    {chip(ef.signal === "supports", "Supports", supportsCount, "supports")}
+                    {chip(ef.signal === "challenges", "Challenges", challengesCount, "challenges")}
+                    {chip(ef.signal === "neutral", "Neutral", neutralCount, "neutral")}
+                  </div>
+                );
+              })()}
               {experiment.evidence.length > 0 ? (
                 <ul ref={evidenceListRef} data-experiment-id={experiment.id} tabIndex={-1} aria-label="Evidence items" aria-live="polite" onKeyDown={handleEvidenceKeyDown} className="mt-4 divide-y divide-card rounded-md bg-muted px-4 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1">
-                  {experiment.evidence.map((item, itemIdx) => (
+                  {experiment.evidence.filter((it) => { const f = getEvidenceFilter(experiment.id); return (f.signal === "all" || it.signal === f.signal) && (f.weight === "all" || it.weight === f.weight); }).map((item, itemIdx) => (
                     <li
                       data-evidence-id={item.id}
                       key={item.id}
