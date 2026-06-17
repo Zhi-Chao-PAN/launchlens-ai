@@ -1270,6 +1270,17 @@ export function ValidationBoard({
     const onBulkSelectAll = () => toggleSelectAllExperiments();
     const onBulkClear = () => { setSelectedExperimentIds(new Set()); setSelectMode(false); };
     const onNewExperiment = () => { setIsAddingExperiment(true); window.setTimeout(() => newExperimentInputRef.current?.focus(), 50); newExperimentInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }); };
+    const onFocusExperiment = (e: Event) => {
+      const id = (e as CustomEvent<string>).detail;
+      if (!id) return;
+      setTimelinePulseKey(id);
+      if (timelinePulseTimer.current) window.clearTimeout(timelinePulseTimer.current);
+      timelinePulseTimer.current = window.setTimeout(() => setTimelinePulseKey(null), 1600);
+      window.setTimeout(() => {
+        const el = document.querySelector(`[data-experiment-article][data-experiment-id="${id}"]`) as HTMLElement | null;
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 50);
+    };
     window.addEventListener("launchlens:focus-search", onFocusEvent);
     window.addEventListener("launchlens:toggle-select-mode", onToggleEvent);
     window.addEventListener("launchlens:clear-filters", onClearFilters);
@@ -1280,7 +1291,8 @@ export function ValidationBoard({
     window.addEventListener("launchlens:bulk-select-all", onBulkSelectAll);
     window.addEventListener("launchlens:bulk-clear", onBulkClear);
     window.addEventListener("launchlens:new-experiment", onNewExperiment);
-    return () => { off1?.(); off2?.(); const w = window; w.removeEventListener("launchlens:focus-search", onFocusEvent); w.removeEventListener("launchlens:toggle-select-mode", onToggleEvent); w.removeEventListener("launchlens:clear-filters", onClearFilters); w.removeEventListener("launchlens:collapse-all", onCollapseAll); w.removeEventListener("launchlens:bulk-status", onBulkStatus as EventListener); w.removeEventListener("launchlens:bulk-archive", onBulkArchive); w.removeEventListener("launchlens:bulk-unarchive", onBulkUnarchive); w.removeEventListener("launchlens:bulk-select-all", onBulkSelectAll); w.removeEventListener("launchlens:bulk-clear", onBulkClear); w.removeEventListener("launchlens:new-experiment", onNewExperiment); };
+    window.addEventListener("launchlens:focus-experiment", onFocusExperiment as EventListener);
+    return () => { off1?.(); off2?.(); const w = window; w.removeEventListener("launchlens:focus-search", onFocusEvent); w.removeEventListener("launchlens:toggle-select-mode", onToggleEvent); w.removeEventListener("launchlens:clear-filters", onClearFilters); w.removeEventListener("launchlens:collapse-all", onCollapseAll); w.removeEventListener("launchlens:bulk-status", onBulkStatus as EventListener); w.removeEventListener("launchlens:bulk-archive", onBulkArchive); w.removeEventListener("launchlens:bulk-unarchive", onBulkUnarchive); w.removeEventListener("launchlens:bulk-select-all", onBulkSelectAll); w.removeEventListener("launchlens:bulk-clear", onBulkClear); w.removeEventListener("launchlens:new-experiment", onNewExperiment); w.removeEventListener("launchlens:focus-experiment", onFocusExperiment as EventListener); };
   }, [doFocusSearch, doToggleSelectMode, doClearFilters, doCollapseAll, setSelectedStatus, batchArchive, toggleSelectAllExperiments]);
 
   function addEvidence(
@@ -1948,6 +1960,7 @@ export function ValidationBoard({
               role="group"
               key={experiment.id}
               data-experiment-article
+              data-experiment-id={experiment.id}
               draggable
               onDragStart={(e) => {
                 setDraggedExperimentId(experiment.id);

@@ -21,7 +21,7 @@ const SECTION_IDS = [
 
 export function useWorkspaceCommands(options: {
   workspace?: LaunchLensWorkspace;
-  execution?: { experiments: Array<{ assumption: string; status: string }> };
+  execution?: { experiments: Array<{ id: string; assumption: string; status: string; evidence?: unknown[]; tags?: string[] }> };
   onNavigate?: (sectionId: string) => void;
   onToggleEdit?: () => void;
   onGenerate?: () => void;
@@ -265,20 +265,20 @@ export function useWorkspaceCommands(options: {
 
       // Add validation experiments
       if (execution) {
-        execution.experiments.forEach((exp, i) => {
+        execution.experiments.forEach((exp) => {
           actions.push({
-            id: `experiment:${i}`,
-            label: exp.assumption,
-            description: `${exp.status} experiment`,
-            category: "Workspace content",
-            icon: "search",
-            keywords: ["experiment", "validation", "hypothesis", exp.status],
-            onSelect: () => onNavigate?.("validation"),
+            id: `jump:experiment:${exp.id}`,
+            label: exp.assumption.length > 64 ? exp.assumption.slice(0, 62) + "..." : exp.assumption,
+            description: `Jump to hypothesis - ${exp.status}, ${(exp.evidence || []).length} evidence`,
+            category: "Jump to card",
+            icon: "navigate",
+            keywords: ["jump", "go", "hypothesis", "card", "experiment", exp.status, ...(exp.tags || [])],
+            onSelect: () => { onNavigate?.("validation"); window.setTimeout(() => window.dispatchEvent(new CustomEvent("launchlens:focus-experiment", { detail: exp.id })), 100); },
           });
         });
       }
     }
 
     return actions;
-  }, [workspace, execution, onNavigate, onToggleEdit, onGenerate, onSave, onReset, onCopyMarkdown, shortcutMap]);
+  }, [workspace, execution, onNavigate, onToggleEdit, onGenerate, onSave, onReset, onCopyMarkdown, onCopyJson, onExport, shortcutMap]);
 }
