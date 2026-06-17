@@ -96,4 +96,35 @@ describe("provider eval", () => {
     expect(a.id).toBe(b.id);
   });
 
+
+  it("providerEvalSummary counts checks correctly", () => {
+    const evalCase = buildProviderEvalCase(
+      "activation-analyst",
+      {
+        workspace: buildMockWorkspace(input),
+        mode: "demo" as const,
+        usedFallback: false,
+      },
+      1000,
+    );
+    const summary = providerEvalSummary(evalCase);
+    expect(summary.totalChecks).toBeGreaterThan(0);
+    expect(summary.passedChecks).toBeLessThanOrEqual(summary.totalChecks);
+  });
+
+  it("buildProviderEvalCase includes all section counts", () => {
+    const evalCase = buildProviderEvalCase(
+      "activation-analyst",
+      {
+        workspace: buildMockWorkspace(input),
+        mode: "demo" as const,
+        usedFallback: false,
+      },
+      1000,
+    );
+    expect(evalCase.sectionCounts.assumptions).toBeGreaterThan(0);
+    expect(evalCase.sectionCounts.targetUsers).toBeGreaterThan(0);
+    expect(evalCase.sectionCounts.pains).toBeGreaterThan(0);
+  });
+
 });

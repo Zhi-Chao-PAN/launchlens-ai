@@ -42,4 +42,21 @@ describe("tenant helpers", () => {
       workspaceCount: 3,
     });
   });
+
+  it("normalizeTenantName trims whitespace", () => {
+    const result = normalizeTenantName("  hello world  ");
+    expect(result).not.toMatch(/^\s/);
+    expect(result).not.toMatch(/\s$/);
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it("isTenantNameValid rejects empty strings", () => {
+    expect(isTenantNameValid("")).toBe(false);
+    expect(isTenantNameValid("   ")).toBe(false);
+  });
+
+  it("isTenantNameValid accepts valid names", () => {
+    expect(isTenantNameValid("My Project")).toBe(true);
+  });
+
 });
