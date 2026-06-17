@@ -271,6 +271,66 @@ export function ValidationBoard({
 
 
 
+  function handleExperimentKeyDown(
+    e: React.KeyboardEvent<HTMLElement>,
+    experimentId: string,
+  ) {
+    const experiment = execution.experiments.find((ex) => ex.id === experimentId);
+    if (!experiment) return;
+
+    // Enter to toggle expand
+    if (e.key === "Enter" && !e.altKey && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      setRequestedExpandedExperimentId((current) =>
+        current === experimentId ? null : experimentId,
+      );
+      return;
+    }
+
+    // Number keys to change status (1=untested, 2=testing, 3=supported, 4=refuted)
+    const statusOrder: Array<keyof typeof statusLabels> = [
+      "untested",
+      "testing",
+      "supported",
+      "refuted",
+    ];
+    const num = parseInt(e.key, 10);
+    if (!isNaN(num) && num >= 1 && num <= statusOrder.length) {
+      const newStatus = statusOrder[num - 1];
+      if (experiment.status !== newStatus) {
+        e.preventDefault();
+        updateExperiment(experimentId, (current) => ({
+          ...current,
+          status: newStatus,
+        }));
+      }
+    }
+
+    // ArrowUp/Down to move focus between experiments
+    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+      const articles = Array.from(
+        document.querySelectorAll("[data-experiment-article]"),
+      );
+      const currentIdx = articles.findIndex((el) => el === e.currentTarget);
+      if (currentIdx === -1) return;
+
+      let nextIdx = currentIdx;
+      if (e.key === "ArrowUp" && currentIdx > 0) {
+        nextIdx = currentIdx - 1;
+      } else if (
+        e.key === "ArrowDown" &&
+        currentIdx < articles.length - 1
+      ) {
+        nextIdx = currentIdx + 1;
+      }
+
+      if (nextIdx !== currentIdx) {
+        e.preventDefault();
+        (articles[nextIdx] as HTMLElement).focus();
+      }
+    }
+  }
+
   function addEvidence(
     event: React.FormEvent<HTMLFormElement>,
     experimentId: string,
@@ -388,7 +448,14 @@ export function ValidationBoard({
           const evidenceLimitReached = experiment.evidence.length >= 8;
 
           return (
-            <article key={experiment.id} className="p-5">
+            <article
+              key={experiment.id}
+              data-experiment-article
+              tabIndex={0}
+              onKeyDown={(e) => handleExperimentKeyDown(e, experiment.id)}
+              aria-label={`Hypothesis ${index + 1}: ${experiment.assumption}. Status: ${statusLabels[experiment.status]}. ${experiment.evidence.length} evidence items.}`}
+              className="p-5 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
+            >
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
