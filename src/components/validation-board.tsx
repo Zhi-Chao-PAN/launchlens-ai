@@ -19,6 +19,7 @@ import {
   Search,
   Plus,
   Trash2,
+  Target,
   Star,
   X,
 } from "lucide-react";
@@ -2679,6 +2680,25 @@ export function ValidationBoard({
             </article>
           );
         })}
+
+
+      {activeExperiments.length === 0 && (searchQuery || statusFilter !== "all" || tagFilter) ? (
+        <div className="mt-10 flex flex-col items-center gap-2 rounded-lg border border-dashed border-input bg-muted/30 py-12 text-center">
+          <Search className="size-6 text-muted/50" aria-hidden="true" />
+          <p className="text-sm font-medium text-foreground/70">No hypotheses match your current filters</p>
+          <p className="text-xs text-muted">Try clearing your search, tag, or status filter.</p>
+          <button type="button" onClick={() => { setSearchQuery(""); setStatusFilter("all"); setTagFilter(null); }} className="mt-2 rounded-md border border-input bg-card px-3 py-1.5 text-xs font-medium hover:border-accent">Clear all filters</button>
+        </div>
+      ) : activeExperiments.length === 0 && archivedExperiments.length === 0 && (
+        <div className="mt-10 flex flex-col items-center gap-3 rounded-lg border border-dashed border-input bg-muted/30 py-14 text-center">
+          <Target className="size-8 text-accent/60" aria-hidden="true" />
+          <p className="text-base font-semibold text-foreground">Map out your first validation hypotheses</p>
+          <p className="max-w-md text-sm leading-6 text-muted">Each card captures one risky assumption. Add the boldest bets first, then attach evidence as you learn.</p>
+          <button type="button" onClick={() => setIsAddingExperiment(true)} className="mt-1 flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-text shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+            <Plus className="size-4" aria-hidden="true" /> Add your first hypothesis
+          </button>
+        </div>
+      )}
 
       {archivedExperiments.length > 0 && (
         <div className="mt-4 rounded-lg border border-dashed border-input bg-muted/30 p-3">
