@@ -188,6 +188,16 @@ export function ValidationBoard({
   const { announce: srAnnounce, message: srEvidenceAnnouncement } = useSrAnnounce();
   const { showToast } = useToast();
   const evidenceListRef = useRef<HTMLUListElement | null>(null);
+  const [timelinePulseKey, setTimelinePulseKey] = useState<string | null>(null);
+  const timelinePulseTimer = useRef<number | null>(null);
+  function onTimelineEventClick(experimentId: string, kind: string) {
+    setTimelinePulseKey(experimentId);
+    if (timelinePulseTimer.current) window.clearTimeout(timelinePulseTimer.current);
+    timelinePulseTimer.current = window.setTimeout(() => setTimelinePulseKey(null), 1200);
+    if (kind === "evidence_added") {
+      window.setTimeout(() => evidenceListRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 30);
+    }
+  }
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [recentlyDeleted, setRecentlyDeleted] = useState<{ experimentId: string; evidence: ValidationEvidence; index: number } | null>(null);
   const [recentlyDeletedExperiment, setRecentlyDeletedExperiment] = useState<{ experiment: ValidationExperiment; index: number } | null>(null);
@@ -1929,11 +1939,10 @@ export function ValidationBoard({
               onKeyDown={(e) => handleExperimentKeyDown(e, experiment.id)}
               aria-label={`Hypothesis ${index + 1}: ${experiment.assumption}. Status: ${statusLabels[experiment.status]}. ${experiment.evidence.length} evidence items.}`}
               className={
-                "relative p-5 outline-none transition focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset " +
+                "relative flex flex-col rounded-xl border bg-card p-5 outline-none transition focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset " +
                 (draggedExperimentId === experiment.id ? "opacity-40 " : "") +
-                (dragOverExperimentId === experiment.id && draggedExperimentId !== experiment.id
-                  ? "border-t-2 border-accent "
-                  : "")
+                (dragOverExperimentId === experiment.id && draggedExperimentId !== experiment.id ? "border-t-2 border-accent " : "") +
+                (timelinePulseKey === experiment.id ? " ring-2 ring-accent/60 shadow-[0_0_0_4px_rgba(120,120,255,0.12)] " : "")
               }
             >
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -2979,7 +2988,7 @@ export function ValidationBoard({
                           : "bg-accent/70";
                         return (
                           <li key={evt.id} className="relative text-xs leading-5">
-                            <span className={"absolute -left-[15px] top-2 size-2 rounded-full ring-2 ring-background " + dotColor} aria-hidden="true" />
+                            <span role="button" tabIndex={0} onClick={(ev) => { ev.stopPropagation(); onTimelineEventClick(experiment.id, evt.kind); }} onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onTimelineEventClick(experiment.id, evt.kind); } }} className={"absolute -left-[15px] top-2 size-2 cursor-pointer rounded-full ring-2 ring-background transition hover:scale-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + dotColor} aria-label="Timeline event" />
                             <span className="font-medium text-foreground/80">{kindLabel[evt.kind] || evt.kind}</span>
                             {detail ? <span className="ml-1.5 text-muted">{detail}</span> : null}
                             <span className="ml-1 text-[10px] text-muted/80">· {timeLabel}</span>
