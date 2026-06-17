@@ -2968,6 +2968,10 @@ export function ValidationBoard({
         </div>
       )}
       </div>
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-[11px] text-muted">
+        <span>Tip: press <kbd className="rounded bg-muted px-1 font-mono">/</kbd> to search, <kbd className="rounded bg-muted px-1 font-mono">Shift</kbd>+<kbd className="rounded bg-muted px-1 font-mono">S</kbd> to multi-select, <kbd className="rounded bg-muted px-1 font-mono">-tag</kbd> or <kbd className="rounded bg-muted px-1 font-mono">&quot;phrase&quot;</kbd> in search.</span>
+        <span>Shortcuts: <kbd className="rounded bg-muted px-1 font-mono">Ctrl/⌘</kbd>+<kbd className="rounded bg-muted px-1 font-mono">K</kbd> palette · <kbd className="rounded bg-muted px-1 font-mono">Shift+?</kbd> help</span>
+      </div>
     </section>
   );
 }
