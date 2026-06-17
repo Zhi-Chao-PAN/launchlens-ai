@@ -2281,7 +2281,7 @@ export function ValidationBoard({
                         onBlur={() => setDraftTouched((cur) => ({ ...cur, source: true }))}
                         aria-invalid={!!sourceError}
                         aria-describedby={sourceError ? "evidence-source-error" : undefined}
-                        placeholder="Interview, metric, test"
+                        placeholder="Interview #5, Mixpanel, App Store review..."
                         maxLength={SOURCE_MAX + 20}
                         className={`h-10 w-full rounded-md border bg-card px-3 text-sm outline-none ${
                           sourceError
@@ -2298,25 +2298,35 @@ export function ValidationBoard({
                         <span>Observation</span>
                         <span className={"font-mono tabular-nums " + (noteLen > NOTE_MAX ? "text-signal-challenges" : noteNear ? "text-signal-supports" : "text-muted/60")}>{noteLen}/{NOTE_MAX}</span>
                       </span>
-                      <input
+                      <textarea
                         required
+                        rows={2}
                         maxLength={NOTE_MAX + 20}
                         value={draft.note}
-                        onChange={(event) =>
+                        onChange={(event) => {
                           setDraft((current) => ({
                             ...current,
                             note: event.target.value,
-                          }))
-                        }
+                          }));
+                          // Auto-grow up to 8 rows
+                          const el = event.target as HTMLTextAreaElement;
+                          el.style.height = "auto";
+                          el.style.height = Math.min(el.scrollHeight, 240) + "px";
+                        }}
                         onBlur={() => setDraftTouched((cur) => ({ ...cur, note: true }))}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                            e.currentTarget.form?.requestSubmit();
+                          }
+                        }}
                         aria-invalid={!!noteError}
                         aria-describedby={noteError ? "evidence-note-error" : undefined}
-                        placeholder="What did you learn?"
-                        className={`h-10 w-full rounded-md border bg-card px-3 text-sm outline-none ${
+                        placeholder="What did you learn? (Markdown supported: **bold**, *italic*, `code`, [link](url))"
+                        className={"min-h-[48px] w-full resize-y rounded-md border bg-card px-3 py-2 text-sm leading-6 outline-none field-sizing-content " + (
                           noteError
                             ? "border-signal-challenges focus:border-signal-challenges focus:ring-2 focus:ring-[var(--signal-challenges-border)]"
                             : "border-input focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
-                        }`}
+                        )}
                       />
                       {noteError && (
                         <p id="evidence-note-error" role="alert" className="mt-1 text-[11px] leading-4 text-error">{noteError}</p>
