@@ -1206,7 +1206,7 @@ export function ValidationBoard({
             const c1 = line[1];
             if (c1 && c1 in weightMap) {
               const c2 = line[2];
-              const isSep = !c2 || c2 === " " || c2 === ":" || c2 === "-" || c2 === "\t";
+              const isSep = !c2 || c2 === " " || c2 === "\t" || c2 === ":" || c2 === "：" || c2 === "-" || c2 === "—" || c2 === "–" || c2 === "\u3000";
               if (isSep) {
                 weight = weightMap[c1];
                 consume = 2;
@@ -1217,12 +1217,14 @@ export function ValidationBoard({
           // Split on " - " or first ":" for source/note
           let source = "";
           let note = "";
-          const sepMatch = rest.indexOf(" - ");
-          if (sepMatch >= 0) {
-            source = rest.slice(0, sepMatch).trim();
-            note = rest.slice(sepMatch + 3).trim();
+          let sepIdx = -1;
+          const sepCandidates = [" - ", " — ", " – ", "\t", "：", ": "];
+          for (const s of sepCandidates) { const i = rest.indexOf(s); if (i >= 0 && (sepIdx === -1 || i < sepIdx)) sepIdx = i; }
+          if (sepIdx >= 0) {
+            const matched = sepCandidates.find((s) => rest.indexOf(s) === sepIdx) ?? " - ";
+            source = rest.slice(0, sepIdx).trim();
+            note = rest.slice(sepIdx + matched.length).trim();
           } else {
-            // Use whole line as note, generate source
             note = rest;
             source = `Observation`;
           }
