@@ -1283,6 +1283,68 @@ export function ValidationBoard({
                   className="mt-4 grid gap-3 rounded-md border border-input bg-input p-4 md:grid-cols-[160px_1fr_auto]"
                   inert={!formOpen}
                 >
+                  {/* Live preview */}
+                  {draft.source || draft.note ? (
+                    <div className="md:col-span-3">
+                      <p className="mb-1.5 text-[11px] font-semibold uppercase text-muted">
+                        Preview
+                      </p>
+                      <div className="flex items-start gap-3 rounded-md border border-dashed border-muted/60 bg-card/60 p-3">
+                        <span
+                          className={
+                            "mt-0.5 size-4 shrink-0 " +
+                            (draft.signal === "supports"
+                              ? "text-signal-supports"
+                              : draft.signal === "challenges"
+                              ? "text-signal-challenges"
+                              : "text-muted-foreground/40")
+                          }
+                          aria-hidden="true"
+                        >
+                          ●
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2 text-xs">
+                            <span className="font-semibold text-foreground">
+                              {draft.source || "Untitled source"}
+                            </span>
+                            <span
+                              className={
+                                draft.signal === "supports"
+                                  ? "rounded-md bg-signal-supports/15 px-2 py-1 text-[11px] font-semibold uppercase text-signal-supports"
+                                  : draft.signal === "challenges"
+                                  ? "rounded-md bg-signal-challenges/15 px-2 py-1 text-[11px] font-semibold uppercase text-signal-challenges"
+                                  : "rounded-md bg-muted px-2 py-1 text-[11px] font-semibold uppercase text-muted"
+                              }
+                            >
+                              {signalLabels[draft.signal]}
+                            </span>
+                            <span
+                              aria-label={`Evidence weight: ${draft.weight}`}
+                              className="inline-flex items-center gap-0.5"
+                            >
+                              {(["anecdotal", "moderate", "strong"] as const).map((lvl) => (
+                                <span
+                                  key={lvl}
+                                  className={
+                                    ["anecdotal", "moderate", "strong"].indexOf(
+                                      draft.weight,
+                                    ) >=
+                                    ["anecdotal", "moderate", "strong"].indexOf(lvl)
+                                      ? "size-1.5 rounded-full bg-signal-supports"
+                                      : "size-1.5 rounded-full bg-muted-foreground/20"
+                                  }
+                                />
+                              ))}
+                            </span>
+                          </div>
+                          <p className="mt-1 break-words text-sm leading-6 text-foreground/70">
+                            {draft.note || "Your observation will appear here..."}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
                   <label className="block">
                     <span className="mb-2 block text-xs font-semibold uppercase text-muted">
                       Signal

@@ -226,7 +226,7 @@ export function DecisionCopilot({
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [isBatchGenerating, setIsBatchGenerating] = useState(false);
-  const [batchProgress, setBatchProgress] = useState({ done: 0, total: 0 });
+  const [batchProgress, setBatchProgress] = useState({ done: 0, total: 0, currentName: "" });
   const { announce: setSrGenerationAnnouncement, message: srGenerationAnnouncement } = useSrAnnounce();
   const selectedExperimentId =
     requestedExperimentId &&
@@ -310,7 +310,7 @@ export function DecisionCopilot({
     }
 
     setIsBatchGenerating(true);
-    setBatchProgress({ done: 0, total: pending.length });
+    setBatchProgress({ done: 0, total: pending.length, currentName: pending[0]?.assumption ?? "" });
     setError("");
     setNotice("");
     setSrGenerationAnnouncement(
@@ -348,7 +348,7 @@ export function DecisionCopilot({
       } catch {
         failCount += 1;
       }
-      setBatchProgress({ done: i + 1, total: pending.length });
+      setBatchProgress({ done: i + 1, total: pending.length, currentName: item.assumption });
     }
 
     // Apply all changes at once
@@ -495,11 +495,47 @@ export function DecisionCopilot({
             ) : (
               <Sparkles className="size-3.5" aria-hidden="true" />
             )}
-            {isBatchGenerating
-              ? `${batchProgress.done}/${batchProgress.total}`
-              : "Generate all briefs"}
+            {isBatchGenerating ? (
+                <span className="text-left">
+                  <span className="block font-semibold">
+                    {batchProgress.done}/{batchProgress.total}
+                  </span>
+                  <span className="block max-w-20 truncate text-[10px] font-medium text-muted">
+                    {batchProgress.currentName || "Preparing..."}
+                  </span>
+                </span>
+              ) : (
+                "Generate all briefs"
+              )}
           </button>
         </div>
+        {isBatchGenerating && batchProgress.total > 0 && (
+          <div className="border-t border-card bg-input/40 px-5 py-2">
+            <div className="mb-1 flex items-center justify-between text-[11px] text-muted">
+              <span>
+                Generating {batchProgress.done} of {batchProgress.total}
+              </span>
+              <span className="font-mono font-semibold">
+                {Math.round((batchProgress.done / batchProgress.total) * 100)}%
+              </span>
+            </div>
+            <div
+              role="progressbar"
+              aria-valuenow={batchProgress.done}
+              aria-valuemin={0}
+              aria-valuemax={batchProgress.total}
+              aria-label="Batch generation progress"
+              className="h-1 w-full overflow-hidden rounded-full bg-muted"
+            >
+              <div
+                className="h-full rounded-full bg-accent transition-all duration-300 ease-out"
+                style={{
+                  width: `${(batchProgress.done / batchProgress.total) * 100}%`,
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-5 p-5 xl:grid-cols-[280px_1fr]">
