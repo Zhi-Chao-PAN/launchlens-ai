@@ -192,6 +192,7 @@ export function ValidationBoard({
   const newExperimentInputRef = useRef<HTMLInputElement | null>(null);
   const [timelinePulseKey, setTimelinePulseKey] = useState<string | null>(null);
   const [flashEvidenceId, setFlashEvidenceId] = useState<string | null>(null);
+  const [showFullHistory, setShowFullHistory] = useState<Set<string>>(new Set());
   const timelinePulseTimer = useRef<number | null>(null);
   const flashEvidenceTimer = useRef<number | null>(null);
   function onTimelineEventClick(experimentId: string, kind: string, targetId?: string) {
@@ -3012,9 +3013,16 @@ export function ValidationBoard({
                 })()}
                 {experiment.history && experiment.history.length > 0 && (
                   <div className="mt-4">
-                    <h3 className="mb-2 text-xs font-semibold uppercase text-muted">Timeline</h3>
+                    <div className="mb-2 flex items-center justify-between">
+                      <h3 className="text-xs font-semibold uppercase text-muted">Timeline {experiment.history.length > 8 ? <span className="ml-1 font-normal normal-case text-muted/70">({experiment.history.length} events)</span> : null}</h3>
+                      {experiment.history.length > 8 ? (
+                        <button type="button" onClick={(e) => { e.stopPropagation(); setShowFullHistory((s) => { const n = new Set(s); if (n.has(experiment.id)) n.delete(experiment.id); else n.add(experiment.id); return n; }); }} className="text-[11px] text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm">
+                          {showFullHistory.has(experiment.id) ? "Show recent" : "Show all " + experiment.history.length}
+                        </button>
+                      ) : null}
+                    </div>
                     <ol className="space-y-1.5 border-l border-border/60 pl-3">
-                      {experiment.history.slice(-8).reverse().map((evt) => {
+                      {(showFullHistory.has(experiment.id) ? experiment.history : experiment.history.slice(-8)).slice().reverse().map((evt) => {
                         const when = new Date(evt.at);
                         const timeLabel = when.toLocaleString();
                         const kindLabel: Record<string, string> = {
