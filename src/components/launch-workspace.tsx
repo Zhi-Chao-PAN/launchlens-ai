@@ -804,13 +804,20 @@ export function LaunchWorkspace({
     else showToast(`Unable to download ${ext.toUpperCase()} file in this browser`, "error");
   }
 
-  function downloadMarkdownFile() {
+  async function downloadMarkdownFile() {
     const markdown = workspaceToMarkdown(workspace, execution);
-    const filename = safeMarkdownFilename({
+    let outText = markdown;
+    let filename = safeMarkdownFilename({
       landingPage: { headline: workspace.landingPage.headline },
     });
-    if (downloadTextFile(filename, markdown, "text/markdown;charset=utf-8")) {
-      showToast("Markdown file downloaded", "success");
+    let mime = "text/markdown;charset=utf-8";
+    if (exportEncrypted && exportPassword.trim()) {
+      outText = await encryptJson(markdown, exportPassword.trim());
+      filename = filename.replace(/\.md$/, ".launchlens.enc.md");
+      mime = "text/plain;charset=utf-8";
+    }
+    if (downloadTextFile(filename, outText, mime)) {
+      showToast(exportEncrypted ? "Encrypted Markdown downloaded. Password not stored - remember it!" : "Markdown file downloaded", "success");
     }
   }
 
@@ -1315,7 +1322,7 @@ export function LaunchWorkspace({
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".json,.launchlens.enc,application/json,text/plain"
+                    accept=".json,.launchlens.enc,.launchlens.enc.md,.md,application/json,text/plain,text/markdown"
                     className="hidden"
                     aria-hidden="true"
                     tabIndex={-1}
