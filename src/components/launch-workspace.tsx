@@ -19,6 +19,7 @@ import {
   Loader2,
   Megaphone,
   PencilLine,
+  Plus,
   RotateCcw,
   Rocket,
   ChevronDown,
@@ -1622,26 +1623,111 @@ export function LaunchWorkspace({
 
             <div className="grid gap-6 xl:grid-cols-2">
               <Section title="Content calendar" icon={CalendarDays} collapsible sectionId="content-calendar" collapsed={collapsedSections.has("content-calendar")} onToggle={() => toggleSection("content-calendar")}>
-                <div className="space-y-3">
-                  {workspace.contentCalendar.map((item, index) => (
-                    <article
-                      key={`${item.channel}-${item.angle}-${index}`}
-                      className="rounded-md border border-card bg-input p-4"
-                    >
-                      <div className="mb-1 flex items-center justify-between gap-3">
-                        <h3 className="text-sm font-semibold text-foreground">
-                          {item.channel}
-                        </h3>
-                        <span className="text-xs font-medium text-signal-challenges">
-                          {item.cadence}
-                        </span>
+                {isEditing ? (
+                  <div className="space-y-3">
+                    {workspace.contentCalendar.map((item, index) => (
+                      <div
+                        key={`${item.channel}-${item.angle}-${index}`}
+                        className="rounded-md border border-card bg-input p-4 space-y-3"
+                      >
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={item.channel}
+                            onChange={(e) =>
+                              setWorkspace((current) => ({
+                                ...current,
+                                contentCalendar: current.contentCalendar.map((c, i) =>
+                                  i === index ? { ...c, channel: e.target.value } : c,
+                                ),
+                              }))
+                            }
+                            placeholder="Channel"
+                            className="flex-1 rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                          />
+                          <input
+                            type="text"
+                            value={item.cadence}
+                            onChange={(e) =>
+                              setWorkspace((current) => ({
+                                ...current,
+                                contentCalendar: current.contentCalendar.map((c, i) =>
+                                  i === index ? { ...c, cadence: e.target.value } : c,
+                                ),
+                              }))
+                            }
+                            placeholder="Cadence"
+                            className="w-24 rounded-md border border-input bg-card px-3 py-1.5 text-sm font-medium text-signal-challenges outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setWorkspace((current) => ({
+                                ...current,
+                                contentCalendar: current.contentCalendar.filter((_, i) => i !== index),
+                              }))
+                            }
+                            className="rounded-md p-1.5 text-muted transition hover:bg-muted hover:text-signal-challenges"
+                            aria-label="Remove content item"
+                          >
+                            <X className="size-4" aria-hidden="true" />
+                          </button>
+                        </div>
+                        <textarea
+                          value={item.angle}
+                          onChange={(e) =>
+                            setWorkspace((current) => ({
+                              ...current,
+                              contentCalendar: current.contentCalendar.map((c, i) =>
+                                i === index ? { ...c, angle: e.target.value } : c,
+                              ),
+                            }))
+                          }
+                          rows={2}
+                          placeholder="Content angle or hook"
+                          className="w-full resize-y rounded-md border border-input bg-card px-3 py-2 text-sm leading-6 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                        />
                       </div>
-                      <p className="text-sm leading-6 text-foreground/80">
-                        {item.angle}
-                      </p>
-                    </article>
-                  ))}
-                </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setWorkspace((current) => ({
+                          ...current,
+                          contentCalendar: [
+                            ...current.contentCalendar,
+                            { channel: "", angle: "", cadence: "Weekly" },
+                          ],
+                        }))
+                      }
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-input py-2 text-xs font-medium text-muted transition hover:border-accent hover:text-accent"
+                    >
+                      <Plus className="size-3.5" aria-hidden="true" />
+                      Add content item
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {workspace.contentCalendar.map((item, index) => (
+                      <article
+                        key={`${item.channel}-${item.angle}-${index}`}
+                        className="rounded-md border border-card bg-input p-4"
+                      >
+                        <div className="mb-1 flex items-center justify-between gap-3">
+                          <h3 className="text-sm font-semibold text-foreground">
+                            {item.channel}
+                          </h3>
+                          <span className="text-xs font-medium text-signal-challenges">
+                            {item.cadence}
+                          </span>
+                        </div>
+                        <p className="text-sm leading-6 text-foreground/80">
+                          {item.angle}
+                        </p>
+                      </article>
+                    ))}
+                  </div>
+                )}
               </Section>
 
               <Section title="Execution tasks" icon={CheckCircle2} collapsible sectionId="execution-tasks" collapsed={collapsedSections.has("execution-tasks")} onToggle={() => toggleSection("execution-tasks")}>
