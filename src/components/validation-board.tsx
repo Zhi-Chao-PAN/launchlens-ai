@@ -8,6 +8,7 @@ import {
   ChevronUp,
   CircleGauge,
   FlaskConical,
+  GripVertical,
   Download,
   Link2,
   PencilLine,
@@ -110,6 +111,10 @@ export function ValidationBoard({
   const [draftSubmitError, setDraftSubmitError] = useState<string>("");
   const [isBatchMode, setIsBatchMode] = useState(false);
   const [batchText, setBatchText] = useState("");
+  const [draggedEvidenceId, setDraggedEvidenceId] = useState<string | null>(null);
+  const [dragOverEvidenceId, setDragOverEvidenceId] = useState<string | null>(null);
+
+
   const { announce: srAnnounce, message: srEvidenceAnnouncement } = useSrAnnounce();
   const { showToast } = useToast();
   const evidenceListRef = useRef<HTMLUListElement | null>(null);
@@ -1643,12 +1648,61 @@ export function ValidationBoard({
 
               {experiment.evidence.length > 0 ? (
                 <ul ref={evidenceListRef} data-experiment-id={experiment.id} tabIndex={-1} aria-label="Evidence items" aria-live="polite" onKeyDown={handleEvidenceKeyDown} className="mt-4 divide-y divide-card rounded-md bg-muted px-4 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1">
-                  {experiment.evidence.map((item) => (
+                  {experiment.evidence.map((item, itemIdx) => (
                     <li
                       data-evidence-id={item.id}
                       key={item.id}
-                      className="flex items-start gap-3 py-3 text-sm"
+                      draggable
+                      onDragStart={(e) => {
+                        setDraggedEvidenceId(item.id);
+                        e.dataTransfer.effectAllowed = "move";
+                        e.dataTransfer.setData("text/plain", item.id);
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = "move";
+                        if (dragOverEvidenceId !== item.id) setDragOverEvidenceId(item.id);
+                      }}
+                      onDragLeave={() => {
+                        if (dragOverEvidenceId === item.id) setDragOverEvidenceId(null);
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const draggedId = draggedEvidenceId ?? e.dataTransfer.getData("text/plain");
+                        setDraggedEvidenceId(null);
+                        setDragOverEvidenceId(null);
+                        if (!draggedId || draggedId === item.id) return;
+                        const fromIdx = experiment.evidence.findIndex((ev) => ev.id === draggedId);
+                        const toIdx = itemIdx;
+                        if (fromIdx < 0 || fromIdx === toIdx) return;
+                        updateExperiment(experiment.id, (exp) => {
+                          const next = [...exp.evidence];
+                          const [moved] = next.splice(fromIdx, 1);
+                          next.splice(toIdx, 0, moved);
+                          return { ...exp, evidence: next };
+                        });
+                        srAnnounce("Evidence reordered.");
+                      }}
+                      onDragEnd={() => {
+                        setDraggedEvidenceId(null);
+                        setDragOverEvidenceId(null);
+                      }}
+                      className={
+                        "flex items-start gap-3 py-3 text-sm transition " +
+                        (draggedEvidenceId === item.id ? "opacity-40 " : "") +
+                        (dragOverEvidenceId === item.id && draggedEvidenceId !== item.id
+                          ? "border-t-2 border-accent "
+                          : "")
+                      }
                     >
+                      <button
+                        type="button"
+                        aria-label="Drag to reorder"
+                        className="mt-0.5 flex h-5 w-4 shrink-0 cursor-grab items-center justify-center rounded-sm text-muted/40 transition hover:bg-muted hover:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent active:cursor-grabbing"
+                        tabIndex={-1}
+                      >
+                        <GripVertical className="size-3.5" aria-hidden="true" />
+                      </button>
                       <CheckCircle2
                         className={
                           "mt-0.5 size-4 shrink-0 " +
