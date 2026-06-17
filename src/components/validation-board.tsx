@@ -422,7 +422,7 @@ export function ValidationBoard({
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={progress.score}
-            aria-label="Validation progress"
+            aria-labelledby="validation-progress-label"
             className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
           >
             <div
@@ -449,6 +449,7 @@ export function ValidationBoard({
 
           return (
             <article
+              role="group"
               key={experiment.id}
               data-experiment-article
               tabIndex={0}
@@ -463,11 +464,13 @@ export function ValidationBoard({
                       H{index + 1}
                     </span>
                     <span
+                      role="status"
+                      aria-label={`Validation status: ${statusLabels[experiment.status]}`}
                       className={`rounded-md px-2 py-1 text-xs font-semibold ${statusClass(experiment.status)}`}
                     >
                       {statusLabels[experiment.status]}
                     </span>
-                    <span className="text-xs text-muted">
+                    <span className="text-xs text-muted" aria-label={`${experiment.evidence.length} evidence item${experiment.evidence.length === 1 ? "" : "s"}`}>
                       {experiment.evidence.length} evidence item
                       {experiment.evidence.length === 1 ? "" : "s"}
                     </span>
@@ -594,7 +597,7 @@ export function ValidationBoard({
               </div>
 
               {experiment.evidence.length > 0 ? (
-                <ul ref={evidenceListRef} data-experiment-id={experiment.id} tabIndex={-1} aria-label="Evidence items" onKeyDown={handleEvidenceKeyDown} className="mt-4 divide-y divide-card rounded-md bg-muted px-4 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1">
+                <ul ref={evidenceListRef} data-experiment-id={experiment.id} tabIndex={-1} aria-label="Evidence items" aria-live="polite" onKeyDown={handleEvidenceKeyDown} className="mt-4 divide-y divide-card rounded-md bg-muted px-4 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1">
                   {experiment.evidence.map((item) => (
                     <li
                       data-evidence-id={item.id}
