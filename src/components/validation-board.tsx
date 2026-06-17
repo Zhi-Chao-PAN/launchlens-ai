@@ -375,9 +375,9 @@ export function ValidationBoard({
     if (experiment.evidence.length === 0) {
       lines.push("_No evidence recorded yet._");
     } else {
-      experiment.evidence.forEach((item, itemIdx) => {
+      [...experiment.evidence].sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned)).forEach((item, itemIdx) => {
         lines.push(
-          "### " + (itemIdx + 1) + ". " + signalLabel[item.signal] + " 闂?" + item.source,
+          "### " + (item.pinned ? "⭐ " : "") + (itemIdx + 1) + ". " + signalLabel[item.signal] + " 闂?" + item.source,
         );
         lines.push("");
         lines.push("- **Weight**: " + weightLabel[item.weight]);
