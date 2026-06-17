@@ -4,6 +4,8 @@ import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
   Check,
   CheckCircle2,
+  CheckSquare,
+  Square,
   ChevronDown,
   Filter,
   ChevronUp,
@@ -34,6 +36,7 @@ import {
   taskIdentity,
   type EvidenceSignal,
   type EvidenceWeight,
+  type ExperimentStatus,
   type ExecutionProgressWeights,
   type ConfidenceLevel,
   type ValidationEvidence,
@@ -172,6 +175,9 @@ export function ValidationBoard({
   const [draggedExperimentId, setDraggedExperimentId] = useState<string | null>(null);
   const [dragOverExperimentId, setDragOverExperimentId] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedExperimentIds, setSelectedExperimentIds] = useState<Set<string>>(new Set());
+  const batchCount = selectedExperimentIds.size;
   const [dragOverEvidenceId, setDragOverEvidenceId] = useState<string | null>(null);
 
 
@@ -674,6 +680,47 @@ export function ValidationBoard({
     });
   }
 
+  function toggleExperimentSelection(id: string) {
+    setSelectedExperimentIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+  function toggleSelectAllExperiments() {
+    const visibleIds = activeExperiments.map((e) => e.id);
+    const allSelected = visibleIds.every((id) => selectedExperimentIds.has(id));
+    setSelectedExperimentIds(new Set(allSelected ? [] : visibleIds));
+  }
+  function setSelectedStatus(status: ExperimentStatus) {
+    if (batchCount === 0) return;
+    onChange({
+      ...execution,
+      experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, status } : e),
+      updatedAt: new Date().toISOString(),
+    });
+    srAnnounce(`Set ${batchCount} hypotheses to ${status}.`);
+  }
+  function batchArchive(archived: boolean) {
+    if (batchCount === 0) return;
+    onChange({
+      ...execution,
+      experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, archived } : e),
+      updatedAt: new Date().toISOString(),
+    });
+    srAnnounce(archived ? `Archived ${batchCount} hypotheses.` : `Unarchived ${batchCount} hypotheses.`);
+  }
+  function batchDeleteExperiments() {
+    if (batchCount === 0) return;
+    const toDelete = selectedExperimentIds;
+    onChange({
+      ...execution,
+      experiments: execution.experiments.filter((e) => !toDelete.has(e.id)),
+      updatedAt: new Date().toISOString(),
+    });
+    setSelectedExperimentIds(new Set());
+    srAnnounce(`Deleted ${toDelete.size} hypotheses.`);
+  }
   function moveEvidence(
     experimentId: string,
     evidenceId: string,
@@ -1408,7 +1455,32 @@ export function ValidationBoard({
           <option value="status">By status</option>
           <option value="progress">Most evidence</option>
         </select>
-        <div className="relative">
+        {selectMode && batchCount > 0 && (
+          <div role="toolbar" aria-label="Bulk actions on selected hypotheses" className="flex w-full flex-wrap items-center gap-2 rounded-md border border-accent/60 bg-accent/5 p-2 text-xs">
+            <span className="px-1 font-semibold text-foreground">{batchCount} selected</span>
+            <button type="button" onClick={toggleSelectAllExperiments} className="rounded px-2 py-1 hover:bg-muted">All</button>
+            <span className="mx-1 h-4 w-px bg-border" />
+            <button type="button" onClick={() => setSelectedStatus("untested")} className="rounded px-2 py-1 hover:bg-muted">Mark untested</button>
+            <button type="button" onClick={() => setSelectedStatus("testing")} className="rounded px-2 py-1 text-accent hover:bg-muted">Mark testing</button>
+            <button type="button" onClick={() => setSelectedStatus("supported")} className="rounded px-2 py-1 text-signal-supports hover:bg-muted">Mark supported</button>
+            <button type="button" onClick={() => setSelectedStatus("refuted")} className="rounded px-2 py-1 text-signal-challenges hover:bg-muted">Mark refuted</button>
+            <span className="mx-1 h-4 w-px bg-border" />
+            <button type="button" onClick={() => batchArchive(true)} className="rounded px-2 py-1 hover:bg-muted">Archive</button>
+            <button type="button" onClick={batchDeleteExperiments} className="rounded px-2 py-1 text-signal-challenges hover:bg-signal-challenges/10">Delete</button>
+            <button type="button" onClick={() => setSelectedExperimentIds(new Set())} className="ml-auto rounded px-2 py-1 text-muted hover:bg-muted hover:text-foreground">Clear</button>
+          </div>
+        )}
+        <button
+            type="button"
+            onClick={() => { setSelectMode((v) => { if (v) setSelectedExperimentIds(new Set()); return !v; }); }}
+            aria-pressed={selectMode}
+            className={"flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 " + (selectMode ? "border-accent bg-accent text-white" : "border-input bg-card text-foreground/80 hover:border-accent hover:text-foreground")}
+            title="Select multiple hypotheses"
+          >
+            <CheckSquare className="size-3.5" aria-hidden="true" />
+            <span className="hidden sm:inline">Select</span>
+          </button>
+          <div className="relative">
           <button
             type="button"
             onClick={() => setBoardExportOpen(!boardExportOpen)}
@@ -1650,6 +1722,18 @@ export function ValidationBoard({
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
+                    {selectMode && (
+                      <button
+                        type="button"
+                        role="checkbox"
+                        aria-checked={selectedExperimentIds.has(experiment.id)}
+                        aria-label={`Select hypothesis ${index + 1}`}
+                        onClick={(e) => { e.stopPropagation(); toggleExperimentSelection(experiment.id); }}
+                        className="flex size-5 shrink-0 items-center justify-center rounded text-muted transition hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                      >
+                        {selectedExperimentIds.has(experiment.id) ? <CheckSquare className="size-3.5" aria-hidden="true" /> : <Square className="size-3.5" aria-hidden="true" />}
+                      </button>
+                    )}
                     <button
                       type="button"
                       aria-label="Drag to reorder hypothesis"
