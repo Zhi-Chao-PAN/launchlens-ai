@@ -342,6 +342,26 @@ export function ValidationBoard({
     return list;
   }, [execution.experiments, statusFilter, sortBy, searchQuery, experimentMatchesSearch]);
   const activeExperiments = filteredExperiments.filter((e) => !e.archived);
+  const allWorkspaceTags = useMemo(() => {
+    const counts = new Map<string, number>();
+    execution.experiments.forEach((e) => (e.tags || []).forEach((t) => counts.set(t, (counts.get(t) || 0) + 1)));
+    return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).map(([tag, count]) => ({ tag, count }));
+  }, [execution.experiments]);
+  const selectedTagsUnion = useMemo(() => {
+    const union = new Set<string>();
+    const intersection = new Set<string>();
+    let first = true;
+    selectedExperimentIds.forEach((id) => {
+      const exp = execution.experiments.find((e) => e.id === id);
+      if (!exp) return;
+      const s = new Set(exp.tags || []);
+      s.forEach((t) => union.add(t));
+      if (first) { s.forEach((t) => intersection.add(t)); first = false; }
+      else { intersection.forEach((t) => { if (!s.has(t)) intersection.delete(t); }); }
+    });
+    return { union, intersection };
+  }, [execution.experiments, selectedExperimentIds]);
+
   const archivedExperiments = filteredExperiments.filter((e) => e.archived);
 
   const expandedExperimentId =
@@ -1573,11 +1593,33 @@ export function ValidationBoard({
             <span className="mx-1 h-4 w-px bg-border" />
             <div className="relative">
               <button type="button" onClick={() => setBatchTagMode(batchTagMode === "add" ? null : "add")} aria-expanded={batchTagMode === "add"} className={"rounded px-2 py-1 " + (batchTagMode === "add" ? "bg-accent text-white" : "hover:bg-muted")}>+ Tag</button>
-              {batchTagMode === "add" && (<div className="absolute left-0 top-full z-20 mt-1 flex items-center gap-1 rounded-md border border-input bg-card p-1 shadow-lg"><input autoFocus value={batchTagInput} onChange={(e) => setBatchTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") applyBatchTagFromInput("add"); if (e.key === "Escape") setBatchTagMode(null); }} placeholder="tag1, tag2" className="w-36 rounded bg-input px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-accent" /><button type="button" onClick={() => applyBatchTagFromInput("add")} className="rounded bg-accent px-2 py-1 text-xs text-white">Add</button></div>)}
+              {batchTagMode === "add" && (<div className="absolute left-0 top-full z-20 mt-1 w-64 rounded-md border border-input bg-card p-2 shadow-lg">
+                <div className="mb-1.5 flex flex-wrap gap-1">
+                  {allWorkspaceTags.slice(0, 8).filter((t) => !selectedTagsUnion.intersection.has(t.tag)).map((t) => (
+                    <button key={t.tag} type="button" onClick={() => batchAddTag(t.tag)} className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted hover:bg-accent hover:text-white" title={`Add "${t.tag}" (used ${t.count}x)`}>{t.tag}</button>
+                  ))}
+                  {allWorkspaceTags.length === 0 && <span className="text-[10px] text-muted">No existing tags yet.</span>}
+                </div>
+                <div className="flex items-center gap-1">
+                  <input autoFocus value={batchTagInput} onChange={(e) => setBatchTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") applyBatchTagFromInput("add"); if (e.key === "Escape") setBatchTagMode(null); }} placeholder="new or existing tag" className="flex-1 rounded bg-input px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-accent" />
+                  <button type="button" onClick={() => applyBatchTagFromInput("add")} className="rounded bg-accent px-2 py-1 text-xs text-white">Add</button>
+                </div>
+              </div>)}
             </div>
             <div className="relative">
               <button type="button" onClick={() => setBatchTagMode(batchTagMode === "remove" ? null : "remove")} aria-expanded={batchTagMode === "remove"} className={"rounded px-2 py-1 " + (batchTagMode === "remove" ? "bg-signal-challenges text-white" : "hover:bg-muted")}>- Tag</button>
-              {batchTagMode === "remove" && (<div className="absolute left-0 top-full z-20 mt-1 flex items-center gap-1 rounded-md border border-input bg-card p-1 shadow-lg"><input autoFocus value={batchTagInput} onChange={(e) => setBatchTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") applyBatchTagFromInput("remove"); if (e.key === "Escape") setBatchTagMode(null); }} placeholder="tag to remove" className="w-36 rounded bg-input px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-accent" /><button type="button" onClick={() => applyBatchTagFromInput("remove")} className="rounded bg-signal-challenges px-2 py-1 text-xs text-white">Remove</button></div>)}
+              {batchTagMode === "remove" && (<div className="absolute left-0 top-full z-20 mt-1 w-64 rounded-md border border-input bg-card p-2 shadow-lg">
+                <div className="mb-1.5 flex flex-wrap gap-1">
+                  {Array.from(selectedTagsUnion.union).slice(0, 8).map((t) => (
+                    <button key={t} type="button" onClick={() => batchRemoveTag(t)} className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted hover:bg-signal-challenges hover:text-white" title={`Remove "${t}"`}>{t}</button>
+                  ))}
+                  {selectedTagsUnion.union.size === 0 && <span className="text-[10px] text-muted">No tags on selected.</span>}
+                </div>
+                <div className="flex items-center gap-1">
+                  <input autoFocus value={batchTagInput} onChange={(e) => setBatchTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") applyBatchTagFromInput("remove"); if (e.key === "Escape") setBatchTagMode(null); }} placeholder="tag to remove" className="flex-1 rounded bg-input px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-accent" />
+                  <button type="button" onClick={() => applyBatchTagFromInput("remove")} className="rounded bg-signal-challenges px-2 py-1 text-xs text-white">Remove</button>
+                </div>
+              </div>)}
             </div>
             <button type="button" onClick={() => batchArchive(true)} className="rounded px-2 py-1 hover:bg-muted">Archive</button>
             <button type="button" onClick={batchDeleteExperiments} className="rounded px-2 py-1 text-signal-challenges hover:bg-signal-challenges/10">Delete</button>
