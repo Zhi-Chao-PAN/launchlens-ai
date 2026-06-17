@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { registerShortcut, useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 import {
@@ -2802,6 +2802,25 @@ export function ValidationBoard({
                     {experiment.nextAction.length}/800 characters
                   </p>
                 </label>
+                {(() => {
+                  const confEvents = (experiment.history || []).filter((h) => h.kind === "confidence" || h.kind === "created");
+                  if (confEvents.length < 2) return null;
+                  const levels: Record<string, number> = { low: 0, medium: 0.5, high: 1 };
+                  const pts = confEvents.map((h, i) => {
+                    const v = h.to ? levels[h.to] ?? 0 : levels["low"];
+                    const x = (i / Math.max(1, confEvents.length - 1)) * 60;
+                    const y = 12 - v * 10;
+                    return `${x.toFixed(1)},${y.toFixed(1)}`;
+                  }).join(" ");
+                  return (
+                    <div className="mt-4 flex items-center gap-2">
+                      <span className="text-[10px] uppercase text-muted">Confidence trend</span>
+                      <svg width={64} height={14} viewBox="0 0 64 14" aria-hidden="true" className="text-accent">
+                        <polyline fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" points={pts} />
+                      </svg>
+                    </div>
+                  );
+                })()}
                 {experiment.history && experiment.history.length > 0 && (
                   <div className="mt-4">
                     <h3 className="mb-2 text-xs font-semibold uppercase text-muted">Timeline</h3>
