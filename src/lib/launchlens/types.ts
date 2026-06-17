@@ -19,6 +19,7 @@ export type LaunchTask = {
   owner: string;
   due: string;
   outcome: string;
+  completed?: boolean;
 };
 
 export type ContentItem = {

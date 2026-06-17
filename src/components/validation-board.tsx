@@ -100,6 +100,7 @@ export function ValidationBoard({
   const evidenceListRef = useRef<HTMLUListElement | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [recentlyDeleted, setRecentlyDeleted] = useState<{ experimentId: string; evidence: ValidationEvidence; index: number } | null>(null);
+  const [recentlyDeletedExperiment, setRecentlyDeletedExperiment] = useState<{ experiment: ValidationExperiment; index: number } | null>(null);
   const [editingEvidenceId, setEditingEvidenceId] = useState<string | null>(null);
   const sourceError = draftTouched.source && draft.source.trim().length < 2 ? "Source needs at least 2 characters." : "";
   const noteError = draftTouched.note && draft.note.trim().length < 8 ? "Observation needs at least 8 characters." : "";
@@ -233,6 +234,39 @@ export function ValidationBoard({
         nextFocusTarget.focus();
       }
     });
+  }
+
+  function deleteExperiment(experimentId: string) {
+    const idx = execution.experiments.findIndex((e) => e.id === experimentId);
+    if (idx === -1) return;
+    const experiment = execution.experiments[idx];
+    setRecentlyDeletedExperiment({ experiment, index: idx });
+    onChange({
+      ...execution,
+      experiments: execution.experiments.filter((e) => e.id !== experimentId),
+      updatedAt: new Date().toISOString(),
+    });
+    if (activeExperimentId === experimentId) setActiveExperimentId("");
+    if (requestedExpandedExperimentId === experimentId) setRequestedExpandedExperimentId(null);
+    showToast("Hypothesis removed", "info", 5000, {
+      label: "Undo",
+      onClick: () => undoDeleteExperiment(),
+    });
+    srAnnounce("Hypothesis " + experiment.assumption + " removed.");
+  }
+
+  function undoDeleteExperiment() {
+    if (!recentlyDeletedExperiment) return;
+    const { experiment, index } = recentlyDeletedExperiment;
+    const next = [...execution.experiments];
+    next.splice(index, 0, experiment);
+    onChange({
+      ...execution,
+      experiments: next,
+      updatedAt: new Date().toISOString(),
+    });
+    setRecentlyDeletedExperiment(null);
+    srAnnounce("Hypothesis " + experiment.assumption + " restored.");
   }
 
   function undoDeleteEvidence() {
@@ -719,7 +753,19 @@ export function ValidationBoard({
                     <Plus className="size-4" aria-hidden="true" />
                     {formOpen ? "Cancel" : "Add evidence"}
                   </button>
-                </div>
+                
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm("Remove this hypothesis? All evidence will be lost.")) {
+                        deleteExperiment(experiment.id);
+                      }
+                    }}
+                    aria-label="Remove hypothesis"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-input bg-card text-muted transition hover:border-signal-challenges hover:text-signal-challenges focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1 sm:h-10 sm:w-10"
+                  >
+                    <Trash2 className="size-4" aria-hidden="true" />
+                  </button></div>
               </div>
 
               <div
