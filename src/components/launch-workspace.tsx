@@ -1731,26 +1731,127 @@ export function LaunchWorkspace({
               </Section>
 
               <Section title="Execution tasks" icon={CheckCircle2} collapsible sectionId="execution-tasks" collapsed={collapsedSections.has("execution-tasks")} onToggle={() => toggleSection("execution-tasks")}>
-                <div className="space-y-3">
-                  {workspace.tasks.map((task, index) => (
-                    <article
-                      key={`${task.title}-${task.due}-${index}`}
-                      className="rounded-md border border-card bg-input p-4"
-                    >
-                      <div className="mb-2 flex flex-wrap items-center gap-2">
-                        <h3 className="text-sm font-semibold text-foreground">
-                          {task.title}
-                        </h3>
-                        <span className="rounded-md bg-signal-supports px-2 py-1 text-xs font-medium text-signal-supports">
-                          {task.due}
-                        </span>
+                {isEditing ? (
+                  <div className="space-y-3">
+                    {workspace.tasks.map((task, index) => (
+                      <div
+                        key={`${task.title}-${task.due}-${index}`}
+                        className="rounded-md border border-card bg-input p-4 space-y-2"
+                      >
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={task.title}
+                            onChange={(e) =>
+                              setWorkspace((current) => ({
+                                ...current,
+                                tasks: current.tasks.map((t, i) =>
+                                  i === index ? { ...t, title: e.target.value } : t,
+                                ),
+                              }))
+                            }
+                            placeholder="Task title"
+                            className="flex-1 rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setWorkspace((current) => ({
+                                ...current,
+                                tasks: current.tasks.filter((_, i) => i !== index),
+                              }))
+                            }
+                            className="rounded-md p-1.5 text-muted transition hover:bg-muted hover:text-signal-challenges"
+                            aria-label="Remove task"
+                          >
+                            <X className="size-4" aria-hidden="true" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            value={task.owner}
+                            onChange={(e) =>
+                              setWorkspace((current) => ({
+                                ...current,
+                                tasks: current.tasks.map((t, i) =>
+                                  i === index ? { ...t, owner: e.target.value } : t,
+                                ),
+                              }))
+                            }
+                            placeholder="Owner"
+                            className="rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                          />
+                          <input
+                            type="text"
+                            value={task.due}
+                            onChange={(e) =>
+                              setWorkspace((current) => ({
+                                ...current,
+                                tasks: current.tasks.map((t, i) =>
+                                  i === index ? { ...t, due: e.target.value } : t,
+                                ),
+                              }))
+                            }
+                            placeholder="Due"
+                            className="rounded-md border border-input bg-card px-3 py-1.5 text-sm font-medium text-signal-supports outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                          />
+                        </div>
+                        <input
+                          type="text"
+                          value={task.outcome}
+                          onChange={(e) =>
+                            setWorkspace((current) => ({
+                              ...current,
+                              tasks: current.tasks.map((t, i) =>
+                                i === index ? { ...t, outcome: e.target.value } : t,
+                              ),
+                            }))
+                          }
+                          placeholder="Outcome"
+                          className="w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground/80 outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                        />
                       </div>
-                      <p className="text-sm leading-6 text-foreground/80">
-                        {task.owner} owns {task.outcome}.
-                      </p>
-                    </article>
-                  ))}
-                </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setWorkspace((current) => ({
+                          ...current,
+                          tasks: [
+                            ...current.tasks,
+                            { title: "", owner: "", due: "Week 1", outcome: "" },
+                          ],
+                        }))
+                      }
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-input py-2 text-xs font-medium text-muted transition hover:border-accent hover:text-accent"
+                    >
+                      <Plus className="size-3.5" aria-hidden="true" />
+                      Add task
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {workspace.tasks.map((task, index) => (
+                      <article
+                        key={`${task.title}-${task.due}-${index}`}
+                        className="rounded-md border border-card bg-input p-4"
+                      >
+                        <div className="mb-2 flex flex-wrap items-center gap-2">
+                          <h3 className="text-sm font-semibold text-foreground">
+                            {task.title}
+                          </h3>
+                          <span className="rounded-md bg-signal-supports px-2 py-1 text-xs font-medium text-signal-supports">
+                            {task.due}
+                          </span>
+                        </div>
+                        <p className="text-sm leading-6 text-foreground/80">
+                          {task.owner} owns {task.outcome}.
+                        </p>
+                      </article>
+                    ))}
+                  </div>
+                )}
               </Section>
             </div>
           </div>
