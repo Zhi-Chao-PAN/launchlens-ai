@@ -51,6 +51,13 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     description: "Expand all sections",
     category: "Navigation",
   },
+  commandPalette: {
+    key: "k",
+    meta: true,
+    ctrl: true,
+    description: "Open command palette",
+    category: "Navigation",
+  },
   toggleShortcuts: {
     key: "?",
     shift: true,

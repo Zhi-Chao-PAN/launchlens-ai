@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Search, X, Command, ArrowRight } from "lucide-react";
 import { useFocusTrap } from "@/hooks/use-focus-trap";
 import { pushOverlay } from "@/lib/launchlens/overlays";
+import { registerShortcut } from "@/hooks/use-keyboard-shortcuts";
 
 export type CommandPaletteAction = {
   id: string;
@@ -13,6 +14,8 @@ export type CommandPaletteAction = {
   category: string;
   icon?: "navigate" | "action" | "search";
   shortcut?: string;
+  /** Shortcut ID from the global shortcuts registry — takes precedence over `shortcut` string */
+  shortcutId?: string;
   keywords?: string[];
   onSelect: () => void;
 };
@@ -128,23 +131,13 @@ export function CommandPalette({
     [filtered, close],
   );
 
-  // Register Cmd+K / Ctrl+K shortcut
+  // Register Cmd+K / Ctrl+K shortcut via global registry
   useEffect(() => {
-    // We rely on the global keyboard listener; Cmd+K should open the palette
-    const handler = (event: KeyboardEvent) => {
-      const isCmdK =
-        event.key.toLowerCase() === "k" &&
-        (event.metaKey || event.ctrlKey) &&
-        !event.altKey &&
-        !event.shiftKey;
-      if (isCmdK) {
-        event.preventDefault();
-        if (isOpen) close();
-        else open();
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    const unregister = registerShortcut("commandPalette", () => {
+      if (isOpen) close();
+      else open();
+    });
+    return unregister;
   }, [isOpen, open, close]);
 
   // Close on Escape

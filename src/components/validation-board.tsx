@@ -27,6 +27,7 @@ import {
   type EvidenceSignal,
   type EvidenceWeight,
   type ExecutionProgressWeights,
+  type ConfidenceLevel,
   type ValidationEvidence,
   type ValidationExperiment,
   assumptionIdentity,
@@ -114,6 +115,7 @@ export function ValidationBoard({
   const evidenceUndoTimerRef = useRef<number | null>(null);
   const experimentUndoTimerRef = useRef<number | null>(null);
   const [editingEvidenceId, setEditingEvidenceId] = useState<string | null>(null);
+  const [confidenceFlashIds, setConfidenceFlashIds] = useState<Set<string>>(new Set());
     const sourceError = draftTouched.source && draft.source.trim().length < 2 ? "Source needs at least 2 characters." : "";
   const noteError = draftTouched.note && draft.note.trim().length < 8 ? "Observation needs at least 8 characters." : "";
   const [weightPreset, setWeightPreset] = useState<"default" | "evidence" | "decision">("default");
@@ -250,6 +252,17 @@ export function ValidationBoard({
           : computeExperimentConfidence(newEvidence),
       };
     });
+
+    // Notify confidence change if auto-computed and value changed
+    const oldConfidence = experiment.confidence;
+    if (!experiment.confidenceManual) {
+      const newEvidenceAfter = experiment.evidence.filter((e) => e.id !== evidenceId);
+      const newConfidence = computeExperimentConfidence(newEvidenceAfter);
+      if (oldConfidence !== newConfidence) {
+        notifyConfidenceChange(experimentId, oldConfidence, newConfidence);
+      }
+    }
+
     srAnnounce("Evidence from " + evidence.source + " removed. Press Ctrl+Z to undo.");
     showToast("Evidence removed", "info", 5000, {
       label: "Undo",
@@ -308,18 +321,32 @@ export function ValidationBoard({
   function undoDeleteEvidence() {
     if (!recentlyDeleted) return;
     const { experimentId, evidence, index } = recentlyDeleted;
+    const experiment = execution.experiments.find((e) => e.id === experimentId);
+    const oldConfidence = experiment?.confidence ?? "low";
+    const isManual = experiment?.confidenceManual ?? false;
+
     updateExperiment(experimentId, (exp) => {
       const next = [...exp.evidence];
       next.splice(index, 0, evidence);
-      const isManual = exp.confidenceManual;
+      const manual = exp.confidenceManual;
       return {
         ...exp,
         evidence: next,
-        confidence: isManual
+        confidence: manual
           ? exp.confidence
           : computeExperimentConfidence(next),
       };
     });
+
+    if (!isManual && experiment) {
+      const next = [...experiment.evidence];
+      next.splice(index, 0, evidence);
+      const newConfidence = computeExperimentConfidence(next);
+      if (oldConfidence !== newConfidence) {
+        notifyConfidenceChange(experimentId, oldConfidence, newConfidence);
+      }
+    }
+
     if (evidenceUndoTimerRef.current) {
       window.clearTimeout(evidenceUndoTimerRef.current);
       evidenceUndoTimerRef.current = null;
@@ -451,6 +478,39 @@ export function ValidationBoard({
     }
   }
 
+  function notifyConfidenceChange(
+    experimentId: string,
+    oldConfidence: ConfidenceLevel,
+    newConfidence: ConfidenceLevel,
+  ) {
+    if (oldConfidence === newConfidence) return;
+
+    // Flash animation
+    setConfidenceFlashIds((prev) => {
+      const next = new Set(prev);
+      next.add(experimentId);
+      return next;
+    });
+    window.setTimeout(() => {
+      setConfidenceFlashIds((prev) => {
+        const next = new Set(prev);
+        next.delete(experimentId);
+        return next;
+      });
+    }, 1200);
+
+    // Toast notification - subtle, auto-dismisses
+    const labels: Record<ConfidenceLevel, string> = { low: "Low", medium: "Medium", high: "High" };
+    showToast(
+      `Confidence updated: ${labels[oldConfidence]} → ${labels[newConfidence]}`,
+      "info",
+      2200,
+    );
+    srAnnounce(
+      `Confidence changed from ${labels[oldConfidence]} to ${labels[newConfidence]}`,
+    );
+  }
+
   function addEvidence(
     event: React.FormEvent<HTMLFormElement>,
     experimentId: string,
@@ -466,6 +526,10 @@ export function ValidationBoard({
       return;
     }
     setDraftSubmitError("");
+
+    const experimentBefore = execution.experiments.find((e) => e.id === experimentId);
+    const oldConfidence = experimentBefore?.confidence ?? "low";
+    const wasManual = experimentBefore?.confidenceManual ?? false;
 
     if (editingEvidenceId) {
       // Update existing evidence
@@ -515,6 +579,29 @@ export function ValidationBoard({
       srAnnounce(
         `Evidence recorded: ${source}. ${count} items total.`,
       );
+    }
+
+    // Notify of confidence change if auto-computed
+    if (!wasManual && experimentBefore) {
+      // Compute what the new confidence will be
+      let newConfidence = oldConfidence;
+      if (editingEvidenceId) {
+        const updated = experimentBefore.evidence.map((item) =>
+          item.id === editingEvidenceId
+            ? { ...item, note, source, signal: draft.signal, weight: draft.weight }
+            : item,
+        );
+        newConfidence = computeExperimentConfidence(updated);
+      } else {
+        const withNew = [
+          ...experimentBefore.evidence,
+          { id: "", note, source, signal: draft.signal, weight: draft.weight, observedAt: "" },
+        ];
+        newConfidence = computeExperimentConfidence(withNew);
+      }
+      if (oldConfidence !== newConfidence) {
+        notifyConfidenceChange(experimentId, oldConfidence, newConfidence);
+      }
     }
 
     setDraft(emptyDraft);
@@ -911,6 +998,7 @@ export function ValidationBoard({
                   </span>
                   <select
                     value={experiment.confidence}
+                    data-flash={confidenceFlashIds.has(experiment.id) ? "true" : "false"}
                     onChange={(event) =>
                       updateExperiment(experiment.id, (current) => ({
                         ...current,
@@ -919,7 +1007,7 @@ export function ValidationBoard({
                         confidenceManual: true,
                       }))
                     }
-                    className="h-12 w-full rounded-md border border-input bg-input px-3 text-sm capitalize text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)] sm:h-10"
+                    className="h-12 w-full rounded-md border border-input bg-input px-3 text-sm capitalize text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)] transition-all duration-500 sm:h-10 data-[flash=true]:border-accent data-[flash=true]:ring-2 data-[flash=true]:ring-[var(--ring-color)] data-[flash=true]:scale-[1.02]"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
