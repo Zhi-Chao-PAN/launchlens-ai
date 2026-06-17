@@ -127,14 +127,14 @@ export function workspaceFromJson(json: string): WorkspaceImportResult {
   // Warn about non-fatal missing optional fields
   if (!workspace.generatedAt) {
     workspace.generatedAt = new Date().toISOString();
-    warnings.push("Missing generatedAt â€?set to current time.");
+    warnings.push("Missing generatedAt â€”set to current time.");
   }
   if (!workspace.provider) {
     workspace.provider = "mock";
-    warnings.push("Missing provider â€?set to 'mock'.");
+    warnings.push("Missing provider â€”set to 'mock'.");
   }
   if (!Array.isArray(workspace.mvpScope)) {
-    warnings.push("mvpScope is not an array â€?may be incomplete.");
+    warnings.push("mvpScope is not an array â€”may be incomplete.");
   }
   if (!workspace.landingPage?.headline) {
     warnings.push("landingPage.headline is missing.");

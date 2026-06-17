@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Client-side mapping from API error codes to user-facing messages.
  *
  * Route handlers return { code, error } in their JSON error bodies. When the
@@ -35,6 +35,12 @@ export const API_ERROR_MESSAGES: Record<string, string> = {
   cloud_request_failed: "Cloud storage could not be reached. Please retry.",
   db_unavailable: "The database is temporarily unavailable. Please retry.",
 
+  provider_timeout: "The AI provider took too long to respond. Please retry.",
+  provider_failed: "The AI provider could not be reached. Please retry.",
+  provider_misconfigured: "AI provider is not configured correctly.",
+  provider_validation_failed: "The AI response could not be parsed. Please retry.",
+  decision_invalid_response: "The AI response was not a valid decision brief. Please retry.",
+
   invite_invalid: "That invite link is not valid.",
   invite_expired: "That invite link has expired.",
   invite_already_accepted: "That invite has already been accepted.",
@@ -53,8 +59,6 @@ export const API_ERROR_MESSAGES: Record<string, string> = {
 
   decision_no_evidence:
     "Add at least one evidence note before generating a decision brief.",
-  decision_invalid_response:
-    "The decision brief returned by the provider could not be parsed. Please retry.",
 
   invalid_workspace_id: "That workspace could not be found.",
   workspace_forbidden: "You do not have access to that workspace.",

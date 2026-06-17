@@ -106,6 +106,8 @@ export function ValidationBoard({
   const [draft, setDraft] = useState<EvidenceDraft>(emptyDraft);
   const [draftTouched, setDraftTouched] = useState<{source: boolean; note: boolean}>({ source: false, note: false });
   const [draftSubmitError, setDraftSubmitError] = useState<string>("");
+  const [isBatchMode, setIsBatchMode] = useState(false);
+  const [batchText, setBatchText] = useState("");
   const { announce: srAnnounce, message: srEvidenceAnnouncement } = useSrAnnounce();
   const { showToast } = useToast();
   const evidenceListRef = useRef<HTMLUListElement | null>(null);
@@ -529,7 +531,7 @@ export function ValidationBoard({
     // Toast notification - subtle, auto-dismisses
     const labels: Record<ConfidenceLevel, string> = { low: "Low", medium: "Medium", high: "High" };
     showToast(
-      `Confidence updated: ${labels[oldConfidence]} → ${labels[newConfidence]}`,
+      `Confidence updated: ${labels[oldConfidence]} �?${labels[newConfidence]}`,
       "info",
       2200,
     );
@@ -543,6 +545,103 @@ export function ValidationBoard({
     experimentId: string,
   ) {
     event.preventDefault();
+
+    // Batch paste mode
+    if (isBatchMode) {
+      const lines = batchText.split("\n").filter((l) => l.trim().length > 0);
+      if (lines.length === 0) {
+        setDraftSubmitError("Paste at least one evidence line.");
+        return;
+      }
+      if (lines.length > 8) {
+        setDraftSubmitError("Maximum 8 evidence items per hypothesis.");
+        return;
+      }
+
+      const items = lines
+        .map((raw) => {
+          const line = raw.trim();
+          // Detect signal prefix
+          let signal: EvidenceSignal = draft.signal;
+          let rest = line;
+          if (line.startsWith("+")) {
+            signal = "supports";
+            rest = line.slice(1).trim();
+          } else if (line.startsWith("-")) {
+            signal = "challenges";
+            rest = line.slice(1).trim();
+          } else if (line.startsWith("~")) {
+            signal = "neutral";
+            rest = line.slice(1).trim();
+          }
+
+          // Split on " - " or first ":" for source/note
+          let source = "";
+          let note = "";
+          const sepMatch = rest.indexOf(" - ");
+          if (sepMatch >= 0) {
+            source = rest.slice(0, sepMatch).trim();
+            note = rest.slice(sepMatch + 3).trim();
+          } else {
+            // Use whole line as note, generate source
+            note = rest;
+            source = `Observation`;
+          }
+
+          if (note.length < 2) return null;
+
+          return {
+            id: evidenceId(),
+            note,
+            source: source || "Observation",
+            signal,
+            weight: draft.weight,
+            observedAt: new Date().toISOString(),
+          };
+        })
+        .filter(Boolean) as ValidationEvidence[];
+
+      if (items.length === 0) {
+        setDraftSubmitError("No valid evidence lines found.");
+        return;
+      }
+
+      const experimentBefore = execution.experiments.find((e) => e.id === experimentId);
+      const wasManual = experimentBefore?.confidenceManual ?? false;
+      const oldConfidence = experimentBefore?.confidence ?? "low";
+
+      updateExperiment(experimentId, (experiment) => {
+        const newEvidence = [...experiment.evidence, ...items].slice(0, 8);
+        const isManual = experiment.confidenceManual;
+        return {
+          ...experiment,
+          status: experiment.status === "untested" ? "testing" : experiment.status,
+          evidence: newEvidence,
+          confidence: isManual
+            ? experiment.confidence
+            : computeExperimentConfidence(newEvidence),
+        };
+      });
+
+      setBatchText("");
+      setIsBatchMode(false);
+      setDraftSubmitError("");
+
+      if (!wasManual && experimentBefore) {
+        const updatedExperiment = execution.experiments.find((e) => e.id === experimentId);
+        const currentItems = updatedExperiment?.evidence ?? [];
+        const combined = [...currentItems, ...items];
+        const newConfidence = computeExperimentConfidence(combined);
+        if (newConfidence !== oldConfidence) {
+          notifyConfidenceChange(experimentId, oldConfidence, newConfidence);
+        }
+      }
+
+      srAnnounce(`Added ${items.length} evidence items.`);
+      showToast(`Added ${items.length} evidence items.`, "success", 3000);
+      return;
+    }
+
     const note = draft.note.trim();
     const source = draft.source.trim();
 
@@ -950,7 +1049,7 @@ export function ValidationBoard({
                       />
                       {experiment.confidence.charAt(0).toUpperCase() + experiment.confidence.slice(1)}
                       {!experiment.confidenceManual && experiment.evidence.length > 0 && (
-                        <span className="text-[10px] font-medium opacity-75">• auto</span>
+                        <span className="text-[10px] font-medium opacity-75">�?auto</span>
                       )}
                     </span>
                     <span className="text-xs text-muted" aria-label={`${experiment.evidence.length} evidence item${experiment.evidence.length === 1 ? "" : "s"}`}>
@@ -1283,8 +1382,105 @@ export function ValidationBoard({
                   className="mt-4 grid gap-3 rounded-md border border-input bg-input p-4 md:grid-cols-[160px_1fr_auto]"
                   inert={!formOpen}
                 >
-                  {/* Live preview */}
-                  {draft.source || draft.note ? (
+                  <div className="flex items-center justify-between md:col-span-3">
+                    <span className="text-xs font-semibold uppercase text-muted">
+                      Evidence
+                    </span>
+                    <div className="flex items-center gap-1 rounded-md border border-input bg-card p-0.5 text-[11px] font-semibold">
+                      <button
+                        type="button"
+                        onClick={() => setIsBatchMode(false)}
+                        className={
+                          "rounded px-2 py-0.5 transition " +
+                          (!isBatchMode
+                            ? "bg-accent text-white"
+                            : "text-muted hover:text-foreground")
+                        }
+                        aria-pressed={!isBatchMode}
+                      >
+                        Single
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsBatchMode(true)}
+                        className={
+                          "rounded px-2 py-0.5 transition " +
+                          (isBatchMode
+                            ? "bg-accent text-white"
+                            : "text-muted hover:text-foreground")
+                        }
+                        aria-pressed={isBatchMode}
+                      >
+                        Bulk paste
+                      </button>
+                    </div>
+                  </div>
+
+                  {isBatchMode ? (
+                    <div className="md:col-span-3">
+                      <label className="block">
+                        <span className="mb-1.5 block text-xs font-semibold uppercase text-muted">
+                          Paste evidence (one per line)
+                        </span>
+                        <textarea
+                          value={batchText}
+                          onChange={(e) => setBatchText(e.target.value)}
+                          placeholder={
+                            "Format: Source - Observation\n" +
+                            "Prefix lines with + for supports, - for challenges, ~ for neutral\n" +
+                            "Example:\n" +
+                            "+ User interview #3 - Said theyd pay for this tomorrow\n" +
+                            "- App Store review - Too expensive compared to alternatives"
+                          }
+                          rows={6}
+                          className="w-full resize-y rounded-md border border-input bg-card px-3 py-2.5 font-mono text-xs leading-5 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                          onPaste={(e) => {
+                            // Auto-detect bulk mode on paste with multiple lines
+                            const pasted = e.clipboardData.getData("text");
+                            const lines = pasted.split("\n").filter((l) => l.trim().length > 0);
+                            if (lines.length > 1) {
+                              setIsBatchMode(true);
+                            }
+                          }}
+                        />
+                        <p className="mt-1 text-[11px] leading-4 text-muted">
+                          Will add{" "}
+                          <span className="font-mono font-semibold">
+                            {
+                              batchText.split("\n").filter((l) => l.trim().length > 0)
+                                .length
+                            }{" "}
+                            evidence items
+                          </span>{" "}
+                          as {signalLabels[draft.signal]} (moderate weight). Prefix with{" "}
+                          <code className="font-mono">+</code>,{" "}
+                          <code className="font-mono">-</code>, or{" "}
+                          <code className="font-mono">~</code> to override signal per line.
+                        </p>
+                      </label>
+                      <div className="mt-3 flex items-center gap-3">
+                        <button
+                          type="submit"
+                          disabled={
+                            batchText.trim().length === 0 ||
+                            batchText.split("\n").filter((l) => l.trim()).length === 0
+                          }
+                          className="flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <Plus className="size-4" aria-hidden="true" />
+                          Add all
+                        </button>
+                        {draftSubmitError && (
+                          <p role="alert" className="text-[11px] leading-4 text-error">
+                            {draftSubmitError}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Live preview */}
+                      {draft.source || draft.note ? (
                     <div className="md:col-span-3">
                       <p className="mb-1.5 text-[11px] font-semibold uppercase text-muted">
                         Preview
@@ -1301,8 +1497,7 @@ export function ValidationBoard({
                           }
                           aria-hidden="true"
                         >
-                          ●
-                        </span>
+                          �?                        </span>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2 text-xs">
                             <span className="font-semibold text-foreground">
@@ -1465,6 +1660,8 @@ export function ValidationBoard({
                       {editingEvidenceId ? "Save" : "Record"}
                     </button>
                   </div>
+                  </>
+                  )}
                 </form>
                 </div>
               </div>
