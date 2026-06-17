@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { registerShortcut, useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 import {
@@ -23,7 +23,7 @@ import {
   Star,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
 import { parseInlineMarkdown } from "@/lib/launchlens/inline-markdown";
 import { useToast } from "@/components/toast";
@@ -275,14 +275,36 @@ export function ValidationBoard({
     [execution, currentWeights],
   );
 
+  const parseSearchQuery = useCallback((raw: string): { required: string[]; excluded: string[] } => {
+    const required: string[] = [];
+    const excluded: string[] = [];
+    const regex = /("([^"]+)"|(\S+))/g;
+    let m: RegExpExecArray | null;
+    while ((m = regex.exec(raw)) !== null) {
+      const token = (m[2] ?? m[3] ?? "").toLowerCase().trim();
+      if (!token) continue;
+      if (token.startsWith("-") && token.length > 1) {
+        excluded.push(token.slice(1));
+      } else {
+        required.push(token);
+      }
+    }
+    return { required, excluded };
+    return { required, excluded };
+  }, []);
+  const experimentMatchesSearch = useCallback((exp: ValidationExperiment, raw: string): boolean => {
+    const q = raw.trim();
+    if (!q) return true;
+    const haystack = [exp.assumption, exp.decision, exp.nextAction, ...(exp.tags || []), ...exp.evidence.flatMap((ev) => [ev.note, ev.source, ev.signal, ev.weight])].join(" ").toLowerCase();
+    const { required, excluded } = parseSearchQuery(q);
+    if (excluded.some((t) => haystack.includes(t))) return false;
+    return required.every((t) => haystack.includes(t));
+  }, [parseSearchQuery]);
+
   const filteredExperiments = useMemo(() => {
     let list = execution.experiments;
-    const q = searchQuery.trim().toLowerCase();
-    if (q) {
-      list = list.filter((exp) => {
-        const haystack = [exp.assumption, exp.decision, exp.nextAction, ...(exp.tags || []), ...exp.evidence.flatMap((ev) => [ev.note, ev.source])].join(" ").toLowerCase();
-        return haystack.includes(q);
-      });
+    if (searchQuery.trim()) {
+      list = list.filter((exp) => experimentMatchesSearch(exp, searchQuery));
     }
     if (statusFilter === "active") {
       list = list.filter(
@@ -318,7 +340,7 @@ export function ValidationBoard({
     }
 
     return list;
-  }, [execution.experiments, statusFilter, sortBy, searchQuery]);
+  }, [execution.experiments, statusFilter, sortBy, searchQuery, experimentMatchesSearch]);
   const activeExperiments = filteredExperiments.filter((e) => !e.archived);
   const archivedExperiments = filteredExperiments.filter((e) => e.archived);
 
@@ -2879,3 +2901,5 @@ export function ValidationBoard({
     </section>
   );
 }
+
+
