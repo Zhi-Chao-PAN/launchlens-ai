@@ -21,13 +21,63 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { id } = await params;
   if (!isUuid(id)) return { title: "Shared workspace - LaunchLens AI" };
+
+  let title = "Shared GTM workspace - LaunchLens AI";
+  let description =
+    "A go-to-market workspace shared from LaunchLens AI. Explore target users, pains, backlog, validation experiments, and AI-grounded decision briefs.";
+  let projectName = "";
+
+  try {
+    const result = await getSharedWorkspace(id);
+    if (result.status === "ok") {
+      const { workspace } = result.record;
+      const headline = workspace.landingPage?.headline || "Shared workspace";
+      title = `${headline} - LaunchLens AI shared workspace`;
+      projectName = headline;
+      if (workspace.summary?.length) {
+        description = workspace.summary.slice(0, 160);
+        if (workspace.summary.length > 160) description += "…";
+      }
+    } else if (result.status === "revoked") {
+      title = "Link no longer available - LaunchLens AI";
+      description =
+        "This shared workspace link has been revoked by its owner.";
+    }
+  } catch (error) {
+    if (
+      error instanceof WorkspaceStoreError &&
+      error.code === "cloud_unavailable"
+    ) {
+      title = "Workspace unavailable - LaunchLens AI";
+      description =
+        "Cloud storage is not configured on this deployment.";
+    }
+  }
+
   return {
-    title: "Shared GTM workspace - LaunchLens AI",
-    description: "A go-to-market workspace shared from LaunchLens AI.",
+    title,
+    description,
     openGraph: {
-      title: "Shared GTM workspace - LaunchLens AI",
-      description: "View a shared LaunchLens AI go-to-market workspace.",
+      title,
+      description,
       type: "article",
+      siteName: "LaunchLens AI",
+      images: [
+        {
+          url: "/og.png",
+          width: 1280,
+          height: 640,
+          alt: projectName
+            ? `${projectName} - LaunchLens AI shared workspace`
+            : "LaunchLens AI - shared GTM workspace",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/og.png"],
     },
   };
 }
