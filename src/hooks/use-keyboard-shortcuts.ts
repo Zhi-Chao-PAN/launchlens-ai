@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect } from "react";
 
@@ -90,6 +90,27 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     ctrl: true,
     description: "Replay the quick start tour",
     category: "Help",
+  },
+  addEvidence: {
+    key: "e",
+    meta: true,
+    ctrl: true,
+    description: "Add evidence to first hypothesis",
+    category: "Actions",
+  },
+  newHypothesis: {
+    key: "n",
+    meta: true,
+    ctrl: true,
+    description: "Add a new hypothesis",
+    category: "Actions",
+  },
+  submitEvidence: {
+    key: "Enter",
+    meta: true,
+    ctrl: true,
+    description: "Submit evidence form (when focus is in note)",
+    category: "Actions",
   },
 };
 

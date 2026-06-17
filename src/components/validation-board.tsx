@@ -1,4 +1,5 @@
 "use client";
+import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 import {
   Check,
@@ -178,6 +179,29 @@ export function ValidationBoard({
   const experimentUndoTimerRef = useRef<number | null>(null);
   const [editingEvidenceId, setEditingEvidenceId] = useState<string | null>(null);
   const [confidenceFlashIds, setConfidenceFlashIds] = useState<Set<string>>(new Set());
+
+  // Global keyboard shortcuts via the shared registry so they appear in ? help.
+  useKeyboardShortcuts({
+    addEvidence: () => {
+      const first = execution.experiments[0];
+      if (!first) return;
+      setActiveExperimentId(first.id);
+      setRequestedExpandedExperimentId(first.id);
+      setIsAddingExperiment(false);
+      srAnnounce("Opening evidence form for first hypothesis.");
+      setTimeout(() => {
+        document.getElementById(`evidence-source-${first.id}`)?.focus();
+      }, 50);
+    },
+    newHypothesis: () => {
+      setIsAddingExperiment(true);
+      setActiveExperimentId("");
+      srAnnounce("Opening new hypothesis form.");
+      setTimeout(() => {
+        document.querySelector<HTMLInputElement>('[data-new-experiment-input]')?.focus();
+      }, 50);
+    },
+  });
     const SOURCE_MAX = 80;
   const NOTE_MAX = 500;
   const sourceLen = draft.source.length;
@@ -1382,6 +1406,7 @@ export function ValidationBoard({
               onChange={(e) => setNewExperimentDraft(e.target.value)}
               placeholder="What assumption do you want to validate?"
               autoFocus
+              data-new-experiment-input
               className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && newExperimentDraft.trim().length >= 5) {
@@ -2015,7 +2040,8 @@ export function ValidationBoard({
               )}
 
               <div
-                id={`evidence-form-${experiment.id}`}
+                id={`evidence-source-${experiment.id}`}
+                  aria-label="Evidence source"
                 className="grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none"
                 style={{ gridTemplateRows: formOpen ? "1fr" : "0fr" }}
                 aria-hidden={!formOpen}
@@ -2281,6 +2307,7 @@ export function ValidationBoard({
                         onBlur={() => setDraftTouched((cur) => ({ ...cur, source: true }))}
                         aria-invalid={!!sourceError}
                         aria-describedby={sourceError ? "evidence-source-error" : undefined}
+                        id={`evidence-source-${experiment.id}`}
                         placeholder="Interview #5, Mixpanel, App Store review..."
                         maxLength={SOURCE_MAX + 20}
                         className={`h-10 w-full rounded-md border bg-card px-3 text-sm outline-none ${
