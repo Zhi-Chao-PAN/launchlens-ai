@@ -779,29 +779,21 @@ export function ValidationBoard({
       return next;
     });
   }
-  function toggleSelectAllExperiments() {
+  const toggleSelectAllExperiments = useCallback(() => {
     const visibleIds = activeExperiments.map((e) => e.id);
     const allSelected = visibleIds.every((id) => selectedExperimentIds.has(id));
     setSelectedExperimentIds(new Set(allSelected ? [] : visibleIds));
-  }
-  function setSelectedStatus(status: ExperimentStatus) {
+  }, [activeExperiments, selectedExperimentIds]);
+  const setSelectedStatus = useCallback((status: ExperimentStatus) => {
     if (batchCount === 0) return;
-    onChange({
-      ...execution,
-      experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, status } : e),
-      updatedAt: new Date().toISOString(),
-    });
+    onChange({ ...execution, experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, status } : e), updatedAt: new Date().toISOString() });
     srAnnounce(`Set ${batchCount} hypotheses to ${status}.`);
-  }
-  function batchArchive(archived: boolean) {
+  }, [batchCount, execution, onChange, selectedExperimentIds, srAnnounce]);
+  const batchArchive = useCallback((archived: boolean) => {
     if (batchCount === 0) return;
-    onChange({
-      ...execution,
-      experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, archived } : e),
-      updatedAt: new Date().toISOString(),
-    });
+    onChange({ ...execution, experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, archived } : e), updatedAt: new Date().toISOString() });
     srAnnounce(archived ? `Archived ${batchCount} hypotheses.` : `Unarchived ${batchCount} hypotheses.`);
-  }
+  }, [batchCount, execution, onChange, selectedExperimentIds, srAnnounce]);
   function batchAddTag(tag: string) {
     const t = tag.trim();
     if (!t || batchCount === 0) return;
@@ -1242,12 +1234,22 @@ export function ValidationBoard({
     const onToggleEvent = () => doToggleSelectMode();
     const onClearFilters = () => doClearFilters();
     const onCollapseAll = () => doCollapseAll();
+    const onBulkStatus = (e: Event) => { const s = (e as CustomEvent<string>).detail as ExperimentStatus; if (s) setSelectedStatus(s); };
+    const onBulkArchive = () => batchArchive(true);
+    const onBulkUnarchive = () => batchArchive(false);
+    const onBulkSelectAll = () => toggleSelectAllExperiments();
+    const onBulkClear = () => { setSelectedExperimentIds(new Set()); setSelectMode(false); };
     window.addEventListener("launchlens:focus-search", onFocusEvent);
     window.addEventListener("launchlens:toggle-select-mode", onToggleEvent);
     window.addEventListener("launchlens:clear-filters", onClearFilters);
     window.addEventListener("launchlens:collapse-all", onCollapseAll);
-    return () => { off1?.(); off2?.(); window.removeEventListener("launchlens:focus-search", onFocusEvent); window.removeEventListener("launchlens:toggle-select-mode", onToggleEvent); window.removeEventListener("launchlens:clear-filters", onClearFilters); window.removeEventListener("launchlens:collapse-all", onCollapseAll); };
-  }, [doFocusSearch, doToggleSelectMode, doClearFilters, doCollapseAll]);
+    window.addEventListener("launchlens:bulk-status", onBulkStatus as EventListener);
+    window.addEventListener("launchlens:bulk-archive", onBulkArchive);
+    window.addEventListener("launchlens:bulk-unarchive", onBulkUnarchive);
+    window.addEventListener("launchlens:bulk-select-all", onBulkSelectAll);
+    window.addEventListener("launchlens:bulk-clear", onBulkClear);
+    return () => { off1?.(); off2?.(); const w = window; w.removeEventListener("launchlens:focus-search", onFocusEvent); w.removeEventListener("launchlens:toggle-select-mode", onToggleEvent); w.removeEventListener("launchlens:clear-filters", onClearFilters); w.removeEventListener("launchlens:collapse-all", onCollapseAll); w.removeEventListener("launchlens:bulk-status", onBulkStatus as EventListener); w.removeEventListener("launchlens:bulk-archive", onBulkArchive); w.removeEventListener("launchlens:bulk-unarchive", onBulkUnarchive); w.removeEventListener("launchlens:bulk-select-all", onBulkSelectAll); w.removeEventListener("launchlens:bulk-clear", onBulkClear); };
+  }, [doFocusSearch, doToggleSelectMode, doClearFilters, doCollapseAll, setSelectedStatus, batchArchive, toggleSelectAllExperiments]);
 
   function addEvidence(
     event: React.FormEvent<HTMLFormElement>,
