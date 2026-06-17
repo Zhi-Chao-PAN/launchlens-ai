@@ -386,7 +386,24 @@ export function ValidationBoard({
     };
     const status = experiment.status.charAt(0).toUpperCase() + experiment.status.slice(1);
     const confidence = experiment.confidence.charAt(0).toUpperCase() + experiment.confidence.slice(1);
-    const lines = [
+    const yamlQuote = (s: string) => "\"" + s.replace(/["\\]/g, "\\$&") + "\"";
+    const yamlTags = experiment.tags && experiment.tags.length ? "[" + experiment.tags.map((t) => yamlQuote(t)).join(", ") + "]" : "[]";
+    const yamlPinned = experiment.evidence.filter((e) => e.pinned).length;
+    const fm = [
+      "---",
+      "title: " + yamlQuote(experiment.assumption),
+      "status: " + experiment.status,
+      "confidence: " + experiment.confidence,
+      "evidence_count: " + experiment.evidence.length,
+      "pinned_evidence: " + yamlPinned,
+      "archived: " + (experiment.archived ? "true" : "false"),
+      "tags: " + yamlTags,
+      "updated: " + new Date().toISOString(),
+      "source: launchlens-ai",
+      "---",
+      "",
+    ];
+    const lines = fm.concat([
       "# " + experiment.assumption,
       "",
       "- **Status**: " + status,
@@ -395,7 +412,7 @@ export function ValidationBoard({
       "",
       "## Evidence",
       "",
-    ];
+    ]);
     if (experiment.evidence.length === 0) {
       lines.push("_No evidence recorded yet._");
     } else {
@@ -480,8 +497,23 @@ export function ValidationBoard({
       high: "High",
     };
 
-    const lines: string[] = [];
-    lines.push("# Validation Board");
+    const yamlQuote = (s: string) => "\"" + s.replace(/["\\]/g, "\\$&") + "\"";
+    const allTags = Array.from(new Set(execution.experiments.flatMap((e) => e.tags || [])));
+    const lines: string[] = [
+      "---",
+      "title: " + yamlQuote("Validation Board"),
+      "source: launchlens-ai",
+      "hypotheses: " + execution.experiments.length,
+      "supported: " + execution.experiments.filter((e) => e.status === "supported").length,
+      "refuted: " + execution.experiments.filter((e) => e.status === "refuted").length,
+      "testing: " + execution.experiments.filter((e) => e.status === "testing").length,
+      "untested: " + execution.experiments.filter((e) => e.status === "untested").length,
+      "tags: [" + allTags.map((t) => yamlQuote(t)).join(", ") + "]",
+      "updated: " + new Date().toISOString(),
+      "---",
+      "",
+      "# Validation Board",
+    ];
     lines.push("");
     lines.push(
       "- **Hypotheses**: " +
