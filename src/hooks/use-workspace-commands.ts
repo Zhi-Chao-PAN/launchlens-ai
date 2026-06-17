@@ -127,6 +127,28 @@ export function useWorkspaceCommands(options: {
       });
     }
 
+    // Board power-user commands (dispatch custom events ValidationBoard listens to)
+    actions.push({
+      id: "action:focus-search",
+      label: "Focus board search",
+      description: "Jump to the validation board search input",
+      category: "Actions",
+      icon: "search",
+      shortcut: shortcutMap.focusSearch,
+      keywords: ["search", "find", "filter", "hypothesis", "board"],
+      onSelect: () => window.dispatchEvent(new CustomEvent("launchlens:focus-search")),
+    });
+    actions.push({
+      id: "action:toggle-select-mode",
+      label: "Toggle multi-select",
+      description: "Enter or exit bulk selection mode on the validation board",
+      category: "Actions",
+      icon: "action",
+      shortcut: shortcutMap.toggleSelectMode,
+      keywords: ["select", "multi", "bulk", "batch"],
+      onSelect: () => window.dispatchEvent(new CustomEvent("launchlens:toggle-select-mode")),
+    });
+
     // Search in workspace content (if workspace is available)
     if (workspace) {
       // Add target users as searchable items
@@ -179,7 +201,7 @@ export function useWorkspaceCommands(options: {
           keywords: ["task", "launch", "todo", task.owner],
           onSelect: () => onNavigate?.("tasks"),
         });
-
+      });
       // Add content calendar items
       workspace.contentCalendar.forEach((item, i) => {
         actions.push({
@@ -207,7 +229,6 @@ export function useWorkspaceCommands(options: {
           });
         });
       }
-      });
     }
 
     return actions;

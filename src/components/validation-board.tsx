@@ -1162,22 +1162,32 @@ export function ValidationBoard({
   }
 
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const doFocusSearch = useCallback(() => {
+    searchInputRef.current?.focus();
+    searchInputRef.current?.select();
+  }, []);
+  const doToggleSelectMode = useCallback(() => {
+    setSelectMode((v) => { const next = !v; if (!next) setSelectedExperimentIds(new Set()); return next; });
+  }, []);
   useEffect(() => {
     const off1 = registerShortcut('focusSearch', (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
       event.preventDefault();
-      searchInputRef.current?.focus();
-      searchInputRef.current?.select();
+      doFocusSearch();
     });
     const off2 = registerShortcut('toggleSelectMode', (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
       event.preventDefault();
-      setSelectMode((v) => { const next = !v; if (!next) setSelectedExperimentIds(new Set()); return next; });
+      doToggleSelectMode();
     });
-    return () => { off1?.(); off2?.(); };
-  }, []);
+    const onFocusEvent = () => doFocusSearch();
+    const onToggleEvent = () => doToggleSelectMode();
+    window.addEventListener("launchlens:focus-search", onFocusEvent);
+    window.addEventListener("launchlens:toggle-select-mode", onToggleEvent);
+    return () => { off1?.(); off2?.(); window.removeEventListener("launchlens:focus-search", onFocusEvent); window.removeEventListener("launchlens:toggle-select-mode", onToggleEvent); };
+  }, [doFocusSearch, doToggleSelectMode]);
 
   function addEvidence(
     event: React.FormEvent<HTMLFormElement>,
