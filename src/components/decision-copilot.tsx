@@ -21,6 +21,7 @@ import {
   type GroundedClaim,
 } from "@/lib/launchlens/decision";
 import type {
+  ExperimentStatus,
   ValidationExperiment,
   WorkspaceExecutionState,
 } from "@/lib/launchlens/execution";
@@ -263,6 +264,39 @@ export function DecisionCopilot({
       updatedAt: new Date().toISOString(),
     });
   }
+  function applyRecommendation() {
+    if (!currentBrief || !experiment) return;
+
+    const rec = currentBrief.recommendation;
+    let newStatus: ExperimentStatus = experiment.status;
+    const headline = currentBrief.headline || "";
+
+    if (rec === "proceed") {
+      newStatus = "supported";
+    } else if (rec === "pivot" || rec === "pause") {
+      newStatus = "refuted";
+    } else if (rec === "iterate") {
+      newStatus = "testing";
+    }
+
+    const decisionLabel = rec.charAt(0).toUpperCase() + rec.slice(1);
+    const newDecision = `${decisionLabel} - ${headline}`;
+    const nextAction = currentBrief.nextActions?.[0] || experiment.nextAction;
+
+    onChange({
+      ...execution,
+      experiments: execution.experiments.map((item) =>
+        item.id === experiment.id
+          ? { ...item, status: newStatus, decision: newDecision, nextAction }
+          : item,
+      ),
+      updatedAt: new Date().toISOString(),
+    });
+
+    setNotice("Recommendation applied to hypothesis status and decision.");
+    setSrGenerationAnnouncement("Recommendation applied.");
+  }
+
 
   async function generateBrief() {
     if (!experiment || experiment.evidence.length === 0) {
@@ -448,6 +482,18 @@ export function DecisionCopilot({
                 ? "Regenerate brief"
                 : "Generate decision brief"}
           </button>
+
+          {currentBrief && (
+            <button
+              type="button"
+              onClick={applyRecommendation}
+              className="mt-2 flex h-10 w-full items-center justify-center gap-2 rounded-md border border-accent bg-transparent px-4 text-sm font-semibold text-accent transition hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <CheckCircle2 className="size-4" aria-hidden="true" />
+              Apply recommendation
+            </button>
+          )}
+
           <span id="decision-generation-status" role="status" aria-live="polite" className="sr-only">
             {srGenerationAnnouncement}
           </span>
