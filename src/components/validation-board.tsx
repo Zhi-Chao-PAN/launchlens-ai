@@ -14,6 +14,7 @@ import {
   Download,
   Link2,
   PencilLine,
+  Search,
   Plus,
   Trash2,
   Star,
@@ -232,6 +233,7 @@ export function ValidationBoard({
   const [showWeightPicker, setShowWeightPicker] = useState(false);
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "decided">("all");
   const [sortBy, setSortBy] = useState<"default" | "confidence" | "status" | "progress">("default");
+  const [searchQuery, setSearchQuery] = useState("");
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [newExperimentTagDraft, setNewExperimentTagDraft] = useState("");
   const [newExperimentTags, setNewExperimentTags] = useState<string[]>([]);
@@ -266,6 +268,13 @@ export function ValidationBoard({
 
   const filteredExperiments = useMemo(() => {
     let list = execution.experiments;
+    const q = searchQuery.trim().toLowerCase();
+    if (q) {
+      list = list.filter((exp) => {
+        const haystack = [exp.assumption, exp.decision, exp.nextAction, ...(exp.tags || []), ...exp.evidence.flatMap((ev) => [ev.note, ev.source])].join(" ").toLowerCase();
+        return haystack.includes(q);
+      });
+    }
     if (statusFilter === "active") {
       list = list.filter(
         (exp) => exp.status === "untested" || exp.status === "testing",
@@ -300,7 +309,7 @@ export function ValidationBoard({
     }
 
     return list;
-  }, [execution.experiments, statusFilter, sortBy]);
+  }, [execution.experiments, statusFilter, sortBy, searchQuery]);
   const activeExperiments = filteredExperiments.filter((e) => !e.archived);
   const archivedExperiments = filteredExperiments.filter((e) => e.archived);
 
@@ -1366,6 +1375,22 @@ export function ValidationBoard({
                 <button key={tag} type="button" onClick={() => setTagFilter(tagFilter === tag ? null : tag)} className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition ${tagFilter === tag ? "bg-accent text-white" : "bg-muted text-muted hover:text-foreground"}`}>#{tag}</button>
               ))}
             </div>
+          )}
+        </div>
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted" aria-hidden="true" />
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search..."
+            aria-label="Search hypotheses, evidence, tags"
+            className="h-7 w-40 rounded-md border border-input bg-card pl-7 pr-6 text-xs text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+          />
+          {searchQuery && (
+            <button type="button" onClick={() => setSearchQuery("")} aria-label="Clear search" className="absolute right-1 top-1/2 -translate-y-1/2 flex size-5 items-center justify-center rounded text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+              <X className="size-3" aria-hidden="true" />
+            </button>
           )}
         </div>
         <select
