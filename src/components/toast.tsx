@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { CheckCircle2, AlertTriangle, Info, X } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Info, X, Undo2 } from "lucide-react";
 import { hasOpenOverlay } from "@/lib/launchlens/overlays";
 
 export type ToastType = "success" | "error" | "info";
@@ -388,6 +388,19 @@ function ToastContainer() {
     >
       {icons[toast.type]}
       <p className="flex-1 text-sm leading-5 text-foreground">{toast.message}</p>
+      {toast.action && (
+        <button
+          type="button"
+          onClick={() => {
+            toast.action?.onClick();
+            onDismiss();
+          }}
+          className="shrink-0 flex items-center gap-1 rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-foreground transition hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+        >
+          <Undo2 className="size-3.5" aria-hidden="true" />
+          {toast.action.label}
+        </button>
+      )}
       <button
         type="button"
         onClick={onDismiss}

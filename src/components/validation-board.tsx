@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
+import { useToast } from "@/components/toast";
 
 import {
   DEFAULT_PROGRESS_WEIGHTS,
@@ -94,6 +95,7 @@ export function ValidationBoard({
   const [draftTouched, setDraftTouched] = useState<{source: boolean; note: boolean}>({ source: false, note: false });
   const [draftSubmitError, setDraftSubmitError] = useState<string>("");
   const { announce: srAnnounce, message: srEvidenceAnnouncement } = useSrAnnounce();
+  const { showToast } = useToast();
   const evidenceListRef = useRef<HTMLUListElement | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [recentlyDeleted, setRecentlyDeleted] = useState<{ experimentId: string; evidence: ValidationEvidence; index: number } | null>(null);
@@ -218,6 +220,10 @@ export function ValidationBoard({
       evidence: exp.evidence.filter((e) => e.id !== evidenceId),
     }));
     srAnnounce("Evidence from " + evidence.source + " removed. Press Ctrl+Z to undo.");
+    showToast("Evidence removed", "info", 5000, {
+      label: "Undo",
+      onClick: () => undoDeleteEvidence(),
+    });
     setPendingDeleteId(null);
     requestAnimationFrame(() => {
       if (nextFocusTarget instanceof HTMLElement) {
