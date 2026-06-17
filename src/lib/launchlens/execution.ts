@@ -380,6 +380,73 @@ export function reconcileExecutionState(
   };
 }
 
+const EVIDENCE_WEIGHT_VALUES: Record<EvidenceWeight, number> = {
+  anecdotal: 1,
+  moderate: 2,
+  strong: 4,
+};
+
+/**
+ * Compute an experiment's confidence level from its evidence.
+ *
+ * Algorithm:
+ * - Total weighted score = sum of weight values (supports = +, challenges = -, neutral = +0.5×)
+ * - Consensus = abs(total) / totalWeight — how aligned the evidence is
+ * - Confidence threshold: low < 3 weight ≤ medium < 7 weight ≤ high
+ * - Mixed signals (consensus < 0.4) pull confidence down one tier
+ */
+export function computeExperimentConfidence(
+  evidence: { signal: EvidenceSignal; weight: EvidenceWeight }[],
+): ConfidenceLevel {
+  if (evidence.length === 0) {
+    return "low";
+  }
+
+  let totalWeight = 0;
+  let directionalWeight = 0;
+  let supportsWeight = 0;
+  let challengesWeight = 0;
+
+  for (const item of evidence) {
+    const w = EVIDENCE_WEIGHT_VALUES[item.weight] ?? 2;
+    totalWeight += w;
+    if (item.signal === "supports") {
+      supportsWeight += w;
+      directionalWeight += w;
+    } else if (item.signal === "challenges") {
+      challengesWeight += w;
+      directionalWeight += w;
+    }
+    // neutral: adds to total but not to directional or consensus
+  }
+
+  if (totalWeight === 0) {
+    return "low";
+  }
+
+  // Consensus: how aligned the directional evidence is.
+  // 1 = all same direction, 0 = perfectly balanced.
+  // If no directional evidence, consensus is 0.5 (neutral = mild uncertainty).
+  const consensus = directionalWeight > 0
+    ? Math.abs(supportsWeight - challengesWeight) / directionalWeight
+    : 0.5;
+
+  // Base tier from total evidence weight
+  let base: ConfidenceLevel = "low";
+  if (totalWeight >= 7) {
+    base = "high";
+  } else if (totalWeight >= 3) {
+    base = "medium";
+  }
+
+  // Pull down one tier if evidence is highly mixed
+  if (consensus < 0.4 && base !== "low") {
+    return base === "high" ? "medium" : "low";
+  }
+
+  return base;
+}
+
 export function evaluateExecutionProgress(
   execution: WorkspaceExecutionState,
   weights: ExecutionProgressWeights = DEFAULT_PROGRESS_WEIGHTS,

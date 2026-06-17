@@ -13,6 +13,7 @@ import {
   reconcileExecutionState,
   summarizeExecutionState,
   taskIdentity,
+  computeExperimentConfidence,
 } from "./execution";
 
 const workspace = exampleWorkspaces[0].workspace;
@@ -420,4 +421,63 @@ describe("workspace execution state", () => {
     expect(id1.length).toBeGreaterThan(5);
   });
 
+
+  describe("computeExperimentConfidence", () => {
+    it("returns low for zero evidence", () => {
+      expect(computeExperimentConfidence([])).toBe("low");
+    });
+
+    it("returns low for a single anecdotal evidence", () => {
+      expect(
+        computeExperimentConfidence([
+          { signal: "supports", weight: "anecdotal" },
+        ]),
+      ).toBe("low");
+    });
+
+    it("returns medium for moderate + anecdotal (weight 3)", () => {
+      expect(
+        computeExperimentConfidence([
+          { signal: "supports", weight: "moderate" },
+          { signal: "supports", weight: "anecdotal" },
+        ]),
+      ).toBe("medium");
+    });
+
+    it("returns high for two strong evidence (weight 8)", () => {
+      expect(
+        computeExperimentConfidence([
+          { signal: "supports", weight: "strong" },
+          { signal: "supports", weight: "strong" },
+        ]),
+      ).toBe("high");
+    });
+
+    it("pulls high down to medium when signals are deeply mixed", () => {
+      expect(
+        computeExperimentConfidence([
+          { signal: "supports", weight: "strong" },
+          { signal: "challenges", weight: "strong" },
+        ]),
+      ).toBe("medium");
+    });
+
+    it("keeps medium when signals are reasonably aligned", () => {
+      expect(
+        computeExperimentConfidence([
+          { signal: "supports", weight: "strong" },
+          { signal: "challenges", weight: "anecdotal" },
+        ]),
+      ).toBe("medium");
+    });
+
+    it("treats neutral evidence as weak consensus contribution", () => {
+      expect(
+        computeExperimentConfidence([
+          { signal: "neutral", weight: "moderate" },
+          { signal: "neutral", weight: "moderate" },
+        ]),
+      ).toBe("medium");
+    });
+  });
 });

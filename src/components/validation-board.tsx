@@ -31,6 +31,7 @@ import {
   type ValidationExperiment,
   assumptionIdentity,
   type WorkspaceExecutionState,
+  computeExperimentConfidence,
 } from "@/lib/launchlens/execution";
 import type { LaunchTask } from "@/lib/launchlens/types";
 
@@ -238,10 +239,14 @@ export function ValidationBoard({
       allDeleteButtons[currentIndex + 1] ||
       allDeleteButtons[currentIndex - 1] ||
       evidenceListRef.current;
-    updateExperiment(experimentId, (exp) => ({
-      ...exp,
-      evidence: exp.evidence.filter((e) => e.id !== evidenceId),
-    }));
+    updateExperiment(experimentId, (exp) => {
+      const newEvidence = exp.evidence.filter((e) => e.id !== evidenceId);
+      return {
+        ...exp,
+        evidence: newEvidence,
+        confidence: computeExperimentConfidence(newEvidence),
+      };
+    });
     srAnnounce("Evidence from " + evidence.source + " removed. Press Ctrl+Z to undo.");
     showToast("Evidence removed", "info", 5000, {
       label: "Undo",
@@ -303,7 +308,7 @@ export function ValidationBoard({
     updateExperiment(experimentId, (exp) => {
       const next = [...exp.evidence];
       next.splice(index, 0, evidence);
-      return { ...exp, evidence: next };
+      return { ...exp, evidence: next, confidence: computeExperimentConfidence(next) };
     });
     if (evidenceUndoTimerRef.current) {
       window.clearTimeout(evidenceUndoTimerRef.current);
@@ -452,10 +457,8 @@ export function ValidationBoard({
     }
     setDraftSubmitError("");
 
-    updateExperiment(experimentId, (experiment) => ({
-      ...experiment,
-      status: experiment.status === "untested" ? "testing" : experiment.status,
-      evidence: [
+    updateExperiment(experimentId, (experiment) => {
+      const newEvidence = [
         ...experiment.evidence,
         {
           id: evidenceId(),
@@ -465,8 +468,14 @@ export function ValidationBoard({
           weight: draft.weight,
           observedAt: new Date().toISOString(),
         },
-      ],
-    }));
+      ];
+      return {
+        ...experiment,
+        status: experiment.status === "untested" ? "testing" : experiment.status,
+        evidence: newEvidence,
+        confidence: computeExperimentConfidence(newEvidence),
+      };
+    });
     setDraft(emptyDraft);
     setDraftTouched({ source: false, note: false });
     setDraftSubmitError("");
