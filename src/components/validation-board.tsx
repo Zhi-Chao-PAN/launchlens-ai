@@ -220,13 +220,53 @@ export function ValidationBoard({
   function startEditingEvidence(experimentId: string, evidenceId: string) {
     const experiment = execution.experiments.find((e) => e.id === experimentId);
     const evidence = experiment?.evidence.find((e) => e.id === evidenceId);
-    if (!evidence) return;
+    if (!experiment || !evidence) return;
 
     setRequestedExpandedExperimentId(experimentId);
     setActiveExperimentId(experimentId);
     setDraft({ signal: evidence.signal ?? "supports", weight: evidence.weight ?? "moderate", source: evidence.source, note: evidence.note });
     setEditingEvidenceId(evidenceId);
     setDraftTouched({ source: false, note: false });
+  }
+
+  function cycleEvidenceSignal(experimentId: string, evidenceId: string) {
+    const experiment = execution.experiments.find((e) => e.id === experimentId);
+    const evidence = experiment?.evidence.find((e) => e.id === evidenceId);
+    if (!experiment || !evidence) return;
+
+    const order: EvidenceSignal[] = ["supports", "challenges", "neutral"];
+    const currentIdx = order.indexOf(evidence.signal);
+    const nextSignal = order[(currentIdx + 1) % order.length];
+
+    const oldConfidence = experiment.confidence;
+    const isManual = experiment.confidenceManual;
+
+    updateExperiment(experimentId, (exp) => {
+      const newEvidence = exp.evidence.map((e) =>
+        e.id === evidenceId ? { ...e, signal: nextSignal } : e,
+      );
+      return {
+        ...exp,
+        evidence: newEvidence,
+        confidence: isManual
+          ? exp.confidence
+          : computeExperimentConfidence(newEvidence),
+      };
+    });
+
+    // Notify confidence change if auto
+    if (!isManual) {
+      const updatedExperiment = execution.experiments.find((e) => e.id === experimentId);
+      const newEvidence = updatedExperiment?.evidence.map((e) =>
+        e.id === evidenceId ? { ...e, signal: nextSignal } : e,
+      ) ?? [];
+      const newConfidence = computeExperimentConfidence(newEvidence);
+      if (oldConfidence !== newConfidence) {
+        notifyConfidenceChange(experimentId, oldConfidence, newConfidence);
+      }
+    }
+
+    srAnnounce("Evidence signal changed to " + nextSignal + ".");
   }
 
   function moveEvidence(
@@ -1251,17 +1291,26 @@ export function ValidationBoard({
                           <span className="font-semibold text-foreground">
                             {item.source}
                           </span>
-                          <span
+                          <button
+                            type="button"
+                            onClick={() => cycleEvidenceSignal(experiment.id, item.id)}
+                            aria-label={
+                              "Evidence signal: " +
+                              signalLabels[item.signal] +
+                              ". Click to cycle."
+                            }
+                            title="Click to cycle signal (supports challenges neutral)"
                             className={
-                              item.signal === "supports"
-                                ? "rounded-md bg-signal-supports/15 px-2 py-1 text-[11px] font-semibold uppercase text-signal-supports"
+                              "rounded-md px-2 py-1 text-[11px] font-semibold uppercase transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 " +
+                              (item.signal === "supports"
+                                ? "bg-signal-supports/15 text-signal-supports"
                                 : item.signal === "challenges"
-                                ? "rounded-md bg-signal-challenges/15 px-2 py-1 text-[11px] font-semibold uppercase text-signal-challenges"
-                                : "rounded-md bg-muted px-2 py-1 text-[11px] font-semibold uppercase text-muted"
+                                ? "bg-signal-challenges/15 text-signal-challenges"
+                                : "bg-muted text-muted")
                             }
                           >
                             {signalLabels[item.signal]}
-                          </span>
+                          </button>
                           <span
                             aria-label={`Evidence weight: ${item.weight}`}
                             title={item.weight.charAt(0).toUpperCase() + item.weight.slice(1)}
