@@ -8,7 +8,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
 import { Skeleton } from "@/components/skeleton";
 
@@ -255,17 +255,21 @@ export function DecisionCopilot({
     [execution],
   );
 
-  function saveBrief(
-    experimentId: string,
-    brief: ValidationExperiment["decisionBrief"],
-  ) {
-    onChange({
-      experiments: execution.experiments.map((item) =>
-        item.id === experimentId ? { ...item, decisionBrief: brief } : item,
-      ),
-      updatedAt: new Date().toISOString(),
-    });
-  }
+  const saveBrief = useCallback(
+    (
+      experimentId: string,
+      brief: ValidationExperiment["decisionBrief"],
+    ) => {
+      onChange({
+        experiments: execution.experiments.map((item) =>
+          item.id === experimentId ? { ...item, decisionBrief: brief } : item,
+        ),
+        updatedAt: new Date().toISOString(),
+      });
+    },
+    [onChange, execution.experiments],
+  );
+
   function applyRecommendation() {
     if (!currentBrief || !experiment) return;
 
@@ -368,7 +372,7 @@ export function DecisionCopilot({
     setSrGenerationAnnouncement(summary);
   }
 
-  async function generateBrief() {
+  const generateBrief = useCallback(async () => {
     if (!experiment || experiment.evidence.length === 0) {
       setError("Add at least one evidence item before generating a brief.");
       return;
@@ -426,7 +430,7 @@ export function DecisionCopilot({
     } finally {
       setIsGenerating(false);
     }
-  }
+  }, [experiment, saveBrief, setSrGenerationAnnouncement]);
 
 
   // Staggered reveal animation when a new brief finishes generating
@@ -453,6 +457,27 @@ export function DecisionCopilot({
       }
     };
   }, [currentBrief, experiment, isGenerating]);
+
+  // Keyboard shortcut: Cmd/Ctrl+Shift+B triggers brief generation when possible
+  const generateButtonRef = useRef<HTMLButtonElement | null>(null);
+  useEffect(() => {
+    function handleKeydown(event: KeyboardEvent) {
+      const modifier = event.metaKey || event.ctrlKey;
+      if (!modifier || !event.shiftKey) return;
+      if (event.key.toLowerCase() !== "b") return;
+      if (event.target instanceof HTMLElement) {
+        const tag = event.target.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA" || event.target.isContentEditable) {
+          return;
+        }
+      }
+      event.preventDefault();
+      if (isGenerating || isBatchGenerating || !experiment || experiment.evidence.length === 0) return;
+      void generateBrief();
+    }
+    window.addEventListener("keydown", handleKeydown);
+    return () => window.removeEventListener("keydown", handleKeydown);
+  }, [isGenerating, isBatchGenerating, experiment, generateBrief]);
 
   return (
     <section className="rounded-lg border border-card bg-card shadow-sm">
@@ -582,6 +607,7 @@ export function DecisionCopilot({
           </div>
 
           <button
+            ref={generateButtonRef}
             type="button"
             onClick={generateBrief}
             disabled={
@@ -589,6 +615,7 @@ export function DecisionCopilot({
             }
             aria-busy={isGenerating}
             aria-describedby="decision-generation-status"
+            title="Generate decision brief (Ctrl+Shift+B / Cmd+Shift+B)"
             className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-text shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isGenerating ? (
@@ -627,7 +654,12 @@ export function DecisionCopilot({
           {!experiment?.evidence.length && (
             <p className="mt-3 text-xs leading-5 text-muted">
               Record evidence in the validation loop before asking AI for a
-              recommendation.
+              recommendation. Shortcut:{" "}
+              <kbd className="rounded border border-muted/30 bg-muted px-1 font-mono text-[10px]">Ctrl</kbd>{" "}
+              +{" "}
+              <kbd className="rounded border border-muted/30 bg-muted px-1 font-mono text-[10px]">Shift</kbd>{" "}
+              +{" "}
+              <kbd className="rounded border border-muted/30 bg-muted px-1 font-mono text-[10px]">B</kbd>
             </p>
           )}
           {experiment?.decisionBrief && !currentBrief && (
