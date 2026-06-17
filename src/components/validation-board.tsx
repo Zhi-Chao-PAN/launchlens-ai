@@ -178,8 +178,27 @@ export function ValidationBoard({
   const experimentUndoTimerRef = useRef<number | null>(null);
   const [editingEvidenceId, setEditingEvidenceId] = useState<string | null>(null);
   const [confidenceFlashIds, setConfidenceFlashIds] = useState<Set<string>>(new Set());
-    const sourceError = draftTouched.source && draft.source.trim().length < 2 ? "Source needs at least 2 characters." : "";
-  const noteError = draftTouched.note && draft.note.trim().length < 8 ? "Observation needs at least 8 characters." : "";
+    const SOURCE_MAX = 80;
+  const NOTE_MAX = 500;
+  const sourceLen = draft.source.length;
+  const noteLen = draft.note.length;
+  const sourceError = (
+    (draftTouched.source && draft.source.trim().length < 2)
+      ? "Source needs at least 2 characters."
+      : sourceLen > SOURCE_MAX
+      ? "Source is too long (max " + SOURCE_MAX + " characters)."
+      : ""
+  );
+  const noteError = (
+    (draftTouched.note && draft.note.trim().length < 8)
+      ? "Observation needs at least 8 characters."
+      : noteLen > NOTE_MAX
+      ? "Observation is too long (max " + NOTE_MAX + " characters)."
+      : ""
+  );
+  const sourceNear = sourceLen > SOURCE_MAX * 0.8 && sourceLen <= SOURCE_MAX;
+  const noteNear = noteLen > NOTE_MAX * 0.8 && noteLen <= NOTE_MAX;
+  const formInvalid = sourceLen > SOURCE_MAX || noteLen > NOTE_MAX;
   const [weightPreset, setWeightPreset] = useState<"default" | "evidence" | "decision">("default");
   const [showWeightPicker, setShowWeightPicker] = useState(false);
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "decided">("all");
@@ -333,7 +352,7 @@ export function ValidationBoard({
     } else {
       experiment.evidence.forEach((item, itemIdx) => {
         lines.push(
-          "### " + (itemIdx + 1) + ". " + signalLabel[item.signal] + " 闁?" + item.source,
+          "### " + (itemIdx + 1) + ". " + signalLabel[item.signal] + " 闂?" + item.source,
         );
         lines.push("");
         lines.push("- **Weight**: " + weightLabel[item.weight]);
@@ -418,7 +437,7 @@ export function ValidationBoard({
     lines.push(
       "- **Hypotheses**: " +
         execution.experiments.length +
-        " total 闁?" +
+        " total 闂?" +
         execution.experiments.filter((e) => e.status === "supported").length +
         " supported, " +
         execution.experiments.filter((e) => e.status === "refuted").length +
@@ -454,7 +473,7 @@ export function ValidationBoard({
               (itemIdx + 1) +
               ". " +
               signalLabel[item.signal] +
-              " 闁?" +
+              " 闂?" +
               item.source,
           );
           lines.push("");
@@ -900,7 +919,7 @@ export function ValidationBoard({
     // Toast notification - subtle, auto-dismisses
     const labels: Record<ConfidenceLevel, string> = { low: "Low", medium: "Medium", high: "High" };
     showToast(
-      `Confidence updated: ${labels[oldConfidence]} 闁?${labels[newConfidence]}`,
+      `Confidence updated: ${labels[oldConfidence]} 闂?${labels[newConfidence]}`,
       "info",
       2200,
     );
@@ -1034,6 +1053,10 @@ export function ValidationBoard({
     if (source.length < 2 || note.length < 8) {
       setDraftSubmitError("Please fill in the source and observation before recording evidence.");
       srAnnounce("Evidence not recorded. Please fill in the source and observation.");
+      return;
+    }
+    if (source.length > 80 || note.length > 500) {
+      setDraftSubmitError("Source and observation must be within length limits.");
       return;
     }
     setDraftSubmitError("");
@@ -1525,7 +1548,7 @@ export function ValidationBoard({
                       />
                       {experiment.confidence.charAt(0).toUpperCase() + experiment.confidence.slice(1)}
                       {!experiment.confidenceManual && experiment.evidence.length > 0 && (
-                        <span className="text-[10px] font-medium opacity-75">闁?auto</span>
+                        <span className="text-[10px] font-medium opacity-75">闂?auto</span>
                       )}
                     </span>
                     <span className="text-xs text-muted" aria-label={`${experiment.evidence.length} evidence item${experiment.evidence.length === 1 ? "" : "s"}`}>
@@ -2147,7 +2170,7 @@ export function ValidationBoard({
                           }
                           aria-hidden="true"
                         >
-                          闁?                        </span>
+                          闂?                        </span>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2 text-xs">
                             <span className="font-semibold text-foreground">
@@ -2242,12 +2265,12 @@ export function ValidationBoard({
                   </label>
                   <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
                     <label className="block">
-                      <span className="mb-2 block text-xs font-semibold uppercase text-muted">
-                        Source
+                      <span className="mb-2 flex items-center justify-between text-xs font-semibold uppercase text-muted">
+                        <span>Source</span>
+                        <span className={"font-mono tabular-nums " + (sourceLen > SOURCE_MAX ? "text-signal-challenges" : sourceNear ? "text-signal-supports" : "text-muted/60")}>{sourceLen}/{SOURCE_MAX}</span>
                       </span>
                       <input
                         required
-                        maxLength={160}
                         value={draft.source}
                         onChange={(event) =>
                           setDraft((current) => ({
@@ -2259,6 +2282,7 @@ export function ValidationBoard({
                         aria-invalid={!!sourceError}
                         aria-describedby={sourceError ? "evidence-source-error" : undefined}
                         placeholder="Interview, metric, test"
+                        maxLength={SOURCE_MAX + 20}
                         className={`h-10 w-full rounded-md border bg-card px-3 text-sm outline-none ${
                           sourceError
                             ? "border-signal-challenges focus:border-signal-challenges focus:ring-2 focus:ring-[var(--signal-challenges-border)]"
@@ -2270,12 +2294,13 @@ export function ValidationBoard({
                       )}
                     </label>
                     <label className="block">
-                      <span className="mb-2 block text-xs font-semibold uppercase text-muted">
-                        Observation
+                      <span className="mb-2 flex items-center justify-between text-xs font-semibold uppercase text-muted">
+                        <span>Observation</span>
+                        <span className={"font-mono tabular-nums " + (noteLen > NOTE_MAX ? "text-signal-challenges" : noteNear ? "text-signal-supports" : "text-muted/60")}>{noteLen}/{NOTE_MAX}</span>
                       </span>
                       <input
                         required
-                        maxLength={800}
+                        maxLength={NOTE_MAX + 20}
                         value={draft.note}
                         onChange={(event) =>
                           setDraft((current) => ({
@@ -2304,7 +2329,9 @@ export function ValidationBoard({
                     )}
                     <button
                       type="submit"
-                      className="flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
+                      disabled={formInvalid}
+                      aria-disabled={formInvalid}
+                      className="flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary"
                     >
                       <Plus className="size-4" aria-hidden="true" />
                       {editingEvidenceId ? "Save" : "Record"}
