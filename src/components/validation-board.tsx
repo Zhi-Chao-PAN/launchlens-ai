@@ -922,6 +922,22 @@ export function ValidationBoard({
       }
     }
 
+    // Alt+ArrowUp/Down to reorder hypothesis
+    if (e.altKey && (e.key === "ArrowUp" || e.key === "ArrowDown") && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+      const idx = execution.experiments.findIndex((ex) => ex.id === experimentId);
+      const targetIdx = e.key === "ArrowUp" ? idx - 1 : idx + 1;
+      if (idx >= 0 && targetIdx >= 0 && targetIdx < execution.experiments.length) {
+        e.preventDefault();
+        const next = [...execution.experiments];
+        const [m] = next.splice(idx, 1);
+        next.splice(targetIdx, 0, m);
+        onChange({ ...execution, experiments: next, updatedAt: new Date().toISOString() });
+        srAnnounce("Hypothesis moved " + (e.key === "ArrowUp" ? "up" : "down") + ".");
+        requestAnimationFrame(() => (e.currentTarget as HTMLElement).focus());
+      }
+      return;
+    }
+
     // ArrowUp/Down to move focus between experiments
     if (e.key === "ArrowUp" || e.key === "ArrowDown") {
       const articles = Array.from(
