@@ -52,4 +52,22 @@ describe('mock provider idempotency', () => {
     expect(typeof result.pricing).toBe('object');
     expect(result.pricing).not.toBeNull();
   });
+
+
+  it("buildMockWorkspace produces consistent output for the same input", () => {
+    const input = { idea: "Test idea", audience: "Founders", market: "SaaS", tone: "crisp", constraints: "None" };
+    const r1 = buildMockWorkspace(input);
+    const r2 = buildMockWorkspace(input);
+    expect(r1.summary).toBe(r2.summary);
+  });
+
+  it("buildMockWorkspace includes all required sections", () => {
+    const input = { idea: "A", audience: "B", market: "C", tone: "D", constraints: "" };
+    const result = buildMockWorkspace(input);
+    expect(result.targetUsers.length).toBeGreaterThan(0);
+    expect(result.pains.length).toBeGreaterThan(0);
+    expect(result.backlog.length).toBeGreaterThan(0);
+    expect(result.landingPage.headline.length).toBeGreaterThan(0);
+  });
+
 });

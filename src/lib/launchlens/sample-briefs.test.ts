@@ -42,4 +42,21 @@ describe("sampleBriefs", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
+
+
+  it("every sample brief has a label and input.tone", () => {
+    for (const brief of sampleBriefs) {
+      expect(typeof brief.label).toBe("string");
+      expect(brief.label.length).toBeGreaterThan(0);
+      expect(typeof brief.input.tone).toBe("string");
+      expect(brief.input.tone.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("sample brief ids use lowercase kebab-case", () => {
+    for (const brief of sampleBriefs) {
+      expect(brief.id).toMatch(/^[a-z][a-z0-9-]*$/);
+    }
+  });
+
 });

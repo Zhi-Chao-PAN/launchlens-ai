@@ -236,4 +236,17 @@ describe("markdown export empty-list robustness", () => {
     expect(md).toContain("Content");
   });
 
+
+
+  it("markdown export includes target users section", () => {
+    const md = workspaceToMarkdown(exampleWorkspaces[0].workspace);
+    expect(md).toMatch(/target.*user|audience/i);
+  });
+
+  it("markdown export includes at least 3 level-2 headings", () => {
+    const md = workspaceToMarkdown(exampleWorkspaces[0].workspace);
+    const headingCount = (md.match(/^## /gm) || []).length;
+    expect(headingCount).toBeGreaterThanOrEqual(3);
+  });
+
 });

@@ -131,4 +131,20 @@ describe("safeJsonFilename", () => {
     expect(parsed.execution).toBeDefined();
     expect(Array.isArray(parsed.execution?.experiments)).toBe(true);
   });
+
+
+  it("exported JSON is valid and parseable", () => {
+    const result = workspaceToJson(exampleWorkspaces[0].workspace);
+    const parsed = JSON.parse(result);
+    expect(parsed.generatedAt).toBeTruthy();
+    expect(parsed.summary).toBeTruthy();
+  });
+
+  it("exported JSON includes provider field", () => {
+    const result = workspaceToJson(exampleWorkspaces[0].workspace);
+    const parsed = JSON.parse(result);
+    expect(typeof parsed.provider).toBe("string");
+    expect(parsed.provider.length).toBeGreaterThan(0);
+  });
+
 });

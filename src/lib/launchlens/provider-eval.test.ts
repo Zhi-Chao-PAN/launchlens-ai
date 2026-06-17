@@ -69,4 +69,31 @@ describe("provider eval", () => {
       assertSafeProviderFixture(safeFixture, ["configured-secret-value"]),
     ).toThrow("configured secret value");
   });
+
+
+  it("providerEvalSummary returns a numeric summary", () => {
+    const result = {
+      workspace: buildMockWorkspace(input),
+      mode: "demo" as const,
+      usedFallback: false,
+    };
+    const evalCase = buildProviderEvalCase("activation-analyst", result, 1000);
+    const summary = providerEvalSummary(evalCase);
+    expect(typeof summary.qualityScore).toBe("number");
+    expect(typeof summary.totalChecks).toBe("number");
+    expect(summary.totalChecks).toBeGreaterThan(0);
+  });
+
+  it("buildProviderEvalCase has stable idempotent output", () => {
+    const result = {
+      workspace: buildMockWorkspace(input),
+      mode: "demo" as const,
+      usedFallback: false,
+    };
+    const a = buildProviderEvalCase("activation-analyst", result, 1000);
+    const b = buildProviderEvalCase("activation-analyst", result, 1000);
+    expect(a.elapsedMs).toBe(b.elapsedMs);
+    expect(a.id).toBe(b.id);
+  });
+
 });
