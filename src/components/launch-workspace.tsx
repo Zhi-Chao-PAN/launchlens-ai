@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   AlertTriangle,
@@ -46,6 +46,7 @@ import { ValidationBoard } from "@/components/validation-board";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
 import { safeMarkdownFilename, workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
 import { workspaceFromJson, workspaceToJson, type WorkspaceImportResult } from "@/lib/launchlens/json-export";
+import { decryptToJson, encryptJson, isEncryptedPayload, randomPassword } from "@/lib/launchlens/encrypt-export";
 import type { CloudWorkspaceRecord } from "@/lib/launchlens/cloud-workspace";
 import {
   createExecutionState,
@@ -330,6 +331,8 @@ export function LaunchWorkspace({
   const [exportText, setExportText] = useState("");
   const [exportFormat, setExportFormat] = useState<"markdown" | "json" | "">("");
   const [copyJustSucceeded, setCopyJustSucceeded] = useState<"markdown" | "json" | "">("");
+  const [exportEncrypted, setExportEncrypted] = useState(false);
+  const [exportPassword, setExportPassword] = useState("");
   const [importPreview, setImportPreview] = useState<WorkspaceImportResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isStorageReady, setIsStorageReady] = useState(false);
@@ -810,26 +813,43 @@ export function LaunchWorkspace({
     }
   }
 
-  function downloadJsonFile() {
+  async function downloadJsonFile() {
     const json = workspaceToJson(workspace, execution);
     const stamp = new Date().toISOString().slice(0, 10);
-    if (
-      downloadTextFile(
-        `launchlens-workspace-${stamp}.json`,
-        json,
-        "application/json;charset=utf-8",
-      )
-    ) {
-      showToast("JSON file downloaded", "success");
+    let outText = json;
+    let filename = `launchlens-workspace-${stamp}.json`;
+    let mime = "application/json;charset=utf-8";
+    if (exportEncrypted && exportPassword.trim()) {
+      outText = await encryptJson(json, exportPassword.trim());
+      filename = `launchlens-workspace-${stamp}.launchlens.enc`;
+      mime = "text/plain;charset=utf-8";
+    }
+    if (downloadTextFile(filename, outText, mime)) {
+      showToast(
+        exportEncrypted
+          ? "Encrypted file downloaded. Password not stored - remember it!"
+          : "JSON file downloaded",
+        "success",
+      );
     }
   }
 
   async function handleImportFile(file: File) {
     try {
-      const text = await file.text();
+      let text = await file.text();
+      if (isEncryptedPayload(text)) {
+        const password = window.prompt("This file is password-protected. Enter the passphrase:");
+        if (!password) { showToast("Import cancelled: password required.", "info"); return; }
+        try {
+          text = await decryptToJson(text, password);
+        } catch {
+          showToast("Decryption failed - check your passphrase.", "error");
+          return;
+        }
+      }
       const result = workspaceFromJson(text);
       setImportPreview(result);
-      showToast("File parsed successfully — review and confirm", "info");
+      showToast("File parsed successfully - review and confirm", "info");
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unknown import error";
       showToast(`Import failed: ${msg}`, "error");
@@ -1213,6 +1233,18 @@ export function LaunchWorkspace({
                     </span>
                   )}
                 </div>
+                <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
+                  <label className="flex items-center gap-1.5 text-muted">
+                    <input type="checkbox" checked={exportEncrypted} onChange={(e) => { setExportEncrypted(e.target.checked); if (e.target.checked && !exportPassword) setExportPassword(randomPassword()); }} className="h-3.5 w-3.5 rounded border-input" />
+                    Password-protect JSON export
+                  </label>
+                  {exportEncrypted && (
+                    <>
+                      <input type="text" value={exportPassword} onChange={(e) => setExportPassword(e.target.value)} placeholder="passphrase" className="w-40 rounded bg-input px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-accent" aria-label="Export passphrase" />
+                      <button type="button" onClick={() => setExportPassword(randomPassword())} className="text-accent hover:underline">regenerate</button>
+                    </>
+                  )}
+                </div>
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
@@ -1282,7 +1314,7 @@ export function LaunchWorkspace({
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".json,application/json"
+                    accept=".json,.launchlens.enc,application/json,text/plain"
                     className="hidden"
                     aria-hidden="true"
                     tabIndex={-1}
