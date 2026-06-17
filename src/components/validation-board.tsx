@@ -28,6 +28,7 @@ import {
   type ExecutionProgressWeights,
   type ValidationEvidence,
   type ValidationExperiment,
+  assumptionIdentity,
   type WorkspaceExecutionState,
 } from "@/lib/launchlens/execution";
 import type { LaunchTask } from "@/lib/launchlens/types";
@@ -105,6 +106,8 @@ export function ValidationBoard({
   const [weightPreset, setWeightPreset] = useState<"default" | "evidence" | "decision">("default");
   const [showWeightPicker, setShowWeightPicker] = useState(false);
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "decided">("all");
+  const [isAddingExperiment, setIsAddingExperiment] = useState(false);
+  const [newExperimentDraft, setNewExperimentDraft] = useState("");
 
   const currentWeights: ExecutionProgressWeights = useMemo(() => {
     if (weightPreset === "evidence") return EVIDENCE_BIASED_WEIGHTS;
@@ -518,9 +521,10 @@ export function ValidationBoard({
         </div>
       </div>
 
-      <div className="flex items-center gap-1 border-b border-card px-3 py-2 sm:px-5">
-        <Filter className="size-3.5 text-muted" aria-hidden="true" />
-        <div role="tablist" aria-label="Filter experiments by status" className="flex gap-0.5">
+      <div className="flex items-center justify-between gap-2 border-b border-card px-3 py-2 sm:px-5">
+        <div className="flex items-center gap-1">
+          <Filter className="size-3.5 text-muted" aria-hidden="true" />
+          <div role="tablist" aria-label="Filter experiments by status" className="flex gap-0.5">
           {[
             { id: "all", label: "All", count: execution.experiments.length },
             { id: "active", label: "Active", count: execution.experiments.filter((e) => e.status === "untested" || e.status === "testing").length },
@@ -541,8 +545,103 @@ export function ValidationBoard({
               <span className="ml-1 opacity-70">({tab.count})</span>
             </button>
           ))}
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={() => setIsAddingExperiment(!isAddingExperiment)}
+          aria-expanded={isAddingExperiment}
+          className="flex items-center gap-1 rounded-md bg-accent px-2.5 py-1 text-xs font-medium text-white transition hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+        >
+          <Plus className="size-3.5" aria-hidden="true" />
+          <span className="hidden sm:inline">New hypothesis</span>
+          <span className="sm:hidden">New</span>
+        </button>
       </div>
+      {isAddingExperiment && (
+        <div className="border-b border-card bg-input/50 p-3 sm:p-5">
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-semibold uppercase text-muted">
+              New hypothesis
+            </span>
+            <input
+              type="text"
+              value={newExperimentDraft}
+              onChange={(e) => setNewExperimentDraft(e.target.value)}
+              placeholder="What assumption do you want to validate?"
+              autoFocus
+              className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && newExperimentDraft.trim().length >= 5) {
+                  e.preventDefault();
+                  const assumption = newExperimentDraft.trim();
+                  const newExp: ValidationExperiment = {
+                    id: assumptionIdentity(assumption, execution.experiments.length),
+                    assumption,
+                    status: "untested",
+                    confidence: "low",
+                    decision: "",
+                    nextAction: "",
+                    linkedTaskId: "",
+                    evidence: [],
+                  };
+                  onChange({
+                    ...execution,
+                    experiments: [...execution.experiments, newExp],
+                    updatedAt: new Date().toISOString(),
+                  });
+                  setNewExperimentDraft("");
+                  setIsAddingExperiment(false);
+                  setRequestedExpandedExperimentId(newExp.id);
+                  srAnnounce("New hypothesis added: " + newExp.assumption);
+                }
+              }}
+            />
+          </label>
+          <div className="mt-3 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setIsAddingExperiment(false);
+                setNewExperimentDraft("");
+              }}
+              className="rounded-md px-3 py-1.5 text-xs font-medium text-muted transition hover:text-foreground"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (newExperimentDraft.trim().length < 5) return;
+                const assumption = newExperimentDraft.trim();
+                const newExp: ValidationExperiment = {
+                  id: assumptionIdentity(assumption, execution.experiments.length),
+                  assumption,
+                  status: "untested",
+                  confidence: "low",
+                  decision: "",
+                  nextAction: "",
+                  linkedTaskId: "",
+                  evidence: [],
+                };
+                onChange({
+                  ...execution,
+                  experiments: [...execution.experiments, newExp],
+                  updatedAt: new Date().toISOString(),
+                });
+                setNewExperimentDraft("");
+                setIsAddingExperiment(false);
+                setRequestedExpandedExperimentId(newExp.id);
+                srAnnounce("New hypothesis added: " + newExp.assumption);
+              }}
+              disabled={newExperimentDraft.trim().length < 5}
+              className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Add hypothesis
+            </button>
+          </div>
+        </div>
+      )}
       <div className="divide-y divide-[#edf0ea]">
         {filteredExperiments.length === 0 ? (
           <div className="p-8 text-center">
