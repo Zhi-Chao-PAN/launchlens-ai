@@ -61,25 +61,30 @@ export default async function SharedWorkspacePage({
 
   if (storageUnavailable) {
     return (
-      <main id="main-content" className="flex min-h-screen items-center justify-center bg-[#f6f8f4] px-4">
-        <section className="w-full max-w-lg rounded-lg border border-[#d8ded4] bg-white p-6 shadow-sm">
-          <span className="mb-3 inline-flex size-11 items-center justify-center rounded-lg bg-[#fff6f1] text-[#d85b3f]">
-            <CloudOff className="size-5" aria-hidden="true" />
-          </span>
-          <h1 className="text-xl font-semibold text-[#17201d]">
-            Shared workspace unavailable
-          </h1>
-          <p className="mt-3 text-sm leading-6 text-[#40504a]">
+      <main id="main-content" className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+        <section className="w-full max-w-md rounded-xl border border-card bg-card p-8 shadow-sm transition-colors">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex size-12 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+              <CloudOff className="size-6" aria-hidden="true" />
+            </span>
+            <div>
+              <h1 className="text-lg font-semibold text-foreground">
+                Shared workspace unavailable
+              </h1>
+              <p className="text-xs text-muted">Storage not configured</p>
+            </div>
+          </div>
+          <p className="mt-5 text-sm leading-6 text-foreground/80">
             Cloud workspace storage is not configured on this deployment, so
             shared links cannot be resolved right now. You can still explore
             the interactive demo and generate a fresh workspace locally.
           </p>
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="mt-6 flex flex-wrap gap-2">
             <Link
               href="/"
-              className="inline-flex h-10 items-center gap-1.5 rounded-md bg-[#138a72] px-3 text-sm font-semibold text-white transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
+              className="inline-flex h-10 items-center gap-1.5 rounded-md bg-accent px-4 text-sm font-semibold text-white transition hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              Back to demo
+              Try the demo
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
           </div>
@@ -90,25 +95,30 @@ export default async function SharedWorkspacePage({
 
   if (shareRevoked) {
     return (
-      <main id="main-content" className="flex min-h-screen items-center justify-center bg-[#f6f8f4] px-4">
-        <section className="w-full max-w-lg rounded-lg border border-[#d8ded4] bg-white p-6 shadow-sm">
-          <span className="mb-3 inline-flex size-11 items-center justify-center rounded-lg bg-[#fff6f1] text-[#d85b3f]">
-            <Link2Off className="size-5" aria-hidden="true" />
-          </span>
-          <h1 className="text-xl font-semibold text-[#17201d]">
-            This shared link is no longer available
-          </h1>
-          <p className="mt-3 text-sm leading-6 text-[#40504a]">
-            The owner has revoked public sharing for this workspace. The link
-            used to work, but it has been turned off. You can still explore
-            the interactive demo and generate a fresh workspace of your own.
+      <main id="main-content" className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+        <section className="w-full max-w-md rounded-xl border border-card bg-card p-8 shadow-sm transition-colors">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex size-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
+              <Link2Off className="size-6" aria-hidden="true" />
+            </span>
+            <div>
+              <h1 className="text-lg font-semibold text-foreground">
+                Link no longer available
+              </h1>
+              <p className="text-xs text-muted">Sharing was revoked</p>
+            </div>
+          </div>
+          <p className="mt-5 text-sm leading-6 text-foreground/80">
+            The owner has turned off public sharing for this workspace. It
+            used to be public, but the link is now disabled. You can still
+            explore the interactive demo and build a workspace of your own.
           </p>
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="mt-6 flex flex-wrap gap-2">
             <Link
               href="/"
-              className="inline-flex h-10 items-center gap-1.5 rounded-md bg-[#138a72] px-3 text-sm font-semibold text-white transition hover:bg-[#0f7665] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cbe8df] focus-visible:ring-offset-2"
+              className="inline-flex h-10 items-center gap-1.5 rounded-md bg-accent px-4 text-sm font-semibold text-white transition hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              Back to demo
+              Try the demo
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
           </div>
