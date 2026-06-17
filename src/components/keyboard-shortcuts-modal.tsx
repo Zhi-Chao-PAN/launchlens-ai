@@ -146,6 +146,59 @@ export function KeyboardShortcutsModal() {
               )}
             </div>
 
+            <div className="border-t border-card px-5 py-4 sm:px-6">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
+                Evidence list (when focused)
+              </h3>
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-foreground/90">Move focus up</span>
+                  <kbd className="inline-flex items-center rounded border border-input bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground shadow-sm">
+                    ↑
+                  </kbd>
+                </div>
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-foreground/90">Move focus down</span>
+                  <kbd className="inline-flex items-center rounded border border-input bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground shadow-sm">
+                    ↓
+                  </kbd>
+                </div>
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-foreground/90">Move evidence up</span>
+                  <div className="flex gap-1">
+                    <kbd className="inline-flex items-center rounded border border-input bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground shadow-sm">
+                      Alt
+                    </kbd>
+                    <kbd className="inline-flex items-center rounded border border-input bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground shadow-sm">
+                      ↑
+                    </kbd>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-foreground/90">Move evidence down</span>
+                  <div className="flex gap-1">
+                    <kbd className="inline-flex items-center rounded border border-input bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground shadow-sm">
+                      Alt
+                    </kbd>
+                    <kbd className="inline-flex items-center rounded border border-input bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground shadow-sm">
+                      ↓
+                    </kbd>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-foreground/90">Undo delete evidence</span>
+                  <div className="flex gap-1">
+                    <kbd className="inline-flex items-center rounded border border-input bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground shadow-sm">
+                      Ctrl
+                    </kbd>
+                    <kbd className="inline-flex items-center rounded border border-input bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground shadow-sm">
+                      Z
+                    </kbd>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="border-t border-card px-5 py-3 text-xs leading-5 text-muted sm:px-6">
               Press{" "}
               <kbd className="rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-foreground">?</kbd>,{" "}

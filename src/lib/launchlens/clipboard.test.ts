@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { copyTextToClipboard, downloadTextFile } from "./clipboard";
 import { safeJsonFilename } from "./json-export";
 import { safeMarkdownFilename } from "./markdown-export";
 
@@ -102,6 +103,35 @@ describe("cross-exporter filename parity", () => {
   it('handles slashes and dots in project name', () => {
     expect(safeMarkdownFilename({ projectName: 'foo/bar.baz' })).toBe('foo-bar-baz.md');
     expect(safeJsonFilename({ projectName: 'foo/bar.baz' })).toBe('foo-bar-baz.json');
+  });
+
+
+
+  it("safeJsonFilename sanitizes special characters in projectName", () => {
+    const result = safeJsonFilename({ projectName: "Test/with:special*chars?<>|" });
+    expect(result).not.toContain("/");
+    expect(result).not.toContain(":");
+    expect(result).not.toContain("*");
+    expect(result).not.toContain("?");
+    expect(result).toContain("test");
+  });
+
+  it("safeJsonFilename always ends with .json extension", () => {
+    expect(safeJsonFilename({ projectName: "my workspace" })).toMatch(/\.json$/);
+    expect(safeJsonFilename({})).toMatch(/\.json$/);
+    expect(safeJsonFilename({ projectName: "" })).toMatch(/\.json$/);
+  });
+
+  it("copyTextToClipboard returns a boolean result", async () => {
+    const result = await copyTextToClipboard("test content");
+    expect(typeof result).toBe("boolean");
+  });
+
+  it("downloadTextFile runs without throwing in jsdom", () => {
+    // jsdom doesn't have full download support, just verify it doesn't crash
+    expect(() => {
+      downloadTextFile("test content", "test.txt", "text/plain");
+    }).not.toThrow();
   });
 
 });

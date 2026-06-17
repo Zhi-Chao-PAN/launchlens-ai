@@ -150,4 +150,55 @@ describe("isUuid edge cases", () => {
     expect(isUuid("a5ff00db-60da-4b20-9468-751ce404b289-extra")).toBe(false);
   });
 
+
+
+  it("isRecord rejects arrays, null, and primitives", () => {
+    expect(isRecord(null)).toBe(false);
+    expect(isRecord(undefined)).toBe(false);
+    expect(isRecord([])).toBe(false);
+    expect(isRecord("string")).toBe(false);
+    expect(isRecord(42)).toBe(false);
+    expect(isRecord(true)).toBe(false);
+  });
+
+  it("isRecord accepts plain objects", () => {
+    expect(isRecord({})).toBe(true);
+    expect(isRecord({ key: "value" })).toBe(true);
+    expect(isRecord(Object.create(null))).toBe(true);
+  });
+
+  it("isUuid requires exactly 36 chars in v4 format", () => {
+    expect(isUuid("a1b2c3d4-1234-4abc-8def-123456789ab")).toBe(false);  // 35
+    expect(isUuid("a1b2c3d4-1234-4abc-8def-123456789abcd")).toBe(false); // 37
+  });
+
+  it("isUuid validates the v4 version nibble", () => {
+    expect(isUuid("a1b2c3d4-1234-1abc-8def-123456789abc")).toBe(false); // v1
+    expect(isUuid("a1b2c3d4-1234-4abc-8def-123456789abc")).toBe(true);  // v4
+  });
+
+  it("isUuid validates the variant nibble (8/9/a/b)", () => {
+    expect(isUuid("a1b2c3d4-1234-4abc-0def-123456789abc")).toBe(false); // 0
+    expect(isUuid("a1b2c3d4-1234-4abc-7def-123456789abc")).toBe(false); // 7
+    expect(isUuid("a1b2c3d4-1234-4abc-cdef-123456789abc")).toBe(false); // c
+  });
+
+
+
+  it("isUuid rejects empty strings and whitespace", () => {
+    expect(isUuid("")).toBe(false);
+    expect(isUuid("   ")).toBe(false);
+  });
+
+  it("isUuid rejects invalid uuid formats", () => {
+    expect(isUuid("not-a-uuid")).toBe(false);
+    expect(isUuid("12345")).toBe(false);
+    expect(isUuid("g0000000-0000-0000-0000-000000000000")).toBe(false);
+  });
+
+  it("isUuid accepts both uppercase and lowercase hex v4 UUIDs", () => {
+    expect(isUuid("a1b2c3d4-1234-4abc-8def-123456789abc")).toBe(true);
+    expect(isUuid("A1B2C3D4-1234-4ABC-8DEF-123456789ABC")).toBe(true);
+  });
+
 });

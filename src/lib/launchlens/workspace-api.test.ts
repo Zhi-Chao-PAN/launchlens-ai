@@ -43,4 +43,5 @@ describe("workspace API safeguards", () => {
     expect(JSON.stringify(errorSpy.mock.calls)).not.toContain(ownerCapability);
     errorSpy.mockRestore();
   });
+
 });
