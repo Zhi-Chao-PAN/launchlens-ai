@@ -28,6 +28,8 @@ export function useWorkspaceCommands(options: {
   onSave?: () => void;
   onReset?: () => void;
   onCopyMarkdown?: () => void;
+  onExport?: () => void;
+  onCopyJson?: () => void;
 }): CommandPaletteAction[] {
   const {
     workspace,
@@ -38,6 +40,8 @@ export function useWorkspaceCommands(options: {
     onSave,
     onReset,
     onCopyMarkdown,
+    onExport,
+    onCopyJson,
   } = options;
 
   const shortcuts = useMemo(() => getShortcutList(), []);
@@ -77,6 +81,15 @@ export function useWorkspaceCommands(options: {
         keywords: ["edit", "preview", "toggle"],
         onSelect: onToggleEdit,
       });
+    }
+    if (onExport) {
+      actions.push({ id: "export:json", label: "Export JSON file", description: "Download the full workspace as .json (or encrypted if toggle on)", category: "Export", icon: "action", keywords: ["export", "download", "json", "save"], onSelect: () => onExport?.() });
+    }
+    if (onCopyMarkdown) {
+      actions.push({ id: "export:copy-md", label: "Copy Markdown to clipboard", description: "Copy the Markdown summary (encrypted if toggle is on)", category: "Export", icon: "action", keywords: ["copy", "markdown", "clipboard", "export"], onSelect: () => onCopyMarkdown?.() });
+    }
+    if (onCopyJson) {
+      actions.push({ id: "export:copy-json", label: "Copy JSON to clipboard", description: "Copy raw workspace JSON (encrypted if toggle is on)", category: "Export", icon: "action", keywords: ["copy", "json", "clipboard", "export"], onSelect: () => onCopyJson?.() });
     }
     if (onGenerate) {
       actions.push({
