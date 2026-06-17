@@ -167,6 +167,8 @@ export function ValidationBoard({
   const [isBatchMode, setIsBatchMode] = useState(false);
   const [batchText, setBatchText] = useState("");
   const [draggedEvidenceId, setDraggedEvidenceId] = useState<string | null>(null);
+  const [draggedExperimentId, setDraggedExperimentId] = useState<string | null>(null);
+  const [dragOverExperimentId, setDragOverExperimentId] = useState<string | null>(null);
   const [dragOverEvidenceId, setDragOverEvidenceId] = useState<string | null>(null);
 
 
@@ -640,6 +642,23 @@ export function ValidationBoard({
     }
 
     srAnnounce("Evidence weight changed to " + nextWeight + ".");
+  }
+
+  function moveExperiment(draggedId: string, targetId: string) {
+    if (draggedId === targetId) return;
+    onChange({
+      ...execution,
+      experiments: (() => {
+        const arr = [...execution.experiments];
+        const from = arr.findIndex((e) => e.id === draggedId);
+        const to = arr.findIndex((e) => e.id === targetId);
+        if (from < 0 || to < 0) return arr;
+        const [m] = arr.splice(from, 1);
+        arr.splice(to, 0, m);
+        return arr;
+      })(),
+      updatedAt: new Date().toISOString(),
+    });
   }
 
   function moveEvidence(
@@ -1543,14 +1562,53 @@ export function ValidationBoard({
               role="group"
               key={experiment.id}
               data-experiment-article
+              draggable
+              onDragStart={(e) => {
+                setDraggedExperimentId(experiment.id);
+                e.dataTransfer.effectAllowed = "move";
+                e.dataTransfer.setData("text/plain", experiment.id);
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                if (dragOverExperimentId !== experiment.id) setDragOverExperimentId(experiment.id);
+              }}
+              onDragLeave={() => {
+                if (dragOverExperimentId === experiment.id) setDragOverExperimentId(null);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                const draggedId = draggedExperimentId ?? e.dataTransfer.getData("text/plain");
+                setDraggedExperimentId(null);
+                setDragOverExperimentId(null);
+                if (draggedId) moveExperiment(draggedId, experiment.id);
+              }}
+              onDragEnd={() => {
+                setDraggedExperimentId(null);
+                setDragOverExperimentId(null);
+              }}
               tabIndex={0}
               onKeyDown={(e) => handleExperimentKeyDown(e, experiment.id)}
               aria-label={`Hypothesis ${index + 1}: ${experiment.assumption}. Status: ${statusLabels[experiment.status]}. ${experiment.evidence.length} evidence items.}`}
-              className="p-5 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
+              className={
+                "relative p-5 outline-none transition focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset " +
+                (draggedExperimentId === experiment.id ? "opacity-40 " : "") +
+                (dragOverExperimentId === experiment.id && draggedExperimentId !== experiment.id
+                  ? "border-t-2 border-accent "
+                  : "")
+              }
             >
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      aria-label="Drag to reorder hypothesis"
+                      className="-ml-1 flex h-5 w-4 shrink-0 cursor-grab items-center justify-center rounded-sm text-muted/40 transition hover:bg-muted hover:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent active:cursor-grabbing"
+                      tabIndex={-1}
+                    >
+                      <GripVertical className="size-3.5" aria-hidden="true" />
+                    </button>
                     <span className="font-mono text-xs font-semibold text-signal-challenges">
                       H{index + 1}
                     </span>
