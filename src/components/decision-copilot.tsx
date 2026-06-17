@@ -225,6 +225,8 @@ export function DecisionCopilot({
   const lastBriefIdRef = useRef<string | null>(null);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
+  const [isBatchGenerating, setIsBatchGenerating] = useState(false);
+  const [batchProgress, setBatchProgress] = useState({ done: 0, total: 0 });
   const { announce: setSrGenerationAnnouncement, message: srGenerationAnnouncement } = useSrAnnounce();
   const selectedExperimentId =
     requestedExperimentId &&
@@ -297,6 +299,74 @@ export function DecisionCopilot({
     setSrGenerationAnnouncement("Recommendation applied.");
   }
 
+
+  async function generateBatchBriefs() {
+    const pending = execution.experiments.filter(
+      (item) => item.evidence.length > 0 && !item.decisionBrief,
+    );
+    if (pending.length === 0) {
+      setNotice("All hypotheses with evidence already have decision briefs.");
+      return;
+    }
+
+    setIsBatchGenerating(true);
+    setBatchProgress({ done: 0, total: pending.length });
+    setError("");
+    setNotice("");
+    setSrGenerationAnnouncement(
+      `Generating ${pending.length} decision briefs. This will take a moment.`,
+    );
+
+    let successCount = 0;
+    let failCount = 0;
+    const updatedExperiments = [...execution.experiments];
+
+    for (let i = 0; i < pending.length; i++) {
+      const item = pending[i];
+      try {
+        const source = decisionSourceFromExperiment(item);
+        const response = await fetch("/api/decision", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ experiment: source }),
+        });
+        const data = (await response.json()) as Partial<DecisionGenerationResult> & {
+          error?: string;
+          code?: string;
+        };
+        const brief = data.brief ? normalizeDecisionBrief(data.brief, source) : null;
+
+        if (response.ok && brief) {
+          const idx = updatedExperiments.findIndex((e) => e.id === item.id);
+          if (idx >= 0) {
+            updatedExperiments[idx] = { ...updatedExperiments[idx], decisionBrief: brief };
+          }
+          successCount += 1;
+        } else {
+          failCount += 1;
+        }
+      } catch {
+        failCount += 1;
+      }
+      setBatchProgress({ done: i + 1, total: pending.length });
+    }
+
+    // Apply all changes at once
+    onChange({
+      ...execution,
+      experiments: updatedExperiments,
+      updatedAt: new Date().toISOString(),
+    });
+
+    setIsBatchGenerating(false);
+    const summary = `${successCount} of ${pending.length} briefs generated successfully.`;
+    if (failCount > 0) {
+      setError(`${summary} ${failCount} failed.`);
+    } else {
+      setNotice(summary);
+    }
+    setSrGenerationAnnouncement(summary);
+  }
 
   async function generateBrief() {
     if (!experiment || experiment.evidence.length === 0) {
@@ -401,7 +471,7 @@ export function DecisionCopilot({
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="rounded-md bg-muted px-3 py-2 text-foreground/80">
             {briefCount}/{execution.experiments.length} current briefs
           </span>
@@ -409,6 +479,26 @@ export function DecisionCopilot({
             <ShieldCheck className="size-3.5" aria-hidden="true" />
             Evidence-bound
           </span>
+          <button
+            type="button"
+            onClick={generateBatchBriefs}
+            disabled={isBatchGenerating || isGenerating}
+            aria-busy={isBatchGenerating}
+            className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-accent px-3 py-1.5 text-xs font-semibold text-accent transition hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 lg:ml-0"
+          >
+            {isBatchGenerating ? (
+              <span className="flex items-center gap-1">
+                <span className="size-1.5 animate-[launchlens-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-accent [animation-delay:-0.32s]" />
+                <span className="size-1.5 animate-[launchlens-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-accent [animation-delay:-0.16s]" />
+                <span className="size-1.5 animate-[launchlens-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-accent" />
+              </span>
+            ) : (
+              <Sparkles className="size-3.5" aria-hidden="true" />
+            )}
+            {isBatchGenerating
+              ? `${batchProgress.done}/${batchProgress.total}`
+              : "Generate all briefs"}
+          </button>
         </div>
       </div>
 
