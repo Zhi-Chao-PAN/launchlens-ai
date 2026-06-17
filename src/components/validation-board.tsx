@@ -8,6 +8,7 @@ import {
   ChevronUp,
   CircleGauge,
   FlaskConical,
+  Download,
   Link2,
   PencilLine,
   Plus,
@@ -17,6 +18,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
 import { useToast } from "@/components/toast";
+import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
 
 import {
   DEFAULT_PROGRESS_WEIGHTS,
@@ -216,6 +218,89 @@ export function ValidationBoard({
     setDraft(emptyDraft);
     setEditingEvidenceId(null);
   }
+  function experimentToMarkdown(experiment: ValidationExperiment) {
+    const signalLabel: Record<EvidenceSignal, string> = {
+      supports: "Supports",
+      challenges: "Challenges",
+      neutral: "Neutral",
+    };
+    const weightLabel: Record<EvidenceWeight, string> = {
+      anecdotal: "Anecdotal",
+      moderate: "Moderate",
+      strong: "Strong",
+    };
+    const status = experiment.status.charAt(0).toUpperCase() + experiment.status.slice(1);
+    const confidence = experiment.confidence.charAt(0).toUpperCase() + experiment.confidence.slice(1);
+    const lines = [
+      "# " + experiment.assumption,
+      "",
+      "- **Status**: " + status,
+      "- **Confidence**: " + confidence + (experiment.confidenceManual ? " (manual)" : ""),
+      "- **Evidence**: " + experiment.evidence.length + " items",
+      "",
+      "## Evidence",
+      "",
+    ];
+    if (experiment.evidence.length === 0) {
+      lines.push("_No evidence recorded yet._");
+    } else {
+      experiment.evidence.forEach((item, itemIdx) => {
+        lines.push(
+          "### " + (itemIdx + 1) + ". " + signalLabel[item.signal] + " — " + item.source,
+        );
+        lines.push("");
+        lines.push("- **Weight**: " + weightLabel[item.weight]);
+        lines.push("- **Observed**: " + new Date(item.observedAt).toLocaleDateString());
+        lines.push("");
+        lines.push(item.note);
+        lines.push("");
+      });
+    }
+    return lines.join("\n");
+  }
+
+  function experimentToJson(experiment: ValidationExperiment) {
+    return JSON.stringify(experiment, null, 2);
+  }
+
+  function safeHypothesisFilename(experiment: ValidationExperiment, ext: string) {
+    const base = experiment.assumption
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60);
+    return (base || "hypothesis") + "." + ext;
+  }
+
+  async function copyExperimentMarkdown(experiment: ValidationExperiment) {
+    const md = experimentToMarkdown(experiment);
+    const ok = await copyTextToClipboard(md);
+    if (ok) {
+      showToast("Hypothesis markdown copied", "success", 2500);
+      srAnnounce("Hypothesis markdown copied to clipboard.");
+    } else {
+      showToast("Could not copy to clipboard", "error", 3000);
+    }
+  }
+
+  function downloadExperimentMarkdown(experiment: ValidationExperiment) {
+    const md = experimentToMarkdown(experiment);
+    downloadTextFile(md, safeHypothesisFilename(experiment, "md"), "text/markdown");
+    showToast("Markdown downloaded", "success", 2000);
+    srAnnounce("Hypothesis markdown downloaded.");
+  }
+
+  function downloadExperimentJson(experiment: ValidationExperiment) {
+    const json = experimentToJson(experiment);
+    downloadTextFile(json, safeHypothesisFilename(experiment, "json"), "application/json");
+    showToast("JSON downloaded", "success", 2000);
+    srAnnounce("Hypothesis JSON downloaded.");
+  }
+
+  const [exportMenuId, setExportMenuId] = useState<string | null>(null);
+
 
   function startEditingEvidence(experimentId: string, evidenceId: string) {
     const experiment = execution.experiments.find((e) => e.id === experimentId);
@@ -1173,7 +1258,71 @@ export function ValidationBoard({
                     {formOpen ? "Cancel" : "Add evidence"}
                   </button>
                 
-                  <button
+                  <div className="relative">
+                     <button
+                       type="button"
+                       onClick={() =>
+                         setExportMenuId((current) =>
+                           current === experiment.id ? null : experiment.id,
+                         )
+                       }
+                       aria-expanded={exportMenuId === experiment.id}
+                       aria-haspopup="true"
+                       aria-label="Export hypothesis"
+                       title="Export hypothesis"
+                       className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-input bg-card text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:h-10 sm:w-10"
+                     >
+                       <Download className="size-4" aria-hidden="true" />
+                     </button>
+                     {exportMenuId === experiment.id && (
+                       <>
+                         <div
+                           className="fixed inset-0 z-10"
+                           onClick={() => setExportMenuId(null)}
+                           aria-hidden="true"
+                         />
+                         <div
+                           role="menu"
+                           className="absolute right-0 top-full z-20 mt-1 w-48 overflow-hidden rounded-md border border-input bg-card py-1 text-sm shadow-lg"
+                         >
+                           <button
+                             type="button"
+                             role="menuitem"
+                             onClick={() => {
+                               copyExperimentMarkdown(experiment);
+                               setExportMenuId(null);
+                             }}
+                             className="flex w-full items-center gap-2 px-3 py-2 text-left text-foreground/80 transition hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground focus:outline-none"
+                           >
+                             Copy Markdown
+                           </button>
+                           <button
+                             type="button"
+                             role="menuitem"
+                             onClick={() => {
+                               downloadExperimentMarkdown(experiment);
+                               setExportMenuId(null);
+                             }}
+                             className="flex w-full items-center gap-2 px-3 py-2 text-left text-foreground/80 transition hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground focus:outline-none"
+                           >
+                             Download Markdown
+                           </button>
+                           <button
+                             type="button"
+                             role="menuitem"
+                             onClick={() => {
+                               downloadExperimentJson(experiment);
+                               setExportMenuId(null);
+                             }}
+                             className="flex w-full items-center gap-2 px-3 py-2 text-left text-foreground/80 transition hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground focus:outline-none"
+                           >
+                             Download JSON
+                           </button>
+                         </div>
+                       </>
+                     )}
+                   </div>
+                   <button
                     type="button"
                     onClick={() => {
                       if (confirm("Remove this hypothesis? All evidence will be lost.")) {
