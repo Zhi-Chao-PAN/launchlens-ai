@@ -843,10 +843,26 @@ export function ValidationBoard({
       const items = lines
         .map((raw) => {
           const line = raw.trim();
-          // Detect signal prefix
+          // Detect signal + optional weight prefix
+          // Prefix format: [signal][weight?]
+          //   + supports, - challenges, ~ neutral
+          //   +s strong support, +m moderate support, +a anecdotal support
+          //   -s strong challenge, -m moderate challenge, -a anecdotal challenge
           let signal: EvidenceSignal = draft.signal;
+          let weight: EvidenceWeight = draft.weight;
           let rest = line;
-          if (line.startsWith("+")) {
+          const prefixSignalChar = line[0];
+          const prefixWeightChar = line.length >= 2 ? line[1].toLowerCase() : "";
+          const hasSignalPrefix = prefixSignalChar === "+" || prefixSignalChar === "-" || prefixSignalChar === "~";
+          const hasWeightSuffix = hasSignalPrefix && (prefixWeightChar === "s" || prefixWeightChar === "m" || prefixWeightChar === "a");
+          if (hasWeightSuffix) {
+            if (line[0] === "+") signal = "supports";
+            else if (line[0] === "-") signal = "challenges";
+            else signal = "neutral";
+            const w = line[1].toLowerCase();
+            weight = w === "s" ? "strong" : w === "m" ? "moderate" : "anecdotal";
+            rest = line.slice(2).trim();
+          } else if (line.startsWith("+")) {
             signal = "supports";
             rest = line.slice(1).trim();
           } else if (line.startsWith("-")) {
@@ -877,7 +893,7 @@ export function ValidationBoard({
             note,
             source: source || "Observation",
             signal,
-            weight: draft.weight,
+            weight,
             observedAt: new Date().toISOString(),
           };
         })
@@ -1833,11 +1849,13 @@ export function ValidationBoard({
                           value={batchText}
                           onChange={(e) => setBatchText(e.target.value)}
                           placeholder={
-                            "Format: Source - Observation\n" +
-                            "Prefix lines with + for supports, - for challenges, ~ for neutral\n" +
-                            "Example:\n" +
-                            "+ User interview #3 - Said theyd pay for this tomorrow\n" +
-                            "- App Store review - Too expensive compared to alternatives"
+                            "Format: [prefix] Source - Observation\n" +
+                            "Prefix: + supports | - challenges | ~ neutral\n" +
+                            "Append s/m/a for weight: +s strong, +m moderate, +a anecdotal\n" +
+                            "Examples:\n" +
+                            "+s Interview #12 - Would pay  immediately\n" +
+                            "- App review #45 - Crashes on launch\n" +
+                            "+ Survey Q3 - 70% said feature is useful"
                           }
                           rows={6}
                           className="w-full resize-y rounded-md border border-input bg-card px-3 py-2.5 font-mono text-xs leading-5 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
@@ -1859,10 +1877,13 @@ export function ValidationBoard({
                             }{" "}
                             evidence items
                           </span>{" "}
-                          as {signalLabels[draft.signal]} (moderate weight). Prefix with{" "}
-                          <code className="font-mono">+</code>,{" "}
-                          <code className="font-mono">-</code>, or{" "}
-                          <code className="font-mono">~</code> to override signal per line.
+                          as {signalLabels[draft.signal]} ({draft.weight} weight). Prefix
+                          per line:{" "}
+                          <code className="font-mono">+</code>/<code className="font-mono">-</code>/<code className="font-mono">~</code>{" "}
+                          for signal, append{" "}
+                          <code className="font-mono">s</code>/<code className="font-mono">m</code>/<code className="font-mono">a</code>{" "}
+                          for weight (e.g.{" "}
+                          <code className="font-mono">+s</code> = strong support).
                         </p>
                       </label>
                       <div className="mt-3 flex items-center gap-3">
