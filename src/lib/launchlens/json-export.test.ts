@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { safeJsonFilename, workspaceToJson } from "./json-export";
+import { safeJsonFilename, workspaceFromJson, workspaceToJson } from "./json-export";
 import { buildMockWorkspace } from "./mock-provider";
 import { exampleWorkspaces } from "./example-workspaces";
 import { createExecutionState } from "./execution";
@@ -145,6 +145,50 @@ describe("safeJsonFilename", () => {
     const parsed = JSON.parse(result);
     expect(typeof parsed.provider).toBe("string");
     expect(parsed.provider.length).toBeGreaterThan(0);
+  });
+
+
+
+  it("workspaceFromJson parses a valid export round-trip", () => {
+    const ws = exampleWorkspaces[0].workspace;
+    const json = workspaceToJson(ws);
+    const result = workspaceFromJson(json);
+    expect(result.workspace.summary).toBe(ws.summary);
+    expect(result.warnings.length).toBe(0);
+  });
+
+  it("workspaceFromJson parses export with execution state", () => {
+    const ws = exampleWorkspaces[0].workspace;
+    const ex = exampleWorkspaces[0].execution;
+    const json = workspaceToJson(ws, ex);
+    const result = workspaceFromJson(json);
+    expect(result.execution).toBeTruthy();
+    expect(result.execution?.experiments.length).toBe(ex.experiments.length);
+  });
+
+  it("workspaceFromJson rejects invalid JSON", () => {
+    expect(() => workspaceFromJson("not valid json {")).toThrow();
+  });
+
+  it("workspaceFromJson rejects missing workspace fields", () => {
+    const empty = JSON.stringify({});
+    expect(() => workspaceFromJson(empty)).toThrow();
+    const partial = JSON.stringify({ summary: "test" });
+    expect(() => workspaceFromJson(partial)).toThrow();
+  });
+
+  it("workspaceFromJson warns about missing optional fields", () => {
+    const ws = exampleWorkspaces[0].workspace;
+    const rest = { ...ws, generatedAt: undefined, provider: undefined } as typeof ws;
+    const result = workspaceFromJson(JSON.stringify(rest));
+    expect(result.warnings.length).toBeGreaterThan(0);
+    expect(result.workspace.generatedAt).toBeTruthy();
+  });
+
+  it("workspaceFromJson handles bare workspace (not wrapped)", () => {
+    const ws = exampleWorkspaces[0].workspace;
+    const result = workspaceFromJson(JSON.stringify(ws));
+    expect(result.workspace.summary).toBe(ws.summary);
   });
 
 });
