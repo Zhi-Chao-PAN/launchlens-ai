@@ -3488,7 +3488,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                         </button>
                       ) : null}
                     </div>
-                    <ol className="space-y-1.5 border-l border-border/60 pl-3">
+                    <ol className="space-y-1.5 border-l border-border/60 pl-5 overflow-visible">
                       {(() => {
                         const kindChips: { id: string; label: string }[] = [
                           { id: "all", label: "All" },
@@ -3566,7 +3566,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                         const dotTitle = transitionTitle || ((kindLabel[evt.kind] || evt.kind) + (evt.label ? " - " + evt.label : ""));
                         return (
                           <li key={evt.id} className="relative text-xs leading-5">
-                            <span role="button" tabIndex={0} onClick={(ev) => { ev.stopPropagation(); onTimelineEventClick(experiment.id, evt.kind, evt.targetId); }} onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onTimelineEventClick(experiment.id, evt.kind, evt.targetId); } }} className={"absolute -left-[15px] top-2 size-2 cursor-pointer rounded-full ring-2 ring-background transition hover:scale-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + dotColor} title={dotTitle} aria-label={"Timeline: " + dotTitle} />
+                            <span role="button" tabIndex={0} onClick={(ev) => { ev.stopPropagation(); onTimelineEventClick(experiment.id, evt.kind, evt.targetId); }} onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onTimelineEventClick(experiment.id, evt.kind, evt.targetId); } }} className={"absolute -left-[21px] top-2 size-2 cursor-pointer rounded-full ring-2 ring-background transition hover:scale-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + dotColor} title={dotTitle} aria-label={"Timeline: " + dotTitle} />
                             <span className="font-medium text-foreground/80">{kindLabel[evt.kind] || evt.kind}</span>
                             {evt.label ? <span className="ml-1.5 max-w-[180px] truncate text-muted" title={evt.label}>&ldquo;{evt.label}&rdquo;</span> : isTransition ? (<span className="ml-1.5 text-muted"><span className={statusTokenClass(evt.from)} title={describeValue(evt.kind, evt.from)} aria-label={"From: " + describeValue(evt.kind, evt.from)}>{evt.from ?? "?"}</span> <span className="text-muted-foreground/70">&rarr;</span> <span className={statusTokenClass(evt.to)} title={evt.to ? ((evt.kind === "decision" ? DECISION_DESCRIPTIONS[evt.to] : evt.kind === "status" ? STATUS_DESCRIPTIONS[evt.to] : evt.kind === "confidence" ? CONFIDENCE_DESCRIPTIONS[evt.to as keyof typeof CONFIDENCE_DESCRIPTIONS] : undefined) || evt.to) : undefined} aria-label={evt.to ? ((evt.kind === "decision" ? DECISION_DESCRIPTIONS[evt.to] : evt.kind === "status" ? STATUS_DESCRIPTIONS[evt.to] : evt.kind === "confidence" ? CONFIDENCE_DESCRIPTIONS[evt.to as keyof typeof CONFIDENCE_DESCRIPTIONS] : undefined) || evt.to) : undefined}>{evt.to ?? "?"}</span></span>) : (detail ? <span className="ml-1.5 text-muted">{detail}</span> : null)}
                             <span className="ml-1 text-[10px] text-muted/80">· {timeLabel}</span>
