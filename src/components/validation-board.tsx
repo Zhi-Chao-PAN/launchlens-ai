@@ -2179,6 +2179,15 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
             <span className="mb-1.5 block text-xs font-semibold uppercase text-muted">
               New hypothesis
             </span>
+            {(() => {
+                const trimmed = newExperimentDraft.trim();
+                const dup = trimmed.length >= 5 && execution.experiments.some((e) => e.assumption.trim().toLowerCase() === trimmed.toLowerCase());
+                const tooShort = trimmed.length > 0 && trimmed.length < 5;
+                return (<>
+                  <p id="new-hypothesis-hint" className="sr-only">At least 5 characters. Press Enter to add.</p>
+                  {(tooShort || dup) && <p id="new-hypothesis-error" role="alert" className="mt-1 text-[11px] text-signal-challenges">{dup ? "An identical hypothesis already exists." : "Use at least 5 characters."}</p>}
+                </>);
+              })()}
             <input
               type="text"
               value={newExperimentDraft}
@@ -2187,9 +2196,11 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
               autoFocus
               ref={newExperimentInputRef}
               data-new-experiment-input
-              className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+              aria-describedby="new-hypothesis-hint new-hypothesis-error"
+              aria-invalid={newExperimentDraft.trim().length > 0 && newExperimentDraft.trim().length < 5}
+              className={"h-10 w-full rounded-md border bg-card px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-[var(--ring-color)] " + (newExperimentDraft.trim().length > 0 && newExperimentDraft.trim().length < 5 ? "border-signal-challenges focus:border-signal-challenges" : "border-input focus:border-accent")}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && newExperimentDraft.trim().length >= 5) {
+                if (e.key === "Enter" && newExperimentDraft.trim().length >= 5 && !execution.experiments.some((ex) => ex.assumption.trim().toLowerCase() === newExperimentDraft.trim().toLowerCase())) {
                   e.preventDefault();
                   const assumption = newExperimentDraft.trim();
                   const newExp: ValidationExperiment = {
@@ -2263,8 +2274,10 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
             <button
               type="button"
               onClick={() => {
-                if (newExperimentDraft.trim().length < 5) return;
-                const assumption = newExperimentDraft.trim();
+                const t = newExperimentDraft.trim();
+                if (t.length < 5) return;
+                if (execution.experiments.some((ex) => ex.assumption.trim().toLowerCase() === t.toLowerCase())) return;
+                const assumption = t;
                 const newExp: ValidationExperiment = {
                   id: assumptionIdentity(assumption, execution.experiments.length),
                   assumption,
@@ -2289,7 +2302,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
               srAnnounce("New hypothesis added: " + newExp.assumption);
                 window.requestAnimationFrame(() => { const el = document.querySelector(`[data-experiment-article][data-experiment-id="${newExp.id}"]`) as HTMLElement | null; el?.scrollIntoView({ behavior: "smooth", block: "center" }); el?.focus(); });
               }}
-              disabled={newExperimentDraft.trim().length < 5}
+              disabled={newExperimentDraft.trim().length < 5 || execution.experiments.some((ex) => ex.assumption.trim().toLowerCase() === newExperimentDraft.trim().toLowerCase())}
               className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Add hypothesis
