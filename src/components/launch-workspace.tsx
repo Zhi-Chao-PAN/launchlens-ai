@@ -1092,12 +1092,14 @@ export function LaunchWorkspace({
                     placeholder="Describe the product you are validating..."
                     className="w-full field-sizing-content resize-y min-h-[96px] max-h-[400px] rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
-                  <p className="mt-1 text-xs text-muted">
-                    Tip: press{" "}
-                    <kbd className="rounded border border-input bg-muted px-1 font-mono">
-                      {formatShortcut({ key: "Enter", meta: true, ctrl: true, description: "", category: "" })}
-                    </kbd>{" "}
-                    to generate.
+                  <p className="mt-1 flex items-center justify-between text-xs text-muted">
+                    <span>Tip: press{" "}
+                      <kbd className="rounded border border-input bg-muted px-1 font-mono">
+                        {formatShortcut({ key: "Enter", meta: true, ctrl: true, description: "", category: "" })}
+                      </kbd>{" "}
+                      to generate.
+                    </span>
+                    <span className={input.idea.length < 20 ? "text-signal-challenges" : input.idea.length > 500 ? "text-amber-500" : "text-muted/70"} title="Recommended 20-500 chars">{input.idea.length} chars</span>
                   </p>
                 </label>
 

@@ -272,7 +272,7 @@ export function ValidationBoard({
         }
         evidenceListRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 30);
-    } else if (kind === "status" || kind === "confidence" || kind === "decision" || kind === "archived") {
+    } else if (kind === "status" || kind === "confidence" || kind === "decision" || kind === "archived" || kind === "pinned" || kind === "created") {
       window.setTimeout(() => {
         const root = document.querySelector(`[data-experiment-article][data-experiment-id="${experimentId}"]`) as HTMLElement | null;
         if (!root) return;
