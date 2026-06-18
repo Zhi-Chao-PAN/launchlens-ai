@@ -168,7 +168,7 @@ export function CommandPalette({
       role="dialog"
       aria-modal="true"
       aria-label="Command palette"
-      className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-[15vh]"
+      className="fixed inset-0 z-50 flex items-center justify-center px-3 pt-4 sm:items-start sm:px-4 sm:pt-[15vh]"
     >
       {/* Backdrop */}
       <button
@@ -183,7 +183,7 @@ export function CommandPalette({
       {/* Panel */}
       <div
         ref={trapRef}
-        className={`relative w-full max-w-lg overflow-hidden rounded-xl border border-card bg-card shadow-2xl transition-all duration-200 ease-out motion-reduce:transition-none ${
+        className={`relative w-full max-w-lg max-h-[calc(100vh-2rem)] overflow-hidden rounded-xl border border-card bg-card shadow-2xl transition-all duration-200 ease-out motion-reduce:transition-none sm:max-h-none ${
           mounted ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
         }`}
       >
@@ -222,7 +222,7 @@ export function CommandPalette({
         <ul
           id="command-list"
           role="listbox"
-          className="max-h-80 overflow-y-auto py-1"
+          className="max-h-[50vh] overflow-y-auto py-1 sm:max-h-80"
         >
           
           {filtered.length === 0 ? (
