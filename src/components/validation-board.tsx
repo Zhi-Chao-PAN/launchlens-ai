@@ -3330,6 +3330,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       {(() => {
                         const kindChips: { id: string; label: string }[] = [
                           { id: "all", label: "All" },
+                          { id: "created", label: "Created" },
                           { id: "status", label: "Status" },
                           { id: "confidence", label: "Confidence" },
                           { id: "decision", label: "Decision" },
@@ -3352,7 +3353,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           </div>
                         )}
                         {visibleTimeline.length === 0 && selectedKind !== "all" ? (
-                          <p className="text-[11px] italic text-muted">No {selectedKind.replace("_", " ")} events in this view.</p>
+                          <p className="text-[11px] italic text-muted">No {selectedKind.replace("_", " ").replace(/\b\w/g, (s) => s.toUpperCase())} events in this view.</p>
                         ) : visibleTimeline.map((evt) => {
                         const when = new Date(evt.at);
                         const timeLabel = when.toLocaleString();
