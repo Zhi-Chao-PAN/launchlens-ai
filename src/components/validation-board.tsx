@@ -225,6 +225,19 @@ export function ValidationBoard({
         }
         evidenceListRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 30);
+    } else if (kind === "status" || kind === "confidence" || kind === "decision" || kind === "archived") {
+      window.setTimeout(() => {
+        const root = document.querySelector(`[data-experiment-article][data-experiment-id="${experimentId}"]`) as HTMLElement | null;
+        if (!root) return;
+        const target = root.querySelector(`[data-meta-target="${kind}"]`) as HTMLElement | null;
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "center" });
+          target.classList.add("ring-2", "ring-accent", "ring-offset-1", "ring-offset-[var(--card-bg)]");
+          window.setTimeout(() => target.classList.remove("ring-2", "ring-accent", "ring-offset-1", "ring-offset-[var(--card-bg)]"), 1600);
+        } else {
+          root.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 30);
     }
   }
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -2262,7 +2275,7 @@ export function ValidationBoard({
               >
                 <div className="min-h-0 overflow-hidden" inert={!expanded}>
               <div className="mt-4 grid gap-4 md:grid-cols-3">
-                <label className="block">
+                <label className="block" data-meta-target="status">
                   <span className="mb-2 block text-xs font-semibold uppercase text-muted">
                     Validation status
                   </span>
@@ -2285,7 +2298,7 @@ export function ValidationBoard({
                   </select>
                 </label>
 
-                <label className="block">
+                <label className="block" data-meta-target="confidence">
                   <span className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-muted">
                     Confidence
                     {!experiment.confidenceManual && experiment.evidence.length > 0 && (
@@ -2965,7 +2978,7 @@ export function ValidationBoard({
               </div>
 
               <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                <label className="block">
+                <label className="block" data-meta-target="decision">
                   <span className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase text-muted">
                     <CircleGauge className="size-3.5" aria-hidden="true" />
                     Decision
