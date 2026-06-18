@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 :root {
   --background: #f6f8f4;
@@ -265,4 +265,29 @@ html {
 .text-info { color: var(--info-blue, #4f7fb8); }
 .border-info { border-color: var(--info-blue, #4f7fb8); }
 
-
+/* High-contrast / forced-color mode: ensure signal dots remain distinguishable
+   even when the system overrides --signal-* colours. Each ramp keeps its
+   semantic colour via forced-color-adjust:none, and additionally gets a
+   distinct border-style (solid / dashed / dotted) so users who cannot see the
+   colour still get three unambiguous markers. */
+@media (forced-colors: active) {
+  .bg-signal-supports {
+    forced-color-adjust: none;
+    background-color: var(--signal-supports, #15803d);
+    border: 2px solid currentColor;
+    outline: 1px solid ButtonText;
+  }
+  .bg-signal-challenges {
+    forced-color-adjust: none;
+    background-color: var(--signal-challenges, #b91c1c);
+    border: 2px dashed currentColor;
+  }
+  .bg-signal-neutral {
+    forced-color-adjust: none;
+    background-color: var(--signal-neutral, #6b7280);
+    border: 2px dotted currentColor;
+  }
+  .text-signal-supports { forced-color-adjust: none; color: var(--signal-supports, #15803d); }
+  .text-signal-challenges { forced-color-adjust: none; color: var(--signal-challenges, #b91c1c); }
+  .text-signal-neutral { forced-color-adjust: none; color: var(--signal-neutral, #6b7280); }
+}
