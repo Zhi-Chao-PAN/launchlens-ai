@@ -1788,6 +1788,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
     }
     setDraftSubmitError("");
 
+    const newEvidenceId = evidenceId();
     const experimentBefore = execution.experiments.find((e) => e.id === experimentId);
     const oldConfidence = experimentBefore?.confidence ?? "low";
     const wasManual = experimentBefore?.confidenceManual ?? false;
@@ -1837,7 +1838,6 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
       });
       const updatedExperiment = execution.experiments.find((e) => e.id === experimentId);
       const count = updatedExperiment ? updatedExperiment.evidence.length + 1 : 1;
-      const newEvidenceId = evidenceId();
       pushHistoryEvent(experimentId, { kind: "evidence_added", source, targetId: newEvidenceId, label: note.slice(0, 60) });
       srAnnounce(
         `Evidence recorded: ${source}. ${count} items total.`,
