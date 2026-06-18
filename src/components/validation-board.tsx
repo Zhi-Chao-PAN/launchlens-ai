@@ -1919,6 +1919,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
               e.target.value as "default" | "confidence" | "status" | "progress",
             )
           }
+          title="Default: manual order. Highest confidence: high to low. By status: supported/testing/untested/refuted. Most evidence: evidence count descending."
           className="rounded-md border border-input bg-card px-2 py-1 text-xs font-semibold text-foreground/70 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
           aria-label="Sort hypotheses"
         >
@@ -3310,7 +3311,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           <li key={evt.id} className="relative text-xs leading-5">
                             <span role="button" tabIndex={0} onClick={(ev) => { ev.stopPropagation(); onTimelineEventClick(experiment.id, evt.kind, evt.targetId); }} onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onTimelineEventClick(experiment.id, evt.kind, evt.targetId); } }} className={"absolute -left-[15px] top-2 size-2 cursor-pointer rounded-full ring-2 ring-background transition hover:scale-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + dotColor} aria-label="Timeline event" />
                             <span className="font-medium text-foreground/80">{kindLabel[evt.kind] || evt.kind}</span>
-                            {evt.label ? <span className="ml-1.5 max-w-[180px] truncate text-muted" title={evt.label}>&ldquo;{evt.label}&rdquo;</span> : isTransition ? (<span className="ml-1.5 text-muted"><span className={statusTokenClass(evt.from)}>{evt.from ?? "?"}</span> <span className="text-muted-foreground/70">&rarr;</span> <span className={statusTokenClass(evt.to)} title={evt.kind === "decision" && evt.to ? DECISION_DESCRIPTIONS[evt.to] || evt.to : undefined} aria-label={evt.kind === "decision" && evt.to ? DECISION_DESCRIPTIONS[evt.to] || evt.to : undefined}>{evt.to ?? "?"}</span></span>) : (detail ? <span className="ml-1.5 text-muted">{detail}</span> : null)}
+                            {evt.label ? <span className="ml-1.5 max-w-[180px] truncate text-muted" title={evt.label}>&ldquo;{evt.label}&rdquo;</span> : isTransition ? (<span className="ml-1.5 text-muted"><span className={statusTokenClass(evt.from)}>{evt.from ?? "?"}</span> <span className="text-muted-foreground/70">&rarr;</span> <span className={statusTokenClass(evt.to)} title={evt.to ? ((evt.kind === "decision" ? DECISION_DESCRIPTIONS[evt.to] : evt.kind === "status" ? STATUS_DESCRIPTIONS[evt.to] : evt.kind === "confidence" ? CONFIDENCE_DESCRIPTIONS[evt.to as keyof typeof CONFIDENCE_DESCRIPTIONS] : undefined) || evt.to) : undefined} aria-label={evt.to ? ((evt.kind === "decision" ? DECISION_DESCRIPTIONS[evt.to] : evt.kind === "status" ? STATUS_DESCRIPTIONS[evt.to] : evt.kind === "confidence" ? CONFIDENCE_DESCRIPTIONS[evt.to as keyof typeof CONFIDENCE_DESCRIPTIONS] : undefined) || evt.to) : undefined}>{evt.to ?? "?"}</span></span>) : (detail ? <span className="ml-1.5 text-muted">{detail}</span> : null)}
                             <span className="ml-1 text-[10px] text-muted/80">· {timeLabel}</span>
                           </li>
                         );
