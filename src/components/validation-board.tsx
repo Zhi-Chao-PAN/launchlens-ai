@@ -95,6 +95,8 @@ const weightLabels: Record<EvidenceWeight, string> = {
   strong: "Strong",
 };
 
+const STATUS_DESCRIPTIONS: Record<string, string> = { untested: "Untested: no evidence has been collected yet.", testing: "Testing: evidence is actively being gathered.", supported: "Supported: the hypothesis is holding up against the evidence.", refuted: "Refuted: the evidence contradicts the hypothesis." };
+
 const SIGNAL_DESCRIPTIONS: Record<EvidenceSignal, string> = { supports: "Supports: this evidence reinforces the hypothesis.", challenges: "Challenges: this evidence contradicts or weakens the hypothesis.", neutral: "Neutral: this evidence is informational, neither supporting nor contradicting." };
 
 const WEIGHT_DESCRIPTIONS: Record<EvidenceWeight, string> = { anecdotal: "Anecdotal: a single story or hunch, not yet a pattern.", moderate: "Moderate: a pattern seen a few times but not yet conclusive.", strong: "Strong: repeated, high-quality signal across multiple sources." };
@@ -2249,7 +2251,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                     </span>
                     <span
                       role="status"
-                      aria-label={`Validation status: ${statusLabels[experiment.status]}`}
+                      aria-label={`Validation status: ${statusLabels[experiment.status]}. ${STATUS_DESCRIPTIONS[experiment.status] || ""}`}
+                      title={STATUS_DESCRIPTIONS[experiment.status] || ""}
                       className={`rounded-md px-2 py-1 text-xs font-semibold ${statusClass(experiment.status)}`}
                     >
                       {statusLabels[experiment.status]}
