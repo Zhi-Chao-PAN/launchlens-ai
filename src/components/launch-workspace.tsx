@@ -1124,6 +1124,7 @@ export function LaunchWorkspace({
                     rows={2}
                     className="w-full field-sizing-content resize-y min-h-[64px] max-h-[240px] rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
+                  <p className="mt-1 text-right text-[11px] text-muted/70">{input.audience.length} chars</p>
                 </label>
 
                 <label className="block">
