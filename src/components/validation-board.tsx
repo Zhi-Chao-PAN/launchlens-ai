@@ -3489,7 +3489,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                         {experiment.history.length > 5 && (
                           <div className="mb-1.5 flex flex-wrap gap-0.5">
                             {kindChips.filter((ch) => ch.id === "all" || kindCounts[ch.id]).map((ch) => (
-                              <button key={ch.id} type="button" onClick={(e) => { e.stopPropagation(); setTimelineKindFilter((prev) => ({ ...prev, [experiment.id]: ch.id })); }} className={`rounded px-1.5 py-0.5 text-[10px] font-medium transition ${selectedKind === ch.id ? "bg-accent text-white" : "text-muted hover:bg-muted hover:text-foreground"}`} title={`Filter timeline to ${ch.label.toLowerCase()} events`} aria-pressed={selectedKind === ch.id}>{ch.label}{ch.id !== "all" ? ` ${kindCounts[ch.id] || 0}` : ""}</button>
+                              <button key={ch.id} type="button" onClick={(e) => { e.stopPropagation(); setTimelineKindFilter((prev) => ({ ...prev, [experiment.id]: ch.id })); }} className={`rounded px-1.5 py-0.5 text-[10px] font-medium transition ${selectedKind === ch.id ? "bg-accent text-white" : "text-muted hover:bg-muted hover:text-foreground"}`} title={`Filter timeline to ${ch.label.toLowerCase()} events`} aria-pressed={selectedKind === ch.id}>{ch.label} {ch.id === "all" ? (selectedKind === "all" ? allTimeline.length : visibleTimeline.length + "/" + allTimeline.length) : (kindCounts[ch.id] || 0)}</button>
                             ))}
                           </div>
                         )}
@@ -3592,7 +3592,16 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
             title={showArchived ? "Collapse archived hypotheses" : (archivedExperiments.length + " archived hypothesis/hypotheses. Click to expand.")}
             className="flex w-full items-center justify-between gap-2 text-left text-xs font-semibold uppercase text-muted transition hover:text-foreground"
           >
-            <span>Archived ({archivedExperiments.length})</span>
+            <span>Archived ({archivedExperiments.length})
+              <span className="ml-2 font-normal normal-case tracking-normal text-muted/70">
+                {(() => {
+                  const summary: Record<string, number> = {};
+                  archivedExperiments.forEach((e) => { summary[e.status] = (summary[e.status] || 0) + 1; });
+                  const label: Record<string, string> = { supported: "validated", refuted: "invalidated", testing: "testing", untested: "untested", decided: "decided" };
+                  return Object.entries(summary).map(([k, v]) => v + " " + (label[k] || k)).join(" · ");
+                })()}
+              </span>
+            </span>
             {showArchived ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
           </button>
           {showArchived && (
