@@ -619,6 +619,13 @@ export function LaunchWorkspace({
       setExportFormat("");
       setIsEditing(false);
       setIsBriefOpen(false);
+      requestAnimationFrame(() => {
+        const el = document.getElementById("workspace-main");
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+          (el as HTMLElement).focus?.();
+        }
+      });
     });
     showToast("Example workspace loaded.", "success");
   }
@@ -1530,11 +1537,13 @@ export function LaunchWorkspace({
             </section>
 
             <ErrorBoundary label="Validation board">
-              <ValidationBoard
-                execution={execution}
-                tasks={workspace.tasks}
-                onChange={setExecution}
-              />
+              <section id="workspace-main" tabIndex={-1} aria-label="Generated workspace" className="outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-md">
+                <ValidationBoard
+                  execution={execution}
+                  tasks={workspace.tasks}
+                  onChange={setExecution}
+                />
+              </section>
             </ErrorBoundary>
 
             <ErrorBoundary label="Decision copilot">
