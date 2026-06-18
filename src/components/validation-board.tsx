@@ -322,7 +322,8 @@ export function ValidationBoard({
   const sourceNear = sourceLen > SOURCE_MAX * 0.8 && sourceLen <= SOURCE_MAX;
   const noteNear = noteLen > NOTE_MAX * 0.8 && noteLen <= NOTE_MAX;
   const formInvalid = sourceLen > SOURCE_MAX || noteLen > NOTE_MAX;
-  const [weightPreset, setWeightPreset] = useState<"default" | "evidence" | "decision">("default");
+  const [weightPreset, setWeightPresetState] = useState<"default" | "evidence" | "decision">(() => { if (typeof window === "undefined") return "default"; try { const v = window.localStorage.getItem("launchlens:weight-preset"); if (v === "default" || v === "evidence" || v === "decision") return v; } catch {} return "default"; });
+  const setWeightPreset = useCallback((v: "default" | "evidence" | "decision") => { setWeightPresetState(v); try { window.localStorage.setItem("launchlens:weight-preset", v); } catch {} }, []);
   const [showWeightPicker, setShowWeightPicker] = useState(false);
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "decided">("all");
   const [sortBy, setSortBy] = useState<"default" | "confidence" | "status" | "progress">("default");
