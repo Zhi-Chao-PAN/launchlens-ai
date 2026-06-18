@@ -1289,9 +1289,18 @@ export function LaunchWorkspace({
               {(error || fallbackNotice) && (
                 <div
                   role={error ? "alert" : "status"}
-                  className="mt-4 rounded-md border border-signal-challenges bg-signal-challenges p-3 text-sm leading-6 text-signal-challenges"
+                  className="mt-4 flex flex-wrap items-start justify-between gap-3 rounded-md border border-signal-challenges bg-signal-challenges p-3 text-sm leading-6 text-signal-challenges"
                 >
-                  {error || fallbackNotice}
+                  <span className="flex-1 min-w-[200px]">{error || fallbackNotice}</span>
+                  {error && (
+                    <button
+                      type="button"
+                      onClick={() => generate()}
+                      className="shrink-0 rounded-md border border-signal-challenges px-3 py-1 text-xs font-semibold text-signal-challenges transition hover:bg-signal-challenges hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--signal-challenges)]"
+                    >
+                      Try again
+                    </button>
+                  )}
                 </div>
               )}
 
