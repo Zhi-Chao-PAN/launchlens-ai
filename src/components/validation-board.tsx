@@ -1339,11 +1339,11 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
       return;
     }
 
-    // ArrowUp/Down to move focus between experiments
+    // ArrowUp/Down/Home/End to move focus between experiments
+    const articles = Array.from(
+      document.querySelectorAll("[data-experiment-article]"),
+    );
     if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-      const articles = Array.from(
-        document.querySelectorAll("[data-experiment-article]"),
-      );
       const currentIdx = articles.findIndex((el) => el === e.currentTarget);
       if (currentIdx === -1) return;
 
@@ -1361,6 +1361,12 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
         e.preventDefault();
         (articles[nextIdx] as HTMLElement).focus();
       }
+    } else if (e.key === "Home" && articles.length > 0) {
+      e.preventDefault();
+      (articles[0] as HTMLElement).focus();
+    } else if (e.key === "End" && articles.length > 0) {
+      e.preventDefault();
+      (articles[articles.length - 1] as HTMLElement).focus();
     }
   }
 
