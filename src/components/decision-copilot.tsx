@@ -754,16 +754,50 @@ export function DecisionCopilot({
             </button>
           )}
 
-          {currentBrief && (
-            <button
-              type="button"
-              onClick={applyRecommendation}
-              className="mt-2 flex h-10 w-full items-center justify-center gap-2 rounded-md border border-accent bg-transparent px-4 text-sm font-semibold text-accent transition hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <CheckCircle2 className="size-4" aria-hidden="true" />
-              Apply recommendation
-            </button>
-          )}
+          {currentBrief && experiment && (() => {
+            const rec = currentBrief.recommendation;
+            let newStatus: string = experiment.status;
+            if (rec === "proceed") newStatus = "supported";
+            else if (rec === "pivot" || rec === "pause") newStatus = "refuted";
+            else if (rec === "iterate") newStatus = "testing";
+            const nextAction = currentBrief.nextActions?.[0] || experiment.nextAction || "";
+            const newDecision = (rec.charAt(0).toUpperCase() + rec.slice(1)) + " - " + (currentBrief.headline || "");
+            const label = (s: string) => ({ untested: "Untested", testing: "Testing", supported: "Validated", refuted: "Invalidated" } as Record<string,string>)[s] || s;
+            const changed = (a: string, b: string) => (a || "").trim() !== (b || "").trim();
+            const fields: Array<{k: string; from: string; to: string}> = [];
+            if (changed(experiment.status, newStatus)) fields.push({ k: "Status", from: label(experiment.status), to: label(newStatus) });
+            if (changed(experiment.decision || "", newDecision)) fields.push({ k: "Decision", from: experiment.decision || "(empty)", to: newDecision });
+            if (changed(experiment.nextAction || "", nextAction)) fields.push({ k: "Next action", from: experiment.nextAction || "(empty)", to: nextAction });
+            return (
+              <div className="mt-2">
+                {fields.length > 0 && (
+                  <div className="mb-2 rounded-md border border-input bg-input/40 p-2 text-[11px]">
+                    <p className="mb-1 font-semibold uppercase tracking-wide text-muted">Changes to apply</p>
+                    <ul className="space-y-1">
+                      {fields.map((f) => (
+                        <li key={f.k} className="flex gap-2 leading-4">
+                          <span className="shrink-0 font-medium text-muted">{f.k}:</span>
+                          <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-1">
+                            <span className="rounded bg-signal-challenges/15 px-1 text-signal-challenges line-through">{f.from}</span>
+                            <span className="text-muted">&rarr;</span>
+                            <span className="rounded bg-signal-supports/15 px-1 text-signal-supports">{f.to}</span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={applyRecommendation}
+                  className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-accent bg-transparent px-4 text-sm font-semibold text-accent transition hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <CheckCircle2 className="size-4" aria-hidden="true" />
+                  Apply recommendation
+                </button>
+              </div>
+            );
+          })()}
 
           <span id="decision-generation-status" role="status" aria-live="polite" className="sr-only">
             {srGenerationAnnouncement}
