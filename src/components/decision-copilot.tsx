@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   AlertTriangle,
@@ -250,6 +250,17 @@ export function DecisionCopilot({
       ).size
     : 0;
 
+  const pendingBatch = execution.experiments.filter(
+    (item) => item.evidence.length > 0 && !item.decisionBrief,
+  );
+  const batchDisabledReason =
+    isBatchGenerating
+      ? "Batch generation in progress."
+      : isGenerating
+        ? "Wait for the current single brief to finish."
+        : pendingBatch.length === 0
+          ? "No hypotheses are ready (need evidence and no existing brief)."
+          : "";
   const generateDisabledReason =
     isGenerating
       ? "Brief is being synthesized."
@@ -529,8 +540,9 @@ export function DecisionCopilot({
           <button
             type="button"
             onClick={generateBatchBriefs}
-            disabled={isBatchGenerating || isGenerating}
+            disabled={!!batchDisabledReason}
             aria-busy={isBatchGenerating}
+            aria-describedby={batchDisabledReason ? "decision-batch-generate-reason" : undefined}
             className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-accent px-3 py-1.5 text-xs font-semibold text-accent transition hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 lg:ml-0"
           >
             {isBatchGenerating ? (

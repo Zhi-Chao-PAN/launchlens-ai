@@ -3352,6 +3352,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
             type="button"
             onClick={() => setShowArchived((v) => !v)}
             aria-expanded={showArchived}
+            aria-label={showArchived ? "Collapse archived hypotheses" : "Expand archived hypotheses"}
+            title={showArchived ? "Collapse archived hypotheses" : (archivedExperiments.length + " archived hypothesis/hypotheses. Click to expand.")}
             className="flex w-full items-center justify-between gap-2 text-left text-xs font-semibold uppercase text-muted transition hover:text-foreground"
           >
             <span>Archived ({archivedExperiments.length})</span>
