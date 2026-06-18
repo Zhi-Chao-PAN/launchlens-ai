@@ -307,6 +307,7 @@ export function LaunchWorkspace({
   const [workspace, setWorkspace] = useState(initialWorkspace);
   const [execution, setExecution] = useState(initialExecution);
   const [isGenerating, setIsGenerating] = useState(false);
+  const generateAbortRef = useRef<AbortController | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
 
@@ -471,6 +472,7 @@ export function LaunchWorkspace({
     }, 50);
   }, []);
   
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const toggleEdit = useCallback(() => {
     setIsEditing(current => !current);
   }, []);
@@ -664,6 +666,9 @@ export function LaunchWorkspace({
   }
 
   async function generate() {
+    const abort = new AbortController();
+    generateAbortRef.current?.abort();
+    generateAbortRef.current = abort;
     setIsGenerating(true);
     setError("");
     setFallbackNotice("");
@@ -674,6 +679,7 @@ export function LaunchWorkspace({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input),
+        signal: abort.signal,
       });
       const data = (await response.json()) as Partial<GenerationResult> & {
         error?: string;
@@ -713,14 +719,20 @@ export function LaunchWorkspace({
       }
       setIsBriefOpen(false);
     } catch (caught) {
-      const msg =
-        caught instanceof Error
-          ? caught.message
-          : "Something went wrong during generation.";
-      setError(msg);
-      setSrAnnouncement(`Generation failed: ${msg}`);
+      if (caught instanceof DOMException && caught.name === "AbortError") {
+        setFallbackNotice("");
+        setSrAnnouncement("Generation cancelled.");
+      } else {
+        const msg =
+          caught instanceof Error
+            ? caught.message
+            : "Something went wrong during generation.";
+        setError(msg);
+        setSrAnnouncement(`Generation failed: ${msg}`);
+      }
     } finally {
       setIsGenerating(false);
+      if (generateAbortRef.current === abort) generateAbortRef.current = null;
     }
   }
 
@@ -926,6 +938,7 @@ export function LaunchWorkspace({
   return (
     <>
     <div
+      id="founder-generate-status"
       role="status"
       aria-live="polite"
       aria-atomic="true"
@@ -1149,6 +1162,8 @@ export function LaunchWorkspace({
                   type="button"
                   onClick={generate}
                   disabled={isGenerating}
+                  aria-describedby={isGenerating ? "founder-generate-status founder-generate-reason" : "founder-generate-status"}
+                  aria-busy={isGenerating}
                   className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-muted"
                 >
                   {isGenerating ? (
@@ -1162,6 +1177,12 @@ export function LaunchWorkspace({
                   )}
                   {isGenerating ? "Generating" : "Generate workspace"}
                 </button>
+                {isGenerating && <p id="founder-generate-reason" className="sr-only">Workspace is being generated; please wait or cancel.</p>}
+                {isGenerating && (
+                  <button type="button" onClick={() => generateAbortRef.current?.abort()} className="mt-2 block w-full text-center text-xs font-medium text-muted underline-offset-2 transition hover:text-challenges hover:underline">
+                    Cancel generation
+                  </button>
+                )}
                 <p className="mt-2 text-center text-xs text-muted">
                   Tip: press{" "}
                   <kbd className="rounded border border-input bg-card px-1.5 py-0.5 font-mono text-[11px] text-foreground">
