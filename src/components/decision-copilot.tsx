@@ -320,6 +320,10 @@ export function DecisionCopilot({
     batchAbortRef.current?.abort();
   }
 
+  function cancelSingle() {
+    singleAbortRef.current?.abort();
+  }
+
   async function generateBatchBriefs() {
     const pending = execution.experiments.filter(
       (item) => item.evidence.length > 0 && !item.decisionBrief,
@@ -478,12 +482,17 @@ export function DecisionCopilot({
           : `${modeLabel} decision brief generated and saved.`,
       );
     } catch (caught) {
-      const msg =
-        caught instanceof Error
-          ? caught.message
-          : "Decision brief generation failed.";
-      setError(msg);
-      setSrGenerationAnnouncement(`Decision brief generation failed: ${msg}`);
+      if (caught instanceof DOMException && caught.name === "AbortError") {
+        setNotice("Generation cancelled.");
+        setSrGenerationAnnouncement("Generation cancelled.");
+      } else {
+        const msg =
+          caught instanceof Error
+            ? caught.message
+            : "Decision brief generation failed.";
+        setError(msg);
+        setSrGenerationAnnouncement(`Decision brief generation failed: ${msg}`);
+      }
     } finally {
       setIsGenerating(false);
       if (singleAbortRef.current === abort) singleAbortRef.current = null;
@@ -734,6 +743,15 @@ export function DecisionCopilot({
                 ? "Regenerate brief"
                 : "Generate decision brief"}
           </button>
+
+          {generateDisabledReason && !isGenerating && (
+            <p id="decision-generate-reason" className="sr-only">{generateDisabledReason}</p>
+          )}
+          {isGenerating && (
+            <button type="button" onClick={cancelSingle} className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-muted underline-offset-2 transition hover:text-challenges hover:underline">
+              Cancel generation
+            </button>
+          )}
 
           {currentBrief && (
             <button
