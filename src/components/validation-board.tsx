@@ -95,6 +95,8 @@ const weightLabels: Record<EvidenceWeight, string> = {
   strong: "Strong",
 };
 
+const DECISION_DESCRIPTIONS: Record<string, string> = { proceed: "Proceed: the evidence supports this hypothesis; move forward.", pivot: "Pivot: the evidence contradicts this hypothesis; consider changing direction.", iterate: "Iterate: signals are mixed; keep testing and refining.", pause: "Pause: set this hypothesis aside for now." };
+
 const STATUS_DESCRIPTIONS: Record<string, string> = { untested: "Untested: no evidence has been collected yet.", testing: "Testing: evidence is actively being gathered.", supported: "Supported: the hypothesis is holding up against the evidence.", refuted: "Refuted: the evidence contradicts the hypothesis." };
 
 const SIGNAL_DESCRIPTIONS: Record<EvidenceSignal, string> = { supports: "Supports: this evidence reinforces the hypothesis.", challenges: "Challenges: this evidence contradicts or weakens the hypothesis.", neutral: "Neutral: this evidence is informational, neither supporting nor contradicting." };
@@ -2568,11 +2570,14 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                 const challengesCount = experiment.evidence.filter((e) => e.signal === "challenges").length;
                 const neutralCount = experiment.evidence.filter((e) => e.signal === "neutral").length;
                 const setSig = (s: "all" | EvidenceSignal) => setEvidenceFilters((prev) => ({ ...prev, [experiment.id]: { ...getEvidenceFilter(experiment.id), signal: s } }));
-                const chip = (active: boolean, label: string, count: number, sig: "all" | EvidenceSignal) => (
-                  <button type="button" onClick={() => setSig(sig)} aria-pressed={active} className={"rounded-full px-2 py-0.5 text-[10px] font-medium transition " + (active ? "bg-accent text-white" : "bg-card text-muted hover:text-foreground")}>
+                const chip = (active: boolean, label: string, count: number, sig: "all" | EvidenceSignal) => {
+                  const chipTitle = sig === "all" ? "Show all evidence" : SIGNAL_DESCRIPTIONS[sig];
+                  return (
+                  <button type="button" onClick={() => setSig(sig)} aria-pressed={active} title={chipTitle + (active ? " (currently active)" : "")} aria-label={`Filter evidence by signal: ${sig}. ${count} item${count === 1 ? "" : "s"}.`} className={"rounded-full px-2 py-0.5 text-[10px] font-medium transition " + (active ? "bg-accent text-white" : "bg-card text-muted hover:text-foreground")}>
                     {label} ({count})
                   </button>
                 );
+                };
                 return (<>
                   <div className="mt-3 flex flex-wrap items-center gap-1">
                     {chip(ef.signal === "all", "All", experiment.evidence.length, "all")}
@@ -2586,11 +2591,14 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       const moderateCount = experiment.evidence.filter((e) => e.weight === "moderate").length;
                       const anecdotalCount = experiment.evidence.filter((e) => e.weight === "anecdotal").length;
                       const setWt = (w: "all" | EvidenceWeight) => setEvidenceFilters((prev) => ({ ...prev, [experiment.id]: { ...getEvidenceFilter(experiment.id), weight: w } }));
-                      const wchip = (active: boolean, label: string, count: number, w: "all" | EvidenceWeight) => (
-                        <button type="button" onClick={() => setWt(w)} aria-pressed={active} className={"rounded-full px-2 py-0.5 text-[10px] font-medium transition " + (active ? "bg-card ring-1 ring-accent text-foreground" : "bg-transparent text-muted hover:text-foreground")}>
+                      const wchip = (active: boolean, label: string, count: number, w: "all" | EvidenceWeight) => {
+                        const chipTitle = w === "all" ? "Show all weights" : WEIGHT_DESCRIPTIONS[w];
+                        return (
+                        <button type="button" onClick={() => setWt(w)} aria-pressed={active} title={chipTitle + (active ? " (currently active)" : "")} aria-label={`Filter evidence by weight: ${w}. ${count} item${count === 1 ? "" : "s"}.`} className={"rounded-full px-2 py-0.5 text-[10px] font-medium transition " + (active ? "bg-card ring-1 ring-accent text-foreground" : "bg-transparent text-muted hover:text-foreground")}>
                           {label} ({count})
                         </button>
                       );
+                      };
                       return (<>
                         {wchip(ef.weight === "all", "All wts", experiment.evidence.length, "all")}
                         {wchip(ef.weight === "strong", "Strong", strongCount, "strong")}
@@ -3302,7 +3310,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           <li key={evt.id} className="relative text-xs leading-5">
                             <span role="button" tabIndex={0} onClick={(ev) => { ev.stopPropagation(); onTimelineEventClick(experiment.id, evt.kind, evt.targetId); }} onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onTimelineEventClick(experiment.id, evt.kind, evt.targetId); } }} className={"absolute -left-[15px] top-2 size-2 cursor-pointer rounded-full ring-2 ring-background transition hover:scale-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + dotColor} aria-label="Timeline event" />
                             <span className="font-medium text-foreground/80">{kindLabel[evt.kind] || evt.kind}</span>
-                            {evt.label ? <span className="ml-1.5 max-w-[180px] truncate text-muted" title={evt.label}>&ldquo;{evt.label}&rdquo;</span> : isTransition ? (<span className="ml-1.5 text-muted"><span className={statusTokenClass(evt.from)}>{evt.from ?? "?"}</span> <span className="text-muted-foreground/70">&rarr;</span> <span className={statusTokenClass(evt.to)}>{evt.to ?? "?"}</span></span>) : (detail ? <span className="ml-1.5 text-muted">{detail}</span> : null)}
+                            {evt.label ? <span className="ml-1.5 max-w-[180px] truncate text-muted" title={evt.label}>&ldquo;{evt.label}&rdquo;</span> : isTransition ? (<span className="ml-1.5 text-muted"><span className={statusTokenClass(evt.from)}>{evt.from ?? "?"}</span> <span className="text-muted-foreground/70">&rarr;</span> <span className={statusTokenClass(evt.to)} title={evt.kind === "decision" && evt.to ? DECISION_DESCRIPTIONS[evt.to] || evt.to : undefined} aria-label={evt.kind === "decision" && evt.to ? DECISION_DESCRIPTIONS[evt.to] || evt.to : undefined}>{evt.to ?? "?"}</span></span>) : (detail ? <span className="ml-1.5 text-muted">{detail}</span> : null)}
                             <span className="ml-1 text-[10px] text-muted/80">· {timeLabel}</span>
                           </li>
                         );
