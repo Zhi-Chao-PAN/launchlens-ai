@@ -2912,6 +2912,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           <InlineMarkdown text={item.note} />
                         </p>
                       </div>
+{!experiment.archived && (<>
                       <div className="flex items-center gap-1">
                         <button
                           type="button"
@@ -3001,6 +3002,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                         </button>)}
                         {!experiment.archived && (<EvidenceOverflowMenu onDuplicate={() => duplicateEvidence(experiment.id, item.id)} onEdit={() => startEditingEvidence(experiment.id, item.id)} onDelete={() => setPendingDeleteId(item.id)} sourceLabel={item.source} />)}</>)}
                       </div>
+</>)}
                     </li>
                   ))}
                 </ul>
