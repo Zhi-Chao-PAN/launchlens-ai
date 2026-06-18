@@ -2077,6 +2077,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                   setRequestedExpandedExperimentId(newExp.id);
                   if (statusFilter !== "all") setStatusFilter("all");
               srAnnounce("New hypothesis added: " + newExp.assumption);
+                  window.requestAnimationFrame(() => { const el = document.querySelector(`[data-experiment-article][data-experiment-id="${newExp.id}"]`) as HTMLElement | null; el?.scrollIntoView({ behavior: "smooth", block: "center" }); el?.focus(); });
                 }
               }}
             />
@@ -2149,6 +2150,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                 setRequestedExpandedExperimentId(newExp.id);
                 if (statusFilter !== "all") setStatusFilter("all");
               srAnnounce("New hypothesis added: " + newExp.assumption);
+                window.requestAnimationFrame(() => { const el = document.querySelector(`[data-experiment-article][data-experiment-id="${newExp.id}"]`) as HTMLElement | null; el?.scrollIntoView({ behavior: "smooth", block: "center" }); el?.focus(); });
               }}
               disabled={newExperimentDraft.trim().length < 5}
               className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
