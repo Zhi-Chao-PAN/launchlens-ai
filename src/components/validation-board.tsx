@@ -2289,6 +2289,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                     }}
                     title={experiment.archived ? "Unarchive" : "Archive hypothesis"}
                     aria-label={experiment.archived ? "Unarchive" : "Archive hypothesis"}
+                    data-meta-target="archived"
                     className={"flex h-11 w-11 items-center justify-center rounded-md border border-input bg-card text-foreground/60 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:h-10 sm:w-10 " + (experiment.archived ? "text-accent" : "")}
                   >
                     <Archive className="size-4" aria-hidden="true" />
