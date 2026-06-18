@@ -2709,7 +2709,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                               />
                             ))}
                           </button>
-                          <time className="text-muted">
+                          <time className="text-muted" dateTime={item.observedAt} title={new Intl.DateTimeFormat(undefined, { year: "numeric", month: "long", day: "numeric", weekday: "long" }).format(new Date(item.observedAt))}>
                             {new Intl.DateTimeFormat("en", {
                               month: "short",
                               day: "numeric",

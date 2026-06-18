@@ -227,6 +227,8 @@ export function DecisionCopilot({
   const [error, setError] = useState("");
   const [isBatchGenerating, setIsBatchGenerating] = useState(false);
   const [batchProgress, setBatchProgress] = useState({ done: 0, total: 0, currentName: "" });
+  const [briefHistory, setBriefHistory] = useState<Record<string, Array<NonNullable<ValidationExperiment["decisionBrief"]>>>>({});
+  const HISTORY_CAP = 5;
   const { announce: setSrGenerationAnnouncement, message: srGenerationAnnouncement } = useSrAnnounce();
   const selectedExperimentId =
     requestedExperimentId &&
@@ -247,6 +249,9 @@ export function DecisionCopilot({
         currentBrief.claims.flatMap((claim) => claim.evidenceIds),
       ).size
     : 0;
+
+  const historyForExperiment = experiment ? (briefHistory[experiment.id] ?? []).filter((b) => !currentBrief || b.generatedAt !== currentBrief.generatedAt) : [];
+
   const briefCount = useMemo(
     () =>
       execution.experiments.filter(
@@ -408,7 +413,16 @@ export function DecisionCopilot({
         throw new Error(friendlyApiMessage(errorCode, data.error ?? fallback));
       }
 
-      saveBrief(experiment.id, brief);
+      // capture prior brief in local history before overwriting
+        setBriefHistory((prev) => {
+          const prior = experiment.decisionBrief;
+          if (!prior) return prev;
+          const list = prev[experiment.id] ?? [];
+          if (list.some((b) => b.generatedAt === prior.generatedAt)) return prev;
+          const next = [prior, ...list].slice(0, HISTORY_CAP);
+          return { ...prev, [experiment.id]: next };
+        });
+        saveBrief(experiment.id, brief);
       const modeLabel = data.mode === "real" ? "Real-provider" : "Demo";
       setNotice(
         data.usedFallback
@@ -614,6 +628,29 @@ export function DecisionCopilot({
               )}
             </div>
           )}
+          {currentBrief && historyForExperiment.length > 0 && (
+            <div className="mt-2">
+              <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted">Previous recommendations</p>
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label="Restore an earlier recommendation">
+                {historyForExperiment.map((brief, idx) => {
+                  const rec = brief.recommendation;
+                  const time = new Date(brief.generatedAt).toLocaleString();
+                  return (
+                    <button
+                      key={brief.generatedAt}
+                      type="button"
+                      onClick={() => { if (!experiment) return; saveBrief(experiment.id, brief); setNotice("Restored recommendation v" + (historyForExperiment.length - idx) + " from " + time + "."); }}
+                      title={"Restore: " + rec.toUpperCase() + " generated " + time}
+                      aria-label={"Restore " + rec + " recommendation generated " + time}
+                      className={"rounded-full border px-2 py-0.5 text-[11px] font-medium transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + recommendationClass(rec)}
+                    >
+                      v{historyForExperiment.length - idx} {recommendationLabels[rec]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )},
           <button
             ref={generateButtonRef}
             type="button"
