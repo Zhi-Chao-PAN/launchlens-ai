@@ -1194,7 +1194,7 @@ export function LaunchWorkspace({
                     rows={2}
                     className="w-full field-sizing-content resize-y min-h-[64px] max-h-[240px] rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
-                  <p id="founder-brief-audience-count" className="mt-1 text-right text-[11px] text-muted/70">{input.audience.length} chars</p>
+                  <p id="founder-brief-audience-count" className={"mt-1 text-right text-[11px] " + (input.audience.length > 400 ? "text-signal-challenges" : input.audience.length > 240 ? "text-amber-500" : "text-muted/70")} title="Recommended under 240 chars">{input.audience.length} chars</p>
                 </label>
 
                 <label className="block">
