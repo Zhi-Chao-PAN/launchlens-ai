@@ -14,6 +14,7 @@ import {
   Archive,
   GripVertical,
   Download,
+  Copy,
   Link2,
   PencilLine,
   Search,
@@ -948,7 +949,28 @@ export function ValidationBoard({
       ),
     }));
   }
-  function deleteEvidence(experimentId: string, evidenceId: string) {
+    function duplicateEvidence(experimentId: string, evId: string) {
+    const exp = execution.experiments.find((e) => e.id === experimentId);
+    if (!exp) return;
+    const src = exp.evidence.find((e) => e.id === evId);
+    if (!src) return;
+    if (exp.evidence.length >= 8) { setDraftSubmitError("Maximum 8 evidence items per hypothesis."); return; }
+    const clone: ValidationEvidence = { ...src, id: evidenceId(), source: src.source + " (copy)", observedAt: new Date().toISOString() };
+    onChange({
+      experiments: execution.experiments.map((item) =>
+        item.id === experimentId ? { ...item, evidence: [...item.evidence, clone], updatedAt: new Date().toISOString() } : item,
+      ),
+      updatedAt: new Date().toISOString(),
+    });
+    setFlashEvidenceId(clone.id);
+    if (flashEvidenceTimer.current) window.clearTimeout(flashEvidenceTimer.current);
+    flashEvidenceTimer.current = window.setTimeout(() => setFlashEvidenceId(null), 1600);
+    window.setTimeout(() => {
+      const el = document.querySelector(`[data-evidence-id="${clone.id}"]`) as HTMLElement | null;
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 50);
+  }
+function deleteEvidence(experimentId: string, evidenceId: string) {
     const experiment = execution.experiments.find((e) => e.id === experimentId);
     if (!experiment) return;
     const idx = experiment.evidence.findIndex((e) => e.id === evidenceId);
@@ -2576,6 +2598,15 @@ export function ValidationBoard({
                           className={"flex size-11 shrink-0 items-center justify-center rounded-md transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:size-8 " + (item.pinned ? "text-amber-500" : "text-foreground/80")}
                         >
                           <Star className={"size-4 " + (item.pinned ? "fill-current" : "")} aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); duplicateEvidence(experiment.id, item.id); }}
+                          title="Duplicate evidence"
+                          aria-label={`Duplicate evidence from ${item.source}`}
+                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:size-8"
+                        >
+                          <Copy className="size-4" aria-hidden="true" />
                         </button>
                         <button
                           type="button"
