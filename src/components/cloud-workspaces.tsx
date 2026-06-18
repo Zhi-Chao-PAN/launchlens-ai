@@ -15,7 +15,7 @@ import {
   Unlink,
   UploadCloud,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useToast } from "@/components/toast";
 import { Skeleton } from "@/components/skeleton";
 import { copyTextToClipboard } from "@/lib/launchlens/clipboard";
@@ -236,14 +236,17 @@ export function CloudWorkspaces({
     }
   }
 
+  const previousSnapshotForUndo = useRef<Pick<CloudWorkspaceRecord, "input" | "workspace" | "execution"> | null>(null);
+
   async function restoreSnapshot(id: string) {
     setBusyAction(`restore:${id}`);
     try {
       const response = await cloudRequest<CloudWorkspaceResponse>(
         `/api/workspaces/${id}`,
       );
+      previousSnapshotForUndo.current = { input, workspace, execution };
       onRestore(response.workspace);
-      showToast("Cloud snapshot restored to the editor.", "success");
+      showToast("Cloud snapshot restored to the editor.", "success", 7000, { label: "Undo", onClick: () => { const prev = previousSnapshotForUndo.current; if (prev) { previousSnapshotForUndo.current = null; onRestore(prev as CloudWorkspaceRecord); showToast("Restore undone; editor returned to prior state.", "success"); } } });
     } catch (error) {
       const code = error instanceof Error ? error.message : "";
       showToast(

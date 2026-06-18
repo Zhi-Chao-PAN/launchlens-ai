@@ -1099,6 +1099,12 @@ export function LaunchWorkspace({
                     Target audience
                   </span>
                   <textarea
+                    onKeyDown={(event) => {
+                      if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && !isGenerating) {
+                        event.preventDefault();
+                        generate();
+                      }
+                    }}
                     value={input.audience}
                     onChange={(event) =>
                       setInput((current) => ({
@@ -1116,6 +1122,12 @@ export function LaunchWorkspace({
                     Market context
                   </span>
                   <input
+                    onKeyDown={(event) => {
+                      if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && !isGenerating) {
+                        event.preventDefault();
+                        generate();
+                      }
+                    }}
                     value={input.market}
                     onChange={(event) =>
                       setInput((current) => ({
@@ -1154,6 +1166,12 @@ export function LaunchWorkspace({
                     Constraints
                   </span>
                   <textarea
+                    onKeyDown={(event) => {
+                      if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && !isGenerating) {
+                        event.preventDefault();
+                        generate();
+                      }
+                    }}
                     value={input.constraints}
                     onChange={(event) =>
                       setInput((current) => ({
