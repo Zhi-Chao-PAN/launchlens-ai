@@ -736,6 +736,14 @@ export function LaunchWorkspace({
     }
   }
 
+
+  useEffect(() => {
+    if (!isGenerating) return;
+    const onEscape = () => { generateAbortRef.current?.abort(); };
+    window.addEventListener("launchlens:escape", onEscape);
+    return () => window.removeEventListener("launchlens:escape", onEscape);
+  }, [isGenerating]);
+
   function flashCopySuccess(kind: "markdown" | "json") {
     setCopyJustSucceeded(kind);
     window.setTimeout(() => {

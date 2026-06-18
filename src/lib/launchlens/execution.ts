@@ -21,7 +21,8 @@ export type HypothesisChangeKind =
   | "decision"
   | "archived"
   | "evidence_added"
-  | "evidence_removed";
+  | "evidence_removed"
+  | "pinned";
 
 export type HypothesisChangeEvent = {
   id: string;

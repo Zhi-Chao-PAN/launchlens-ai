@@ -1071,10 +1071,14 @@ const confidenceLabel: Record<ConfidenceLevel, string> = {
 
   
   function toggleHypothesisPin(experimentId: string) {
+    const exp = execution.experiments.find((e) => e.id === experimentId);
+    if (!exp) return;
+    const next = !exp.pinned;
+    pushHistoryEvent(experimentId, { kind: "pinned", from: exp.pinned ? "pinned" : "unpinned", to: next ? "pinned" : "unpinned", label: next ? "Pinned to top" : "Unpinned" });
     onChange({
       ...execution,
       experiments: execution.experiments.map((e) =>
-        e.id === experimentId ? { ...e, pinned: !e.pinned } : e,
+        e.id === experimentId ? { ...e, pinned: next } : e,
       ),
       updatedAt: new Date().toISOString(),
     });
@@ -3308,6 +3312,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           archived: evt.to === "true" ? "Archived" : "Unarchived",
                           evidence_added: "Evidence added",
                           evidence_removed: "Evidence removed",
+                          pinned: "Pin toggled",
                         };
                         const statusTokenClass = (v?: string) => ({
                           supported: "text-signal-supports font-medium",
