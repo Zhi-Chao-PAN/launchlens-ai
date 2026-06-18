@@ -3052,12 +3052,25 @@ export function ValidationBoard({
                           evidence_added: "Evidence added",
                           evidence_removed: "Evidence removed",
                         };
-                        const detail = evt.kind === "status" || evt.kind === "confidence"
-                          ? (evt.from ?? "?") + " → " + (evt.to ?? "?")
-                          : evt.kind === "archived" ? "" : (evt.source ?? "");
+                        const statusTokenClass = (v?: string) => ({
+                          supported: "text-signal-supports font-medium",
+                          refuted: "text-signal-challenges font-medium",
+                          testing: "text-signal-pending font-medium",
+                          untested: "text-muted-foreground",
+                          high: "text-signal-supports font-medium",
+                          medium: "text-amber-600 dark:text-amber-300 font-medium",
+                          low: "text-muted-foreground",
+                          proceed: "text-signal-supports font-medium",
+                          pivot: "text-signal-challenges font-medium",
+                          iterate: "text-signal-pending font-medium",
+                        } as Record<string, string>)[v ?? ""] ?? "text-muted";
+                        const isTransition = evt.kind === "status" || evt.kind === "confidence" || evt.kind === "decision";
+                        const detail = !isTransition ? (evt.kind === "archived" ? "" : (evt.source ?? "")) : "";
                         const dotColor = evt.kind === "status" && evt.to
                           ? ({ supported: "bg-signal-supports", refuted: "bg-signal-challenges", testing: "bg-signal-pending", untested: "bg-muted-foreground/50" } as Record<string, string>)[evt.to] ?? "bg-accent/70"
                           : evt.kind === "archived" ? "bg-muted-foreground/40"
+                          : evt.kind === "confidence" && evt.to ? ({ high: "bg-signal-supports", medium: "bg-amber-500", low: "bg-muted-foreground/50" } as Record<string,string>)[evt.to] ?? "bg-accent/70"
+                          : evt.kind === "decision" && evt.to ? ({ proceed: "bg-signal-supports", pivot: "bg-signal-challenges", iterate: "bg-signal-pending" } as Record<string,string>)[evt.to] ?? "bg-accent/70"
                           : evt.kind === "evidence_added" ? "bg-emerald-500/80"
                           : evt.kind === "evidence_removed" ? "bg-amber-500/80"
                           : evt.kind === "created" ? "bg-accent/70"
@@ -3066,7 +3079,7 @@ export function ValidationBoard({
                           <li key={evt.id} className="relative text-xs leading-5">
                             <span role="button" tabIndex={0} onClick={(ev) => { ev.stopPropagation(); onTimelineEventClick(experiment.id, evt.kind, evt.targetId); }} onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onTimelineEventClick(experiment.id, evt.kind, evt.targetId); } }} className={"absolute -left-[15px] top-2 size-2 cursor-pointer rounded-full ring-2 ring-background transition hover:scale-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + dotColor} aria-label="Timeline event" />
                             <span className="font-medium text-foreground/80">{kindLabel[evt.kind] || evt.kind}</span>
-                            {evt.label ? <span className="ml-1.5 max-w-[180px] truncate text-muted" title={evt.label}>&ldquo;{evt.label}&rdquo;</span> : (detail ? <span className="ml-1.5 text-muted">{detail}</span> : null)}
+                            {evt.label ? <span className="ml-1.5 max-w-[180px] truncate text-muted" title={evt.label}>&ldquo;{evt.label}&rdquo;</span> : isTransition ? (<span className="ml-1.5 text-muted"><span className={statusTokenClass(evt.from)}>{evt.from ?? "?"}</span> <span className="text-muted-foreground/70">&rarr;</span> <span className={statusTokenClass(evt.to)}>{evt.to ?? "?"}</span></span>) : (detail ? <span className="ml-1.5 text-muted">{detail}</span> : null)}
                             <span className="ml-1 text-[10px] text-muted/80">· {timeLabel}</span>
                           </li>
                         );
