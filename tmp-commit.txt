@@ -1,0 +1,14 @@
+﻿feat(R417+R419): focus validation board after successful generation
+
+Generate already announced a summary via srAnnouncement and scrolled
+the viewport, but focus stayed on the Generate button inside the
+founder-brief aside, forcing keyboard/screen-reader users to tab
+through the cloud history list before reaching the generated
+hypotheses.
+
+After the successful setState pass and isBriefOpen(false) we now queue
+a requestAnimationFrame that looks up #validation-board (added in
+R404 as the ValidationBoard root landmark), sets tabindex=-1, calls
+focus() and smooth-scrolls to it so AT users begin navigation at the
+top of the generated loop. Falls back to the existing #workspace-main
+focus if the board is ever unmounted by a future refactor.

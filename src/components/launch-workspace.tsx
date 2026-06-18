@@ -619,6 +619,19 @@ export function LaunchWorkspace({
       setExportFormat("");
       setIsEditing(false);
       setIsBriefOpen(false);
+      // Move keyboard/screen-reader focus to the validation board so AT
+      // users land on the generated workspace without an extra tab sequence.
+      window.requestAnimationFrame(() => {
+        const board = document.getElementById("validation-board");
+        if (board) {
+          board.setAttribute("tabindex", "-1");
+          board.focus({ preventScroll: false });
+          board.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+          const main = document.getElementById("workspace-main");
+          if (main) main.focus?.({ preventScroll: false });
+        }
+      });
       requestAnimationFrame(() => {
         const el = document.getElementById("workspace-main");
         if (el) {
@@ -647,6 +660,19 @@ export function LaunchWorkspace({
       setExportFormat("");
       setIsEditing(false);
       setIsBriefOpen(false);
+      // Move keyboard/screen-reader focus to the validation board so AT
+      // users land on the generated workspace without an extra tab sequence.
+      window.requestAnimationFrame(() => {
+        const board = document.getElementById("validation-board");
+        if (board) {
+          board.setAttribute("tabindex", "-1");
+          board.focus({ preventScroll: false });
+          board.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+          const main = document.getElementById("workspace-main");
+          if (main) main.focus?.({ preventScroll: false });
+        }
+      });
     });
     showToast("Workspace reset to starter example.", "success");
   }
@@ -668,6 +694,19 @@ export function LaunchWorkspace({
       setExportFormat("");
       setIsEditing(false);
       setIsBriefOpen(false);
+      // Move keyboard/screen-reader focus to the validation board so AT
+      // users land on the generated workspace without an extra tab sequence.
+      window.requestAnimationFrame(() => {
+        const board = document.getElementById("validation-board");
+        if (board) {
+          board.setAttribute("tabindex", "-1");
+          board.focus({ preventScroll: false });
+          board.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+          const main = document.getElementById("workspace-main");
+          if (main) main.focus?.({ preventScroll: false });
+        }
+      });
     });
     showToast("Cloud snapshot restored successfully.", "success");
   }
@@ -732,6 +771,19 @@ export function LaunchWorkspace({
         setFallbackNotice("");
       }
       setIsBriefOpen(false);
+      // Move keyboard/screen-reader focus to the validation board so AT
+      // users land on the generated workspace without an extra tab sequence.
+      window.requestAnimationFrame(() => {
+        const board = document.getElementById("validation-board");
+        if (board) {
+          board.setAttribute("tabindex", "-1");
+          board.focus({ preventScroll: false });
+          board.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+          const main = document.getElementById("workspace-main");
+          if (main) main.focus?.({ preventScroll: false });
+        }
+      });
     } catch (caught) {
       if (caught instanceof DOMException && caught.name === "AbortError") {
         setFallbackNotice("");
