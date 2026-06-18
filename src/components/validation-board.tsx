@@ -2500,8 +2500,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => openEvidenceForm(experiment.id)}
-                    disabled={evidenceLimitReached}
+                    onClick={() => { if (experiment.archived) return; openEvidenceForm(experiment.id); }}
+                    disabled={evidenceLimitReached || experiment.archived}
                     aria-expanded={formOpen}
                     aria-controls={`evidence-form-${experiment.id}`}
                     className="flex h-11 items-center justify-center gap-2 rounded-md border border-input bg-input px-4 text-sm font-semibold text-foreground transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 sm:h-10"
@@ -2794,7 +2794,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                     <li
                       data-evidence-id={item.id}
                       key={item.id}
-                      draggable
+                      draggable={!experiment.archived}
                       onDragStart={(e) => {
                         setDraggedEvidenceId(item.id);
                         e.dataTransfer.effectAllowed = "move";
@@ -2870,8 +2870,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           })()}
                           <button
                             type="button"
-                            onClick={() => cycleEvidenceSignal(experiment.id, item.id)}
-                            aria-label={"Evidence signal: " + signalLabels[item.signal] + ". " + SIGNAL_DESCRIPTIONS[item.signal] + " Click to cycle."}
+                            onClick={(e) => { if (experiment.archived) { e.stopPropagation(); return; } cycleEvidenceSignal(experiment.id, item.id); }}
+                            aria-disabled={experiment.archived} aria-label={experiment.archived ? "Archived" : "Evidence signal: " + signalLabels[item.signal] + ". " + SIGNAL_DESCRIPTIONS[item.signal] + " Click to cycle."}
                             title={SIGNAL_DESCRIPTIONS[item.signal] + " (click to cycle: supports, challenges, neutral)"}
                             className={
                               "rounded-md px-2 py-1 text-[11px] font-semibold uppercase transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 " +
@@ -2987,7 +2987,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           </button>
                         </div>
                       ) : (<>
-                        <button
+                        {!experiment.archived && (<button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -2998,9 +2998,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-md text-signal-challenges transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1"
                         >
                           <Trash2 className="size-4" aria-hidden="true" />
-                        </button>
-                        <EvidenceOverflowMenu onDuplicate={() => duplicateEvidence(experiment.id, item.id)} onEdit={() => startEditingEvidence(experiment.id, item.id)} onDelete={() => setPendingDeleteId(item.id)} sourceLabel={item.source} />
-                        </>)}
+                        </button>)}
+                        {!experiment.archived && (<EvidenceOverflowMenu onDuplicate={() => duplicateEvidence(experiment.id, item.id)} onEdit={() => startEditingEvidence(experiment.id, item.id)} onDelete={() => setPendingDeleteId(item.id)} sourceLabel={item.source} />)}</>)}
                       </div>
                     </li>
                   ))}
