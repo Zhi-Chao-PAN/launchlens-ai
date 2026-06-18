@@ -371,6 +371,8 @@ export function DecisionCopilot({
             updatedExperiments[idx] = { ...updatedExperiments[idx], decisionBrief: brief };
           }
           successCount += 1;
+                        // Flush incrementally: each brief appears immediately and survives cancel/unload.
+                        onChange({ ...execution, experiments: updatedExperiments.slice(), updatedAt: new Date().toISOString() });
         } else {
           failCount += 1;
         }
