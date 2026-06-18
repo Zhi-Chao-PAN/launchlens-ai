@@ -3475,7 +3475,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           { id: "status", label: "Status" },
                           { id: "confidence", label: "Confidence" },
                           { id: "decision", label: "Decision" },
-                          { id: "evidence_added", label: "Evidence" },
+                          { id: "evidence_added", label: "Evidence +" },
+                          { id: "evidence_removed", label: "Evidence -" },
                           { id: "archived", label: "Archive" },
                           { id: "pinned", label: "Pin" },
                         ];
