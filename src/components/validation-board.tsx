@@ -2570,6 +2570,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                         {wchip(ef.weight === "anecdotal", "Anecdotal", anecdotalCount, "anecdotal")}
                       </>);
                     })()}
+                  {(ef.signal !== "all" || ef.weight !== "all") && (<button type="button" onClick={() => setEvidenceFilters((prev) => ({ ...prev, [experiment.id]: { signal: "all", weight: "all" } }))} className="mt-1 rounded-full px-2 py-0.5 text-[10px] font-medium text-muted underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Reset filters</button>)}
                   </div>
                   </>);
               })()}
