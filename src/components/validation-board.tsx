@@ -2027,7 +2027,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
         </div>
         <button
           type="button"
-          onClick={() => setIsAddingExperiment(!isAddingExperiment)}
+          onClick={() => { const opening = !isAddingExperiment; setIsAddingExperiment(opening); if (opening) window.setTimeout(() => newExperimentInputRef.current?.focus(), 50); }}
           aria-expanded={isAddingExperiment}
           className="flex items-center gap-1 rounded-md bg-accent px-2.5 py-1 text-xs font-medium text-white transition hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
         >
