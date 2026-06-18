@@ -205,14 +205,14 @@ export function ValidationBoard({
   const [flashEvidenceId, setFlashEvidenceId] = useState<string | null>(null);
   const [showFullHistory, setShowFullHistory] = useState<Set<string>>(new Set());
   const timelinePulseTimer = useRef<number | null>(null);
-  const undoStack = useRef<WorkspaceExecutionState[]>([]);
-  const redoStack = useRef<WorkspaceExecutionState[]>([]);
+  const undoStack = useRef<{snapshot: WorkspaceExecutionState; label: string}[]>([]);
+  const redoStack = useRef<{snapshot: WorkspaceExecutionState; label: string}[]>([]);
   const applyingHistory = useRef(false);
   const HISTORY_CAP = 50;
   // Snapshot-based undo/redo: wrap onChange to record pre-change state.
-  function pushHistory(prev: WorkspaceExecutionState) {
+  function pushHistory(prev: WorkspaceExecutionState, label?: string) {
     if (applyingHistory.current) return;
-    undoStack.current.push(structuredClone(prev));
+    undoStack.current.push({ snapshot: structuredClone(prev), label: label || "change" });
     if (undoStack.current.length > HISTORY_CAP) undoStack.current.shift();
     redoStack.current.length = 0;
   }
@@ -224,17 +224,17 @@ export function ValidationBoard({
   const undo = useCallback(() => {
     const prev = undoStack.current.pop();
     if (!prev) return;
-    redoStack.current.push(structuredClone(execution));
-    applyHistory(prev);
-    srAnnounce("Undo");
-  }, [execution, applyHistory, srAnnounce]);
+    redoStack.current.push({ snapshot: structuredClone(execution), label: prev.label });
+    applyHistory(prev.snapshot);
+    srAnnounce("Undo"); showToast("Undo: " + prev.label, "info", 1800);
+  }, [execution, applyHistory, srAnnounce, showToast]);
   const redo = useCallback(() => {
     const next = redoStack.current.pop();
     if (!next) return;
-    undoStack.current.push(structuredClone(execution));
-    applyHistory(next);
-    srAnnounce("Redo");
-  }, [execution, applyHistory, srAnnounce]);
+    undoStack.current.push({ snapshot: structuredClone(execution), label: next.label });
+    applyHistory(next.snapshot);
+    srAnnounce("Redo"); showToast("Redo: " + next.label, "info", 1800);
+  }, [execution, applyHistory, srAnnounce, showToast]);
   const flashEvidenceTimer = useRef<number | null>(null);
   function onTimelineEventClick(experimentId: string, kind: string, targetId?: string) {
     setTimelinePulseKey(experimentId);
@@ -871,12 +871,12 @@ export function ValidationBoard({
   }, [activeExperiments, selectedExperimentIds]);
   const setSelectedStatus = useCallback((status: ExperimentStatus) => {
     if (batchCount === 0) return;
-    pushHistory(execution); onChange({ ...execution, experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, status } : e), updatedAt: new Date().toISOString() });
+    pushHistory(execution, `bulk status ${status}`); onChange({ ...execution, experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, status } : e), updatedAt: new Date().toISOString() });
     srAnnounce(`Set ${batchCount} hypotheses to ${status}.`);
   }, [batchCount, execution, onChange, selectedExperimentIds, srAnnounce]);
   const batchArchive = useCallback((archived: boolean) => {
     if (batchCount === 0) return;
-    pushHistory(execution); onChange({ ...execution, experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, archived } : e), updatedAt: new Date().toISOString() });
+    pushHistory(execution, archived ? "bulk archive" : "bulk unarchive"); onChange({ ...execution, experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, archived } : e), updatedAt: new Date().toISOString() });
     srAnnounce(archived ? `Archived ${batchCount} hypotheses.` : `Unarchived ${batchCount} hypotheses.`);
   }, [batchCount, execution, onChange, selectedExperimentIds, srAnnounce]);
   function batchAddTag(tag: string) {
@@ -926,7 +926,7 @@ export function ValidationBoard({
       } catch { failed += 1; }
       setBatchBriefProgress({ done: i + 1, total: selectedExps.length });
     }
-    pushHistory(execution); onChange({ ...execution, experiments: updated, updatedAt: new Date().toISOString() });
+    pushHistory(execution, "generate briefs"); onChange({ ...execution, experiments: updated, updatedAt: new Date().toISOString() });
     setIsBatchBriefing(false);
     const summary = `Generated ${success} brief${success === 1 ? "" : "s"}${failed > 0 ? `; ${failed} failed` : ""}.`;
     showToast(summary, failed > 0 ? "error" : "success");
@@ -1241,7 +1241,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
         const next = [...execution.experiments];
         const [m] = next.splice(idx, 1);
         next.splice(targetIdx, 0, m);
-        pushHistory(execution); onChange({ ...execution, experiments: next, updatedAt: new Date().toISOString() });
+        pushHistory(execution, "reorder experiments"); onChange({ ...execution, experiments: next, updatedAt: new Date().toISOString() });
         srAnnounce("Hypothesis moved " + (e.key === "ArrowUp" ? "up" : "down") + ".");
         requestAnimationFrame(() => (e.currentTarget as HTMLElement).focus());
       }
