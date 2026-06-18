@@ -676,6 +676,8 @@ export function LaunchWorkspace({
   const canGenerate = ideaTrimmed.length >= 20 && !isGenerating;
   const generateBlockedReason = ideaTrimmed.length < 20 ? "Describe your product idea in at least 20 characters before generating." : isGenerating ? "Workspace is already generating." : "";
 
+  function updateInput(mutator: Parameters<typeof setInput>[0]) { setInput(mutator); if (error) setError(""); if (fallbackNotice) setFallbackNotice(""); }
+
   async function generate() {
     const abort = new AbortController();
     generateAbortRef.current?.abort();
@@ -1084,7 +1086,7 @@ export function LaunchWorkspace({
                     id="founder-brief-idea" aria-invalid={ideaTrimmed.length > 0 && ideaTrimmed.length < 20} aria-describedby={`founder-brief-idea-hint founder-brief-idea-count${ideaTrimmed.length > 0 && ideaTrimmed.length < 20 ? " founder-generate-blocked" : ""}`}
                     value={input.idea}
                     onChange={(event) =>
-                      setInput((current) => ({
+                      updateInput((current) => ({
                         ...current,
                         idea: event.target.value,
                       }))
@@ -1128,7 +1130,7 @@ export function LaunchWorkspace({
                     aria-describedby="founder-brief-audience-count"
                     value={input.audience}
                     onChange={(event) =>
-                      setInput((current) => ({
+                      updateInput((current) => ({
                         ...current,
                         audience: event.target.value,
                       }))
@@ -1156,7 +1158,7 @@ export function LaunchWorkspace({
                     }}
                     value={input.market}
                     onChange={(event) =>
-                      setInput((current) => ({
+                      updateInput((current) => ({
                         ...current,
                         market: event.target.value,
                       }))
@@ -1176,7 +1178,7 @@ export function LaunchWorkspace({
                   <select
                     value={input.tone}
                     onChange={(event) =>
-                      setInput((current) => ({
+                      updateInput((current) => ({
                         ...current,
                         tone: event.target.value,
                       }))
@@ -1204,7 +1206,7 @@ export function LaunchWorkspace({
                     }}
                     value={input.constraints}
                     onChange={(event) =>
-                      setInput((current) => ({
+                      updateInput((current) => ({
                         ...current,
                         constraints: event.target.value,
                       }))

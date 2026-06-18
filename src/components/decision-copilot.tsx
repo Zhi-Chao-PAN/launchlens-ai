@@ -617,6 +617,7 @@ export function DecisionCopilot({
         </div>
         {isBatchGenerating && batchProgress.total > 0 && (
           <div className="border-t border-card bg-input/40 px-5 py-2">
+            <span role="status" aria-live="polite" className="sr-only">Brief {batchProgress.done} of {batchProgress.total} ready: {batchProgress.currentName}</span>
             <div className="mb-1 flex items-center justify-between text-[11px] text-muted">
               <span>
                 Generating {batchProgress.done} of {batchProgress.total}
