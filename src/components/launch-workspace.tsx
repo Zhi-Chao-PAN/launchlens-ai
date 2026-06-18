@@ -1079,7 +1079,7 @@ export function LaunchWorkspace({
                     Product idea
                   </span>
                   <textarea
-                    id="founder-brief-idea"
+                    id="founder-brief-idea" aria-invalid={ideaTrimmed.length > 0 && ideaTrimmed.length < 20} aria-describedby={"founder-brief-idea-hint founder-brief-idea-count" + (ideaTrimmed.length > 0 && ideaTrimmed.length < 20 ? " founder-generate-blocked" : "")}
                     value={input.idea}
                     onChange={(event) =>
                       setInput((current) => ({
@@ -1101,9 +1101,8 @@ export function LaunchWorkspace({
                     placeholder="Describe the product you are validating..."
                     className="w-full field-sizing-content resize-y min-h-[96px] max-h-[400px] rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
-                  <p className="mt-1 flex items-center justify-between text-xs text-muted">
-                    <span>Tip: press{" "}
-                      <kbd className="rounded border border-input bg-muted px-1 font-mono">
+                  <p id="founder-brief-idea-count" className="mt-1 flex items-center justify-between text-xs text-muted">
+                    <span id="founder-brief-idea-hint">Tip: press{" "}<kbd className="rounded border border-input bg-muted px-1 font-mono">
                         {formatShortcut({ key: "Enter", meta: true, ctrl: true, description: "", category: "" })}
                       </kbd>{" "}
                       to generate.
@@ -1123,6 +1122,8 @@ export function LaunchWorkspace({
                         generate();
                       }
                     }}
+                    id="founder-brief-audience"
+                    aria-describedby="founder-brief-audience-count"
                     value={input.audience}
                     onChange={(event) =>
                       setInput((current) => ({
@@ -1137,7 +1138,7 @@ export function LaunchWorkspace({
                     rows={2}
                     className="w-full field-sizing-content resize-y min-h-[64px] max-h-[240px] rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
-                  <p className="mt-1 text-right text-[11px] text-muted/70">{input.audience.length} chars</p>
+                  <p id="founder-brief-audience-count" className="mt-1 text-right text-[11px] text-muted/70">{input.audience.length} chars</p>
                 </label>
 
                 <label className="block">
