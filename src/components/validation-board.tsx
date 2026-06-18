@@ -1117,6 +1117,24 @@ const confidenceLabel: Record<ConfidenceLevel, string> = {
     setEvidenceSelectMode((prev) => ({ ...prev, [expId]: false }));
     showToast(ids.size + " evidence items deleted.", "success", 5000, { label: "Undo", onClick: () => undo() });
   }
+  
+  function bulkSetEvidenceWeight(expId: string, weight: "strong" | "moderate" | "anecdotal") {
+    const ids = new Set(selectedEvidenceIds[expId] || []);
+    if (ids.size === 0) return;
+    pushHistory(execution, "bulk evidence weight " + weight);
+    onChange({
+      ...execution,
+      experiments: execution.experiments.map((e) => {
+        if (e.id !== expId) return e;
+        const newEvidence = e.evidence.map((x) => ids.has(x.id) ? { ...x, weight } : x);
+        const isManual = e.confidenceManual;
+        return { ...e, evidence: newEvidence, confidence: isManual ? e.confidence : computeExperimentConfidence(newEvidence) };
+      }),
+      updatedAt: new Date().toISOString(),
+    });
+    showToast("Set weight to " + weight + " on " + ids.size + " items.", "success", 5000, { label: "Undo", onClick: () => undo() });
+  }
+
   function bulkSetEvidenceSignal(expId: string, signal: "supports" | "challenges" | "neutral") {
     const ids = new Set(selectedEvidenceIds[expId] || []);
     if (ids.size === 0) return;
@@ -2727,7 +2745,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                     })()}
                   <div className="mt-1 flex flex-wrap items-center gap-1.5">
                     {(ef.signal !== "all" || ef.weight !== "all") && (<button type="button" onClick={() => setEvidenceFilters((prev) => ({ ...prev, [experiment.id]: { signal: "all", weight: "all" } }))} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-muted underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Reset filters</button>)}
-                    {experiment.evidence.length > 1 && (<button type="button" onClick={(e) => { e.stopPropagation(); const on = !evidenceSelectMode[experiment.id]; setEvidenceSelectMode((prev) => ({ ...prev, [experiment.id]: on })); if (!on) setSelectedEvidenceIds((prev) => ({ ...prev, [experiment.id]: new Set() })); }} className={"rounded-full px-2 py-0.5 text-[10px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + (evidenceSelectMode[experiment.id] ? "bg-accent text-white" : "text-muted hover:text-foreground hover:underline")} title={evidenceSelectMode[experiment.id] ? "Exit evidence select mode" : "Select multiple evidence items"} aria-pressed={Boolean(evidenceSelectMode[experiment.id])}>{evidenceSelectMode[experiment.id] ? "Exit select" : "Select"}</button>)}
+                    {experiment.evidence.length > 1 && (<button type="button" onClick={(e) => { e.stopPropagation(); const on = !evidenceSelectMode[experiment.id]; setEvidenceSelectMode((prev) => ({ ...prev, [experiment.id]: on })); if (on) setSelectedEvidenceIds((prev) => ({ ...prev, [experiment.id]: new Set() })); else setSelectedEvidenceIds((prev) => ({ ...prev, [experiment.id]: new Set() })); }} className={"rounded-full px-2 py-0.5 text-[10px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + (evidenceSelectMode[experiment.id] ? "bg-accent text-white" : "text-muted hover:text-foreground hover:underline")} title={evidenceSelectMode[experiment.id] ? "Exit evidence select mode" : "Select multiple evidence items"} aria-pressed={Boolean(evidenceSelectMode[experiment.id])}>{evidenceSelectMode[experiment.id] ? "Exit select" : "Select"}</button>)}
                     {evidenceSelectMode[experiment.id] && (() => {
                       const sel = selectedEvidenceIds[experiment.id] || new Set();
                       const visible = experiment.evidence.filter((it) => (ef.signal === "all" || it.signal === ef.signal) && (ef.weight === "all" || it.weight === ef.weight));
@@ -2738,6 +2756,10 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceSignal(experiment.id, "supports"); }} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-signal-supports hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Pro supports</button>
                           <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceSignal(experiment.id, "challenges"); }} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-signal-challenges hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Pro challenges</button>
                           <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceSignal(experiment.id, "neutral"); }} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-muted hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Pro neutral</button>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceWeight(experiment.id, "strong"); }} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Strong</button>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceWeight(experiment.id, "moderate"); }} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-300 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Moderate</button>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceWeight(experiment.id, "anecdotal"); }} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-muted hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Anecdotal</button>
+                          <span className="mx-0.5 h-3 w-px bg-border" aria-hidden="true"/>
                           <button type="button" onClick={(e) => { e.stopPropagation(); bulkDeleteEvidence(experiment.id); }} className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium text-signal-challenges hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"><Trash2 className="size-3" aria-hidden="true"/>Delete</button>
                         </>)}
                       </>);
