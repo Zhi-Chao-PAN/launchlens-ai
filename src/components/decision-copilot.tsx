@@ -223,6 +223,8 @@ export function DecisionCopilot({
   const [revealStep, setRevealStep] = useState(0);
   const revealTimerRef = useRef<number | null>(null);
   const lastBriefIdRef = useRef<string | null>(null);
+  const batchAbortRef = useRef<AbortController | null>(null);
+  const singleAbortRef = useRef<AbortController | null>(null);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [isBatchGenerating, setIsBatchGenerating] = useState(false);
@@ -314,6 +316,10 @@ export function DecisionCopilot({
   }
 
 
+  function cancelBatch() {
+    batchAbortRef.current?.abort();
+  }
+
   async function generateBatchBriefs() {
     const pending = execution.experiments.filter(
       (item) => item.evidence.length > 0 && !item.decisionBrief,
@@ -333,9 +339,13 @@ export function DecisionCopilot({
 
     let successCount = 0;
     let failCount = 0;
+    let cancelled = false;
+    const abort = new AbortController();
+    batchAbortRef.current = abort;
     const updatedExperiments = [...execution.experiments];
 
     for (let i = 0; i < pending.length; i++) {
+      if (abort.signal.aborted) { cancelled = true; break; }
       const item = pending[i];
       try {
         const source = decisionSourceFromExperiment(item);
@@ -343,6 +353,7 @@ export function DecisionCopilot({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ experiment: source }),
+          signal: abort.signal,
         });
         const data = (await response.json()) as Partial<DecisionGenerationResult> & {
           error?: string;
@@ -365,14 +376,22 @@ export function DecisionCopilot({
       setBatchProgress({ done: i + 1, total: pending.length, currentName: item.assumption });
     }
 
-    // Apply all changes at once
+    batchAbortRef.current = null;
+    setIsBatchGenerating(false);
+    if (cancelled) {
+      const msg = `Batch generation cancelled. ${successCount} of ${pending.length} briefs saved.`;
+      setNotice(msg);
+      setSrGenerationAnnouncement(msg);
+      if (successCount > 0) {
+        onChange({ ...execution, experiments: updatedExperiments, updatedAt: new Date().toISOString() });
+      }
+      return;
+    }
     onChange({
       ...execution,
       experiments: updatedExperiments,
       updatedAt: new Date().toISOString(),
     });
-
-    setIsBatchGenerating(false);
     const summary = `${successCount} of ${pending.length} briefs generated successfully.`;
     if (failCount > 0) {
       setError(`${summary} ${failCount} failed.`);
@@ -389,6 +408,9 @@ export function DecisionCopilot({
     }
 
     const source = decisionSourceFromExperiment(experiment);
+    const abort = new AbortController();
+    singleAbortRef.current?.abort();
+    singleAbortRef.current = abort;
     setIsGenerating(true);
     setError("");
     setNotice("");
@@ -399,6 +421,7 @@ export function DecisionCopilot({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ experiment: source }),
+        signal: abort.signal,
       });
       const data = (await response.json()) as Partial<DecisionGenerationResult> & {
         error?: string;
@@ -463,6 +486,7 @@ export function DecisionCopilot({
       setSrGenerationAnnouncement(`Decision brief generation failed: ${msg}`);
     } finally {
       setIsGenerating(false);
+      if (singleAbortRef.current === abort) singleAbortRef.current = null;
     }
   // Including execution and onChange in the dependency array keeps the linter happy without changing semantics (they both change on every parent render, which re-creates this callback already).
   }, [experiment, setSrGenerationAnnouncement, execution, onChange]);
@@ -569,6 +593,15 @@ export function DecisionCopilot({
                 "Generate all briefs"
               )}
           </button>
+
+          {batchDisabledReason && (
+            <p id="decision-batch-generate-reason" className="sr-only">{batchDisabledReason}</p>
+          )}
+          {isBatchGenerating && (
+            <button type="button" onClick={cancelBatch} className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-muted underline-offset-2 transition hover:text-challenges hover:underline">
+              Cancel batch generation
+            </button>
+          )}
         </div>
         {isBatchGenerating && batchProgress.total > 0 && (
           <div className="border-t border-card bg-input/40 px-5 py-2">
