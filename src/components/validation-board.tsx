@@ -95,6 +95,8 @@ const weightLabels: Record<EvidenceWeight, string> = {
   strong: "Strong",
 };
 
+const WEIGHT_DESCRIPTIONS: Record<EvidenceWeight, string> = { anecdotal: "Anecdotal: a single story or hunch, not yet a pattern.", moderate: "Moderate: a pattern seen a few times but not yet conclusive.", strong: "Strong: repeated, high-quality signal across multiple sources." };
+
 const CONFIDENCE_DESCRIPTIONS: Record<ConfidenceLevel, string> = { low: "Low confidence: this is still a guess; more evidence is needed.", medium: "Medium confidence: some supporting evidence, but still uncertain.", high: "High confidence: strongly supported by the evidence collected so far." };
 
 const InlineMarkdown = memo(function InlineMarkdown({ text }: { text: string }) {
@@ -2690,8 +2692,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                             {signalLabels[item.signal]}
                           </button>
                           <button type="button" onClick={() => cycleEvidenceWeight(experiment.id, item.id)}
-                            aria-label={`Evidence weight: ${item.weight}`}
-                            title={item.weight.charAt(0).toUpperCase() + item.weight.slice(1)}
+                            aria-label={`Evidence weight: ${item.weight}. ${WEIGHT_DESCRIPTIONS[item.weight]} Click to cycle.`}
+                            title={WEIGHT_DESCRIPTIONS[item.weight] + " (click to cycle)"}
                             className="inline-flex items-center gap-0.5 transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 rounded-sm"
                           >
                             {(["anecdotal", "moderate", "strong"] as const).map((lvl) => (
