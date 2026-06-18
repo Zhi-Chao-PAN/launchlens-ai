@@ -3298,6 +3298,16 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
           <p className="text-xs text-muted">Try clearing your search, tag, or status filter.</p>
           <button type="button" onClick={() => { setSearchQuery(""); setStatusFilter("all"); setTagFilter(null); }} className="mt-2 rounded-md border border-input bg-card px-3 py-1.5 text-xs font-medium hover:border-accent">Clear all filters</button>
         </div>
+      ) : activeExperiments.length === 0 && archivedExperiments.length > 0 && (!searchQuery && statusFilter === "all" && !tagFilter) ? (
+        <div className="mt-10 flex flex-col items-center gap-2 rounded-lg border border-dashed border-input bg-muted/30 py-10 text-center">
+          <Archive className="size-6 text-muted/60" aria-hidden="true" />
+          <p className="text-sm font-medium text-foreground/70">All your hypotheses are archived</p>
+          <p className="max-w-md text-xs leading-5 text-muted">Active hypotheses appear here. Expand the archived section below to restore one, or add a new hypothesis to begin validating again.</p>
+          <div className="mt-1 flex items-center gap-2">
+            <button type="button" onClick={() => setShowArchived(true)} className="rounded-md border border-input bg-card px-3 py-1.5 text-xs font-medium hover:border-accent">Show archived ({archivedExperiments.length})</button>
+            <button type="button" onClick={() => setIsAddingExperiment(true)} className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-text hover:bg-primary-hover"><Plus className="size-3.5" aria-hidden="true" /> New hypothesis</button>
+          </div>
+        </div>
       ) : activeExperiments.length === 0 && archivedExperiments.length === 0 && (
         <div className="mt-10 flex flex-col items-center gap-3 rounded-lg border border-dashed border-input bg-muted/30 py-14 text-center">
           <Target className="size-8 text-accent/60" aria-hidden="true" />
