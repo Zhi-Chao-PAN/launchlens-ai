@@ -103,6 +103,19 @@ export function parseInlineMarkdown(input: string): InlineMarkdownSegment[] {
       continue;
     }
 
+    if ((ch === "h") && (input.slice(i, i + 7) === "http://" || input.slice(i, i + 8) === "https://")) {
+      let end = i;
+      while (end < input.length && !/[\s\t\n\r\)\]>"']/.test(input[end])) end++;
+      let url = input.slice(i, end);
+      while (url.length && /[.,;:!?]/.test(url[url.length - 1])) url = url.slice(0, -1);
+      if (url.length > 7) {
+        flush();
+        segments.push({ type: "link", value: url, href: url });
+        i += url.length;
+        continue;
+      }
+    }
+
     appendText(ch);
     i += 1;
   }

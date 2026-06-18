@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { parseInlineMarkdown } from "./inline-markdown";
 
 describe("parseInlineMarkdown", () => {
@@ -59,4 +59,20 @@ describe("parseInlineMarkdown", () => {
     if (seg.type !== "link") throw new Error("expected link segment");
     expect(seg.href).toBe("javascript:alert(1)");
   });
+});
+
+it("autolinks bare http(s) URLs surrounded by text", () => {
+  const segs = parseInlineMarkdown("see https://example.com/path and http://x.y for more");
+  expect(segs).toEqual([
+    { type: "text", value: "see " },
+    { type: "link", value: "https://example.com/path", href: "https://example.com/path" },
+    { type: "text", value: " and " },
+    { type: "link", value: "http://x.y", href: "http://x.y" },
+    { type: "text", value: " for more" },
+  ]);
+});
+
+it("strips trailing punctuation from bare URLs", () => {
+  const segs = parseInlineMarkdown("check https://example.com, then proceed.");
+  expect(segs).toContainEqual({ type: "link", value: "https://example.com", href: "https://example.com" });
 });
