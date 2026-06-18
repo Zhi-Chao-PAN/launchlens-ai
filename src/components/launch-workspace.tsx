@@ -680,6 +680,7 @@ export function LaunchWorkspace({
     setError("");
     setFallbackNotice("");
     setExportText("");
+    setSrAnnouncement("Generating workspace from your founder brief. This will take a moment.");
 
     try {
       const response = await fetch("/api/generate", {
@@ -1015,7 +1016,7 @@ export function LaunchWorkspace({
         </header>
 
         <div className="grid gap-6 lg:grid-cols-[370px_1fr]">
-          <aside className="min-w-0 rounded-lg border border-card bg-card p-5 shadow-sm lg:sticky lg:top-6 lg:self-start">
+          <aside id="founder-brief" aria-label="Founder brief" className="min-w-0 rounded-lg border border-card bg-card p-5 shadow-sm lg:sticky lg:top-6 lg:self-start">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="size-5 text-signal-challenges" aria-hidden="true" />
