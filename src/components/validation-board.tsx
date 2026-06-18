@@ -2262,9 +2262,22 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                     )}
                     <button
                       type="button"
-                      aria-label="Drag to reorder hypothesis"
+                      aria-label="Drag to reorder hypothesis (Alt+Up/Down to move)" title="Drag to reorder (Alt+Up/Down when focused)"
                       className="-ml-1 flex h-5 w-4 shrink-0 cursor-grab items-center justify-center rounded-sm text-muted/40 transition hover:bg-muted hover:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent active:cursor-grabbing"
-                      tabIndex={-1}
+                      tabIndex={0}
+                      onKeyDown={(event) => {
+                        if (!event.altKey) return;
+                        const list = activeExperiments;
+                        const idx = list.findIndex((e) => e.id === experiment.id);
+                        if (idx < 0) return;
+                        if (event.key === "ArrowUp" && idx > 0) {
+                          event.preventDefault();
+                          moveExperiment(experiment.id, list[idx - 1].id);
+                        } else if (event.key === "ArrowDown" && idx < list.length - 1) {
+                          event.preventDefault();
+                          moveExperiment(experiment.id, list[idx + 1].id);
+                        }
+                      }}
                     >
                       <GripVertical className="size-3.5" aria-hidden="true" />
                     </button>
