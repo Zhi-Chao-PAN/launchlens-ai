@@ -1360,6 +1360,12 @@ export function ValidationBoard({
               }
             }
             rest = line.slice(consume).trim();
+          } else {
+            // Heuristic signal inference from keywords when no prefix is present.
+            const lower = line.toLowerCase();
+            if (/\b(support(s|ed)?|confirm(s|ed)?|prove[sn]?|proven|validat(e|ed|es|ion)|works|work(s|ed)?|success(ful|fully)?|pass(ed|es)?|win|won|ship(ped)?|launch(ed)?|live|good|great|positive|up)\b/.test(lower)) signal = "supports";
+            else if (/\b(challenge[sd]?|refute[sd]?|contradict|fail(s|ed|ing|ure)?|broke(n)?|bug(s|gy)?|issue(s|d)?|problem(s|atic)?|block(ed|er|s)?|risk(s|y)?|bad|neg(ative)?|down|drop(ped)?|loss|decline|concern)\b/.test(lower)) signal = "challenges";
+            else if (/\b(mixed|neutral|unclear|maybe|uncertain|tbd|unknown|inconclusive|ambiguous|\?)\b/.test(lower)) signal = "neutral";
           }
           // Split on " - " or first ":" for source/note
           let source = "";
