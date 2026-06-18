@@ -591,7 +591,8 @@ function sourceUrl(source: string): string | null {
       .replace(/-+/g, "-")
       .replace(/^-+|-+$/g, "")
       .slice(0, 60);
-    return (base || "hypothesis") + "." + ext;
+    const ts = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14);
+    return (base || "hypothesis") + "-" + ts + "." + ext;
   }
 
   async function copyExperimentMarkdown(experiment: ValidationExperiment) {
@@ -742,7 +743,7 @@ function sourceUrl(source: string): string | null {
 
   function downloadBoardMarkdown() {
     const md = boardToMarkdown();
-    downloadTextFile(md, "validation-board.md", "text/markdown");
+    downloadTextFile(md, (() => { const ts = new Date().toISOString().replace(/[-:T]/g, "").slice(0,14); return "validation-board-" + ts + ".md"; })(), "text/markdown");
     showToast("Markdown downloaded", "success", 2000);
     srAnnounce("Validation board markdown downloaded.");
     setBoardExportOpen(false);
@@ -750,7 +751,7 @@ function sourceUrl(source: string): string | null {
 
   function downloadBoardJson() {
     const json = boardToJson();
-    downloadTextFile(json, "validation-board.json", "application/json");
+    downloadTextFile(json, (() => { const ts = new Date().toISOString().replace(/[-:T]/g, "").slice(0,14); return "validation-board-" + ts + ".json"; })(), "application/json");
     showToast("JSON downloaded", "success", 2000);
     srAnnounce("Validation board JSON downloaded.");
     setBoardExportOpen(false);
