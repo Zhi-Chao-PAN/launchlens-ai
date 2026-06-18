@@ -141,9 +141,7 @@ export function SharedWorkspaceView({
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="w-fit rounded-md border border-card bg-card px-3 py-2 text-sm text-foreground/80">
-              Read-only snapshot
-            </span>
+            <span className="w-fit rounded-md border border-card bg-card px-3 py-2 text-sm text-foreground/80" title="This shared snapshot is read-only. You can view, copy, or export the workspace, but edits are disabled." aria-label="Read-only: view and export only">Read-only snapshot</span>
             <CopyMarkdownButton workspace={workspace} />
             <DownloadMarkdownButton workspace={workspace} />
             <DownloadJsonButton workspace={workspace} />
