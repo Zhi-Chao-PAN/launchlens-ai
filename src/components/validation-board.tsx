@@ -2383,13 +2383,14 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                     </button>
                     <button
                       type="button"
-                      onClick={(e) => { e.stopPropagation(); toggleHypothesisPin(experiment.id); }}
-                      title={experiment.pinned ? "Unpin hypothesis" : "Pin hypothesis to top of default order"}
-                      aria-label={experiment.pinned ? `Unpin hypothesis: ${experiment.assumption.slice(0,60)}` : `Pin hypothesis to top: ${experiment.assumption.slice(0,60)}`}
+                      onClick={(e) => { e.stopPropagation(); if (experiment.archived) return; toggleHypothesisPin(experiment.id); }}
+                      disabled={experiment.archived}
+                      title={experiment.archived ? "Unarchive to pin" : (experiment.pinned ? "Unpin hypothesis" : "Pin hypothesis to top of default order")}
+                      aria-label={experiment.archived ? "Unarchive to pin" : (experiment.pinned ? ("Unpin hypothesis: " + experiment.assumption.slice(0,60)) : ("Pin hypothesis to top: " + experiment.assumption.slice(0,60)))}
                       aria-pressed={Boolean(experiment.pinned)}
-                      className={`flex size-5 shrink-0 items-center justify-center rounded transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${experiment.pinned ? "text-amber-500 hover:text-amber-600" : "text-muted/40 hover:text-amber-500"}`}
+                      className={"flex size-5 shrink-0 items-center justify-center rounded transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-30 " + (experiment.archived ? "text-muted/25 " : (experiment.pinned ? "text-amber-500 hover:text-amber-600 " : "text-muted/40 hover:text-amber-500 "))}
                     >
-                      <Star className={`size-3.5 ${experiment.pinned ? "fill-current" : ""}`} aria-hidden="true" />
+                      <Star className={"size-3.5 " + (experiment.pinned && !experiment.archived ? "fill-current" : "")} aria-hidden="true" />
                     </button>
                     <span className="font-mono text-xs font-semibold text-signal-challenges">
                       H{index + 1}
@@ -3616,6 +3617,5 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
     </section>
   );
 }
-
 
 
