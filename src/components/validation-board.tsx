@@ -1293,7 +1293,30 @@ export function ValidationBoard({
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 50);
     };
-    window.addEventListener("launchlens:focus-search", onFocusEvent);
+        function onFocusCard(dir: 1 | -1) {
+      const cards = Array.from(document.querySelectorAll("[data-experiment-article]") as NodeListOf<HTMLElement>);
+      if (cards.length === 0) return;
+      const active = document.activeElement as HTMLElement | null;
+      const currentIdx = active ? cards.findIndex((el) => el.contains(active)) : -1;
+      let nextIdx = currentIdx < 0 ? 0 : currentIdx + dir;
+      if (nextIdx < 0) nextIdx = cards.length - 1;
+      if (nextIdx >= cards.length) nextIdx = 0;
+      const next = cards[nextIdx];
+      next.scrollIntoView({ behavior: "smooth", block: "center" });
+      next.tabIndex = 0;
+      next.focus({ preventScroll: true });
+      setTimelinePulseKey(next.getAttribute("data-experiment-id"));
+      if (timelinePulseTimer.current) window.clearTimeout(timelinePulseTimer.current);
+      timelinePulseTimer.current = window.setTimeout(() => setTimelinePulseKey(null), 1600);
+    }
+    const onCardNav = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
+      if (e.key === "j") { e.preventDefault(); onFocusCard(1); }
+      else if (e.key === "k") { e.preventDefault(); onFocusCard(-1); }
+    };
+    window.addEventListener("keydown", onCardNav);    window.addEventListener("launchlens:focus-search", onFocusEvent);
     window.addEventListener("launchlens:toggle-select-mode", onToggleEvent);
     window.addEventListener("launchlens:clear-filters", onClearFilters);
     window.addEventListener("launchlens:filter-status", onFilterStatus as EventListener);
@@ -1305,7 +1328,7 @@ export function ValidationBoard({
     window.addEventListener("launchlens:bulk-clear", onBulkClear);
     window.addEventListener("launchlens:new-experiment", onNewExperiment);
     window.addEventListener("launchlens:focus-experiment", onFocusExperiment as EventListener);
-    return () => { off1?.(); off2?.(); const w = window; w.removeEventListener("launchlens:focus-search", onFocusEvent); w.removeEventListener("launchlens:toggle-select-mode", onToggleEvent); w.removeEventListener("launchlens:clear-filters", onClearFilters); w.removeEventListener("launchlens:filter-status", onFilterStatus as EventListener); w.removeEventListener("launchlens:collapse-all", onCollapseAll); w.removeEventListener("launchlens:bulk-status", onBulkStatus as EventListener); w.removeEventListener("launchlens:bulk-archive", onBulkArchive); w.removeEventListener("launchlens:bulk-unarchive", onBulkUnarchive); w.removeEventListener("launchlens:bulk-select-all", onBulkSelectAll); w.removeEventListener("launchlens:bulk-clear", onBulkClear); w.removeEventListener("launchlens:new-experiment", onNewExperiment); w.removeEventListener("launchlens:focus-experiment", onFocusExperiment as EventListener); };
+    return () => { off1?.(); off2?.(); const w = window; w.removeEventListener("keydown", onCardNav); w.removeEventListener("launchlens:focus-search", onFocusEvent); w.removeEventListener("launchlens:toggle-select-mode", onToggleEvent); w.removeEventListener("launchlens:clear-filters", onClearFilters); w.removeEventListener("launchlens:filter-status", onFilterStatus as EventListener); w.removeEventListener("launchlens:collapse-all", onCollapseAll); w.removeEventListener("launchlens:bulk-status", onBulkStatus as EventListener); w.removeEventListener("launchlens:bulk-archive", onBulkArchive); w.removeEventListener("launchlens:bulk-unarchive", onBulkUnarchive); w.removeEventListener("launchlens:bulk-select-all", onBulkSelectAll); w.removeEventListener("launchlens:bulk-clear", onBulkClear); w.removeEventListener("launchlens:new-experiment", onNewExperiment); w.removeEventListener("launchlens:focus-experiment", onFocusExperiment as EventListener); };
   }, [doFocusSearch, doToggleSelectMode, doClearFilters, doCollapseAll, setSelectedStatus, batchArchive, toggleSelectAllExperiments]);
 
   function addEvidence(
