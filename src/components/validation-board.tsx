@@ -1878,7 +1878,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
   }
 
   return (
-    <section className="rounded-lg border border-card bg-card shadow-sm">
+    <section id="validation-board" aria-label="Validation loop" className="rounded-lg border border-card bg-card shadow-sm">
       <span role="status" aria-live="polite" className="sr-only">
         {srEvidenceAnnouncement}
       </span>
