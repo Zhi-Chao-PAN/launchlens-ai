@@ -2765,6 +2765,19 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceWeight(experiment.id, "strong"); }} className="hidden md:inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Strong</button>
                           <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceWeight(experiment.id, "moderate"); }} className="hidden md:inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-300 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Moderate</button>
                           <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceWeight(experiment.id, "anecdotal"); }} className="hidden md:inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium text-muted hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Anecdotal</button>
+                          <button type="button" onClick={(e) => {
+                            e.stopPropagation();
+                            // Cycle all selected to next weight: strong -> moderate -> anecdotal -> strong
+                            const sel = selectedEvidenceIds[experiment.id] || new Set();
+                            if (sel.size === 0) return;
+                            // Use first selected current weight to decide next; default anecdotal->strong
+                            const first = experiment.evidence.find((ev) => sel.has(ev.id));
+                            const order: Array<"strong"|"moderate"|"anecdotal"> = ["strong","moderate","anecdotal"];
+                            const cur = (first?.weight as "strong"|"moderate"|"anecdotal") ?? "anecdotal";
+                            const nextW = order[(Math.max(0, order.indexOf(cur as "strong"|"moderate"|"anecdotal")) + 1) % order.length];
+                            bulkSetEvidenceWeight(experiment.id, nextW);
+                            showToast("Set " + sel.size + " items to " + nextW + " weight.", "info", 2500);
+                          }} className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium text-muted hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent md:hidden" title="Tap to cycle weight: strong -> moderate -> anecdotal">Wgt</button>
                           <span className="mx-0.5 hidden md:inline-block h-3 w-px bg-border" aria-hidden="true"/>
                           <button type="button" onClick={(e) => { e.stopPropagation(); bulkDeleteEvidence(experiment.id); }} className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium text-signal-challenges hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"><Trash2 className="size-3" aria-hidden="true"/>Delete</button>
                         </>)}
