@@ -672,6 +672,10 @@ export function LaunchWorkspace({
     showToast("Cloud snapshot restored successfully.", "success");
   }
 
+  const ideaTrimmed = input.idea.trim();
+  const canGenerate = ideaTrimmed.length >= 20 && !isGenerating;
+  const generateBlockedReason = ideaTrimmed.length < 20 ? "Describe your product idea in at least 20 characters before generating." : isGenerating ? "Workspace is already generating." : "";
+
   async function generate() {
     const abort = new AbortController();
     generateAbortRef.current?.abort();
@@ -1214,8 +1218,8 @@ export function LaunchWorkspace({
                 <button
                   type="button"
                   onClick={generate}
-                  disabled={isGenerating}
-                  aria-describedby={isGenerating ? "founder-generate-status founder-generate-reason" : "founder-generate-status"}
+                  disabled={!canGenerate}
+                  aria-describedby={(!canGenerate ? "founder-generate-blocked " : "") + (isGenerating ? "founder-generate-status founder-generate-reason" : "founder-generate-status")}
                   aria-busy={isGenerating}
                   className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-muted"
                 >
@@ -1231,7 +1235,8 @@ export function LaunchWorkspace({
                   {isGenerating ? "Generating" : "Generate workspace"}
                 </button>
                 {isGenerating && <p id="founder-generate-reason" className="sr-only">Workspace is being generated; please wait or cancel.</p>}
-                {isGenerating && (
+                {!canGenerate && generateBlockedReason && (<p id="founder-generate-blocked" role="alert" className="mt-2 text-center text-[11px] text-signal-challenges">{generateBlockedReason}</p>)}
+                                {isGenerating && (
                   <button type="button" onClick={() => generateAbortRef.current?.abort()} className="mt-2 block w-full text-center text-xs font-medium text-muted underline-offset-2 transition hover:text-challenges hover:underline">
                     Cancel generation
                   </button>
