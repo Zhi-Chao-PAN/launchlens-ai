@@ -24,7 +24,7 @@ import {
   Star,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useDeferredValue, useMemo, useRef, useState } from "react";
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
 import { parseInlineMarkdown } from "@/lib/launchlens/inline-markdown";
 import { decisionSourceFromExperiment, normalizeDecisionBrief } from "@/lib/launchlens/decision";
@@ -327,6 +327,7 @@ export function ValidationBoard({
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "decided">("all");
   const [sortBy, setSortBy] = useState<"default" | "confidence" | "status" | "progress">("default");
   const [searchQuery, setSearchQuery] = useState("");
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [newExperimentTagDraft, setNewExperimentTagDraft] = useState("");
   const [newExperimentTags, setNewExperimentTags] = useState<string[]>([]);
@@ -387,8 +388,8 @@ export function ValidationBoard({
 
   const filteredExperiments = useMemo(() => {
     let list = execution.experiments;
-    if (searchQuery.trim()) {
-      list = list.filter((exp) => experimentMatchesSearch(exp, searchQuery));
+    if (deferredSearchQuery.trim()) {
+      list = list.filter((exp) => experimentMatchesSearch(exp, deferredSearchQuery));
     }
     if (statusFilter === "active") {
       list = list.filter(
@@ -424,7 +425,7 @@ export function ValidationBoard({
     }
 
     return list;
-  }, [execution.experiments, statusFilter, sortBy, searchQuery, experimentMatchesSearch]);
+  }, [execution.experiments, statusFilter, sortBy, deferredSearchQuery, experimentMatchesSearch]);
   const activeExperiments = filteredExperiments.filter((e) => !e.archived);
   const allWorkspaceTags = useMemo(() => {
     const counts = new Map<string, number>();
