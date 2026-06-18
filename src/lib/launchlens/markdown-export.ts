@@ -1,4 +1,4 @@
-import type { LaunchLensWorkspace } from "./types";
+﻿import type { LaunchLensWorkspace } from "./types";
 import {
   taskIdentity,
   type WorkspaceExecutionState,
@@ -73,6 +73,19 @@ ${experiment.decisionBrief.unresolvedRisks.map((item) => `  - ${item}`).join("\n
 ${experiment.decisionBrief.nextActions.map((item) => `  - ${item}`).join("\n")}`
             : "";
 
+          const history =
+            experiment.history && experiment.history.length > 0
+              ? experiment.history
+                  .slice()
+                  .sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime())
+                  .map((evt) => {
+                    const when = new Date(evt.at).toISOString();
+                    const extras = evt.from ? ` ${evt.from} -> ${evt.to}` : evt.to ? ` ${evt.to}` : "";
+                    const tgt = evt.targetId ? ` (id: ${evt.targetId.slice(0, 6)})` : "";
+                    return `  - ${when}  ${evt.kind}${extras}${tgt}${evt.label ? ` - ${evt.label.replace(/\s+/g, " ").slice(0, 120)}` : ""}`;
+                  })
+                  .join("\n")
+              : "  - No history recorded";
           return `### H${index + 1}: ${experiment.assumption}
 
 - Status: ${experiment.status}
@@ -81,7 +94,9 @@ ${experiment.decisionBrief.nextActions.map((item) => `  - ${item}`).join("\n")}`
 - Next action: ${experiment.nextAction || "Pending"}
 - Linked task: ${linkedTask?.title ?? "None"}
 - Evidence:
-${evidence}${decisionBrief}`;
+${evidence}
+- Timeline:
+${history}${decisionBrief}`;
         })
         .join("\n\n")
     : "";
