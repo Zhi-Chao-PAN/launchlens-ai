@@ -219,7 +219,16 @@ export function ValidationBoard({
   const [timelinePulseKey, setTimelinePulseKey] = useState<string | null>(null);
   const [flashEvidenceId, setFlashEvidenceId] = useState<string | null>(null);
   const [showFullHistory, setShowFullHistory] = useState<Set<string>>(new Set());
-  const [timelineKindFilter, setTimelineKindFilter] = useState<Record<string, string>>({});
+  const [timelineKindFilter, setTimelineKindFilter] = useState<Record<string, string>>(() => {
+    try {
+      const raw = typeof window !== "undefined" ? window.sessionStorage.getItem("launchlens:timeline-filter") : null;
+      return raw ? (JSON.parse(raw) as Record<string, string>) : {};
+    } catch { return {}; }
+  });
+  // Persist timeline filters per-experiment to sessionStorage so refresh/back nav keeps the view.
+  useEffect(() => {
+    try { if (typeof window !== "undefined") window.sessionStorage.setItem("launchlens:timeline-filter", JSON.stringify(timelineKindFilter)); } catch {}
+  }, [timelineKindFilter]);
   const timelinePulseTimer = useRef<number | null>(null);
   const undoStack = useRef<{snapshot: WorkspaceExecutionState; label: string}[]>([]);
   const redoStack = useRef<{snapshot: WorkspaceExecutionState; label: string}[]>([]);
