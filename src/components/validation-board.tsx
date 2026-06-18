@@ -1267,6 +1267,14 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
       const next = items[currentIdx + 1] as HTMLElement;
       const focusable = next.querySelector("button");
       focusable?.focus();
+    } else if (e.key === "Home" && items.length > 0) {
+      e.preventDefault();
+      const first = items[0] as HTMLElement;
+      (first.querySelector("button") as HTMLElement | null)?.focus();
+    } else if (e.key === "End" && items.length > 0) {
+      e.preventDefault();
+      const last = items[items.length - 1] as HTMLElement;
+      (last.querySelector("button") as HTMLElement | null)?.focus();
     } else if ((e.ctrlKey || e.metaKey) && e.key === "z") {
       if (recentlyDeleted) {
         e.preventDefault();
