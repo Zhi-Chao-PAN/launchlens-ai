@@ -95,6 +95,8 @@ const weightLabels: Record<EvidenceWeight, string> = {
   strong: "Strong",
 };
 
+const SIGNAL_DESCRIPTIONS: Record<EvidenceSignal, string> = { supports: "Supports: this evidence reinforces the hypothesis.", challenges: "Challenges: this evidence contradicts or weakens the hypothesis.", neutral: "Neutral: this evidence is informational, neither supporting nor contradicting." };
+
 const WEIGHT_DESCRIPTIONS: Record<EvidenceWeight, string> = { anecdotal: "Anecdotal: a single story or hunch, not yet a pattern.", moderate: "Moderate: a pattern seen a few times but not yet conclusive.", strong: "Strong: repeated, high-quality signal across multiple sources." };
 
 const CONFIDENCE_DESCRIPTIONS: Record<ConfidenceLevel, string> = { low: "Low confidence: this is still a guess; more evidence is needed.", medium: "Medium confidence: some supporting evidence, but still uncertain.", high: "High confidence: strongly supported by the evidence collected so far." };
@@ -2674,12 +2676,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           <button
                             type="button"
                             onClick={() => cycleEvidenceSignal(experiment.id, item.id)}
-                            aria-label={
-                              "Evidence signal: " +
-                              signalLabels[item.signal] +
-                              ". Click to cycle."
-                            }
-                            title="Click to cycle signal (supports challenges neutral)"
+                            aria-label={"Evidence signal: " + signalLabels[item.signal] + ". " + SIGNAL_DESCRIPTIONS[item.signal] + " Click to cycle."}
+                            title={SIGNAL_DESCRIPTIONS[item.signal] + " (click to cycle: supports, challenges, neutral)"}
                             className={
                               "rounded-md px-2 py-1 text-[11px] font-semibold uppercase transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 " +
                               (item.signal === "supports"
