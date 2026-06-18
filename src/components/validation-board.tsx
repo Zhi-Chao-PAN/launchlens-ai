@@ -16,6 +16,7 @@ import {
   Download,
   Copy,
   Link2,
+  MoreHorizontal,
   PencilLine,
   Search,
   Plus,
@@ -378,6 +379,48 @@ export function ValidationBoard({
     return { required, excluded };
     return { required, excluded };
   }, []);
+function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { onDuplicate: () => void; onEdit: () => void; onDelete: () => void; sourceLabel: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!open) return;
+    function onDoc(e: MouseEvent) {
+      if (!ref.current) return;
+      if (!ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") setOpen(false); }
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onKey); };
+  }, [open]);
+  return (
+    <div ref={ref} className="relative sm:hidden">
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={`More actions for evidence from ${sourceLabel}`}
+        className="flex size-11 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+      >
+        <MoreHorizontal className="size-4" aria-hidden="true" />
+      </button>
+      {open && (
+        <div role="menu" className="absolute right-0 top-full z-50 mt-1 min-w-[10rem] overflow-hidden rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg" onClick={(e) => e.stopPropagation()}>
+          <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); setOpen(false); onDuplicate(); }} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground">
+            <Copy className="size-4" aria-hidden="true" /> Duplicate
+          </button>
+          <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); setOpen(false); onEdit(); }} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground">
+            <PencilLine className="size-4" aria-hidden="true" /> Edit
+          </button>
+          <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm text-signal-challenges hover:bg-accent hover:text-signal-challenges">
+            <Trash2 className="size-4" aria-hidden="true" /> Delete
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 function sourceUrl(source: string): string | null {
   const trimmed = source.trim();
   if (/^https?:\/\/\S+/i.test(trimmed)) return trimmed;
@@ -2675,7 +2718,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           onClick={(e) => { e.stopPropagation(); duplicateEvidence(experiment.id, item.id); }}
                           title="Duplicate evidence"
                           aria-label={`Duplicate evidence from ${item.source}`}
-                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:size-8"
+                          className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 "
                         >
                           <Copy className="size-4" aria-hidden="true" />
                         </button>
@@ -2684,7 +2727,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           onClick={() => startEditingEvidence(experiment.id, item.id)}
                           title="Edit evidence"
                           aria-label={`Edit evidence from ${item.source}`}
-                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:size-8"
+                          className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 "
                         >
                           <PencilLine className="size-4" aria-hidden="true" />
                         </button>
@@ -2713,7 +2756,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                             <X className="size-4" aria-hidden="true" />
                           </button>
                         </div>
-                      ) : (
+                      ) : (<>
                         <button
                           type="button"
                           onClick={(e) => {
@@ -2722,11 +2765,12 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           }}
                           title="Remove evidence"
                           aria-label={`Remove evidence from ${item.source}`}
-                          className="flex size-11 shrink-0 items-center justify-center rounded-md text-signal-challenges transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1 sm:size-8"
+                          className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-md text-signal-challenges transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1"
                         >
                           <Trash2 className="size-4" aria-hidden="true" />
                         </button>
-                      )}
+                        <EvidenceOverflowMenu onDuplicate={() => duplicateEvidence(experiment.id, item.id)} onEdit={() => startEditingEvidence(experiment.id, item.id)} onDelete={() => setPendingDeleteId(item.id)} sourceLabel={item.source} />
+                        </>)}
                       </div>
                     </li>
                   ))}
