@@ -205,6 +205,36 @@ export function ValidationBoard({
   const [flashEvidenceId, setFlashEvidenceId] = useState<string | null>(null);
   const [showFullHistory, setShowFullHistory] = useState<Set<string>>(new Set());
   const timelinePulseTimer = useRef<number | null>(null);
+  const undoStack = useRef<WorkspaceExecutionState[]>([]);
+  const redoStack = useRef<WorkspaceExecutionState[]>([]);
+  const applyingHistory = useRef(false);
+  const HISTORY_CAP = 50;
+  // Snapshot-based undo/redo: wrap onChange to record pre-change state.
+  function pushHistory(prev: WorkspaceExecutionState) {
+    if (applyingHistory.current) return;
+    undoStack.current.push(structuredClone(prev));
+    if (undoStack.current.length > HISTORY_CAP) undoStack.current.shift();
+    redoStack.current.length = 0;
+  }
+  const applyHistory = useCallback((next: WorkspaceExecutionState) => {
+    applyingHistory.current = true;
+    onChange(next);
+    window.setTimeout(() => { applyingHistory.current = false; }, 0);
+  }, [onChange]);
+  const undo = useCallback(() => {
+    const prev = undoStack.current.pop();
+    if (!prev) return;
+    redoStack.current.push(structuredClone(execution));
+    applyHistory(prev);
+    srAnnounce("Undo");
+  }, [execution, applyHistory, srAnnounce]);
+  const redo = useCallback(() => {
+    const next = redoStack.current.pop();
+    if (!next) return;
+    undoStack.current.push(structuredClone(execution));
+    applyHistory(next);
+    srAnnounce("Redo");
+  }, [execution, applyHistory, srAnnounce]);
   const flashEvidenceTimer = useRef<number | null>(null);
   function onTimelineEventClick(experimentId: string, kind: string, targetId?: string) {
     setTimelinePulseKey(experimentId);
@@ -840,12 +870,12 @@ export function ValidationBoard({
   }, [activeExperiments, selectedExperimentIds]);
   const setSelectedStatus = useCallback((status: ExperimentStatus) => {
     if (batchCount === 0) return;
-    onChange({ ...execution, experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, status } : e), updatedAt: new Date().toISOString() });
+    pushHistory(execution); onChange({ ...execution, experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, status } : e), updatedAt: new Date().toISOString() });
     srAnnounce(`Set ${batchCount} hypotheses to ${status}.`);
   }, [batchCount, execution, onChange, selectedExperimentIds, srAnnounce]);
   const batchArchive = useCallback((archived: boolean) => {
     if (batchCount === 0) return;
-    onChange({ ...execution, experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, archived } : e), updatedAt: new Date().toISOString() });
+    pushHistory(execution); onChange({ ...execution, experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, archived } : e), updatedAt: new Date().toISOString() });
     srAnnounce(archived ? `Archived ${batchCount} hypotheses.` : `Unarchived ${batchCount} hypotheses.`);
   }, [batchCount, execution, onChange, selectedExperimentIds, srAnnounce]);
   function batchAddTag(tag: string) {
@@ -895,7 +925,7 @@ export function ValidationBoard({
       } catch { failed += 1; }
       setBatchBriefProgress({ done: i + 1, total: selectedExps.length });
     }
-    onChange({ ...execution, experiments: updated, updatedAt: new Date().toISOString() });
+    pushHistory(execution); onChange({ ...execution, experiments: updated, updatedAt: new Date().toISOString() });
     setIsBatchBriefing(false);
     const summary = `Generated ${success} brief${success === 1 ? "" : "s"}${failed > 0 ? `; ${failed} failed` : ""}.`;
     showToast(summary, failed > 0 ? "error" : "success");
@@ -1210,7 +1240,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
         const next = [...execution.experiments];
         const [m] = next.splice(idx, 1);
         next.splice(targetIdx, 0, m);
-        onChange({ ...execution, experiments: next, updatedAt: new Date().toISOString() });
+        pushHistory(execution); onChange({ ...execution, experiments: next, updatedAt: new Date().toISOString() });
         srAnnounce("Hypothesis moved " + (e.key === "ArrowUp" ? "up" : "down") + ".");
         requestAnimationFrame(() => (e.currentTarget as HTMLElement).focus());
       }
@@ -1351,7 +1381,17 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
       if (e.key === "j") { e.preventDefault(); onFocusCard(1); }
       else if (e.key === "k") { e.preventDefault(); onFocusCard(-1); }
     };
-    window.addEventListener("keydown", onCardNav);    window.addEventListener("launchlens:focus-search", onFocusEvent);
+    window.addEventListener("keydown", onCardNav);
+    const onHistoryNav = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
+      const k = e.key.toLowerCase();
+      if (k === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
+      else if (k === "y" || (k === "z" && e.shiftKey)) { e.preventDefault(); redo(); }
+    };
+    window.addEventListener("keydown", onHistoryNav);
+    window.addEventListener("launchlens:focus-search", onFocusEvent);
     window.addEventListener("launchlens:toggle-select-mode", onToggleEvent);
     window.addEventListener("launchlens:clear-filters", onClearFilters);
     window.addEventListener("launchlens:filter-status", onFilterStatus as EventListener);
@@ -1363,8 +1403,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
     window.addEventListener("launchlens:bulk-clear", onBulkClear);
     window.addEventListener("launchlens:new-experiment", onNewExperiment);
     window.addEventListener("launchlens:focus-experiment", onFocusExperiment as EventListener);
-    return () => { off1?.(); off2?.(); const w = window; w.removeEventListener("keydown", onCardNav); w.removeEventListener("launchlens:focus-search", onFocusEvent); w.removeEventListener("launchlens:toggle-select-mode", onToggleEvent); w.removeEventListener("launchlens:clear-filters", onClearFilters); w.removeEventListener("launchlens:filter-status", onFilterStatus as EventListener); w.removeEventListener("launchlens:collapse-all", onCollapseAll); w.removeEventListener("launchlens:bulk-status", onBulkStatus as EventListener); w.removeEventListener("launchlens:bulk-archive", onBulkArchive); w.removeEventListener("launchlens:bulk-unarchive", onBulkUnarchive); w.removeEventListener("launchlens:bulk-select-all", onBulkSelectAll); w.removeEventListener("launchlens:bulk-clear", onBulkClear); w.removeEventListener("launchlens:new-experiment", onNewExperiment); w.removeEventListener("launchlens:focus-experiment", onFocusExperiment as EventListener); };
-  }, [doFocusSearch, doToggleSelectMode, doClearFilters, doCollapseAll, setSelectedStatus, batchArchive, toggleSelectAllExperiments]);
+    return () => { off1?.(); off2?.(); const w = window; w.removeEventListener("keydown", onCardNav); w.removeEventListener("keydown", onHistoryNav); w.removeEventListener("launchlens:focus-search", onFocusEvent); w.removeEventListener("launchlens:toggle-select-mode", onToggleEvent); w.removeEventListener("launchlens:clear-filters", onClearFilters); w.removeEventListener("launchlens:filter-status", onFilterStatus as EventListener); w.removeEventListener("launchlens:collapse-all", onCollapseAll); w.removeEventListener("launchlens:bulk-status", onBulkStatus as EventListener); w.removeEventListener("launchlens:bulk-archive", onBulkArchive); w.removeEventListener("launchlens:bulk-unarchive", onBulkUnarchive); w.removeEventListener("launchlens:bulk-select-all", onBulkSelectAll); w.removeEventListener("launchlens:bulk-clear", onBulkClear); w.removeEventListener("launchlens:new-experiment", onNewExperiment); w.removeEventListener("launchlens:focus-experiment", onFocusExperiment as EventListener); };
+  }, [doFocusSearch, doToggleSelectMode, doClearFilters, doCollapseAll, setSelectedStatus, batchArchive, toggleSelectAllExperiments, undo, redo]);
 
   function addEvidence(
     event: React.FormEvent<HTMLFormElement>,
