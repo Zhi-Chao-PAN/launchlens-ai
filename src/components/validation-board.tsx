@@ -1553,6 +1553,18 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
       event.preventDefault();
       doToggleSelectMode();
     });
+    const offUndo = registerShortcut('undo', (event: KeyboardEvent) => {
+      const t = event.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
+      event.preventDefault();
+      undo();
+    });
+    const offRedo = registerShortcut('redo', (event: KeyboardEvent) => {
+      const t = event.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
+      event.preventDefault();
+      redo();
+    });
     const onFocusEvent = () => doFocusSearch();
     const onToggleEvent = () => doToggleSelectMode();
     const onClearFilters = () => doClearFilters();
@@ -1620,7 +1632,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
     window.addEventListener("launchlens:bulk-clear", onBulkClear);
     window.addEventListener("launchlens:new-experiment", onNewExperiment);
     window.addEventListener("launchlens:focus-experiment", onFocusExperiment as EventListener);
-    return () => { off1?.(); off2?.(); const w = window; w.removeEventListener("keydown", onCardNav); w.removeEventListener("keydown", onHistoryNav); w.removeEventListener("launchlens:focus-search", onFocusEvent); w.removeEventListener("launchlens:toggle-select-mode", onToggleEvent); w.removeEventListener("launchlens:clear-filters", onClearFilters); w.removeEventListener("launchlens:filter-status", onFilterStatus as EventListener); w.removeEventListener("launchlens:collapse-all", onCollapseAll); w.removeEventListener("launchlens:bulk-status", onBulkStatus as EventListener); w.removeEventListener("launchlens:bulk-archive", onBulkArchive); w.removeEventListener("launchlens:bulk-unarchive", onBulkUnarchive); w.removeEventListener("launchlens:bulk-select-all", onBulkSelectAll); w.removeEventListener("launchlens:bulk-clear", onBulkClear); w.removeEventListener("launchlens:new-experiment", onNewExperiment); w.removeEventListener("launchlens:focus-experiment", onFocusExperiment as EventListener); };
+    return () => { off1?.(); off2?.(); offUndo?.(); offRedo?.(); const w = window; w.removeEventListener("keydown", onCardNav); w.removeEventListener("keydown", onHistoryNav); w.removeEventListener("launchlens:focus-search", onFocusEvent); w.removeEventListener("launchlens:toggle-select-mode", onToggleEvent); w.removeEventListener("launchlens:clear-filters", onClearFilters); w.removeEventListener("launchlens:filter-status", onFilterStatus as EventListener); w.removeEventListener("launchlens:collapse-all", onCollapseAll); w.removeEventListener("launchlens:bulk-status", onBulkStatus as EventListener); w.removeEventListener("launchlens:bulk-archive", onBulkArchive); w.removeEventListener("launchlens:bulk-unarchive", onBulkUnarchive); w.removeEventListener("launchlens:bulk-select-all", onBulkSelectAll); w.removeEventListener("launchlens:bulk-clear", onBulkClear); w.removeEventListener("launchlens:new-experiment", onNewExperiment); w.removeEventListener("launchlens:focus-experiment", onFocusExperiment as EventListener); };
   }, [doFocusSearch, doToggleSelectMode, doClearFilters, doCollapseAll, setSelectedStatus, batchArchive, toggleSelectAllExperiments, undo, redo]);
 
   function addEvidence(

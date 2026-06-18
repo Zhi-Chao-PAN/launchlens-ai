@@ -112,6 +112,27 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     description: "Submit evidence form (when focus is in note)",
     category: "Actions",
   },
+  toggleSelectMode: {
+    key: "v",
+    meta: true,
+    ctrl: true,
+    description: "Toggle hypothesis select mode (bulk actions)",
+    category: "Actions",
+  },
+  undo: {
+    key: "z",
+    meta: true,
+    ctrl: true,
+    description: "Undo the last validation-board edit",
+    category: "Actions",
+  },
+  redo: {
+    key: "y",
+    meta: true,
+    ctrl: true,
+    description: "Redo the last undone edit",
+    category: "Actions",
+  },
 };
 
 export type ShortcutId = keyof typeof SHORTCUTS;

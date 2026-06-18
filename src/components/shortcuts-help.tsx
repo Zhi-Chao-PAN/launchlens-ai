@@ -42,7 +42,7 @@ export function ShortcutsHelp() {
       className="fixed inset-0 z-50 flex items-center justify-center px-4"
     >
       <button type="button" aria-label="Close shortcuts" onClick={close} className="absolute inset-0 bg-black/50 backdrop-blur-sm" tabIndex={-1} />
-      <div className="relative w-full max-w-lg rounded-xl border border-card bg-card p-6 shadow-2xl">
+      <div className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-xl border border-card bg-card p-6 shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Keyboard shortcuts</h2>
           <button type="button" onClick={close} aria-label="Close" className="rounded p-1 hover:bg-muted">
@@ -55,16 +55,26 @@ export function ShortcutsHelp() {
               <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted">{cat}</h3>
               <ul className="divide-y divide-border/50">
                 {items.map((s) => (
-                  <li key={s.id} className="flex items-center justify-between py-1.5">
+                  <li key={s.id} className="flex items-center justify-between gap-4 py-1.5">
                     <span className="text-foreground/90">{s.description}</span>
-                    <kbd className="inline-flex items-center gap-0.5 rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[11px] text-foreground" dangerouslySetInnerHTML={{ __html: formatShortcut(s).replace("Ctrl+", "<span class='text-muted-foreground'>Ctrl</span>+").replace("⌘", "<span class='text-muted-foreground'>⌘</span>").replaceAll("+", " + ") }} />
+                    <kbd className="inline-flex shrink-0 items-center gap-0.5 rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[11px] text-foreground" dangerouslySetInnerHTML={{ __html: formatShortcut(s).replace("Ctrl+", "<span class=\"text-muted-foreground\">Ctrl</span>+").replace("⌘", "<span class=\"text-muted-foreground\">⌘</span>").replaceAll("+", " + ") }} />
                   </li>
                 ))}
               </ul>
             </div>
           ))}
         </div>
-<p className="mt-4 text-[11px] text-muted">Press <kbd className="rounded border border-border bg-muted px-1 font-mono">?</kbd> any time to toggle this panel. Key labels match your operating system.</p>
+        <div className="mt-4 border-t border-border/50 pt-3">
+          <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted">Quick gestures</h3>
+          <ul className="divide-y divide-border/50 text-[12px]">
+            <li className="flex items-center justify-between gap-4 py-1.5"><span className="text-foreground/90">Toggle hypothesis select mode for bulk actions</span><span className="shrink-0 text-muted">Select pill (top bar)</span></li>
+            <li className="flex items-center justify-between gap-4 py-1.5"><span className="text-foreground/90">Toggle evidence select mode per hypothesis</span><span className="shrink-0 text-muted">Select pill (card header)</span></li>
+            <li className="flex items-center justify-between gap-4 py-1.5"><span className="text-foreground/90">Filter timeline by event kind</span><span className="shrink-0 text-muted">Filter chips (timeline header)</span></li>
+            <li className="flex items-center justify-between gap-4 py-1.5"><span className="text-foreground/90">Reorder hypotheses / evidence</span><span className="shrink-0 text-muted">Drag handle or up/down buttons</span></li>
+            <li className="flex items-center justify-between gap-4 py-1.5"><span className="text-foreground/90">Bulk-add evidence from pasted text</span><span className="shrink-0 text-muted">Paste multi-line text into the note box</span></li>
+          </ul>
+        </div>
+        <p className="mt-4 text-[11px] text-muted">Press <kbd className="rounded border border-border bg-muted px-1 font-mono">?</kbd> any time to toggle this panel. Key labels match your operating system.</p>
       </div>
     </div>
   );
