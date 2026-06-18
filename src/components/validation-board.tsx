@@ -460,6 +460,7 @@ export function ValidationBoard({
         : (execution.experiments[0]?.id ?? "");
 
   function pushHistoryEvent(experimentId: string, evt: Omit<HypothesisChangeEvent, "id" | "at">) {
+    pushHistory(execution, "edit");
     onChange({
       ...execution,
       experiments: execution.experiments.map((e) => e.id === experimentId ? {
@@ -474,6 +475,7 @@ export function ValidationBoard({
     experimentId: string,
     update: (experiment: ValidationExperiment) => ValidationExperiment,
   ) {
+    pushHistory(execution, "edit");
     onChange({
       experiments: execution.experiments.map((experiment) =>
         experiment.id === experimentId
@@ -842,6 +844,7 @@ export function ValidationBoard({
 
   function moveExperiment(draggedId: string, targetId: string) {
     if (draggedId === targetId) return;
+    pushHistory(execution, "reorder hypotheses");
     onChange({
       ...execution,
       experiments: (() => {
@@ -882,6 +885,7 @@ export function ValidationBoard({
   function batchAddTag(tag: string) {
     const t = tag.trim();
     if (!t || batchCount === 0) return;
+    pushHistory(execution, "bulk add tag");
     onChange({
       ...execution,
       experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, tags: Array.from(new Set([...(e.tags || []), t])) } : e),
@@ -892,6 +896,7 @@ export function ValidationBoard({
   function batchRemoveTag(tag: string) {
     const t = tag.trim();
     if (!t || batchCount === 0) return;
+    pushHistory(execution, "bulk remove tag");
     onChange({
       ...execution,
       experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, tags: (e.tags || []).filter((x) => x !== t) } : e),
@@ -941,6 +946,7 @@ export function ValidationBoard({
   function batchDeleteExperiments() {
     if (batchCount === 0) return;
     const toDelete = selectedExperimentIds;
+    pushHistory(execution, "bulk delete hypotheses");
     onChange({
       ...execution,
       experiments: execution.experiments.filter((e) => !toDelete.has(e.id)),
@@ -987,6 +993,7 @@ export function ValidationBoard({
     if (!src) return;
     if (exp.evidence.length >= 8) { setDraftSubmitError("Maximum 8 evidence items per hypothesis."); return; }
     const clone: ValidationEvidence = { ...src, id: evidenceId(), source: src.source + " (copy)", observedAt: new Date().toISOString() };
+    pushHistory(execution, "duplicate evidence");
     onChange({
       experiments: execution.experiments.map((item) =>
         item.id === experimentId ? { ...item, evidence: [...item.evidence, clone], updatedAt: new Date().toISOString() } : item,
@@ -1060,6 +1067,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
     if (idx === -1) return;
     const experiment = execution.experiments[idx];
     setRecentlyDeletedExperiment({ experiment, index: idx });
+    pushHistory(execution, "delete hypothesis");
     onChange({
       ...execution,
       experiments: execution.experiments.filter((e) => e.id !== experimentId),
@@ -1084,6 +1092,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
     const { experiment, index } = recentlyDeletedExperiment;
     const next = [...execution.experiments];
     next.splice(index, 0, experiment);
+    pushHistory(execution, "restore hypothesis");
     onChange({
       ...execution,
       experiments: next,
@@ -1968,7 +1977,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                     evidence: [],
                     tags: newExperimentTags.slice(0, 8),
                   };
-                  onChange({
+                  pushHistory(execution, "add hypothesis"); onChange({
                     ...execution,
                     experiments: [...execution.experiments, newExp],
                     updatedAt: new Date().toISOString(),
@@ -2040,7 +2049,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                   evidence: [],
                   tags: [],
                 };
-                onChange({
+                pushHistory(execution, "add hypothesis"); onChange({
                   ...execution,
                   experiments: [...execution.experiments, newExp],
                   updatedAt: new Date().toISOString(),
