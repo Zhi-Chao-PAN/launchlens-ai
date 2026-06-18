@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { registerShortcut, useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 import {
@@ -377,6 +377,13 @@ export function ValidationBoard({
     return { required, excluded };
     return { required, excluded };
   }, []);
+function sourceUrl(source: string): string | null {
+  const trimmed = source.trim();
+  if (/^https?:\/\/\S+/i.test(trimmed)) return trimmed;
+  const m = trimmed.match(/https?:\/\/\S+/i);
+  return m ? m[0] : null;
+}
+
   const experimentMatchesSearch = useCallback((exp: ValidationExperiment, raw: string): boolean => {
     const q = raw.trim();
     if (!q) return true;
@@ -2567,9 +2574,11 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       />
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2 text-xs">
-                          <span className="font-semibold text-foreground">
-                            {item.source}
-                          </span>
+                          {(() => {
+                            const u = sourceUrl(item.source);
+                            if (u) return <a href={u} target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground underline decoration-dotted underline-offset-2 hover:text-accent" onClick={(e) => e.stopPropagation()}>{item.source}</a>;
+                            return <span className="font-semibold text-foreground">{item.source}</span>;
+                          })()}
                           <button
                             type="button"
                             onClick={() => cycleEvidenceSignal(experiment.id, item.id)}
