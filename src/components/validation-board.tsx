@@ -3597,9 +3597,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
               <span className="ml-2 font-normal normal-case tracking-normal text-muted/70">
                 {(() => {
                   const summary: Record<string, number> = {};
-                  archivedExperiments.forEach((e) => { summary[e.status] = (summary[e.status] || 0) + 1; });
-                  const label: Record<string, string> = { supported: "validated", refuted: "invalidated", testing: "testing", untested: "untested", decided: "decided" };
-                  return Object.entries(summary).map(([k, v]) => v + " " + (label[k] || k)).join(" · ");
+                  archivedExperiments.forEach((e) => { const k = ({ supported: "validated", refuted: "invalidated", testing: e.decision ? "decided" : "testing", untested: e.decision ? "decided" : "untested" } as Record<string,string>)[e.status] || e.status; summary[k] = (summary[k] || 0) + 1; });
+                  return Object.entries(summary).map(([k, v]) => v + " " + k).join(" \u00b7 ");
                 })()}
               </span>
             </span>
