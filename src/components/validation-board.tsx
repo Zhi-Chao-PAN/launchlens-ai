@@ -994,7 +994,7 @@ function sourceUrl(source: string): string | null {
     pushHistory(execution, "generate briefs"); onChange({ ...execution, experiments: updated, updatedAt: new Date().toISOString() });
     setIsBatchBriefing(false);
     const summary = `Generated ${success} brief${success === 1 ? "" : "s"}${failed > 0 ? `; ${failed} failed` : ""}.`;
-    showToast(summary, failed > 0 ? "error" : "success");
+    showToast(summary, failed > 0 ? "error" : "success", 6000, { label: "Undo", onClick: () => undo() });
     srAnnounce(summary);
   }
   function applyBatchTagFromInput(mode: "add" | "remove") {
