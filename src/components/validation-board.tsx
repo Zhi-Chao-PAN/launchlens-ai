@@ -202,6 +202,7 @@ export function ValidationBoard({
   const { announce: srAnnounce, message: srEvidenceAnnouncement } = useSrAnnounce();
   const { showToast } = useToast();
   const evidenceListRef = useRef<HTMLUListElement | null>(null);
+  const noteTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const newExperimentInputRef = useRef<HTMLInputElement | null>(null);
   const [timelinePulseKey, setTimelinePulseKey] = useState<string | null>(null);
   const [flashEvidenceId, setFlashEvidenceId] = useState<string | null>(null);
@@ -824,6 +825,7 @@ function sourceUrl(source: string): string | null {
     setDraft({ signal: evidence.signal ?? "supports", weight: evidence.weight ?? "moderate", source: evidence.source, note: evidence.note });
     setEditingEvidenceId(evidenceId);
     setDraftTouched({ source: false, note: false });
+    window.requestAnimationFrame(() => noteTextareaRef.current?.focus());
   }
 
   function cycleEvidenceSignal(experimentId: string, evidenceId: string) {
@@ -3097,6 +3099,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                         <span className={"font-mono tabular-nums " + (noteLen > NOTE_MAX ? "text-signal-challenges" : noteNear ? "text-signal-supports" : "text-muted/60")}>{noteLen}/{NOTE_MAX}</span>
                       </span>
                       <textarea
+                        ref={noteTextareaRef}
                         required
                         rows={2}
                         maxLength={NOTE_MAX + 20}
