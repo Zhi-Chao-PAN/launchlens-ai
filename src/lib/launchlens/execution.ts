@@ -1,4 +1,4 @@
-﻿import type { LaunchLensWorkspace, LaunchTask } from "./types";
+import type { LaunchLensWorkspace, LaunchTask } from "./types";
 import {
   decisionSourceFromExperiment,
   normalizeDecisionBrief,
@@ -58,6 +58,7 @@ export type ValidationExperiment = {
   history?: HypothesisChangeEvent[];
   tags: string[];
   decisionBrief?: DecisionBrief;
+  decisionBriefHistory?: DecisionBrief[];
 };
 
 export type WorkspaceExecutionState = {
@@ -105,7 +106,7 @@ export const DECISION_BIASED_WEIGHTS: ExecutionProgressWeights = {
 
 export type SharedValidationExperiment = Omit<
   ValidationExperiment,
-  "evidence" | "decisionBrief"
+  "evidence" | "decisionBrief" | "decisionBriefHistory"
 > & {
   evidenceCount: number;
 };
@@ -307,9 +308,21 @@ function normalizeExperiment(
     decisionSourceFromExperiment(experiment),
   );
 
+  const rawBriefHistory = Array.isArray((value as { decisionBriefHistory?: unknown }).decisionBriefHistory)
+    ? (value as { decisionBriefHistory?: unknown[] }).decisionBriefHistory
+    : [];
+  const decisionBriefHistory: DecisionBrief[] = [];
+  const histSource = decisionSourceFromExperiment(experiment);
+  for (const raw of rawBriefHistory ?? []) {
+    const b = normalizeDecisionBrief(raw, histSource);
+    if (b) decisionBriefHistory.push(b);
+    if (decisionBriefHistory.length >= 5) break;
+  }
+
   return {
     ...experiment,
     ...(decisionBrief ? { decisionBrief } : {}),
+    ...(decisionBriefHistory.length ? { decisionBriefHistory } : {}),
   };
 }
 

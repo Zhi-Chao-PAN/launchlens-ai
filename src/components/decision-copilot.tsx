@@ -227,7 +227,7 @@ export function DecisionCopilot({
   const [error, setError] = useState("");
   const [isBatchGenerating, setIsBatchGenerating] = useState(false);
   const [batchProgress, setBatchProgress] = useState({ done: 0, total: 0, currentName: "" });
-  const [briefHistory, setBriefHistory] = useState<Record<string, Array<NonNullable<ValidationExperiment["decisionBrief"]>>>>({});
+  const [briefHistory, setBriefHistory] = useState<Record<string, Array<NonNullable<ValidationExperiment["decisionBrief"]>>>>(() => { return {}; });
   const HISTORY_CAP = 5;
   const { announce: setSrGenerationAnnouncement, message: srGenerationAnnouncement } = useSrAnnounce();
   const selectedExperimentId =
@@ -269,7 +269,7 @@ export function DecisionCopilot({
         : experiment.evidence.length === 0
           ? "Record at least one piece of evidence before generating."
           : "";
-  const historyForExperiment = experiment ? (briefHistory[experiment.id] ?? []).filter((b) => !currentBrief || b.generatedAt !== currentBrief.generatedAt) : [];
+  const historyForExperiment = experiment ? ((briefHistory[experiment.id] && briefHistory[experiment.id].length > 0) ? briefHistory[experiment.id] : (experiment.decisionBriefHistory ?? [])).filter((b) => !currentBrief || b.generatedAt !== currentBrief.generatedAt).slice(0, HISTORY_CAP) : [];
 
   const briefCount = useMemo(
     () =>
@@ -279,20 +279,6 @@ export function DecisionCopilot({
     [execution],
   );
 
-  const saveBrief = useCallback(
-    (
-      experimentId: string,
-      brief: ValidationExperiment["decisionBrief"],
-    ) => {
-      onChange({
-        experiments: execution.experiments.map((item) =>
-          item.id === experimentId ? { ...item, decisionBrief: brief } : item,
-        ),
-        updatedAt: new Date().toISOString(),
-      });
-    },
-    [onChange, execution.experiments],
-  );
 
   function applyRecommendation() {
     if (!currentBrief || !experiment) return;
@@ -441,7 +427,22 @@ export function DecisionCopilot({
           const next = [prior, ...list].slice(0, HISTORY_CAP);
           return { ...prev, [experiment.id]: next };
         });
-        saveBrief(experiment.id, brief);
+        const priorList = experiment.decisionBrief ? [experiment.decisionBrief, ...(experiment.decisionBriefHistory ?? [])] : (experiment.decisionBriefHistory ?? []);
+        const dedup = priorList.filter((b: NonNullable<ValidationExperiment["decisionBrief"]>) => b.generatedAt !== brief.generatedAt).slice(0, HISTORY_CAP);
+        const finalList = dedup.length ? dedup : undefined;
+        // push prior to local ui history
+        setBriefHistory((prev) => {
+          const list = prev[experiment.id] ?? [];
+          if (!experiment.decisionBrief) return prev;
+          if (list.some((b) => b.generatedAt === experiment.decisionBrief!.generatedAt)) return prev;
+          return { ...prev, [experiment.id]: [experiment.decisionBrief, ...list].slice(0, HISTORY_CAP) };
+        });
+        // persist via saveBrief wrapper: save both current brief and history in one onChange
+        onChange({
+          ...execution,
+          experiments: execution.experiments.map((it) => it.id === experiment.id ? { ...it, decisionBrief: brief, decisionBriefHistory: finalList } : it),
+          updatedAt: new Date().toISOString(),
+        });
       const modeLabel = data.mode === "real" ? "Real-provider" : "Demo";
       setNotice(
         data.usedFallback
@@ -463,7 +464,8 @@ export function DecisionCopilot({
     } finally {
       setIsGenerating(false);
     }
-  }, [experiment, saveBrief, setSrGenerationAnnouncement]);
+  // Including execution and onChange in the dependency array keeps the linter happy without changing semantics (they both change on every parent render, which re-creates this callback already).
+  }, [experiment, setSrGenerationAnnouncement, execution, onChange]);
 
 
   // Staggered reveal animation when a new brief finishes generating
@@ -659,7 +661,7 @@ export function DecisionCopilot({
                     <button
                       key={brief.generatedAt}
                       type="button"
-                      onClick={() => { if (!experiment) return; saveBrief(experiment.id, brief); setNotice("Restored recommendation v" + (historyForExperiment.length - idx) + " from " + time + "."); }}
+                      onClick={() => { if (!experiment) return; const remaining = historyForExperiment.filter((b) => b.generatedAt !== brief.generatedAt); onChange({ ...execution, experiments: execution.experiments.map((it) => it.id === experiment.id ? { ...it, decisionBrief: brief, decisionBriefHistory: (remaining.length ? remaining.slice(0, HISTORY_CAP) : undefined) } : it), updatedAt: new Date().toISOString() }); setBriefHistory((prev) => ({ ...prev, [experiment.id]: remaining.slice(0, HISTORY_CAP) })); setNotice("Restored recommendation v" + (historyForExperiment.length - idx) + " from " + time + "."); }}
                       title={"Restore: " + rec.toUpperCase() + " generated " + time}
                       aria-label={"Restore " + rec + " recommendation generated " + time}
                       className={"rounded-full border px-2 py-0.5 text-[11px] font-medium transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + recommendationClass(rec)}
@@ -669,7 +671,7 @@ export function DecisionCopilot({
                   );
                 })}
               </div>
-              <button type="button" onClick={() => { if (!experiment) return; setBriefHistory((prev) => ({ ...prev, [experiment.id]: [] })); setNotice("Recommendation history cleared."); }} className="text-[10px] uppercase tracking-wide text-muted underline-offset-2 hover:text-foreground hover:underline">Clear history</button>
+              <button type="button" onClick={() => { if (!experiment) return; setBriefHistory((prev) => ({ ...prev, [experiment.id]: [] })); onChange({ ...execution, experiments: execution.experiments.map((it) => it.id === experiment.id ? { ...it, decisionBriefHistory: undefined } : it), updatedAt: new Date().toISOString() }); setNotice("Recommendation history cleared."); }} className="text-[10px] uppercase tracking-wide text-muted underline-offset-2 hover:text-foreground hover:underline">Clear history</button>
             </div>
           )},
           <button
