@@ -57,6 +57,7 @@ export type ValidationExperiment = {
   archived?: boolean;
   history?: HypothesisChangeEvent[];
   tags: string[];
+  pinned?: boolean;
   decisionBrief?: DecisionBrief;
   decisionBriefHistory?: DecisionBrief[];
 };

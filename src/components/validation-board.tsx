@@ -496,6 +496,11 @@ function sourceUrl(source: string): string | null {
       list = [...list].sort(
         (a, b) => b.evidence.length - a.evidence.length,
       );
+    } else {
+      list = [...list].sort((a, b) => {
+        if (Boolean(b.pinned) !== Boolean(a.pinned)) return b.pinned ? -1 : 1;
+        return execution.experiments.indexOf(a) - execution.experiments.indexOf(b);
+      });
     }
 
     return list;
@@ -1064,6 +1069,16 @@ const confidenceLabel: Record<ConfidenceLevel, string> = {
     }
   }
 
+  
+  function toggleHypothesisPin(experimentId: string) {
+    onChange({
+      ...execution,
+      experiments: execution.experiments.map((e) =>
+        e.id === experimentId ? { ...e, pinned: !e.pinned } : e,
+      ),
+      updatedAt: new Date().toISOString(),
+    });
+  }
   function toggleEvidencePin(experimentId: string, evidenceId: string) {
     updateExperiment(experimentId, (exp) => ({
       ...exp,
@@ -1888,9 +1903,9 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
           {allTags.length > 0 && (
             <div className="flex flex-wrap items-center gap-1">
               <span className="pr-1 text-[11px] font-semibold uppercase text-muted">Tags:</span>
-              <button type="button" onClick={() => setTagFilter(null)} className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition ${tagFilter === null ? "bg-accent text-white" : "bg-muted text-muted hover:text-foreground"}`}>all</button>
+              <button type="button" onClick={() => setTagFilter(null)} title="Show hypotheses with any tag" className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition ${tagFilter === null ? "bg-accent text-white" : "bg-muted text-muted hover:text-foreground"}`}>all</button>
               {allTags.map((tag) => (
-                <button key={tag} type="button" onClick={() => setTagFilter(tagFilter === tag ? null : tag)} className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition ${tagFilter === tag ? "bg-accent text-white" : "bg-muted text-muted hover:text-foreground"}`}>#{tag}</button>
+                <button key={tag} type="button" onClick={() => setTagFilter(tagFilter === tag ? null : tag)} title={tagFilter === tag ? `Clear tag filter "${tag}"` : `Filter to hypotheses tagged "${tag}" (click again to clear)`} aria-label={`Filter by tag ${tag}`} className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition ${tagFilter === tag ? "bg-accent text-white" : "bg-muted text-muted hover:text-foreground"}`}>#{tag}</button>
               ))}
             </div>
           )}
@@ -2248,6 +2263,16 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       tabIndex={-1}
                     >
                       <GripVertical className="size-3.5" aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); toggleHypothesisPin(experiment.id); }}
+                      title={experiment.pinned ? "Unpin hypothesis" : "Pin hypothesis to top of default order"}
+                      aria-label={experiment.pinned ? `Unpin hypothesis: ${experiment.assumption.slice(0,60)}` : `Pin hypothesis to top: ${experiment.assumption.slice(0,60)}`}
+                      aria-pressed={Boolean(experiment.pinned)}
+                      className={`flex size-5 shrink-0 items-center justify-center rounded transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent ${experiment.pinned ? "text-amber-500 hover:text-amber-600" : "text-muted/40 hover:text-amber-500"}`}
+                    >
+                      <Star className={`size-3.5 ${experiment.pinned ? "fill-current" : ""}`} aria-hidden="true" />
                     </button>
                     <span className="font-mono text-xs font-semibold text-signal-challenges">
                       H{index + 1}
