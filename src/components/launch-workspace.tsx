@@ -781,6 +781,7 @@ export function LaunchWorkspace({
         await navigator.clipboard.writeText(outText);
         showToast(exportEncrypted ? `${label} copied (password not stored)` : `${label} copied to clipboard`, "success");
         flashCopySuccess("markdown");
+    setSrAnnouncement("Markdown exported and copied to clipboard.");
         return;
       } catch {
         // fall through to sync path
@@ -819,6 +820,7 @@ export function LaunchWorkspace({
         await navigator.clipboard.writeText(outText);
         showToast(exportEncrypted ? `${label} copied (password not stored)` : `${label} copied to clipboard`, "success");
         flashCopySuccess("json");
+    setSrAnnouncement("JSON exported and copied to clipboard.");
         return;
       } catch {
         // fall through to sync path
@@ -1079,7 +1081,7 @@ export function LaunchWorkspace({
                     Product idea
                   </span>
                   <textarea
-                    id="founder-brief-idea" aria-invalid={ideaTrimmed.length > 0 && ideaTrimmed.length < 20} aria-describedby={"founder-brief-idea-hint founder-brief-idea-count" + (ideaTrimmed.length > 0 && ideaTrimmed.length < 20 ? " founder-generate-blocked" : "")}
+                    id="founder-brief-idea" aria-invalid={ideaTrimmed.length > 0 && ideaTrimmed.length < 20} aria-describedby={`founder-brief-idea-hint founder-brief-idea-count${ideaTrimmed.length > 0 && ideaTrimmed.length < 20 ? " founder-generate-blocked" : ""}`}
                     value={input.idea}
                     onChange={(event) =>
                       setInput((current) => ({
