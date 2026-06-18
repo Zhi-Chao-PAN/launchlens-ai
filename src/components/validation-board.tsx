@@ -25,7 +25,7 @@ import {
   Star,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useDeferredValue, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useDeferredValue, useMemo, useRef, useState } from "react";
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
 import { parseInlineMarkdown } from "@/lib/launchlens/inline-markdown";
 import { decisionSourceFromExperiment, normalizeDecisionBrief } from "@/lib/launchlens/decision";
@@ -95,7 +95,7 @@ const weightLabels: Record<EvidenceWeight, string> = {
   strong: "Strong",
 };
 
-function InlineMarkdown({ text }: { text: string }) {
+const InlineMarkdown = memo(function InlineMarkdown({ text }: { text: string }) {
   const segments = parseInlineMarkdown(text);
   return (
     <>
@@ -134,7 +134,7 @@ function InlineMarkdown({ text }: { text: string }) {
       })}
     </>
   );
-}
+});
 
 const EVIDENCE_SNIPPETS: { label: string; source: string; note: string }[] = [
   { label: "Interview", source: "User interview #", note: "Said they " },
