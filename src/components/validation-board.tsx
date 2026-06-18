@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { registerShortcut, useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 import {
@@ -1541,6 +1541,13 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
   }, [setSearchQuery, setStatusFilter, setTagFilter, setSortBy, setSelectMode, setSelectedExperimentIds]);
   const doCollapseAll = useCallback(() => setRequestedExpandedExperimentId(null), [setRequestedExpandedExperimentId]);
   useEffect(() => {
+    if (!selectMode) return;
+    window.requestAnimationFrame(() => {
+      const tb = document.querySelector('[data-hypothesis-bulk-toolbar] button') as HTMLElement | null;
+      tb?.focus();
+    });
+  }, [selectMode]);
+  useEffect(() => {
     const off1 = registerShortcut('focusSearch', (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
@@ -2048,7 +2055,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
           <option value="progress">Most evidence</option>
         </select>
         {selectMode && batchCount > 0 && (
-          <div role="toolbar" aria-label="Bulk actions on selected hypotheses" className="flex w-full flex-wrap items-center gap-2 rounded-md border border-accent/60 bg-accent/5 p-2 text-xs">
+          <div role="toolbar" aria-label="Bulk actions on selected hypotheses" data-hypothesis-bulk-toolbar className="flex w-full flex-wrap items-center gap-2 rounded-md border border-accent/60 bg-accent/5 p-2 text-xs">
             <span className="px-1 font-semibold text-foreground">{batchCount} selected</span>
             <button type="button" onClick={toggleSelectAllExperiments} className="rounded px-2 py-1 hover:bg-muted">All</button>
             <span className="mx-1 h-4 w-px bg-border" />
