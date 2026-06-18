@@ -382,20 +382,31 @@ export function ValidationBoard({
 function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { onDuplicate: () => void; onEdit: () => void; onDelete: () => void; sourceLabel: string }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const close = useCallback(() => {
+    setOpen(false);
+    const previously = previouslyFocusedRef.current;
+    if (previously && typeof previously.focus === "function") {
+      window.requestAnimationFrame(() => previously.focus());
+    } else if (triggerRef.current) triggerRef.current.focus();
+  }, []);
   useEffect(() => {
     if (!open) return;
+    previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
     function onDoc(e: MouseEvent) {
       if (!ref.current) return;
-      if (!ref.current.contains(e.target as Node)) setOpen(false);
+      if (!ref.current.contains(e.target as Node)) close();
     }
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape") setOpen(false); }
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") { e.stopPropagation(); close(); } }
     document.addEventListener("mousedown", onDoc);
     document.addEventListener("keydown", onKey);
     return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onKey); };
-  }, [open]);
+  }, [open, close]);
   return (
     <div ref={ref} className="relative sm:hidden">
       <button
+        ref={triggerRef}
         type="button"
         onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
         aria-haspopup="menu"
@@ -407,13 +418,13 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
       </button>
       {open && (
         <div role="menu" className="absolute right-0 top-full z-50 mt-1 min-w-[10rem] overflow-hidden rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg" onClick={(e) => e.stopPropagation()}>
-          <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); setOpen(false); onDuplicate(); }} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground">
+          <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); close(); onDuplicate(); }} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:bg-accent">
             <Copy className="size-4" aria-hidden="true" /> Duplicate
           </button>
-          <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); setOpen(false); onEdit(); }} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground">
+          <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); close(); onEdit(); }} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:bg-accent">
             <PencilLine className="size-4" aria-hidden="true" /> Edit
           </button>
-          <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); setOpen(false); onDelete(); }} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm text-signal-challenges hover:bg-accent hover:text-signal-challenges">
+          <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); close(); onDelete(); }} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm text-signal-challenges hover:bg-accent hover:text-signal-challenges focus-visible:outline-none focus-visible:bg-accent">
             <Trash2 className="size-4" aria-hidden="true" /> Delete
           </button>
         </div>
