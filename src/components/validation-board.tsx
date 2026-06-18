@@ -2682,7 +2682,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                         <div className="flex flex-wrap items-center gap-2 text-xs">
                           {(() => {
                             const u = sourceUrl(item.source);
-                            if (u) return <a href={u} target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground underline decoration-dotted underline-offset-2 hover:text-accent" onClick={(e) => e.stopPropagation()}>{item.source}</a>;
+                            if (u) return <a href={u} target="_blank" rel="noopener noreferrer" title={item.source} aria-label={`Open source: ${item.source}`} className="font-semibold text-foreground underline decoration-dotted underline-offset-2 hover:text-accent" onClick={(e) => e.stopPropagation()}>{item.source}</a>;
                             return <span className="font-semibold text-foreground">{item.source}</span>;
                           })()}
                           <button
