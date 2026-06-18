@@ -95,6 +95,8 @@ const weightLabels: Record<EvidenceWeight, string> = {
   strong: "Strong",
 };
 
+const CONFIDENCE_DESCRIPTIONS: Record<ConfidenceLevel, string> = { low: "Low confidence: this is still a guess; more evidence is needed.", medium: "Medium confidence: some supporting evidence, but still uncertain.", high: "High confidence: strongly supported by the evidence collected so far." };
+
 const InlineMarkdown = memo(function InlineMarkdown({ text }: { text: string }) {
   const segments = parseInlineMarkdown(text);
   return (
@@ -700,7 +702,7 @@ function sourceUrl(source: string): string | null {
       supported: "Supported",
       refuted: "Refuted",
     };
-    const confidenceLabel: Record<ConfidenceLevel, string> = {
+const confidenceLabel: Record<ConfidenceLevel, string> = {
       low: "Low",
       medium: "Medium",
       high: "High",
@@ -2249,7 +2251,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       {statusLabels[experiment.status]}
                     </span>
                     <span
-                      aria-label={`Confidence: ${experiment.confidence}`}
+                      aria-label={`Confidence: ${experiment.confidence}. ${CONFIDENCE_DESCRIPTIONS[experiment.confidence]}` + (experiment.confidenceManual ? ", manually set" : experiment.evidence.length > 0 ? ", auto-computed from evidence" : "")}
+                      title={CONFIDENCE_DESCRIPTIONS[experiment.confidence] + (experiment.confidenceManual ? " (manually set)" : experiment.evidence.length > 0 ? " (auto from evidence)" : "")}
                       className={
                         "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold " +
                         (experiment.confidence === "low"
