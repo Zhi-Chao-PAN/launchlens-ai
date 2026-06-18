@@ -884,13 +884,17 @@ function sourceUrl(source: string): string | null {
   const setSelectedStatus = useCallback((status: ExperimentStatus) => {
     if (batchCount === 0) return;
     pushHistory(execution, `bulk status ${status}`); onChange({ ...execution, experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, status } : e), updatedAt: new Date().toISOString() });
-    srAnnounce(`Set ${batchCount} hypotheses to ${status}.`);
-  }, [batchCount, execution, onChange, selectedExperimentIds, srAnnounce]);
+    const msg = `Set ${batchCount} hypotheses to ${status}.`;
+    showToast(msg, "success", 5000, { label: "Undo", onClick: () => undo() });
+    srAnnounce(msg);
+  }, [batchCount, execution, onChange, selectedExperimentIds, showToast, srAnnounce, undo]);
   const batchArchive = useCallback((archived: boolean) => {
     if (batchCount === 0) return;
     pushHistory(execution, archived ? "bulk archive" : "bulk unarchive"); onChange({ ...execution, experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, archived } : e), updatedAt: new Date().toISOString() });
-    srAnnounce(archived ? `Archived ${batchCount} hypotheses.` : `Unarchived ${batchCount} hypotheses.`);
-  }, [batchCount, execution, onChange, selectedExperimentIds, srAnnounce]);
+    const msg = archived ? `Archived ${batchCount} hypotheses.` : `Unarchived ${batchCount} hypotheses.`;
+    showToast(msg, "success", 5000, { label: "Undo", onClick: () => undo() });
+    srAnnounce(msg);
+  }, [batchCount, execution, onChange, selectedExperimentIds, showToast, srAnnounce, undo]);
   function batchAddTag(tag: string) {
     const t = tag.trim();
     if (!t || batchCount === 0) return;
@@ -900,7 +904,9 @@ function sourceUrl(source: string): string | null {
       experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, tags: Array.from(new Set([...(e.tags || []), t])) } : e),
       updatedAt: new Date().toISOString(),
     });
-    srAnnounce(`Added tag "${t}" to ${batchCount} hypotheses.`);
+    const msg = `Added tag "${t}" to ${batchCount} hypotheses.`;
+    showToast(msg, "success", 5000, { label: "Undo", onClick: () => undo() });
+    srAnnounce(msg);
   }
   function batchRemoveTag(tag: string) {
     const t = tag.trim();
@@ -911,7 +917,9 @@ function sourceUrl(source: string): string | null {
       experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, tags: (e.tags || []).filter((x) => x !== t) } : e),
       updatedAt: new Date().toISOString(),
     });
-    srAnnounce(`Removed tag "${t}" from ${batchCount} hypotheses.`);
+    const msg = `Removed tag "${t}" from ${batchCount} hypotheses.`;
+    showToast(msg, "success", 5000, { label: "Undo", onClick: () => undo() });
+    srAnnounce(msg);
   }
   async function batchGenerateBriefs() {
     if (batchCount === 0 || isBatchBriefing) return;
@@ -962,7 +970,9 @@ function sourceUrl(source: string): string | null {
       updatedAt: new Date().toISOString(),
     });
     setSelectedExperimentIds(new Set());
-    srAnnounce(`Deleted ${toDelete.size} hypotheses.`);
+    const msg = `Deleted ${toDelete.size} hypotheses.`;
+    showToast(msg, "success", 6000, { label: "Undo", onClick: () => undo() });
+    srAnnounce(msg);
   }
   function moveEvidence(
     experimentId: string,
