@@ -203,6 +203,8 @@ export function ValidationBoard({
   const [showArchived, setShowArchived] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedExperimentIds, setSelectedExperimentIds] = useState<Set<string>>(new Set());
+  const [evidenceSelectMode, setEvidenceSelectMode] = useState<Record<string, boolean>>({});
+  const [selectedEvidenceIds, setSelectedEvidenceIds] = useState<Record<string, Set<string>>>({});
   const [evidenceFilters, setEvidenceFilters] = useState<Record<string, { signal: "all" | EvidenceSignal; weight: "all" | EvidenceWeight }>>({});
   function getEvidenceFilter(id: string) { return evidenceFilters[id] ?? { signal: "all" as const, weight: "all" as const }; }
   const batchCount = selectedExperimentIds.size;
@@ -1071,6 +1073,67 @@ const confidenceLabel: Record<ConfidenceLevel, string> = {
   }
 
   
+  
+  function toggleEvidenceSelection(expId: string, evId: string) {
+    setSelectedEvidenceIds((prev) => {
+      const next = { ...prev };
+      const set = new Set(next[expId] || []);
+      if (set.has(evId)) set.delete(evId); else set.add(evId);
+      next[expId] = set;
+      return next;
+    });
+  }
+  function toggleSelectAllEvidence(expId: string) {
+    const exp = execution.experiments.find((e) => e.id === expId);
+    if (!exp) return;
+    setSelectedEvidenceIds((prev) => {
+      const next = { ...prev };
+      const current = new Set(next[expId] || []);
+      const allIds = exp.evidence.map((x) => x.id);
+      const allSelected = allIds.every((id) => current.has(id));
+      next[expId] = new Set(allSelected ? [] : allIds);
+      return next;
+    });
+  }
+  function bulkDeleteEvidence(expId: string) {
+    const exp = execution.experiments.find((e) => e.id === expId);
+    const ids = new Set(selectedEvidenceIds[expId] || []);
+    if (!exp || ids.size === 0) return;
+    if (!window.confirm("Delete " + ids.size + " evidence item(s)?")) return;
+    pushHistory(execution, "bulk evidence delete");
+    const removed = exp.evidence.filter((e) => ids.has(e.id));
+    onChange({
+      ...execution,
+      experiments: execution.experiments.map((e) => {
+        if (e.id !== expId) return e;
+        const newEvidence = e.evidence.filter((x) => !ids.has(x.id));
+        const isManual = e.confidenceManual;
+        return { ...e, evidence: newEvidence, confidence: isManual ? e.confidence : computeExperimentConfidence(newEvidence) };
+      }),
+      updatedAt: new Date().toISOString(),
+    });
+    removed.forEach((ev) => pushHistoryEvent(expId, { kind: "evidence_removed", source: ev.source, targetId: ev.id, label: ev.note.slice(0, 60) }));
+    setSelectedEvidenceIds((prev) => ({ ...prev, [expId]: new Set() }));
+    setEvidenceSelectMode((prev) => ({ ...prev, [expId]: false }));
+    showToast(ids.size + " evidence items deleted.", "success", 5000, { label: "Undo", onClick: () => undo() });
+  }
+  function bulkSetEvidenceSignal(expId: string, signal: "supports" | "challenges" | "neutral") {
+    const ids = new Set(selectedEvidenceIds[expId] || []);
+    if (ids.size === 0) return;
+    pushHistory(execution, "bulk evidence signal " + signal);
+    onChange({
+      ...execution,
+      experiments: execution.experiments.map((e) => {
+        if (e.id !== expId) return e;
+        const newEvidence = e.evidence.map((x) => ids.has(x.id) ? { ...x, signal } : x);
+        const isManual = e.confidenceManual;
+        return { ...e, evidence: newEvidence, confidence: isManual ? e.confidence : computeExperimentConfidence(newEvidence) };
+      }),
+      updatedAt: new Date().toISOString(),
+    });
+    showToast("Set " + ids.size + " items to " + signal + ".", "success", 5000, { label: "Undo", onClick: () => undo() });
+  }
+
   function toggleHypothesisPin(experimentId: string) {
     const exp = execution.experiments.find((e) => e.id === experimentId);
     if (!exp) return;
@@ -2662,7 +2725,24 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                         {wchip(ef.weight === "anecdotal", "Anecdotal", anecdotalCount, "anecdotal")}
                       </>);
                     })()}
-                  {(ef.signal !== "all" || ef.weight !== "all") && (<button type="button" onClick={() => setEvidenceFilters((prev) => ({ ...prev, [experiment.id]: { signal: "all", weight: "all" } }))} className="mt-1 rounded-full px-2 py-0.5 text-[10px] font-medium text-muted underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Reset filters</button>)}
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                    {(ef.signal !== "all" || ef.weight !== "all") && (<button type="button" onClick={() => setEvidenceFilters((prev) => ({ ...prev, [experiment.id]: { signal: "all", weight: "all" } }))} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-muted underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Reset filters</button>)}
+                    {experiment.evidence.length > 1 && (<button type="button" onClick={(e) => { e.stopPropagation(); const on = !evidenceSelectMode[experiment.id]; setEvidenceSelectMode((prev) => ({ ...prev, [experiment.id]: on })); if (!on) setSelectedEvidenceIds((prev) => ({ ...prev, [experiment.id]: new Set() })); }} className={"rounded-full px-2 py-0.5 text-[10px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + (evidenceSelectMode[experiment.id] ? "bg-accent text-white" : "text-muted hover:text-foreground hover:underline")} title={evidenceSelectMode[experiment.id] ? "Exit evidence select mode" : "Select multiple evidence items"} aria-pressed={Boolean(evidenceSelectMode[experiment.id])}>{evidenceSelectMode[experiment.id] ? "Exit select" : "Select"}</button>)}
+                    {evidenceSelectMode[experiment.id] && (() => {
+                      const sel = selectedEvidenceIds[experiment.id] || new Set();
+                      const visible = experiment.evidence.filter((it) => (ef.signal === "all" || it.signal === ef.signal) && (ef.weight === "all" || it.weight === ef.weight));
+                      const allSel = visible.length > 0 && visible.every((v) => sel.has(v.id));
+                      return (<>
+                        <button type="button" onClick={(e) => { e.stopPropagation(); toggleSelectAllEvidence(experiment.id); }} className="flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label={allSel ? "Clear selection" : "Select all visible evidence"} title={allSel ? "Clear selection" : "Select all visible evidence"}>{allSel ? <CheckSquare className="size-3" aria-hidden="true"/> : <Square className="size-3" aria-hidden="true"/>}{sel.size > 0 ? sel.size : "All"}</button>
+                        {sel.size > 0 && (<>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceSignal(experiment.id, "supports"); }} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-signal-supports hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Pro supports</button>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceSignal(experiment.id, "challenges"); }} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-signal-challenges hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Pro challenges</button>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceSignal(experiment.id, "neutral"); }} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-muted hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Pro neutral</button>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkDeleteEvidence(experiment.id); }} className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium text-signal-challenges hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"><Trash2 className="size-3" aria-hidden="true"/>Delete</button>
+                        </>)}
+                      </>);
+                    })()}
+                  </div>
                   </div>
                   </>);
               })()}
@@ -2714,14 +2794,20 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                         (flashEvidenceId === item.id ? " ring-2 ring-accent/60 ring-inset rounded-sm " : "")
                       }
                     >
-                      <button
-                        type="button"
-                        aria-label="Drag to reorder"
-                        className="mt-0.5 flex h-5 w-4 shrink-0 cursor-grab items-center justify-center rounded-sm text-muted/40 transition hover:bg-muted hover:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent active:cursor-grabbing"
-                        tabIndex={-1}
-                      >
-                        <GripVertical className="size-3.5" aria-hidden="true" />
-                      </button>
+                      {evidenceSelectMode[experiment.id] ? (
+                        <button type="button" onClick={(e) => { e.stopPropagation(); toggleEvidenceSelection(experiment.id, item.id); }} aria-label={selectedEvidenceIds[experiment.id]?.has(item.id) ? "Deselect evidence from " + item.source : "Select evidence from " + item.source} aria-pressed={Boolean(selectedEvidenceIds[experiment.id]?.has(item.id))} className={"mt-0.5 flex size-5 shrink-0 items-center justify-center rounded transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + (selectedEvidenceIds[experiment.id]?.has(item.id) ? "text-accent" : "text-muted hover:text-accent")}>
+                          {selectedEvidenceIds[experiment.id]?.has(item.id) ? <CheckSquare className="size-3.5" aria-hidden="true"/> : <Square className="size-3.5" aria-hidden="true"/>}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          aria-label="Drag to reorder"
+                          className="mt-0.5 flex h-5 w-4 shrink-0 cursor-grab items-center justify-center rounded-sm text-muted/40 transition hover:bg-muted hover:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent active:cursor-grabbing"
+                          tabIndex={-1}
+                        >
+                          <GripVertical className="size-3.5" aria-hidden="true" />
+                        </button>
+                      )}
                       <CheckCircle2
                         className={
                           "mt-0.5 size-4 shrink-0 " +
