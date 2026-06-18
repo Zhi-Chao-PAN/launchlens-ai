@@ -378,7 +378,7 @@ export function DecisionCopilot({
         if (caught instanceof DOMException && caught.name === "AbortError") { cancelled = true; break; }
         failCount += 1;
       }
-      setBatchProgress({ done: i + 1, total: pending.length, currentName: item.assumption });
+      setBatchProgress({ done: i + 1, total: pending.length, currentName: item.assumption.length > 60 ? item.assumption.slice(0, 60) + '...' : item.assumption });
     }
 
     batchAbortRef.current = null;

@@ -2262,7 +2262,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                     )}
                     <button
                       type="button"
-                      aria-label="Drag to reorder hypothesis (Alt+Up/Down to move)" title="Drag to reorder (Alt+Up/Down when focused)"
+                      data-experiment-grip={experiment.id} aria-label="Drag to reorder hypothesis (Alt+Up/Down to move)" title="Drag to reorder (Alt+Up/Down when focused)"
                       className="-ml-1 flex h-5 w-4 shrink-0 cursor-grab items-center justify-center rounded-sm text-muted/40 transition hover:bg-muted hover:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent active:cursor-grabbing"
                       tabIndex={0}
                       onKeyDown={(event) => {
@@ -2273,9 +2273,21 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                         if (event.key === "ArrowUp" && idx > 0) {
                           event.preventDefault();
                           moveExperiment(experiment.id, list[idx - 1].id);
+                          const movedId = experiment.id;
+                          requestAnimationFrame(() => {
+                            const sel = '[data-experiment-grip="' + movedId + '"]';
+                            const el = document.querySelector(sel) as HTMLElement | null;
+                            el?.focus();
+                          });
                         } else if (event.key === "ArrowDown" && idx < list.length - 1) {
                           event.preventDefault();
                           moveExperiment(experiment.id, list[idx + 1].id);
+                          const movedId = experiment.id;
+                          requestAnimationFrame(() => {
+                            const sel = '[data-experiment-grip="' + movedId + '"]';
+                            const el = document.querySelector(sel) as HTMLElement | null;
+                            el?.focus();
+                          });
                         }
                       }}
                     >
