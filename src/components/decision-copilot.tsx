@@ -250,6 +250,14 @@ export function DecisionCopilot({
       ).size
     : 0;
 
+  const generateDisabledReason =
+    isGenerating
+      ? "Brief is being synthesized."
+      : !experiment
+        ? "Select a hypothesis to generate a brief."
+        : experiment.evidence.length === 0
+          ? "Record at least one piece of evidence before generating."
+          : "";
   const historyForExperiment = experiment ? (briefHistory[experiment.id] ?? []).filter((b) => !currentBrief || b.generatedAt !== currentBrief.generatedAt) : [];
 
   const briefCount = useMemo(
@@ -649,17 +657,16 @@ export function DecisionCopilot({
                   );
                 })}
               </div>
+              <button type="button" onClick={() => { if (!experiment) return; setBriefHistory((prev) => ({ ...prev, [experiment.id]: [] })); setNotice("Recommendation history cleared."); }} className="text-[10px] uppercase tracking-wide text-muted underline-offset-2 hover:text-foreground hover:underline">Clear history</button>
             </div>
           )},
           <button
             ref={generateButtonRef}
             type="button"
             onClick={generateBrief}
-            disabled={
-              isGenerating || !experiment || experiment.evidence.length === 0
-            }
+            disabled={!!generateDisabledReason}
             aria-busy={isGenerating}
-            aria-describedby="decision-generation-status"
+            aria-describedby={"decision-generation-status" + (generateDisabledReason ? " decision-generate-reason" : "")}
             title="Generate decision brief (Ctrl+Shift+B / Cmd+Shift+B)"
             className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-text shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
