@@ -1082,6 +1082,10 @@ export function LaunchWorkspace({
                         idea: event.target.value,
                       }))
                     }
+                    onBlur={(event) => {
+                      const v = event.target.value.trim();
+                      if (v !== event.target.value) setInput((current) => ({ ...current, idea: v }));
+                    }}
                     onKeyDown={(event) => {
                       if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && !isGenerating) {
                         event.preventDefault();
@@ -1121,6 +1125,10 @@ export function LaunchWorkspace({
                         audience: event.target.value,
                       }))
                     }
+                    onBlur={(event) => {
+                      const v = event.target.value.trim();
+                      if (v !== event.target.value) setInput((current) => ({ ...current, audience: v }));
+                    }}
                     rows={2}
                     className="w-full field-sizing-content resize-y min-h-[64px] max-h-[240px] rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
@@ -1145,6 +1153,10 @@ export function LaunchWorkspace({
                         market: event.target.value,
                       }))
                     }
+                    onBlur={(event) => {
+                      const v = event.target.value.trim();
+                      if (v !== event.target.value) setInput((current) => ({ ...current, market: v }));
+                    }}
                     className="w-full rounded-md border border-input bg-input px-3 py-3 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
                 </label>
@@ -1189,6 +1201,10 @@ export function LaunchWorkspace({
                         constraints: event.target.value,
                       }))
                     }
+                    onBlur={(event) => {
+                      const v = event.target.value.trim();
+                      if (v !== event.target.value) setInput((current) => ({ ...current, constraints: v }));
+                    }}
                     rows={4}
                     className="w-full resize-none rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />

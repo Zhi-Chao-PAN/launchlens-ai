@@ -267,10 +267,12 @@ export function ValidationBoard({
             setFlashEvidenceId(targetId);
             flashEvidenceTimer.current = window.setTimeout(() => setFlashEvidenceId(null), 1600);
             row.scrollIntoView({ behavior: "smooth", block: "center" });
+            (row as HTMLElement).focus?.({ preventScroll: true });
             return;
           }
         }
         evidenceListRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        (evidenceListRef.current as HTMLElement | null)?.focus?.({ preventScroll: true });
       }, 30);
     } else if (kind === "status" || kind === "confidence" || kind === "decision" || kind === "archived" || kind === "pinned" || kind === "created") {
       window.setTimeout(() => {
@@ -279,10 +281,14 @@ export function ValidationBoard({
         const target = root.querySelector(`[data-meta-target="${kind}"]`) as HTMLElement | null;
         if (target) {
           target.scrollIntoView({ behavior: "smooth", block: "center" });
+          (target as HTMLElement).tabIndex = -1;
+          (target as HTMLElement).focus?.({ preventScroll: true });
           target.classList.add("ring-2", "ring-accent", "ring-offset-1", "ring-offset-[var(--card-bg)]");
           window.setTimeout(() => target.classList.remove("ring-2", "ring-accent", "ring-offset-1", "ring-offset-[var(--card-bg)]"), 1600);
         } else {
           root.scrollIntoView({ behavior: "smooth", block: "center" });
+          root.tabIndex = -1;
+          root.focus?.({ preventScroll: true });
         }
       }, 30);
     }
