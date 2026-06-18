@@ -2275,7 +2275,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                   nextAction: "",
                   linkedTaskId: "",
                   evidence: [],
-                  tags: [],
+                  tags: newExperimentTags.slice(0, 8),
                 };
                 pushHistory(execution, "add hypothesis"); onChange({
                   ...execution,
