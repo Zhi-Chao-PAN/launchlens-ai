@@ -217,6 +217,7 @@ export function ValidationBoard({
   const [timelinePulseKey, setTimelinePulseKey] = useState<string | null>(null);
   const [flashEvidenceId, setFlashEvidenceId] = useState<string | null>(null);
   const [showFullHistory, setShowFullHistory] = useState<Set<string>>(new Set());
+  const [timelineKindFilter, setTimelineKindFilter] = useState<Record<string, string>>({});
   const timelinePulseTimer = useRef<number | null>(null);
   const undoStack = useRef<{snapshot: WorkspaceExecutionState; label: string}[]>([]);
   const redoStack = useRef<{snapshot: WorkspaceExecutionState; label: string}[]>([]);
@@ -3326,7 +3327,33 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       ) : null}
                     </div>
                     <ol className="space-y-1.5 border-l border-border/60 pl-3">
-                      {(showFullHistory.has(experiment.id) ? experiment.history : experiment.history.slice(-8)).slice().reverse().map((evt) => {
+                      {(() => {
+                        const kindChips: { id: string; label: string }[] = [
+                          { id: "all", label: "All" },
+                          { id: "status", label: "Status" },
+                          { id: "confidence", label: "Confidence" },
+                          { id: "decision", label: "Decision" },
+                          { id: "evidence_added", label: "Evidence" },
+                          { id: "archived", label: "Archive" },
+                          { id: "pinned", label: "Pin" },
+                        ];
+                        const selectedKind = timelineKindFilter[experiment.id] || "all";
+                        const allTimeline = (showFullHistory.has(experiment.id) ? experiment.history : experiment.history.slice(-8)).slice().reverse();
+                        const visibleTimeline = selectedKind === "all" ? allTimeline : allTimeline.filter((e) => e.kind === selectedKind);
+                        const kindCounts: Record<string, number> = {};
+                        experiment.history.forEach((e) => { kindCounts[e.kind] = (kindCounts[e.kind] || 0) + 1; });
+                        return (
+                        <>
+                        {experiment.history.length > 5 && (
+                          <div className="mb-1.5 flex flex-wrap gap-0.5">
+                            {kindChips.filter((ch) => ch.id === "all" || kindCounts[ch.id]).map((ch) => (
+                              <button key={ch.id} type="button" onClick={(e) => { e.stopPropagation(); setTimelineKindFilter((prev) => ({ ...prev, [experiment.id]: ch.id })); }} className={`rounded px-1.5 py-0.5 text-[10px] font-medium transition ${selectedKind === ch.id ? "bg-accent text-white" : "text-muted hover:bg-muted hover:text-foreground"}`} title={`Filter timeline to ${ch.label.toLowerCase()} events`} aria-pressed={selectedKind === ch.id}>{ch.label}{ch.id !== "all" ? ` ${kindCounts[ch.id] || 0}` : ""}</button>
+                            ))}
+                          </div>
+                        )}
+                        {visibleTimeline.length === 0 && selectedKind !== "all" ? (
+                          <p className="text-[11px] italic text-muted">No {selectedKind.replace("_", " ")} events in this view.</p>
+                        ) : visibleTimeline.map((evt) => {
                         const when = new Date(evt.at);
                         const timeLabel = when.toLocaleString();
                         const kindLabel: Record<string, string> = {
@@ -3370,7 +3397,10 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                             <span className="ml-1 text-[10px] text-muted/80">· {timeLabel}</span>
                           </li>
                         );
-                      })}
+                        })}
+                        </>
+                        );
+                      })()}
                     </ol>
                   </div>
                 )}
