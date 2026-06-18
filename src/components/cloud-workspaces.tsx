@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   Cloud,
@@ -212,7 +212,7 @@ export function CloudWorkspaces({
   async function saveSnapshot() {
     setBusyAction("save");
     try {
-      await cloudRequest<CloudWorkspaceResponse>("/api/workspaces", {
+      const saved = await cloudRequest<CloudWorkspaceResponse>("/api/workspaces", {
         method: "POST",
         body: JSON.stringify({
           title: workspace.landingPage.headline,
@@ -221,7 +221,18 @@ export function CloudWorkspaces({
           execution,
         }),
       });
-      showToast("Cloud snapshot saved.", "success");
+      const newId = saved.workspace.id;
+      const nowIso = new Date().toISOString();
+      showToast("Cloud snapshot saved.", "success", 5000, {
+        label: "Share",
+        onClick: () => toggleShare({
+          id: newId,
+          isPublic: false,
+          title: saved.workspace.title ?? "Workspace",
+          createdAt: saved.workspace.createdAt ?? nowIso,
+          updatedAt: saved.workspace.updatedAt ?? nowIso,
+        }),
+      });
       setListRenderKey((k) => k + 1);
       await refresh();
     } catch (error) {
