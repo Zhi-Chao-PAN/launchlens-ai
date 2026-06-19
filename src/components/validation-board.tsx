@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { registerShortcut, useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 
 import {
@@ -208,6 +208,8 @@ export function ValidationBoard({
   const [evidenceSelectMode, setEvidenceSelectMode] = useState<Record<string, boolean>>({});
   const [selectedEvidenceIds, setSelectedEvidenceIds] = useState<Record<string, Set<string>>>({});
   const [pendingBulkDelete, setPendingBulkDelete] = useState<{ expId: string; count: number } | null>(null);
+  type BatchConfirmKind = "archive" | "delete";
+  const [pendingBatch, setPendingBatch] = useState<{ kind: BatchConfirmKind; count: number } | null>(null);
   const [evidenceFilters, setEvidenceFilters] = useState<Record<string, { signal: "all" | EvidenceSignal; weight: "all" | EvidenceWeight }>>({});
   function getEvidenceFilter(id: string) { return evidenceFilters[id] ?? { signal: "all" as const, weight: "all" as const }; }
   const batchCount = selectedExperimentIds.size;
@@ -981,13 +983,18 @@ const confidenceLabel: Record<ConfidenceLevel, string> = {
     showToast(msg, "success", 5000, { label: "Undo", onClick: () => undo() });
     srAnnounce(msg);
   }, [batchCount, execution, onChange, selectedExperimentIds, showToast, srAnnounce, undo]);
-  const batchArchive = useCallback((archived: boolean) => {
+  const performBatchArchive = useCallback((archived: boolean) => {
     if (batchCount === 0) return;
     pushHistory(execution, archived ? "bulk archive" : "bulk unarchive"); onChange({ ...execution, experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, archived } : e), updatedAt: new Date().toISOString() });
     const msg = archived ? `Archived ${batchCount} hypotheses.` : `Unarchived ${batchCount} hypotheses.`;
     showToast(msg, "success", 5000, { label: "Undo", onClick: () => undo() });
     srAnnounce(msg);
   }, [batchCount, execution, onChange, selectedExperimentIds, showToast, srAnnounce, undo]);
+  const batchArchive = useCallback((archived: boolean) => {
+    if (batchCount === 0) return;
+    if (archived) { setPendingBatch({ kind: "archive", count: batchCount }); return; }
+    performBatchArchive(false);
+  }, [batchCount, performBatchArchive]);
   function batchAddTag(tag: string) {
     const t = tag.trim();
     if (!t || batchCount === 0) return;
@@ -1053,7 +1060,7 @@ const confidenceLabel: Record<ConfidenceLevel, string> = {
     setBatchTagInput("");
     setBatchTagMode(null);
   }
-  function batchDeleteExperiments() {
+  function performBatchDelete() {
     if (batchCount === 0) return;
     const toDelete = selectedExperimentIds;
     pushHistory(execution, "bulk delete hypotheses");
@@ -1066,6 +1073,10 @@ const confidenceLabel: Record<ConfidenceLevel, string> = {
     const msg = `Deleted ${toDelete.size} hypotheses.`;
     showToast(msg, "success", 6000, { label: "Undo", onClick: () => undo() });
     srAnnounce(msg);
+  }
+  function batchDeleteExperiments() {
+    if (batchCount === 0) return;
+    setPendingBatch({ kind: "delete", count: batchCount });
   }
   function moveEvidence(
     experimentId: string,
@@ -3689,6 +3700,23 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
       </div>
 
       <ConfirmDialog
+        open={pendingBatch?.kind === "delete"}
+        title="Delete selected hypotheses?"
+        body={pendingBatch?.kind === "delete" ? `${pendingBatch.count} hypothesis and all their evidence will be permanently removed from this workspace. This can be undone right away via toast.` : ""}
+        confirmLabel="Delete"
+        danger
+        onCancel={() => setPendingBatch(null)}
+        onConfirm={() => { performBatchDelete(); }}
+      />
+      <ConfirmDialog
+        open={pendingBatch?.kind === "archive"}
+        title="Archive selected hypotheses?"
+        body={pendingBatch?.kind === "archive" ? `${pendingBatch.count} hypotheses will be hidden from the main list. You can restore them from the archive at any time.` : ""}
+        confirmLabel="Archive"
+        onCancel={() => setPendingBatch(null)}
+        onConfirm={() => { performBatchArchive(true); }}
+      />
+      <ConfirmDialog
         open={Boolean(pendingBulkDelete)}
         title="Delete selected evidence?"
         body={pendingBulkDelete ? `${pendingBulkDelete.count} evidence item(s) will be removed from this hypothesis. Confidence will be recomputed automatically.` : ""}
@@ -3698,7 +3726,6 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
         onConfirm={() => {
           if (!pendingBulkDelete) return;
           const { expId } = pendingBulkDelete;
-          setPendingBulkDelete(null);
           performBulkDelete(expId);
         }}
       />

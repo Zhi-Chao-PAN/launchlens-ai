@@ -118,6 +118,14 @@ function Bullets({ items }: { items: string[] }) {
   );
 }
 
+function formatExpiryBadge(expiresAt: string | null): { label: string; title: string } | null {
+  if (!expiresAt) return null;
+  const ms = new Date(expiresAt).getTime() - Date.now();
+  if (ms <= 0) return null;
+  const days = Math.max(1, Math.ceil(ms / 86400000));
+  return { label: "Expires in " + days + "d", title: "Expires " + new Date(expiresAt).toLocaleString() };
+}
+
 export function SharedWorkspaceView({
   record,
 }: {
@@ -171,6 +179,15 @@ export function SharedWorkspaceView({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="w-fit rounded-md border border-card bg-card px-3 py-2 text-sm text-foreground/80" title="This shared snapshot is read-only. You can view, copy, or export the workspace, but edits are disabled." aria-label="Read-only: view and export only">Read-only snapshot</span>
+            {(() => {
+              const badge = formatExpiryBadge(record.expiresAt);
+              if (!badge) return null;
+              return (
+                <span className="w-fit rounded-md bg-amber-100 px-3 py-2 text-sm font-medium text-amber-800" title={badge.title}>
+                  {badge.label}
+                </span>
+              );
+            })()}
             <CopyMarkdownButton workspace={workspace} />
             <DownloadMarkdownButton workspace={workspace} />
             <DownloadJsonButton workspace={workspace} />
