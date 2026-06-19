@@ -1208,6 +1208,8 @@ export function LaunchWorkspace({
                         generate();
                       }
                     }}
+                    id="founder-brief-market"
+                    aria-describedby="founder-brief-market-count"
                     value={input.market}
                     onChange={(event) =>
                       updateInput((current) => ({
@@ -1221,6 +1223,7 @@ export function LaunchWorkspace({
                     }}
                     className="w-full rounded-md border border-input bg-input px-3 py-3 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
+                  <p id="founder-brief-market-count" className={"mt-1 text-right text-[11px] " + (input.market.length > 200 ? "text-signal-challenges" : input.market.length > 120 ? "text-amber-500" : "text-muted/70")} title="Recommended under 120 chars">{input.market.length} chars</p>
                 </label>
 
                 <label className="block">
@@ -1256,6 +1259,8 @@ export function LaunchWorkspace({
                         generate();
                       }
                     }}
+                    id="founder-brief-constraints"
+                    aria-describedby="founder-brief-constraints-count"
                     value={input.constraints}
                     onChange={(event) =>
                       updateInput((current) => ({
@@ -1270,6 +1275,7 @@ export function LaunchWorkspace({
                     rows={4}
                     className="w-full resize-none rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
+                  <p id="founder-brief-constraints-count" className={"mt-1 text-right text-[11px] " + (input.constraints.length > 500 ? "text-signal-challenges" : input.constraints.length > 320 ? "text-amber-500" : "text-muted/70")} title="Recommended under 320 chars">{input.constraints.length} chars</p>
                 </label>
 
                 <button
