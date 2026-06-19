@@ -1,4 +1,4 @@
-﻿import "server-only";
+import "server-only";
 
 import {
   ERROR_CLOUD_UNAVAILABLE,
@@ -42,6 +42,7 @@ type WorkspaceRow = {
   workspace: unknown;
   execution: unknown;
   is_public: boolean;
+  share_expires_at: string | Date | null;
   created_at: string | Date;
   updated_at: string | Date;
 };
@@ -143,6 +144,7 @@ function toSummary(row: WorkspaceRow | SharedWorkspaceRow): CloudWorkspaceSummar
     id: row.id,
     title: row.title,
     isPublic: row.is_public,
+    expiresAt: row.share_expires_at ? toIso(row.share_expires_at) : null,
     createdAt: toIso(row.created_at),
     updatedAt: toIso(row.updated_at),
   };
@@ -301,7 +303,7 @@ export async function createWorkspace(
           FROM launchlens_workspaces
           WHERE owner_hash = ${ownerHash}
         ) < ${MAX_CLOUD_WORKSPACES}
-      RETURNING id, title, input, workspace, execution, is_public, created_at, updated_at
+      RETURNING id, title, input, workspace, execution, is_public, share_expires_at, created_at, updated_at
     `,
     transaction`
       INSERT INTO launchlens_workspace_members (workspace_id, member_hash, role)
@@ -371,7 +373,7 @@ export async function setWorkspaceSharingForMember(
     UPDATE launchlens_workspaces
     SET is_public = ${enabled}, updated_at = NOW()
     WHERE id = ${id}
-    RETURNING id, title, input, workspace, execution, is_public, created_at, updated_at
+    RETURNING id, title, input, workspace, execution, is_public, share_expires_at, created_at, updated_at
   `;
   const row = firstRow<WorkspaceRow>(rows);
 
@@ -726,6 +728,7 @@ export async function getSharedWorkspace(id: string): Promise<SharedWorkspaceRes
 
   if (!row) return { status: "not_found" };
   if (!row.is_public) return { status: "revoked" };
+  if (row.share_expires_at && new Date(row.share_expires_at).getTime() <= Date.now()) return { status: "revoked" };
   return { status: "ok", record: toSharedRecord(row) };
 }
 

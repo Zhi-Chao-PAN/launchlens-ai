@@ -9,6 +9,7 @@ export type CloudWorkspaceSummary = {
   id: string;
   title: string;
   isPublic: boolean;
+  expiresAt: string | null;
   createdAt: string;
   updatedAt: string;
 };

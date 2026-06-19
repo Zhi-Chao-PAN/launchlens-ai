@@ -15,7 +15,7 @@ import {
   Unlink,
   UploadCloud,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useToast } from "@/components/toast";
 import { Skeleton } from "@/components/skeleton";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -54,13 +54,15 @@ type CloudWorkspacesProps = {
 type CloudState = "checking" | "ready" | "unavailable" | "error";
 
 type ConfirmKind = "share-enable" | "snapshot-delete";
+type ShareExpiry = "permanent" | "days7" | "days30";
 type PendingConfirm = {
   kind: ConfirmKind;
   item: CloudWorkspaceSummary;
   title: string;
-  body: string;
+  body: ReactNode;
   confirmLabel: string;
   danger?: boolean;
+  shareExpiry?: ShareExpiry;
 };
 
 function createOwnerToken() {
@@ -99,6 +101,7 @@ export function CloudWorkspaces({
   const [listRenderKey, setListRenderKey] = useState(0);
   const [recoveryTouched, setRecoveryTouched] = useState(false);
   const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(null);
+  const [shareExpiry, setShareExpiry] = useState<ShareExpiry>("permanent");
   const { showToast } = useToast();
 
   const trimmedLabel = recoveryLabel.trim();
@@ -240,6 +243,7 @@ export function CloudWorkspaces({
         onClick: () => toggleShare({
           id: newId,
           isPublic: false,
+          expiresAt: saved.workspace.expiresAt ?? null,
           title: saved.workspace.title ?? "Workspace",
           createdAt: saved.workspace.createdAt ?? nowIso,
           updatedAt: saved.workspace.updatedAt ?? nowIso,
@@ -283,6 +287,7 @@ export function CloudWorkspaces({
 
   async function toggleShare(item: CloudWorkspaceSummary, confirmed = false) {
     if (!item.isPublic && !confirmed) {
+      setShareExpiry("permanent");
       setPendingConfirm({
         kind: "share-enable",
         item,
@@ -293,13 +298,18 @@ export function CloudWorkspaces({
       return;
     }
 
-    setBusyAction(`share:${item.id}`);    setBusyAction(`share:${item.id}`);
+    setBusyAction(`share:${item.id}`);
     try {
       await cloudRequest<CloudWorkspaceResponse>(
         `/api/workspaces/${item.id}/share`,
         {
           method: "POST",
-          body: JSON.stringify({ enabled: !item.isPublic }),
+          body: JSON.stringify({
+            enabled: !item.isPublic,
+            expiresInDays: !item.isPublic
+              ? (shareExpiry === "days7" ? 7 : shareExpiry === "days30" ? 30 : null)
+              : null,
+          }),
         },
       );
 
@@ -751,6 +761,14 @@ export function CloudWorkspaces({
                       Shared
                     </span>
                   )}
+                  {item.isPublic && item.expiresAt && (() => {
+                    const days = Math.max(1, Math.ceil((new Date(item.expiresAt).getTime() - Date.now()) / 86400000));
+                    return (
+                      <span className="shrink-0 rounded-md bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800" title={"Expires " + new Date(item.expiresAt).toLocaleString()}>
+                        {new Date(item.expiresAt).getTime() <= Date.now() ? "Expired" : "Expires in " + days + "d"}
+                      </span>
+                    );
+                  })()}
                 </div>
                 <p className="mt-1 text-xs text-muted">
                   Saved <time dateTime={item.updatedAt} title={new Date(item.updatedAt).toLocaleString()}>{formatSnapshotTime(item.updatedAt)}</time>
@@ -824,7 +842,33 @@ export function CloudWorkspaces({
       <ConfirmDialog
         open={Boolean(pendingConfirm)}
         title={pendingConfirm?.title ?? ""}
-        body={pendingConfirm?.body ?? ""}
+        body={
+          <>
+            <p>{pendingConfirm?.body}</p>
+            {pendingConfirm?.kind === "share-enable" ? (
+              <fieldset className="mt-4 space-y-2">
+                <legend className="mb-1 text-xs font-semibold uppercase tracking-wide text-foreground/70">Link expires</legend>
+                {[
+                  { v: "permanent", label: "Never (permanent)" },
+                  { v: "days7", label: "In 7 days" },
+                  { v: "days30", label: "In 30 days" },
+                ].map((opt) => (
+                  <label key={opt.v} className="flex cursor-pointer items-center gap-2 rounded-md border border-input px-3 py-2 text-sm hover:border-accent has-[:checked]:border-accent has-[:checked]:bg-muted/40">
+                    <input
+                      type="radio"
+                      name="share-expiry"
+                      value={opt.v}
+                      checked={shareExpiry === opt.v}
+                      onChange={() => setShareExpiry(opt.v as ShareExpiry)}
+                      className="accent-accent"
+                    />
+                    <span>{opt.label}</span>
+                  </label>
+                ))}
+              </fieldset>
+            ) : null}
+          </>
+        }
         confirmLabel={pendingConfirm?.confirmLabel ?? "Confirm"}
         danger={Boolean(pendingConfirm?.danger)}
         busy={isBusy}
@@ -833,7 +877,6 @@ export function CloudWorkspaces({
           if (!pendingConfirm) return;
           const item = pendingConfirm.item;
           const kind = pendingConfirm.kind;
-          setPendingConfirm(null);
           if (kind === "share-enable") await toggleShare(item, true);
           else if (kind === "snapshot-delete") await performDelete(item);
         }}

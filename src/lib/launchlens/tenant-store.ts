@@ -20,6 +20,7 @@ type WorkspaceRow = {
   workspace: unknown;
   execution: unknown;
   is_public: boolean;
+  share_expires_at: string | Date | null;
   created_at: string | Date;
   updated_at: string | Date;
   tenant_id: string;
@@ -67,6 +68,7 @@ function toSummary(row: WorkspaceRow): CloudWorkspaceSummary {
     id: row.id,
     title: row.title,
     isPublic: row.is_public,
+    expiresAt: row.share_expires_at ? toIso(row.share_expires_at) : null,
     createdAt: toIso(row.created_at),
     updatedAt: toIso(row.updated_at),
   };
@@ -308,7 +310,7 @@ export async function createWorkspaceInTenant(
              ${tenantId}
       WHERE EXISTS (SELECT 1 FROM launchlens_tenants WHERE id = ${tenantId} AND owner_hash = ${ownerHash})
         AND (SELECT COUNT(*) FROM launchlens_workspaces WHERE tenant_id = ${tenantId}) < ${MAX_CLOUD_WORKSPACES}
-      RETURNING id, title, input, workspace, execution, is_public, created_at, updated_at, tenant_id
+      RETURNING id, title, input, workspace, execution, is_public, share_expires_at, created_at, updated_at, tenant_id
     `,
     transaction`
       INSERT INTO launchlens_workspace_members (workspace_id, member_hash, role)
