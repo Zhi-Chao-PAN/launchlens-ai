@@ -1,18 +1,15 @@
 ﻿feat(R428+R430): shared page skip link + copilot batch sr fail count
 
-R428: The read-only /share/[id] view rendered a <main id="main-content">
-but had no skip link. Keyboard and screen-reader users landing on a
-long shared workspace had to Tab through every header action (copy,
-download, link, Open demo, provider pills, metadata...) before
-reaching the validation section. Added a visually-hidden sr-only
-skip link at the very top of <main> that becomes visible on focus
-and jumps to #validation-decisions, matching the standard skip-to-
-main pattern already used on the primary workspace.
+R428: The read-only /share/[id] view renders a skip link at the very
+top of <main> (sr-only, visible on focus) that jumps to
+#validation-decisions. Keyboard and AT users landing on a long
+shared workspace no longer have to Tab through every header action
+(copy, download, link, Open demo, pills, metadata) before reaching
+the validation decisions section.
 
-R430: Decision Copilot batch-brief completion already surfaced
-failures via setError("... N failed.") in the UI, but the sr-only
-aria-live announcement reported only the success count, so AT users
-heard "X of Y briefs generated successfully" with no indication
-some had failed. Now builds a single srSummary string that mirrors
-the visible message ("... N failed.") when failCount > 0 and
-reuses it for both setError and setSrGenerationAnnouncement.
+R430: Decision Copilot batch-brief completion surfaced failures via
+setError but the sr-only aria-live announcement only reported
+success count ("X of Y generated"), so AT users heard no indication
+of partial failure. A single srSummary string now mirrors the
+visible message ("... N failed.") when failCount > 0 and feeds
+both setError and setSrGenerationAnnouncement.

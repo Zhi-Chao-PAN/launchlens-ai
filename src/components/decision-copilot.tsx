@@ -400,12 +400,13 @@ export function DecisionCopilot({
       updatedAt: new Date().toISOString(),
     });
     const summary = `${successCount} of ${pending.length} briefs generated successfully.`;
+    const srSummary = failCount > 0 ? `${summary} ${failCount} failed.` : summary;
     if (failCount > 0) {
-      setError(`${summary} ${failCount} failed.`);
+      setError(srSummary);
     } else {
       setNotice(summary);
     }
-    setSrGenerationAnnouncement(summary);
+    setSrGenerationAnnouncement(srSummary);
   }
 
   const generateBrief = useCallback(async () => {
