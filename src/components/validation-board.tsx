@@ -189,6 +189,7 @@ export function ValidationBoard({
   onChange,
 }: ValidationBoardProps) {
   const [activeExperimentId, setActiveExperimentId] = useState("");
+  const [focusedExperimentId, setFocusedExperimentId] = useState<string | null>(null);
   const [requestedExpandedExperimentId, setRequestedExpandedExperimentIdState] =
     useState<string | null>(() => { try { const v = window.localStorage.getItem("launchlens:expanded-experiment"); return v ? v : null; } catch { return null; } });
   const setRequestedExpandedExperimentId = useCallback((v: string | null | ((curr: string | null | undefined) => string | null)) => { setRequestedExpandedExperimentIdState((curr) => { const next = typeof v === "function" ? (v as (c: string | null | undefined) => string | null)(curr) : v; try { if (next === null) window.localStorage.removeItem("launchlens:expanded-experiment"); else if (next) window.localStorage.setItem("launchlens:expanded-experiment", next); } catch {} return next; }); }, []);
@@ -2364,7 +2365,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                 setDraggedExperimentId(null);
                 setDragOverExperimentId(null);
               }}
-              tabIndex={0}
+              tabIndex={focusedExperimentId === null ? (index === 0 ? 0 : -1) : focusedExperimentId === experiment.id ? 0 : -1}
+              onFocus={() => setFocusedExperimentId(experiment.id)}
               onKeyDown={(e) => handleExperimentKeyDown(e, experiment.id)}
               aria-label={`Hypothesis ${index + 1}: ${experiment.assumption}. Status: ${statusLabels[experiment.status]}. ${experiment.evidence.length} evidence items.}`}
               className={
