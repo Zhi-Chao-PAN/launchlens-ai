@@ -1,6 +1,6 @@
 "use client";
 
-﻿import Link from "next/link";
+import Link from "next/link";
 import { CopyLinkButton } from "@/components/copy-link-button";
 import { CopyMarkdownButton } from "@/components/copy-markdown-button";
 import { DownloadJsonButton } from "@/components/download-json-button";
@@ -124,6 +124,19 @@ export function SharedWorkspaceView({
   record: SharedCloudWorkspaceRecord;
 }) {
   const { workspace } = record;
+  const experiments = record.execution.experiments;
+  const [focusedExperimentId, setFocusedExperimentId] = useState<string | null>(null);
+
+  function moveExperimentFocus(delta: number | "home" | "end") {
+    const nodes = Array.from(document.querySelectorAll<HTMLElement>("[data-shared-experiment]"));
+    if (nodes.length === 0) return;
+    const currentIndex = nodes.findIndex((n) => n === document.activeElement);
+    let nextIndex = 0;
+    if (delta === "home") nextIndex = 0;
+    else if (delta === "end") nextIndex = nodes.length - 1;
+    else nextIndex = Math.max(0, Math.min(nodes.length - 1, (currentIndex < 0 ? 0 : currentIndex) + delta));
+    nodes[nextIndex].focus();
+  }
 
   return (
     <main id="main-content" className="min-h-screen animate-[fadeInDown_280ms_ease-out_both] bg-muted px-4 py-4 pb-20 pt-safe text-foreground motion-reduce:animate-none sm:px-6 sm:py-6 sm:pb-6 lg:px-8">
@@ -267,7 +280,20 @@ export function SharedWorkspaceView({
                 );
 
                 return (
-                  <article key={experiment.id} className="py-4 first:pt-0 last:pb-0">
+                  <article
+                    key={experiment.id}
+                    data-shared-experiment
+                    aria-label={`Hypothesis ${index + 1} of ${experiments.length}: ${experiment.assumption.slice(0, 80)}`}
+                    tabIndex={focusedExperimentId === null ? (index === 0 ? 0 : -1) : focusedExperimentId === experiment.id ? 0 : -1}
+                    onFocus={() => setFocusedExperimentId(experiment.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "ArrowDown") { event.preventDefault(); moveExperimentFocus(1); }
+                      else if (event.key === "ArrowUp") { event.preventDefault(); moveExperimentFocus(-1); }
+                      else if (event.key === "Home") { event.preventDefault(); moveExperimentFocus("home"); }
+                      else if (event.key === "End") { event.preventDefault(); moveExperimentFocus("end"); }
+                    }}
+                    className="py-4 first:pt-0 last:pb-0 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:rounded-md"
+                  >
                     <div className="flex flex-wrap items-center gap-2 text-xs">
                       <span className="font-mono font-semibold text-signal-challenges">
                         H{index + 1}
