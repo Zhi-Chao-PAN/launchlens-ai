@@ -58,7 +58,7 @@ function ReadOnlySection({
   };
 
   return (
-    <section id={sectionId} tabIndex={sectionId === "validation-decisions" ? -1 : undefined} className="rounded-lg border border-card bg-card shadow-sm overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset">
+    <section id={sectionId} aria-labelledby={sectionId ? `${sectionId}-heading` : undefined} tabIndex={sectionId === "validation-decisions" ? -1 : undefined} className="rounded-lg border border-card bg-card shadow-sm overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset">
       {collapsible ? (
         <button
           type="button"
@@ -71,7 +71,7 @@ function ReadOnlySection({
           <span className="flex size-7 items-center justify-center rounded-md bg-signal-supports text-signal-supports sm:size-8">
             <Icon className="size-3.5 sm:size-4" aria-hidden="true" />
           </span>
-          <h2 className="flex-1 text-sm sm:text-base font-semibold text-foreground">{title}</h2>
+          <h2 id={sectionId ? `${sectionId}-heading` : undefined} className="flex-1 text-sm sm:text-base font-semibold text-foreground">{title}</h2>
           <ChevronDown
             className={`size-4 text-muted transition-transform ${isOpen ? "rotate-180" : ""}`}
             aria-hidden="true"
@@ -82,7 +82,7 @@ function ReadOnlySection({
           <span className="flex size-7 items-center justify-center rounded-md bg-signal-supports text-signal-supports sm:size-8">
             <Icon className="size-3.5 sm:size-4" aria-hidden="true" />
           </span>
-          <h2 className="text-sm sm:text-base font-semibold text-foreground">{title}</h2>
+          <h2 id={sectionId ? `${sectionId}-heading` : undefined} className="text-sm sm:text-base font-semibold text-foreground">{title}</h2>
         </div>
       )}
       <div

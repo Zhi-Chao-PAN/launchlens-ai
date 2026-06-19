@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   AlertTriangle,
@@ -343,6 +343,7 @@ export function DecisionCopilot({
 
     let successCount = 0;
     let failCount = 0;
+    const failedNames: string[] = [];
     let cancelled = false;
     const abort = new AbortController();
     batchAbortRef.current = abort;
@@ -400,7 +401,12 @@ export function DecisionCopilot({
       updatedAt: new Date().toISOString(),
     });
     const summary = `${successCount} of ${pending.length} briefs generated successfully.`;
-    const srSummary = failCount > 0 ? `${summary} ${failCount} failed.` : summary;
+    let srSummary = summary;
+    if (failCount > 0) {
+      const listed = failedNames.slice(0, 3);
+      const extra = failedNames.length > listed.length ? `, plus ${failedNames.length - listed.length} more` : "";
+      srSummary = `${summary} ${failCount} failed: ${listed.join("; ")}${extra}.`;
+    }
     if (failCount > 0) {
       setError(srSummary);
     } else {
@@ -858,7 +864,7 @@ export function DecisionCopilot({
             </div>
             <p className="mt-5 flex items-center gap-2 text-xs text-muted">
               <BrainCircuit className="size-4 animate-pulse text-ai-muted" aria-hidden="true" />
-              Weighing signals against counter-signals…
+              Weighing signals against counter-signals鈥?
             </p>
           </div>
         ) : currentBrief && experiment ? (

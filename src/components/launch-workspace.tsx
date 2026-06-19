@@ -1135,7 +1135,7 @@ export function LaunchWorkspace({
                     Product idea
                   </span>
                   <textarea
-                    id="founder-brief-idea" aria-invalid={ideaTrimmed.length > 0 && ideaTrimmed.length < 20} aria-describedby={`founder-brief-idea-hint founder-brief-idea-count${ideaTrimmed.length > 0 && ideaTrimmed.length < 20 ? " founder-generate-blocked" : ""}`}
+                    id="founder-brief-idea" aria-invalid={(ideaTrimmed.length > 0 && ideaTrimmed.length < 20) || input.idea.length > 500} aria-describedby={`founder-brief-idea-hint founder-brief-idea-count${(ideaTrimmed.length > 0 && ideaTrimmed.length < 20) ? " founder-generate-blocked" : ""}`}
                     value={input.idea}
                     onChange={(event) =>
                       updateInput((current) => ({
@@ -1163,7 +1163,7 @@ export function LaunchWorkspace({
                       </kbd>{" "}
                       to generate.
                     </span>
-                    <span className={input.idea.length < 20 ? "text-signal-challenges" : input.idea.length > 500 ? "text-amber-500" : "text-muted/70"} title="Recommended 20-500 chars">{input.idea.length} chars</span>
+                    <span className={input.idea.length < 20 || input.idea.length > 500 ? "text-signal-challenges" : input.idea.length > 400 ? "text-amber-500" : "text-muted/70"} title={"Recommended 20-500 chars" + (input.idea.length > 500 ? " - please shorten" : "")}>{input.idea.length} chars{input.idea.length > 500 ? <span className="ml-1 font-semibold">Too long - aim under 500.</span> : null}</span>
                   </p>
                 </label>
 
