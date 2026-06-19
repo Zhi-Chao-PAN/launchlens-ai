@@ -52,6 +52,16 @@ type CloudWorkspacesProps = {
 
 type CloudState = "checking" | "ready" | "unavailable" | "error";
 
+type ConfirmKind = "share-enable" | "snapshot-delete";
+type PendingConfirm = {
+  kind: ConfirmKind;
+  item: CloudWorkspaceSummary;
+  title: string;
+  body: string;
+  confirmLabel: string;
+  danger?: boolean;
+};
+
 function createOwnerToken() {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
   const binary = Array.from(bytes, (byte) => String.fromCharCode(byte)).join("");
@@ -87,6 +97,8 @@ export function CloudWorkspaces({
   const [showRecoveryKey, setShowRecoveryKey] = useState(false);
   const [listRenderKey, setListRenderKey] = useState(0);
   const [recoveryTouched, setRecoveryTouched] = useState(false);
+  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement | null>(null);
   const { showToast } = useToast();
 
   const trimmedLabel = recoveryLabel.trim();
@@ -269,17 +281,19 @@ export function CloudWorkspaces({
     }
   }
 
-  async function toggleShare(item: CloudWorkspaceSummary) {
-    if (
-      !item.isPublic &&
-      !window.confirm(
-        "Enable a public read-only link? Validation decisions and evidence counts will be visible, while evidence notes, sources, and the founder brief stay private.",
-      )
-    ) {
+  async function toggleShare(item: CloudWorkspaceSummary, confirmed = false) {
+    if (!item.isPublic && !confirmed) {
+      setPendingConfirm({
+        kind: "share-enable",
+        item,
+        title: "Enable public share link?",
+        body: "Validation decisions and evidence counts will be visible to anyone with the link. Evidence notes, sources, and the founder brief stay private.",
+        confirmLabel: "Enable and copy link",
+      });
       return;
     }
 
-    setBusyAction(`share:${item.id}`);
+    setBusyAction(`share:${item.id}`);    setBusyAction(`share:${item.id}`);
     try {
       await cloudRequest<CloudWorkspaceResponse>(
         `/api/workspaces/${item.id}/share`,
@@ -289,7 +303,7 @@ export function CloudWorkspaces({
         },
       );
 
-      if (!item.isPublic) {
+      if (!item.isPublic && !confirmed) {
         const shareUrl = `${window.location.origin}/share/${item.id}`;
 
         const copied = await copyTextToClipboard(shareUrl);
@@ -355,11 +369,18 @@ export function CloudWorkspaces({
   }
 
   async function deleteSnapshot(item: CloudWorkspaceSummary) {
-    if (!window.confirm(`Delete "${item.title}" from cloud history?`)) {
-      return;
-    }
+    setPendingConfirm({
+      kind: "snapshot-delete",
+      item,
+      title: "Delete cloud snapshot?",
+      body: `"${item.title}" will be permanently removed from cloud history. This cannot be undone.`,
+      confirmLabel: "Delete snapshot",
+      danger: true,
+    });
+  }
 
-    setBusyAction(`delete:${item.id}`);
+  async function performDelete(item: CloudWorkspaceSummary) {
+    setBusyAction(`delete:${item.id}`);    setBusyAction(`delete:${item.id}`);
     try {
       await cloudRequest<null>(`/api/workspaces/${item.id}`, {
         method: "DELETE",
@@ -462,6 +483,17 @@ export function CloudWorkspaces({
   const ownerScope = ownerToken.startsWith("acct_")
     ? "Recovery-linked"
     : "This browser";
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape" && pendingConfirm) setPendingConfirm(null);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [pendingConfirm]);
+  useEffect(() => {
+    if (pendingConfirm) cancelButtonRef.current?.focus();
+  }, [pendingConfirm]);
+
 
   return (
     <section className="rounded-lg border border-card bg-card p-5 shadow-sm">
@@ -798,6 +830,46 @@ export function CloudWorkspaces({
         </div>
       )}
 
+
+      {pendingConfirm && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cloud-confirm-title"
+          aria-describedby="cloud-confirm-body"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setPendingConfirm(null); }}
+        >
+          <div className="w-full max-w-sm rounded-lg bg-card p-5 shadow-xl ring-1 ring-black/5">
+            <h3 id="cloud-confirm-title" className="text-base font-semibold text-foreground">{pendingConfirm.title}</h3>
+            <p id="cloud-confirm-body" className="mt-2 text-sm leading-6 text-muted">{pendingConfirm.body}</p>
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <button
+                ref={cancelButtonRef}
+                type="button"
+                onClick={() => setPendingConfirm(null)}
+                className="inline-flex h-9 items-center rounded-md border border-input bg-input px-3 text-sm font-medium text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isBusy}
+                onClick={async () => {
+                  const item = pendingConfirm.item;
+                  const kind = pendingConfirm.kind;
+                  setPendingConfirm(null);
+                  if (kind === "share-enable") await toggleShare(item, true);
+                  else if (kind === "snapshot-delete") await performDelete(item);
+                }}
+                className={"inline-flex h-9 items-center rounded-md px-3 text-sm font-semibold text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:opacity-50 " + (pendingConfirm.danger ? "bg-signal-challenges hover:opacity-90 focus-visible:ring-signal-challenges" : "bg-primary hover:bg-primary-hover focus-visible:ring-[var(--ring-color)]")}
+              >
+                {pendingConfirm.confirmLabel}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
