@@ -45,6 +45,11 @@ export function ConfirmDialog({
         onCancel();
         return;
       }
+      if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        if (!busyFinal && confirmRef.current && !confirmRef.current.disabled) confirmRef.current.click();
+        return;
+      }
       if (event.key !== "Tab") return;
       const dialog = dialogRef.current;
       if (!dialog) return;
@@ -70,7 +75,7 @@ export function ConfirmDialog({
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
     };
-  }, [open, onCancel]);
+  }, [open, onCancel, busyFinal]);
 
   if (!open) return null;
   return (

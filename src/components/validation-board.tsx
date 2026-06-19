@@ -2086,6 +2086,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
         {selectMode && batchCount > 0 && (
           <div role="toolbar" aria-label="Bulk actions on selected hypotheses" data-hypothesis-bulk-toolbar className="flex w-full flex-wrap items-center gap-2 rounded-md border border-accent/60 bg-accent/5 p-2 text-xs">
             <span className="px-1 font-semibold text-foreground">{batchCount} selected</span>
+            <span className="ml-1 text-[10px] uppercase tracking-wide text-muted" aria-hidden="true">Shift+click range</span>
             <button type="button" onClick={toggleSelectAllExperiments} className="rounded px-2 py-1 hover:bg-muted">All</button>
             <span className="mx-1 h-4 w-px bg-border" />
             <button type="button" onClick={() => setSelectedStatus("untested")} className="rounded px-2 py-1 hover:bg-muted">Mark untested</button>
