@@ -1195,7 +1195,7 @@ export function LaunchWorkspace({
                     rows={2}
                     className="w-full field-sizing-content resize-y min-h-[64px] max-h-[240px] rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
-                  <p id="founder-brief-audience-count" className={"mt-1 text-right text-[11px] " + (input.audience.length > 400 ? "text-signal-challenges" : input.audience.length > 240 ? "text-amber-500" : "text-muted/70")} title="Recommended under 240 chars">{input.audience.length} chars</p>
+                  <p id="founder-brief-audience-count" className={"mt-1 text-right text-[11px] " + (input.audience.length > 400 ? "text-signal-challenges" : input.audience.length > 240 ? "text-amber-500" : "text-muted/70")} title={"Recommended under 240 chars" + (input.audience.length > 400 ? " - please shorten" : "")}>{input.audience.length} chars{input.audience.length > 400 ? <span className="ml-1 font-semibold">Too long - aim under 240.</span> : null}</p>
                 </label>
 
                 <label className="block">
@@ -1225,7 +1225,7 @@ export function LaunchWorkspace({
                     }}
                     className="w-full rounded-md border border-input bg-input px-3 py-3 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
-                  <p id="founder-brief-market-count" className={"mt-1 text-right text-[11px] " + (input.market.length > 200 ? "text-signal-challenges" : input.market.length > 120 ? "text-amber-500" : "text-muted/70")} title="Recommended under 120 chars">{input.market.length} chars</p>
+                  <p id="founder-brief-market-count" className={"mt-1 text-right text-[11px] " + (input.market.length > 200 ? "text-signal-challenges" : input.market.length > 120 ? "text-amber-500" : "text-muted/70")} title={"Recommended under 120 chars" + (input.market.length > 200 ? " - please shorten" : "")}>{input.market.length} chars{input.market.length > 200 ? <span className="ml-1 font-semibold">Too long - aim under 120.</span> : null}</p>
                 </label>
 
                 <label className="block">
@@ -1278,7 +1278,7 @@ export function LaunchWorkspace({
                     rows={4}
                     className="w-full resize-none rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
-                  <p id="founder-brief-constraints-count" className={"mt-1 text-right text-[11px] " + (input.constraints.length > 500 ? "text-signal-challenges" : input.constraints.length > 320 ? "text-amber-500" : "text-muted/70")} title="Recommended under 320 chars">{input.constraints.length} chars</p>
+                  <p id="founder-brief-constraints-count" className={"mt-1 text-right text-[11px] " + (input.constraints.length > 500 ? "text-signal-challenges" : input.constraints.length > 320 ? "text-amber-500" : "text-muted/70")} title={"Recommended under 320 chars" + (input.constraints.length > 500 ? " - please shorten" : "")}>{input.constraints.length} chars{input.constraints.length > 500 ? <span className="ml-1 font-semibold">Too long - aim under 320.</span> : null}</p>
                 </label>
 
                 <button
