@@ -30,6 +30,7 @@ import { useSrAnnounce } from "@/hooks/use-sr-announce";
 import { parseInlineMarkdown } from "@/lib/launchlens/inline-markdown";
 import { decisionSourceFromExperiment, normalizeDecisionBrief } from "@/lib/launchlens/decision";
 import { useToast } from "@/components/toast";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
 
 import {
@@ -206,6 +207,7 @@ export function ValidationBoard({
   const [selectedExperimentIds, setSelectedExperimentIds] = useState<Set<string>>(new Set());
   const [evidenceSelectMode, setEvidenceSelectMode] = useState<Record<string, boolean>>({});
   const [selectedEvidenceIds, setSelectedEvidenceIds] = useState<Record<string, Set<string>>>({});
+  const [pendingBulkDelete, setPendingBulkDelete] = useState<{ expId: string; count: number } | null>(null);
   const [evidenceFilters, setEvidenceFilters] = useState<Record<string, { signal: "all" | EvidenceSignal; weight: "all" | EvidenceWeight }>>({});
   function getEvidenceFilter(id: string) { return evidenceFilters[id] ?? { signal: "all" as const, weight: "all" as const }; }
   const batchCount = selectedExperimentIds.size;
@@ -1115,7 +1117,13 @@ const confidenceLabel: Record<ConfidenceLevel, string> = {
     const exp = execution.experiments.find((e) => e.id === expId);
     const ids = new Set(selectedEvidenceIds[expId] || []);
     if (!exp || ids.size === 0) return;
-    if (!window.confirm("Delete " + ids.size + " evidence item(s)?")) return;
+    setPendingBulkDelete({ expId, count: ids.size });
+  }
+
+  function performBulkDelete(expId: string) {
+    const exp = execution.experiments.find((e) => e.id === expId);
+    const ids = new Set(selectedEvidenceIds[expId] || []);
+    if (!exp || ids.size === 0) return;
     pushHistory(execution, "bulk evidence delete");
     const removed = exp.evidence.filter((e) => ids.has(e.id));
     onChange({
@@ -3679,6 +3687,21 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
         <span>Tip: press <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">/</kbd> to search, <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">Shift</kbd>+<kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">S</kbd> to multi-select, <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">-tag</kbd> or <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">&quot;phrase&quot;</kbd> in search.</span>
         <span>Shortcuts: <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">Ctrl/⌘</kbd>+<kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">K</kbd> palette · <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">Shift+?</kbd> help</span>
       </div>
+
+      <ConfirmDialog
+        open={Boolean(pendingBulkDelete)}
+        title="Delete selected evidence?"
+        body={pendingBulkDelete ? `${pendingBulkDelete.count} evidence item(s) will be removed from this hypothesis. Confidence will be recomputed automatically.` : ""}
+        confirmLabel="Delete"
+        danger
+        onCancel={() => setPendingBulkDelete(null)}
+        onConfirm={() => {
+          if (!pendingBulkDelete) return;
+          const { expId } = pendingBulkDelete;
+          setPendingBulkDelete(null);
+          performBulkDelete(expId);
+        }}
+      />
     </section>
   );
 }
