@@ -58,7 +58,7 @@ function ReadOnlySection({
   };
 
   return (
-    <section className="rounded-lg border border-card bg-card shadow-sm overflow-hidden">
+    <section id={sectionId} tabIndex={sectionId === "validation-decisions" ? -1 : undefined} className="rounded-lg border border-card bg-card shadow-sm overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset">
       {collapsible ? (
         <button
           type="button"
@@ -127,7 +127,22 @@ export function SharedWorkspaceView({
 
   return (
     <main id="main-content" className="min-h-screen animate-[fadeInDown_280ms_ease-out_both] bg-muted px-4 py-4 pb-20 pt-safe text-foreground motion-reduce:animate-none sm:px-6 sm:py-6 sm:pb-6 lg:px-8">
-      <a href="#validation-decisions" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-white">Skip to validation decisions</a>
+      <a
+        href="#validation-decisions"
+        onClick={(e) => {
+          const target = document.getElementById("validation-decisions");
+          if (target) {
+            e.preventDefault();
+            target.setAttribute("tabindex", "-1");
+            target.focus({ preventScroll: false });
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+            history.replaceState(null, "", "#validation-decisions");
+          }
+        }}
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+      >
+        Skip to validation decisions
+      </a>
       <div className="mx-auto w-full max-w-6xl">
         <header className="mb-4 flex flex-col gap-3 border-b border-card pb-4 sm:mb-6 sm:gap-4 sm:pb-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
