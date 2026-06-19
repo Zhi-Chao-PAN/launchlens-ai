@@ -46,18 +46,29 @@ export async function POST(request: Request, context: RouteContext) {
     return workspaceApiError(error, requestId);
   }
 
-  if (!isRecord(body) || typeof body.enabled !== "boolean") {
+  if (
+    !isRecord(body)
+    || typeof body.enabled !== "boolean"
+    || (body.expiresInDays !== undefined
+        && body.expiresInDays !== null
+        && body.expiresInDays !== 7
+        && body.expiresInDays !== 30)
+  ) {
     return noStoreJson(
       { code: ERROR_INVALID_SHARE_STATE, error: "Share state is invalid." },
       { status: 400 },
     );
   }
+  const expiresInDays = body.enabled && (body.expiresInDays === 7 || body.expiresInDays === 30)
+    ? body.expiresInDays
+    : null;
 
   try {
     const workspace = await setWorkspaceSharingForMember(
       ownerTokenFromRequest(request),
       id,
       body.enabled,
+      { expiresInDays },
     );
 
     if (!workspace) {

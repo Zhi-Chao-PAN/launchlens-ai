@@ -56,6 +56,7 @@ describe("/api/workspaces/[id]/share", () => {
       workspace: example.workspace,
       execution: example.execution,
       isPublic: true,
+      expiresAt: null,
       createdAt: "2026-06-13T00:00:00.000Z",
       updatedAt: "2026-06-13T00:01:00.000Z",
     };
@@ -78,6 +79,7 @@ describe("/api/workspaces/[id]/share", () => {
       ownerToken,
       workspaceId,
       true,
+      { expiresInDays: null },
     );
     await expect(response.json()).resolves.toEqual({
       workspace: sharedRecord,
@@ -102,6 +104,94 @@ describe("/api/workspaces/[id]/share", () => {
     await expect(response.json()).resolves.toMatchObject({
       code: "workspace_forbidden",
     });
+  });
+
+  it("forwards a supported expiresInDays to the store", async () => {
+    storeMocks.setWorkspaceSharingForMember.mockResolvedValue({
+      id: workspaceId,
+      title: "Activation workspace",
+      input: example.input,
+      workspace: example.workspace,
+      execution: example.execution,
+      isPublic: true,
+      expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
+      createdAt: "2026-06-13T00:00:00.000Z",
+      updatedAt: "2026-06-13T00:01:00.000Z",
+    });
+
+    const response = await POST(
+      new Request(`http://localhost/api/workspaces/${workspaceId}/share`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-launchlens-owner": ownerToken,
+        },
+        body: JSON.stringify({ enabled: true, expiresInDays: 7 }),
+      }),
+      { params: Promise.resolve({ id: workspaceId }) },
+    );
+
+    expect(response.status).toBe(200);
+    expect(storeMocks.setWorkspaceSharingForMember).toHaveBeenCalledWith(
+      ownerToken,
+      workspaceId,
+      true,
+      { expiresInDays: 7 },
+    );
+  });
+
+  it("rejects unsupported expiresInDays values", async () => {
+    for (const bad of [1, 14, 365, 0, -7, "seven"]) {
+      vi.clearAllMocks();
+      resetWorkspaceRateLimitsForTests();
+      const response = await POST(
+        new Request(`http://localhost/api/workspaces/${workspaceId}/share`, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            "x-launchlens-owner": ownerToken,
+          },
+          body: JSON.stringify({ enabled: true, expiresInDays: bad }),
+        }),
+        { params: Promise.resolve({ id: workspaceId }) },
+      );
+      expect(response.status).toBe(400);
+      expect(storeMocks.setWorkspaceSharingForMember).not.toHaveBeenCalled();
+    }
+  });
+
+  it("drops expiresInDays when disabling sharing", async () => {
+    storeMocks.setWorkspaceSharingForMember.mockResolvedValue({
+      id: workspaceId,
+      title: "Activation workspace",
+      input: example.input,
+      workspace: example.workspace,
+      execution: example.execution,
+      isPublic: false,
+      expiresAt: null,
+      createdAt: "2026-06-13T00:00:00.000Z",
+      updatedAt: "2026-06-13T00:01:00.000Z",
+    });
+
+    const response = await POST(
+      new Request(`http://localhost/api/workspaces/${workspaceId}/share`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-launchlens-owner": ownerToken,
+        },
+        body: JSON.stringify({ enabled: false, expiresInDays: 30 }),
+      }),
+      { params: Promise.resolve({ id: workspaceId }) },
+    );
+
+    expect(response.status).toBe(200);
+    expect(storeMocks.setWorkspaceSharingForMember).toHaveBeenCalledWith(
+      ownerToken,
+      workspaceId,
+      false,
+      { expiresInDays: null },
+    );
   });
 
   it("rejects an oversized stream before parsing", async () => {

@@ -2,7 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 export type ConfirmDialogProps = {
   open: boolean;
@@ -31,6 +31,8 @@ export function ConfirmDialog({
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const confirmRef = useRef<HTMLButtonElement | null>(null);
   const [pending, setPending] = useState(false);
+  const titleId = useId();
+  const bodyId = useId();
   const busyFinal = Boolean(busy) || pending;
 
   useEffect(() => {
@@ -80,12 +82,12 @@ export function ConfirmDialog({
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="confirm-dialog-title"
-        aria-describedby="confirm-dialog-body"
+        aria-labelledby={titleId}
+        aria-describedby={bodyId}
         className="w-full max-w-sm rounded-lg bg-card p-5 shadow-xl ring-1 ring-black/5"
       >
-        <h3 id="confirm-dialog-title" className="text-base font-semibold text-foreground">{title}</h3>
-        <div id="confirm-dialog-body" className="mt-2 text-sm leading-6 text-muted">{body}</div>
+        <h3 id={titleId} className="text-base font-semibold text-foreground">{title}</h3>
+        <div id={bodyId} className="mt-2 text-sm leading-6 text-muted">{body}</div>
         <div className="mt-5 flex items-center justify-end gap-2">
           <button
             ref={cancelRef}

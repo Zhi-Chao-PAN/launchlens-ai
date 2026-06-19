@@ -354,6 +354,7 @@ export async function setWorkspaceSharingForMember(
   ownerToken: string,
   id: string,
   enabled: boolean,
+  opts?: { expiresInDays?: number | null },
 ) {
   const memberHash = hashOwnerToken(ownerToken);
   const sql = getSql();
@@ -371,7 +372,9 @@ export async function setWorkspaceSharingForMember(
 
   const rows = await sql`
     UPDATE launchlens_workspaces
-    SET is_public = ${enabled}, updated_at = NOW()
+    SET is_public = ${enabled},
+        share_expires_at = ${enabled && opts?.expiresInDays && Number.isFinite(opts.expiresInDays) && opts.expiresInDays > 0 ? new Date(Date.now() + opts.expiresInDays * 86400000) : null},
+        updated_at = NOW()
     WHERE id = ${id}
     RETURNING id, title, input, workspace, execution, is_public, share_expires_at, created_at, updated_at
   `;
