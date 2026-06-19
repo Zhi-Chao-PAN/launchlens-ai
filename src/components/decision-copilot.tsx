@@ -387,7 +387,8 @@ export function DecisionCopilot({
     batchAbortRef.current = null;
     setIsBatchGenerating(false);
     if (cancelled) {
-      const msg = `Batch generation cancelled. ${successCount} of ${pending.length} briefs saved.`;
+      const remaining = pending.length - successCount - failCount;
+      const msg = `Batch generation cancelled. ${successCount} of ${pending.length} briefs saved, ${failCount} failed${remaining > 0 ? `, ${remaining} still pending` : ""}.`;
       setNotice(msg);
       setSrGenerationAnnouncement(msg);
       if (successCount > 0) {
