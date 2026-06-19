@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   AlertTriangle,
@@ -742,7 +742,7 @@ export function LaunchWorkspace({
       if (!response.ok || data.error || !data.workspace) {
         const fallback =
           response.status === 429
-            ? "Too many requests —please wait a moment and try again."
+            ? "Too many requests ��please wait a moment and try again."
             : "Generation failed.";
         const message = friendlyApiMessage(data.code, data.error ?? fallback);
         const err = new Error(message);
@@ -1179,6 +1179,7 @@ export function LaunchWorkspace({
                       }
                     }}
                     id="founder-brief-audience"
+                    aria-invalid={input.audience.length > 400}
                     aria-describedby="founder-brief-audience-count"
                     value={input.audience}
                     onChange={(event) =>
@@ -1209,6 +1210,7 @@ export function LaunchWorkspace({
                       }
                     }}
                     id="founder-brief-market"
+                    aria-invalid={input.market.length > 200}
                     aria-describedby="founder-brief-market-count"
                     value={input.market}
                     onChange={(event) =>
@@ -1260,6 +1262,7 @@ export function LaunchWorkspace({
                       }
                     }}
                     id="founder-brief-constraints"
+                    aria-invalid={input.constraints.length > 500}
                     aria-describedby="founder-brief-constraints-count"
                     value={input.constraints}
                     onChange={(event) =>
