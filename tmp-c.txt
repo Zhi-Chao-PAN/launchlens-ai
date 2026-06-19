@@ -1,0 +1,17 @@
+﻿feat(R424+R426): cloud error aria linkage + error code contrast
+
+R424: When cloudState === "error" the panel shows a red alert but
+the Refresh button alongside it had no programmatic association with
+that error, so screen-reader users tabbing to Refresh did not hear
+why the last refresh failed. Added id="cloud-error" to the alert
+div and aria-describedby={cloudError ? "cloud-error" : undefined}
+on the Refresh button. When there is no error the attribute is
+omitted (undefined) so it does not dangle.
+
+R426: The error code pill inside the same panel was using
+bg-signal-challenges text-signal-challenges, which on the forced-
+colors surface (pink bg + red text on top of a pink alert) collapsed
+into a nearly-unreadable red-on-red in high-contrast dark mode and
+low-contrast when printed. Swapped to bg-card text-signal-challenges
+with a subtle border border-signal-challenges so the code stands out
+from the alert surface while keeping the semantic red signal.

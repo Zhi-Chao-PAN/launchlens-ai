@@ -529,13 +529,14 @@ export function CloudWorkspaces({
 
       {cloudState === "error" && (
         <div
+          id="cloud-error"
           role="alert"
           className="mt-4 rounded-md border border-signal-challenges bg-signal-challenges p-3 text-sm leading-6 text-signal-challenges"
         >
           <p>{cloudError?.message || "Cloud history could not be reached. Your local draft remains available."}</p>
           {cloudError?.code && (
             <div className="mt-2 flex items-center justify-between gap-2 border-t border-signal-challenges pt-2 text-xs">
-              <code className="rounded bg-signal-challenges px-1.5 py-0.5 font-mono text-signal-challenges">{cloudError.code}</code>
+              <code className="rounded bg-card px-1.5 py-0.5 font-mono text-signal-challenges">{cloudError.code}</code>
               <button
                 type="button"
                 onClick={() => {
