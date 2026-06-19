@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { Loader2 } from "lucide-react";
+
+import { useEffect, useRef, useState } from "react";
 
 export type ConfirmDialogProps = {
   open: boolean;
@@ -28,6 +30,8 @@ export function ConfirmDialog({
   const cancelRef = useRef<HTMLButtonElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const confirmRef = useRef<HTMLButtonElement | null>(null);
+  const [pending, setPending] = useState(false);
+  const busyFinal = Boolean(busy) || pending;
 
   useEffect(() => {
     if (!open) return;
@@ -87,6 +91,8 @@ export function ConfirmDialog({
             ref={cancelRef}
             type="button"
             onClick={onCancel}
+            disabled={busyFinal}
+            aria-disabled={busyFinal || undefined}
             className="inline-flex h-9 items-center rounded-md border border-input bg-input px-3 text-sm font-medium text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
           >
             {cancelLabel}
@@ -94,16 +100,20 @@ export function ConfirmDialog({
           <button
             ref={confirmRef}
             type="button"
-            disabled={busy}
-            onClick={onConfirm}
-            aria-busy={busy || undefined}
+            disabled={busyFinal}
+            onClick={async () => {
+              setPending(true);
+              try { await onConfirm(); onCancel(); } catch { /* parent owns error UX */ } finally { setPending(false); }
+            }}
+            aria-busy={busyFinal || undefined}
             className={
-              "inline-flex h-9 items-center rounded-md px-3 text-sm font-semibold text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:opacity-50 " +
+              "inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-semibold text-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:opacity-60 " +
               (danger
                 ? "bg-signal-challenges hover:opacity-90 focus-visible:ring-signal-challenges"
                 : "bg-primary hover:bg-primary-hover focus-visible:ring-[var(--ring-color)]")
             }
           >
+            {busyFinal ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : null}
             {confirmLabel}
           </button>
         </div>
