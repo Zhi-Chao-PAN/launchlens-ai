@@ -53,6 +53,11 @@ type CloudWorkspacesProps = {
 
 type CloudState = "checking" | "ready" | "unavailable" | "error";
 
+function futureIso(days: number | null): string | null {
+  if (!days) return null;
+  return new Date(Date.now() + days * 86400000).toISOString();
+}
+
 type ConfirmKind = "share-enable" | "snapshot-delete";
 type ShareExpiry = "permanent" | "days7" | "days30";
 type PendingConfirm = {
@@ -313,14 +318,18 @@ export function CloudWorkspaces({
         },
       );
 
-      if (!item.isPublic && !confirmed) {
+      if (!item.isPublic) {
         const shareUrl = `${window.location.origin}/share/${item.id}`;
-
+        const newExpiresAt = futureIso(shareExpiry === "days7" ? 7 : shareExpiry === "days30" ? 30 : null);
+        const justShared: CloudWorkspaceSummary = {
+          id: item.id, title: item.title, isPublic: true, expiresAt: newExpiresAt,
+          createdAt: item.createdAt, updatedAt: new Date().toISOString(),
+        };
         const copied = await copyTextToClipboard(shareUrl);
         if (copied) {
-          showToast("Read-only share link copied to clipboard.", "success");
+          showToast("Read-only share link copied to clipboard." + shareExpirySuffix(justShared), "success");
         } else {
-          showToast(`Share link ready: ${shareUrl}`, "info");
+          showToast(`Share link ready: ${shareUrl}` + shareExpirySuffix(justShared), "info");
         }
       } else {
         showToast(
@@ -369,12 +378,13 @@ export function CloudWorkspaces({
 
   async function copyShareLink(item: CloudWorkspaceSummary) {
     const shareUrl = `${window.location.origin}/share/${item.id}`;
+    const suffix = shareExpirySuffix(item);
 
     const copied = await copyTextToClipboard(shareUrl);
     if (copied) {
-      showToast("Read-only share link copied to clipboard.", "success");
+      showToast("Read-only share link copied to clipboard." + suffix, "success");
     } else {
-      showToast(`Share link ready: ${shareUrl}`, "info");
+      showToast(`Share link ready: ${shareUrl}` + suffix, "info");
     }
   }
 
@@ -487,6 +497,14 @@ export function CloudWorkspaces({
     } finally {
       setBusyAction("");
     }
+  }
+
+  function shareExpirySuffix(item: CloudWorkspaceSummary) {
+    if (!item.expiresAt) return "";
+    const ms = new Date(item.expiresAt).getTime() - Date.now();
+    if (ms <= 0) return " It has expired.";
+    const days = Math.max(1, Math.ceil(ms / 86400000));
+    return " It expires in " + days + " day" + (days === 1 ? "" : "s") + ".";
   }
 
   const isBusy = Boolean(busyAction);

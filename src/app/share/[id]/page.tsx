@@ -89,6 +89,7 @@ export default async function SharedWorkspacePage({
   let record = null;
   let storageUnavailable = false;
   let shareRevoked = false;
+  let shareExpired = false;
 
   if (!isUuid(id)) {
     notFound();
@@ -98,6 +99,7 @@ export default async function SharedWorkspacePage({
     const result = await getSharedWorkspace(id);
     if (result.status === "ok") record = result.record;
     else if (result.status === "revoked") shareRevoked = true;
+    else if (result.status === "expired") shareExpired = true;
   } catch (error) {
     if (
       error instanceof WorkspaceStoreError &&
@@ -134,6 +136,33 @@ export default async function SharedWorkspacePage({
               href="/"
               className="inline-flex h-10 items-center gap-1.5 rounded-md bg-accent px-4 text-sm font-semibold text-white transition hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
+              Try the demo
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (shareExpired) {
+    return (
+      <main id="main-content" className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+        <section className="w-full max-w-md rounded-xl border border-card bg-card p-8 shadow-sm transition-colors">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex size-12 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+              <Link2Off className="size-6" aria-hidden="true" />
+            </span>
+            <div>
+              <h1 className="text-lg font-semibold text-foreground">Link has expired</h1>
+              <p className="text-xs text-muted">Shared link expired</p>
+            </div>
+          </div>
+          <p className="mt-5 text-sm leading-6 text-foreground/80">
+            The owner set an expiration window on this shared link and it has now passed. The workspace still exists, but this public link is no longer accessible.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-2">
+            <Link href="/" className="inline-flex h-10 items-center gap-1.5 rounded-md bg-accent px-4 text-sm font-semibold text-white transition hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">
               Try the demo
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>

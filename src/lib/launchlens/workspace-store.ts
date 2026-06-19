@@ -681,6 +681,7 @@ export async function removeWorkspaceMember(
 export type SharedWorkspaceResult =
   | { status: "ok"; record: ReturnType<typeof toSharedRecord> }
   | { status: "revoked" }
+  | { status: "expired" }
   | { status: "not_found" };
 
 export async function getSharedWorkspace(id: string): Promise<SharedWorkspaceResult> {
