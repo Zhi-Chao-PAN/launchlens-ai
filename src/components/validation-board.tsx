@@ -52,6 +52,7 @@ import {
   computeExperimentConfidence,
 } from "@/lib/launchlens/execution";
 import type { LaunchTask } from "@/lib/launchlens/types";
+import { rangeSelectAdd, toggleSingle, rangeSelectEvidence } from "@/lib/launchlens/range-select";
 
 type ValidationBoardProps = {
   execution: WorkspaceExecutionState;
@@ -207,6 +208,10 @@ export function ValidationBoard({
   const [selectedExperimentIds, setSelectedExperimentIds] = useState<Set<string>>(new Set());
   const [evidenceSelectMode, setEvidenceSelectMode] = useState<Record<string, boolean>>({});
   const [selectedEvidenceIds, setSelectedEvidenceIds] = useState<Record<string, Set<string>>>({});
+  // Shift+Click range-select anchors. Anchor moves on plain click; held in place
+  // during Shift+Click so successive shift-clicks extend from the same origin.
+  const lastExperimentAnchorRef = useRef<string | null>(null);
+  const lastEvidenceAnchorRef = useRef<{ expId: string; evId: string } | null>(null);
   const [pendingBulkDelete, setPendingBulkDelete] = useState<{ expId: string; count: number } | null>(null);
   type BatchConfirmKind = "archive" | "delete";
   const [pendingBatch, setPendingBatch] = useState<{ kind: BatchConfirmKind; count: number } | null>(null);
@@ -964,12 +969,21 @@ const confidenceLabel: Record<ConfidenceLevel, string> = {
     });
   }
 
-  function toggleExperimentSelection(id: string) {
-    setSelectedExperimentIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
+  /**
+   * Toggle a single experiment's selection, OR perform a Shift+Click range
+   * select using the visible (filtered) order as the canonical sequence.
+   * Anchor is the last plain-clicked id and stays fixed across Shift+clicks.
+   */
+  function toggleExperimentSelection(id: string, shiftKey = false) {
+    const visibleOrder = filteredExperiments.map((e) => e.id);
+    if (shiftKey) {
+      setSelectedExperimentIds((prev) =>
+        rangeSelectAdd(prev, visibleOrder, lastExperimentAnchorRef.current, id),
+      );
+      return;
+    }
+    setSelectedExperimentIds((prev) => toggleSingle(prev, id));
+    lastExperimentAnchorRef.current = id;
   }
   const toggleSelectAllExperiments = useCallback(() => {
     const visibleIds = activeExperiments.map((e) => e.id);
@@ -1103,7 +1117,20 @@ const confidenceLabel: Record<ConfidenceLevel, string> = {
 
   
   
-  function toggleEvidenceSelection(expId: string, evId: string) {
+  function toggleEvidenceSelection(expId: string, evId: string, shiftKey = false) {
+    const exp = execution.experiments.find((e) => e.id === expId);
+    if (!exp) return;
+    const ef = getEvidenceFilter(expId);
+    const visibleOrder = exp.evidence
+      .filter((it) => (ef.signal === "all" || it.signal === ef.signal) && (ef.weight === "all" || it.weight === ef.weight))
+      .map((it) => it.id);
+
+    if (shiftKey) {
+      setSelectedEvidenceIds((prev) =>
+        rangeSelectEvidence(prev, expId, visibleOrder, lastEvidenceAnchorRef.current, evId),
+      );
+      return;
+    }
     setSelectedEvidenceIds((prev) => {
       const next = { ...prev };
       const set = new Set(next[expId] || []);
@@ -1111,6 +1138,7 @@ const confidenceLabel: Record<ConfidenceLevel, string> = {
       next[expId] = set;
       return next;
     });
+    lastEvidenceAnchorRef.current = { expId, evId };
   }
   function toggleSelectAllEvidence(expId: string) {
     const exp = execution.experiments.find((e) => e.id === expId);
@@ -2405,7 +2433,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                         role="checkbox"
                         aria-checked={selectedExperimentIds.has(experiment.id)}
                         aria-label={`Select hypothesis ${index + 1}: ${experiment.assumption.slice(0, 80)}${experiment.assumption.length > 80 ? "..." : ""}`} title={`Select hypothesis: ${experiment.assumption.slice(0, 100)}`}
-                        onClick={(e) => { e.stopPropagation(); toggleExperimentSelection(experiment.id); }}
+                        onClick={(e) => { e.stopPropagation(); toggleExperimentSelection(experiment.id, e.shiftKey); }}
                         className="flex size-5 shrink-0 items-center justify-center rounded text-muted transition hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       >
                         {selectedExperimentIds.has(experiment.id) ? <CheckSquare className="size-3.5" aria-hidden="true" /> : <Square className="size-3.5" aria-hidden="true" />}
@@ -2901,7 +2929,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       }
                     >
                       {evidenceSelectMode[experiment.id] ? (
-                        <button type="button" onClick={(e) => { e.stopPropagation(); toggleEvidenceSelection(experiment.id, item.id); }} aria-label={selectedEvidenceIds[experiment.id]?.has(item.id) ? "Deselect evidence from " + item.source : "Select evidence from " + item.source} aria-pressed={Boolean(selectedEvidenceIds[experiment.id]?.has(item.id))} className={"mt-0.5 flex size-5 shrink-0 items-center justify-center rounded transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + (selectedEvidenceIds[experiment.id]?.has(item.id) ? "text-accent" : "text-muted hover:text-accent")}>
+                        <button type="button" onClick={(e) => { e.stopPropagation(); toggleEvidenceSelection(experiment.id, item.id, e.shiftKey); }} aria-label={selectedEvidenceIds[experiment.id]?.has(item.id) ? "Deselect evidence from " + item.source : "Select evidence from " + item.source} aria-pressed={Boolean(selectedEvidenceIds[experiment.id]?.has(item.id))} className={"mt-0.5 flex size-5 shrink-0 items-center justify-center rounded transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + (selectedEvidenceIds[experiment.id]?.has(item.id) ? "text-accent" : "text-muted hover:text-accent")}>
                           {selectedEvidenceIds[experiment.id]?.has(item.id) ? <CheckSquare className="size-3.5" aria-hidden="true"/> : <Square className="size-3.5" aria-hidden="true"/>}
                         </button>
                       ) : (
@@ -3696,7 +3724,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
       )}
       </div>
       <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-[11px] text-muted">
-        <span>Tip: press <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">/</kbd> to search, <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">Shift</kbd>+<kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">S</kbd> to multi-select, <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">-tag</kbd> or <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">&quot;phrase&quot;</kbd> in search.</span>
+        <span>Tip: press <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">/</kbd> to search, <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">Shift</kbd>+<kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">S</kbd> to multi-select, hold <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">Shift</kbd>+click a checkbox for range select, <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">-tag</kbd> or <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">&quot;phrase&quot;</kbd> in search.</span>
         <span>Shortcuts: <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">Ctrl/⌘</kbd>+<kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">K</kbd> palette · <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">Shift+?</kbd> help</span>
       </div>
 
