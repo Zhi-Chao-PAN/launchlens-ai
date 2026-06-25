@@ -21,7 +21,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 
 import type { SharedCloudWorkspaceRecord } from "@/lib/launchlens/cloud-workspace";
@@ -119,9 +119,9 @@ function Bullets({ items }: { items: string[] }) {
   );
 }
 
-function formatExpiryBadge(expiresAt: string | null): { label: string; title: string } | null {
+function formatExpiryBadge(expiresAt: string | null, now: number = Date.now()): { label: string; title: string } | null {
   if (!expiresAt) return null;
-  const ms = new Date(expiresAt).getTime() - Date.now();
+  const ms = new Date(expiresAt).getTime() - now;
   if (ms <= 0) return null;
   const days = Math.max(1, Math.ceil(ms / 86400000));
   return { label: "Expires in " + days + "d", title: "Expires " + new Date(expiresAt).toLocaleString() };
@@ -136,9 +136,22 @@ export function SharedWorkspaceView({
   const experiments = record.execution.experiments;
   const [focusedExperimentId, setFocusedExperimentId] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
+  // Avoid hydration mismatch: `formatRelativeTime` uses Date.now(), which
+  // differs between server and client. Render an absolute UTC string until
+  // the component has mounted on the client, then swap in the relative form.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+    // Re-render every 30s so "3m ago" stays fresh while the tab is open.
+    const id = window.setInterval(() => setMounted((m) => m), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
   const activeExperiments = experiments.filter((e) => !e.archived);
   const archivedExperiments = experiments.filter((e) => e.archived);
   const visibleExperiments = showArchived ? experiments : activeExperiments;
+  const sharedAtLabel = mounted
+    ? formatRelativeTime(record.updatedAt)
+    : formatGeneratedTime(record.updatedAt);
 
   function moveExperimentFocus(delta: number | "home" | "end") {
     const nodes = Array.from(document.querySelectorAll<HTMLElement>("[data-shared-experiment]"));
@@ -185,6 +198,9 @@ export function SharedWorkspaceView({
           <div className="flex flex-wrap items-center gap-2">
             <span className="w-fit rounded-md border border-card bg-card px-3 py-2 text-sm text-foreground/80" title="This shared snapshot is read-only. You can view, copy, or export the workspace, but edits are disabled." aria-label="Read-only: view and export only">Read-only snapshot</span>
             {(() => {
+              // Compute expiry only after mount to avoid hydration mismatch
+              // (Date.now() differs between server-render and client-hydrate).
+              if (!mounted) return null;
               const badge = formatExpiryBadge(record.expiresAt);
               if (!badge) return null;
               return (
@@ -216,7 +232,7 @@ export function SharedWorkspaceView({
               Generated {formatGeneratedTime(workspace.generatedAt)}
             </span>
             <span title={new Date(record.updatedAt).toLocaleString()}>
-              Shared {formatRelativeTime(record.updatedAt)}
+              Shared {sharedAtLabel}
             </span>
           </div>
           <h2 className="mt-4 text-2xl font-semibold leading-8">
