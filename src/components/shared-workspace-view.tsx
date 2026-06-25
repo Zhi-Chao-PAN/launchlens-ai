@@ -105,7 +105,12 @@ function Bullets({ items }: { items: string[] }) {
     <ul className="space-y-3">
       {items.map((item, index) => (
         <li
-          key={`${item}-${index}`}
+          // Use the position only — two identical pain points are intentionally
+          // rendered as two list items, and the previous key (`${item}-${index}`)
+          // would still collide if the same text appeared at the same index
+          // after a re-render that mutated the source array. Index keys are
+          // correct here because the list is not reorderable in the share view.
+          key={index}
           className="flex gap-3 text-sm leading-6 text-foreground/80"
         >
           <CheckCircle2
@@ -266,7 +271,10 @@ export function SharedWorkspaceView({
             <div className="space-y-3">
               {workspace.backlog.map((item, index) => (
                 <article
-                  key={`${item.feature}-${index}`}
+                  // Use position key — backlog is not reorderable in the share
+                  // view so index-based keys are stable and avoid duplicates
+                  // when two backlog items share the same feature text.
+                  key={index}
                   className="rounded-md border border-card bg-input p-4"
                 >
                   <div className="flex items-center justify-between gap-3">
