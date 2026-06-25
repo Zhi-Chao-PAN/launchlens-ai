@@ -6,6 +6,7 @@ import { CopyMarkdownButton } from "@/components/copy-markdown-button";
 import { DownloadJsonButton } from "@/components/download-json-button";
 import { DownloadMarkdownButton } from "@/components/download-markdown-button";
 import {
+  Archive,
   ArrowRight,
   CalendarDays,
   CheckCircle2,
@@ -24,7 +25,7 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 
 import type { SharedCloudWorkspaceRecord } from "@/lib/launchlens/cloud-workspace";
-import { formatGeneratedTime } from "@/lib/launchlens/generated-time";
+import { formatGeneratedTime, formatRelativeTime } from "@/lib/launchlens/generated-time";
 import { taskIdentity } from "@/lib/launchlens/execution";
 
 type ReadOnlySectionProps = {
@@ -134,6 +135,10 @@ export function SharedWorkspaceView({
   const { workspace } = record;
   const experiments = record.execution.experiments;
   const [focusedExperimentId, setFocusedExperimentId] = useState<string | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
+  const activeExperiments = experiments.filter((e) => !e.archived);
+  const archivedExperiments = experiments.filter((e) => e.archived);
+  const visibleExperiments = showArchived ? experiments : activeExperiments;
 
   function moveExperimentFocus(delta: number | "home" | "end") {
     const nodes = Array.from(document.querySelectorAll<HTMLElement>("[data-shared-experiment]"));
@@ -207,8 +212,12 @@ export function SharedWorkspaceView({
             <span className="rounded-md bg-signal-supports px-2 py-1 font-medium text-signal-supports">
               {workspace.provider} provider
             </span>
-            <span>Generated {formatGeneratedTime(workspace.generatedAt)}</span>
-            <span>Shared {formatGeneratedTime(record.updatedAt)}</span>
+            <span title={new Date(workspace.generatedAt).toLocaleString()}>
+              Generated {formatGeneratedTime(workspace.generatedAt)}
+            </span>
+            <span title={new Date(record.updatedAt).toLocaleString()}>
+              Shared {formatRelativeTime(record.updatedAt)}
+            </span>
           </div>
           <h2 className="mt-4 text-2xl font-semibold leading-8">
             {workspace.landingPage.headline}
@@ -289,8 +298,28 @@ export function SharedWorkspaceView({
               Evidence notes and sources remain private. This shared view shows
               decision state and evidence counts only.
             </p>
+            {archivedExperiments.length > 0 && (
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
+                <span>
+                  Showing {visibleExperiments.length} of {experiments.length} hypotheses
+                  {archivedExperiments.length > 0
+                    ? ` (${archivedExperiments.length} archived)`
+                    : ""}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowArchived((v) => !v)}
+                  aria-pressed={showArchived}
+                  aria-label={showArchived ? "Hide archived hypotheses" : "Show archived hypotheses"}
+                  className="inline-flex items-center gap-1 rounded-md border border-input bg-card px-2 py-1 text-xs font-medium text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                >
+                  <Archive className="size-3" aria-hidden="true" />
+                  {showArchived ? "Hide archived" : `Show archived (${archivedExperiments.length})`}
+                </button>
+              </div>
+            )}
             <div className="divide-y divide-[#dfe5dd]">
-              {record.execution.experiments.map((experiment, index) => {
+              {visibleExperiments.map((experiment, index) => {
                 const linkedTask = workspace.tasks.find(
                   (task, taskIndex) =>
                     taskIdentity(task, taskIndex) === experiment.linkedTaskId,
@@ -300,7 +329,7 @@ export function SharedWorkspaceView({
                   <article
                     key={experiment.id}
                     data-shared-experiment
-                    aria-label={`Hypothesis ${index + 1} of ${experiments.length}: ${experiment.assumption.slice(0, 80)}`}
+                    aria-label={`Hypothesis ${index + 1} of ${visibleExperiments.length}: ${experiment.assumption.slice(0, 80)}${experiment.archived ? " (archived)" : ""}`}
                     tabIndex={focusedExperimentId === null ? (index === 0 ? 0 : -1) : focusedExperimentId === experiment.id ? 0 : -1}
                     onFocus={() => setFocusedExperimentId(experiment.id)}
                     onKeyDown={(event) => {
@@ -309,7 +338,9 @@ export function SharedWorkspaceView({
                       else if (event.key === "Home") { event.preventDefault(); moveExperimentFocus("home"); }
                       else if (event.key === "End") { event.preventDefault(); moveExperimentFocus("end"); }
                     }}
-                    className="py-4 first:pt-0 last:pb-0 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:rounded-md"
+                    className={`py-4 first:pt-0 last:pb-0 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:rounded-md ${
+                      experiment.archived ? "opacity-60" : ""
+                    }`}
                   >
                     <div className="flex flex-wrap items-center gap-2 text-xs">
                       <span className="font-mono font-semibold text-signal-challenges">
@@ -318,6 +349,15 @@ export function SharedWorkspaceView({
                       <span className="rounded-md bg-muted px-2 py-1 font-semibold capitalize text-foreground/80">
                         {experiment.status}
                       </span>
+                      {experiment.archived && (
+                        <span
+                          className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2 py-1 font-semibold text-amber-800"
+                          title="This hypothesis has been archived by the owner."
+                        >
+                          <Archive className="size-3" aria-hidden="true" />
+                          Archived
+                        </span>
+                      )}
                       <span className="text-muted">
                         {experiment.evidenceCount} evidence item
                         {experiment.evidenceCount === 1 ? "" : "s"}
@@ -356,6 +396,11 @@ export function SharedWorkspaceView({
                   </article>
                 );
               })}
+              {visibleExperiments.length === 0 && (
+                <p className="py-6 text-center text-sm text-muted">
+                  No active hypotheses. Toggle "Show archived" above to view archived ones.
+                </p>
+              )}
             </div>
           </ReadOnlySection>
         </div>
