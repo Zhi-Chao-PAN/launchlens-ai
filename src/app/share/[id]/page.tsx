@@ -11,6 +11,16 @@ import {
 import { isUuid } from "@/lib/launchlens/workspace-validation";
 
 export const dynamic = "force-dynamic";
+// Shared workspace snapshots may contain private GTM material; keep them
+// out of search engine indices even when the share link is reachable. The
+// noindex directive is re-asserted inside generateMetadata so it always
+// wins regardless of the per-id title/description overrides.
+const NOINDEX_ROBOTS = {
+  index: false,
+  follow: false,
+  nocache: true,
+  googleBot: { index: false, follow: false },
+} as const;
 
 type SharedWorkspacePageProps = {
   params: Promise<{ id: string }>;
@@ -20,7 +30,7 @@ export async function generateMetadata(
   { params }: SharedWorkspacePageProps,
 ): Promise<Metadata> {
   const { id } = await params;
-  if (!isUuid(id)) return { title: "Shared workspace - LaunchLens AI" };
+  if (!isUuid(id)) return { title: "Shared workspace - LaunchLens AI", robots: NOINDEX_ROBOTS };
 
   let title = "Shared GTM workspace - LaunchLens AI";
   let description =
@@ -79,6 +89,7 @@ export async function generateMetadata(
       description,
       images: ["/og.png"],
     },
+    robots: NOINDEX_ROBOTS,
   };
 }
 
