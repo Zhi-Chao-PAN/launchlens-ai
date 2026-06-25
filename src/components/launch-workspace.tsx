@@ -29,7 +29,7 @@ import {
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { formatShortcut, useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
 
@@ -297,6 +297,153 @@ function BulletList({ items }: { items: string[] }) {
   );
 }
 
+function EncryptedImportDialog({
+  fileName,
+  error,
+  busy,
+  onSubmit,
+  onCancel,
+}: {
+  fileName: string;
+  error: string | null;
+  busy: boolean;
+  onSubmit: (password: string) => void;
+  onCancel: () => void;
+}) {
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const cancelRef = useRef<HTMLButtonElement | null>(null);
+  const submitRef = useRef<HTMLButtonElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const titleId = useId();
+  const bodyId = useId();
+  const errorId = useId();
+
+  useEffect(() => {
+    cancelRef.current?.focus();
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onCancel();
+        return;
+      }
+      if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        if (!busy && submitRef.current) submitRef.current.click();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const dialog = dialogRef.current;
+      if (!dialog) return;
+      const focusables = dialog.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (event.shiftKey && (active === first || !dialog.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (active === last || !dialog.contains(active))) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onCancel, busy]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={(e) => { if (e.target === e.currentTarget && !busy) onCancel(); }}
+    >
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={bodyId}
+        className="w-full max-w-md rounded-lg bg-card p-5 shadow-xl ring-1 ring-black/5"
+      >
+        <h3 id={titleId} className="text-base font-semibold text-foreground">
+          Enter passphrase
+        </h3>
+        <p id={bodyId} className="mt-2 text-sm leading-6 text-muted">
+          <span className="font-mono text-xs text-foreground/80">{fileName}</span>{" "}
+          is password-protected. Type the passphrase you used when exporting.
+        </p>
+        <form
+          className="mt-4 space-y-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (password && !busy) onSubmit(password);
+          }}
+        >
+          <label className="block">
+            <span className="sr-only">Passphrase</span>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                spellCheck={false}
+                aria-invalid={Boolean(error) || undefined}
+                aria-describedby={error ? errorId : undefined}
+                placeholder="Passphrase"
+                className="h-10 w-full rounded-md border border-input bg-input px-3 pr-20 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-1 top-1/2 inline-flex h-8 -translate-y-1/2 items-center rounded px-2 text-[10px] font-semibold uppercase tracking-wide text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                aria-label={showPassword ? "Hide passphrase" : "Show passphrase"}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+          </label>
+          {error && (
+            <p id={errorId} role="alert" className="text-xs text-signal-challenges">
+              {error}
+            </p>
+          )}
+          <div className="mt-5 flex items-center justify-end gap-2">
+            <button
+              ref={cancelRef}
+              type="button"
+              onClick={onCancel}
+              disabled={busy}
+              className="inline-flex h-9 items-center rounded-md border border-input bg-input px-3 text-sm font-medium text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:opacity-60"
+            >
+              Cancel
+            </button>
+            <button
+              ref={submitRef}
+              type="submit"
+              disabled={busy || !password}
+              className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-white transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-1 disabled:opacity-60"
+            >
+              {busy ? "Decrypting…" : "Decrypt & preview"}
+            </button>
+          </div>
+          <p className="mt-2 text-right text-[10px] uppercase tracking-wide text-muted">
+            ⌘ / Ctrl + ↵ to submit
+          </p>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export function LaunchWorkspace({
   initialInput,
   initialWorkspace,
@@ -336,6 +483,9 @@ export function LaunchWorkspace({
   const [exportEncrypted, setExportEncrypted] = useState(false);
   const [exportPassword, setExportPassword] = useState("");
   const [importPreview, setImportPreview] = useState<WorkspaceImportResult | null>(null);
+  const [pendingEncrypted, setPendingEncrypted] = useState<{ text: string; fileName: string } | null>(null);
+  const [decryptError, setDecryptError] = useState<string | null>(null);
+  const [decrypting, setDecrypting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isStorageReady, setIsStorageReady] = useState(false);
   const [isBriefOpen, setIsBriefOpen] = useState(false);
@@ -948,17 +1098,43 @@ export function LaunchWorkspace({
 
   async function handleImportFile(file: File) {
     try {
-      let text = await file.text();
+      const text = await file.text();
       if (isEncryptedPayload(text)) {
-        const password = window.prompt("This file is password-protected. Enter the passphrase:");
-        if (!password) { showToast("Import cancelled: password required.", "info"); return; }
-        try {
-          text = await decryptToJson(text, password);
-        } catch {
-          showToast("Decryption failed - check your passphrase.", "error");
-          return;
-        }
+        // Show in-app passphrase dialog instead of window.prompt.
+        setPendingEncrypted({ text, fileName: file.name });
+        setDecryptError(null);
+        return;
       }
+      parseAndPreviewImport(text);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Unknown import error";
+      showToast(`Import failed: ${msg}`, "error");
+    }
+  }
+
+  async function submitEncryptedImport(password: string) {
+    if (!pendingEncrypted) return;
+    setDecrypting(true);
+    setDecryptError(null);
+    try {
+      const plain = await decryptToJson(pendingEncrypted.text, password);
+      setPendingEncrypted(null);
+      parseAndPreviewImport(plain);
+    } catch {
+      setDecryptError("Decryption failed - check your passphrase.");
+    } finally {
+      setDecrypting(false);
+    }
+  }
+
+  function cancelEncryptedImport() {
+    setPendingEncrypted(null);
+    setDecryptError(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function parseAndPreviewImport(text: string) {
+    try {
       const result = workspaceFromJson(text);
       setImportPreview(result);
       showToast("File parsed successfully - review and confirm", "info");
@@ -2324,6 +2500,15 @@ export function LaunchWorkspace({
         )}
 
         <ShortcutsHelp />
+        {pendingEncrypted && (
+          <EncryptedImportDialog
+            fileName={pendingEncrypted.fileName}
+            error={decryptError}
+            busy={decrypting}
+            onSubmit={submitEncryptedImport}
+            onCancel={cancelEncryptedImport}
+          />
+        )}
         <CommandPalette
           actions={useWorkspaceCommands({
             workspace,
