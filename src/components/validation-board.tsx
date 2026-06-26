@@ -35,6 +35,7 @@ import { tagStyle } from "@/lib/launchlens/tag-style";
 import { buildSafeFilename } from "@/lib/launchlens/safe-filename";
 import { evidenceId } from "@/lib/launchlens/evidence-id";
 import { yamlQuote } from "@/lib/launchlens/yaml-quote";
+import { titleCase } from "@/lib/launchlens/title-case";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
@@ -600,8 +601,8 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
       moderate: "Moderate",
       strong: "Strong",
     };
-    const status = experiment.status.charAt(0).toUpperCase() + experiment.status.slice(1);
-    const confidence = experiment.confidence.charAt(0).toUpperCase() + experiment.confidence.slice(1);
+    const status = titleCase(experiment.status);
+    const confidence = titleCase(experiment.confidence);
     const yamlTags = experiment.tags && experiment.tags.length ? "[" + experiment.tags.map((t) => yamlQuote(t)).join(", ") + "]" : "[]";
     const yamlPinned = experiment.evidence.filter((e) => e.pinned).length;
     const fm = [
@@ -2475,7 +2476,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                             : "bg-white")
                         }
                       />
-                      {experiment.confidence.charAt(0).toUpperCase() + experiment.confidence.slice(1)}
+                      {titleCase(experiment.confidence)}
                       {!experiment.confidenceManual && experiment.evidence.length > 0 && (
                         <span className="text-[10px] font-medium opacity-75">闂?auto</span>
                       )}

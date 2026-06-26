@@ -409,7 +409,10 @@ export function CloudWorkspaces({
     }
   }
 
-  async function linkRecoveryOwner() {
+  async function performRecovery(
+    successMessage: string,
+    beforeSetToken: ((token: string) => Promise<void>) | null,
+  ) {
     if (!recoveryReady) {
       setRecoveryTouched(true);
       return;
@@ -420,16 +423,14 @@ export function CloudWorkspaces({
         trimmedLabel,
         trimmedKey,
       );
-      await cloudRequest<{ migrated: number }>("/api/workspaces/recovery", {
-        method: "POST",
-        body: JSON.stringify({ recoveryOwnerToken }),
-      });
-
+      if (beforeSetToken) {
+        await beforeSetToken(recoveryOwnerToken);
+      }
       localStorage.setItem(OWNER_TOKEN_KEY, recoveryOwnerToken);
       localStorage.setItem(RECOVERY_LABEL_KEY, trimmedLabel);
       setOwnerToken(recoveryOwnerToken);
       setRecoveryTouched(false);
-      showToast("Cloud history linked to your recovery key.", "success");
+      showToast(successMessage, "success");
       await refresh(recoveryOwnerToken);
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : "";
@@ -444,35 +445,20 @@ export function CloudWorkspaces({
     }
   }
 
-  async function recoverOwner() {
-    if (!recoveryReady) {
-      setRecoveryTouched(true);
-      return;
-    }
-    setBusyAction("recovery");
-    try {
-      const recoveryOwnerToken = await deriveRecoveryOwnerToken(
-        trimmedLabel,
-        trimmedKey,
-      );
+  async function linkRecoveryOwner() {
+    await performRecovery(
+      "Cloud history linked to your recovery key.",
+      async (token) => {
+        await cloudRequest<{ migrated: number }>("/api/workspaces/recovery", {
+          method: "POST",
+          body: JSON.stringify({ recoveryOwnerToken: token }),
+        });
+      },
+    );
+  }
 
-      localStorage.setItem(OWNER_TOKEN_KEY, recoveryOwnerToken);
-      localStorage.setItem(RECOVERY_LABEL_KEY, trimmedLabel);
-      setOwnerToken(recoveryOwnerToken);
-      setRecoveryTouched(false);
-      showToast("Recovery key loaded - cloud history restored.", "success");
-      await refresh(recoveryOwnerToken);
-    } catch (caught) {
-      const message = caught instanceof Error ? caught.message : "";
-      if (message === "invalid_recovery_input") {
-        setRecoveryTouched(true);
-        showToast("Recovery details don't look right - double-check handle and key.", "error");
-      } else {
-        showToast("Recovery failed - check your handle and recovery key.", "error");
-      }
-    } finally {
-      setBusyAction("");
-    }
+  async function recoverOwner() {
+    await performRecovery("Recovery key loaded - cloud history restored.", null);
   }
 
   const isBusy = Boolean(busyAction);
