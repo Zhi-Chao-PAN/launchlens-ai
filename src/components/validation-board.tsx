@@ -38,6 +38,7 @@ import { yamlQuote } from "@/lib/launchlens/yaml-quote";
 import { titleCase } from "@/lib/launchlens/title-case";
 import { patchEvidenceFilter } from "@/lib/launchlens/evidence-filter-patch";
 import { pinnedFirst } from "@/lib/launchlens/pinned-first";
+import { SIGNAL_LABELS, WEIGHT_LABELS } from "@/lib/launchlens/evidence-labels";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { FilterChip } from "@/components/filter-chip";
@@ -90,12 +91,6 @@ const statusLabels = {
   supported: "Supported",
   refuted: "Refuted",
 } as const;
-
-const weightLabels: Record<EvidenceWeight, string> = {
-  anecdotal: "Anecdotal",
-  moderate: "Moderate",
-  strong: "Strong",
-};
 
 const DECISION_DESCRIPTIONS: Record<string, string> = { proceed: "Proceed: the evidence supports this hypothesis; move forward.", pivot: "Pivot: the evidence contradicts this hypothesis; consider changing direction.", iterate: "Iterate: signals are mixed; keep testing and refining.", pause: "Pause: set this hypothesis aside for now." };
 
@@ -158,12 +153,6 @@ const EVIDENCE_SNIPPETS: { label: string; source: string; note: string }[] = [
   { label: "Sales call", source: "Sales call", note: "Prospect said " },
   { label: "Churn", source: "Churn interview", note: "Left because " },
 ];
-
-const signalLabels = {
-  supports: "Supports",
-  challenges: "Challenges",
-  neutral: "Neutral",
-} as const;
 
 export function ValidationBoard({
   execution,
@@ -594,16 +583,8 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
     setEditingEvidenceId(null);
   }
   function experimentToMarkdown(experiment: ValidationExperiment) {
-    const signalLabel: Record<EvidenceSignal, string> = {
-      supports: "Supports",
-      challenges: "Challenges",
-      neutral: "Neutral",
-    };
-    const weightLabel: Record<EvidenceWeight, string> = {
-      anecdotal: "Anecdotal",
-      moderate: "Moderate",
-      strong: "Strong",
-    };
+    const signalLabel = SIGNAL_LABELS;
+    const weightLabel = WEIGHT_LABELS;
     const status = titleCase(experiment.status);
     const confidence = titleCase(experiment.confidence);
     const yamlTags = experiment.tags && experiment.tags.length ? "[" + experiment.tags.map((t) => yamlQuote(t)).join(", ") + "]" : "[]";
@@ -691,16 +672,8 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
   const [batchBriefProgress, setBatchBriefProgress] = useState({ done: 0, total: 0 });
 
   function boardToMarkdown() {
-    const signalLabel: Record<EvidenceSignal, string> = {
-      supports: "Supports",
-      challenges: "Challenges",
-      neutral: "Neutral",
-    };
-    const weightLabel: Record<EvidenceWeight, string> = {
-      anecdotal: "Anecdotal",
-      moderate: "Moderate",
-      strong: "Strong",
-    };
+    const signalLabel = SIGNAL_LABELS;
+    const weightLabel = WEIGHT_LABELS;
     const statusLabel: Record<string, string> = {
       untested: "Untested",
       testing: "Testing",
@@ -2912,7 +2885,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           <button
                             type="button"
                             onClick={(e) => { if (experiment.archived) { e.stopPropagation(); return; } cycleEvidenceSignal(experiment.id, item.id); }}
-                            aria-disabled={experiment.archived} aria-label={experiment.archived ? "Archived" : "Evidence signal: " + signalLabels[item.signal] + ". " + SIGNAL_DESCRIPTIONS[item.signal] + " Click to cycle."}
+                            aria-disabled={experiment.archived} aria-label={experiment.archived ? "Archived" : "Evidence signal: " + SIGNAL_LABELS[item.signal] + ". " + SIGNAL_DESCRIPTIONS[item.signal] + " Click to cycle."}
                             title={SIGNAL_DESCRIPTIONS[item.signal] + " (click to cycle: supports, challenges, neutral)"}
                             className={
                               "rounded-md px-2 py-1 text-[11px] font-semibold uppercase transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 " +
@@ -2923,7 +2896,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                                 : "bg-muted text-muted")
                             }
                           >
-                            {signalLabels[item.signal]}
+                            {SIGNAL_LABELS[item.signal]}
                           </button>
                           <button type="button" onClick={() => cycleEvidenceWeight(experiment.id, item.id)}
                             aria-label={`Evidence weight: ${item.weight}. ${WEIGHT_DESCRIPTIONS[item.weight]} Click to cycle.`}
@@ -3163,7 +3136,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                             }{" "}
                             evidence items
                           </span>{" "}
-                          as {signalLabels[draft.signal]} ({draft.weight} weight). Prefix
+                          as {SIGNAL_LABELS[draft.signal]} ({draft.weight} weight). Prefix
                           per line:{" "}
                           <code className="font-mono">+</code>/<code className="font-mono">-</code>/<code className="font-mono">~</code>{" "}
                           for signal, append{" "}
@@ -3226,7 +3199,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                                   : "rounded-md bg-muted px-2 py-1 text-[11px] font-semibold uppercase text-muted"
                               }
                             >
-                              {signalLabels[draft.signal]}
+                              {SIGNAL_LABELS[draft.signal]}
                             </span>
                             <span
                               aria-label={`Evidence weight: ${draft.weight}`}
@@ -3269,7 +3242,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       aria-describedby={`evidence-signal-hint-${experiment.id}`}
                       className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                     >
-                      {Object.entries(signalLabels).map(([value, label]) => (
+                      {Object.entries(SIGNAL_LABELS).map(([value, label]) => (
                         <option key={value} value={value}>
                           {label}
                         </option>
@@ -3294,7 +3267,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       aria-describedby={`evidence-weight-hint-${experiment.id}`}
                       className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                     >
-                      {Object.entries(weightLabels).map(([value, label]) => (
+                      {Object.entries(WEIGHT_LABELS).map(([value, label]) => (
                         <option key={value} value={value}>
                           {label}
                         </option>
