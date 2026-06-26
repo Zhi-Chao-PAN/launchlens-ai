@@ -780,7 +780,7 @@ export function CloudWorkspaces({
                   })()}
                 </div>
                 <p className="mt-1 text-xs text-muted">
-                  Saved <time dateTime={item.updatedAt} title={new Date(item.updatedAt).toLocaleString()}>{formatSnapshotTime(item.updatedAt)}</time>
+                  Saved <time dateTime={item.updatedAt} title={new Date(item.updatedAt).toLocaleString()}>{formatSnapshotTime(item.updatedAt, Intl.DateTimeFormat().resolvedOptions().timeZone)}</time>
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-1">
