@@ -1,37 +1,13 @@
 import { neon } from "@neondatabase/serverless";
 
-function cleanEnvValue(value: string | undefined) {
-  const trimmed = value?.trim() ?? "";
-  const quote = trimmed[0];
-
-  return trimmed.length >= 2 &&
-    (quote === "\"" || quote === "'") &&
-    trimmed.endsWith(quote)
-    ? trimmed.slice(1, -1)
-    : trimmed;
-}
+import {
+  cleanEnvValue,
+  pickEnvConnection,
+  sanitizedErrorMessage,
+} from "../src/lib/launchlens/env-clean";
 
 function migrationConnectionString() {
-  return (
-    cleanEnvValue(process.env.DATABASE_MIGRATION_URL) ||
-    cleanEnvValue(process.env.DATABASE_URL)
-  );
-}
-
-function sanitizedErrorMessage(error: unknown) {
-  const message =
-    error instanceof Error
-      ? error.message
-      : "LaunchLens cloud database migration failed.";
-  const blockedValues = [
-    cleanEnvValue(process.env.DATABASE_MIGRATION_URL),
-    cleanEnvValue(process.env.DATABASE_URL),
-  ].filter((value) => value.length >= 12);
-
-  return blockedValues.reduce(
-    (safeMessage, value) => safeMessage.split(value).join("[redacted]"),
-    message,
-  );
+  return pickEnvConnection(["DATABASE_MIGRATION_URL", "DATABASE_URL"]);
 }
 
 async function main() {

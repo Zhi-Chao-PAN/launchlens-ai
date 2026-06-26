@@ -10,6 +10,7 @@ import type { WorkspaceSnapshotPayload } from "./workspace-validation";
 import { isLaunchLensInput, isLaunchLensWorkspace } from "./workspace-validation";
 import { normalizeExecutionState } from "./execution";
 import type { CloudWorkspaceRecord, CloudWorkspaceSummary } from "./cloud-workspace";
+import { pickEnvConnection } from "./env-clean";
 
 const MAX_TENANTS_PER_OWNER = 5;
 
@@ -34,25 +35,11 @@ type TenantRow = {
 };
 
 function getSql() {
-  const url =
-    cleanEnvValue(process.env.DATABASE_URL) ||
-    cleanEnvValue(process.env.POSTGRES_URL) ||
-    cleanEnvValue(process.env.NEON_DATABASE_URL) ||
-    "";
+  const url = pickEnvConnection(["DATABASE_URL", "POSTGRES_URL", "NEON_DATABASE_URL"]);
   if (!url) {
     throw new Error("cloud_unavailable");
   }
   return neon(url);
-}
-
-function cleanEnvValue(value: string | undefined) {
-  const trimmed = value?.trim() ?? "";
-  const quote = trimmed[0];
-  return trimmed.length >= 2 &&
-    (quote === "\"" || quote === "'") &&
-    trimmed.endsWith(quote)
-    ? trimmed.slice(1, -1)
-    : trimmed;
 }
 
 function firstRow<T>(rows: unknown) {
