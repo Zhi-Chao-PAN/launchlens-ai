@@ -104,7 +104,7 @@ export function ReadOnlySection({
   );
 }
 
-function ExpiryBadge({
+export function ExpiryBadge({
   expiresAt,
   mounted,
   nowTick,

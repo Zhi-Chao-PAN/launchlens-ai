@@ -34,6 +34,7 @@ import { statusClass } from "@/lib/launchlens/status-class";
 import { tagStyle } from "@/lib/launchlens/tag-style";
 import { buildSafeFilename } from "@/lib/launchlens/safe-filename";
 import { evidenceId } from "@/lib/launchlens/evidence-id";
+import { yamlQuote } from "@/lib/launchlens/yaml-quote";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
@@ -601,7 +602,6 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
     };
     const status = experiment.status.charAt(0).toUpperCase() + experiment.status.slice(1);
     const confidence = experiment.confidence.charAt(0).toUpperCase() + experiment.confidence.slice(1);
-    const yamlQuote = (s: string) => "\"" + s.replace(/["\\]/g, "\\$&") + "\"";
     const yamlTags = experiment.tags && experiment.tags.length ? "[" + experiment.tags.map((t) => yamlQuote(t)).join(", ") + "]" : "[]";
     const yamlPinned = experiment.evidence.filter((e) => e.pinned).length;
     const fm = [
@@ -709,7 +709,6 @@ const confidenceLabel: Record<ConfidenceLevel, string> = {
       high: "High",
     };
 
-    const yamlQuote = (s: string) => "\"" + s.replace(/["\\]/g, "\\$&") + "\"";
     const allTags = Array.from(new Set(execution.experiments.flatMap((e) => e.tags || [])));
     const lines: string[] = [
       "---",
