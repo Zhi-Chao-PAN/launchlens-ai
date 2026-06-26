@@ -263,6 +263,7 @@ export function SharedWorkspaceView({
             <CopyLinkButton />
             <Link
               href="/"
+              aria-label="Open the LaunchLens AI demo (leaves this read-only snapshot and opens the editor at the home page)"
               className="inline-flex h-10 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-semibold text-white transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
             >
               Open the demo
