@@ -61,6 +61,7 @@ import { formatGenerationModeLabel } from "@/lib/launchlens/generation-mode-labe
 import { formatProviderLabel } from "@/lib/launchlens/provider-label";
 import { formatSaveLabel } from "@/lib/launchlens/save-label";
 import { Bullets } from "@/components/bullets";
+import { splitLines } from "@/lib/launchlens/split-lines";
 import { evaluateWorkspaceQuality } from "@/lib/launchlens/workspace-quality";
 import { friendlyApiMessage } from "@/lib/launchlens/api-errors";
 import type {
@@ -178,13 +179,6 @@ function parseLocalWorkspaceSnapshot(
         schemaVersion: parsedSchemaVersion,
       }
     : null;
-}
-
-function splitLines(value: string) {
-  return value
-    .split(/\r?\n/)
-    .map((item) => item.trim())
-    .filter(Boolean);
 }
 
 function Section({ title, icon: Icon, children, collapsible = false, sectionId, collapsed: controlledCollapsed, onToggle }: SectionProps) {
