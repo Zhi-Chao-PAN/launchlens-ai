@@ -30,6 +30,7 @@ import type {
   CloudWorkspaceSummary,
 } from "@/lib/launchlens/cloud-workspace";
 import { MAX_CLOUD_WORKSPACES } from "@/lib/launchlens/cloud-workspace";
+import { formatSnapshotTime } from "@/lib/launchlens/snapshot-time";
 import type { WorkspaceExecutionState } from "@/lib/launchlens/execution";
 import {
   createRecoveryKey,
@@ -78,15 +79,6 @@ function createOwnerToken() {
     .replaceAll("+", "-")
     .replaceAll("/", "_")
     .replaceAll("=", "");
-}
-
-function formatSnapshotTime(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
 }
 
 export function CloudWorkspaces({
