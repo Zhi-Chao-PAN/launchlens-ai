@@ -197,7 +197,12 @@ export function SharedWorkspaceView({
               <p className="text-sm font-medium text-signal-challenges">
                 LaunchLens AI
               </p>
-              <h1 className="text-xl font-semibold">Shared GTM workspace</h1>
+              <h1 className="text-xl font-semibold">
+                {workspace.landingPage?.headline || "Shared GTM workspace"}
+              </h1>
+              <p className="mt-1 text-xs text-muted">
+                Read-only shared snapshot
+              </p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
