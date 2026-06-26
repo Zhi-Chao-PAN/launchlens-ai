@@ -36,6 +36,7 @@ export async function generateMetadata(
   let description =
     "A go-to-market workspace shared from LaunchLens AI. Explore target users, pains, backlog, validation experiments, and AI-grounded decision briefs.";
   let projectName = "";
+  let snapshotUpdatedAt: string | undefined;
 
   try {
     const result = await getSharedWorkspace(id);
@@ -44,6 +45,7 @@ export async function generateMetadata(
       const headline = workspace.landingPage?.headline || "Shared workspace";
       title = `${headline} - LaunchLens AI shared workspace`;
       projectName = headline;
+      snapshotUpdatedAt = result.record.updatedAt;
       if (workspace.summary?.length) {
         description = workspace.summary.slice(0, 160);
         if (workspace.summary.length > 160) description += "…";
@@ -76,6 +78,12 @@ export async function generateMetadata(
       description,
       type: "article",
       siteName: "LaunchLens AI",
+      // Use the snapshot's updatedAt as the publishedTime so link
+      // previews display when the workspace was last refreshed.
+      // Undefined for early-return / error branches where the snapshot
+      // data is unavailable.
+      publishedTime: snapshotUpdatedAt,
+      modifiedTime: snapshotUpdatedAt,
       images: [
         {
           url: "/og.png",
