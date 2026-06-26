@@ -35,9 +35,14 @@ export function formatRelativeTime(value: string): string {
   if (diffHour < 24) return `${diffHour}h ago`;
   if (diffDay < 7) return `${diffDay}d ago`;
 
-  // Fall back to absolute date for older entries
+  // Fall back to absolute date for older entries. Use UTC to keep the
+  // output stable across server (often UTC) and client (user's local
+  // zone) renders — without this, two viewers of the same record can
+  // see different 'Mon DD' labels and a server-rendered preview can
+  // also mismatch a later client hydration.
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
+    timeZone: "UTC",
   }).format(date);
 }
