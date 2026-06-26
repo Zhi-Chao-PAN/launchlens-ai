@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Robust client-side text copy. Tries navigator.clipboard.writeText first
  * when available, falls back to a synthetic <textarea> +
  * document.execCommand("copy"), and returns true if either path succeeded.

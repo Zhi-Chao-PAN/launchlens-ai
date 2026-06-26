@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   AlertTriangle,
@@ -845,7 +845,7 @@ export function DecisionCopilot({
             </div>
             <p className="mt-5 flex items-center gap-2 text-xs text-muted">
               <BrainCircuit className="size-4 animate-pulse text-ai-muted" aria-hidden="true" />
-              Weighing signals against counter-signals鈥?
+              Weighing signals against counter-signals…
             </p>
           </div>
         ) : currentBrief && experiment ? (

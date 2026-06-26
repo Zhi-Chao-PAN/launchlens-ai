@@ -1,4 +1,4 @@
-﻿import { generateLaunchWorkspace } from "@/lib/launchlens/provider";
+import { generateLaunchWorkspace } from "@/lib/launchlens/provider";
 import type { LaunchLensInput } from "@/lib/launchlens/types";
 import { generateRequestId, noStoreJson, startTimer } from "@/lib/launchlens/workspace-api";
 import {

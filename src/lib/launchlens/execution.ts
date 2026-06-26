@@ -85,21 +85,21 @@ export type ExecutionProgressWeights = {
   decided: number;
 };
 
-/** Default weights 闂?all three checkpoints are equally weighted. */
+/** Default weights —all three checkpoints are equally weighted. */
 export const DEFAULT_PROGRESS_WEIGHTS: ExecutionProgressWeights = {
   started: 1,
   evidenceWithSignal: 1,
   decided: 1,
 };
 
-/** Preset: "bias-toward-evidence" 闂?evidence gathering counts more. */
+/** Preset: "bias-toward-evidence" —evidence gathering counts more. */
 export const EVIDENCE_BIASED_WEIGHTS: ExecutionProgressWeights = {
   started: 1,
   evidenceWithSignal: 2,
   decided: 1,
 };
 
-/** Preset: "bias-toward-decisions" 闂?reaching conclusions counts more. */
+/** Preset: "bias-toward-decisions" —reaching conclusions counts more. */
 export const DECISION_BIASED_WEIGHTS: ExecutionProgressWeights = {
   started: 1,
   evidenceWithSignal: 1,
@@ -458,9 +458,9 @@ const EVIDENCE_WEIGHT_VALUES: Record<EvidenceWeight, number> = {
  * Compute an experiment's confidence level from its evidence.
  *
  * Algorithm:
- * - Total weighted score = sum of weight values (supports = +, challenges = -, neutral = +0.5闂?
- * - Consensus = abs(total) / totalWeight 闂?how aligned the evidence is
- * - Confidence threshold: low < 3 weight 闂?medium < 7 weight 闂?high
+ * - Total weighted score = sum of weight values (supports = +, challenges = -, neutral = +0.5—
+ * - Consensus = abs(total) / totalWeight —how aligned the evidence is
+ * - Confidence threshold: low < 3 weight —medium < 7 weight —high
  * - Mixed signals (consensus < 0.4) pull confidence down one tier
  */
 export function computeExperimentConfidence(

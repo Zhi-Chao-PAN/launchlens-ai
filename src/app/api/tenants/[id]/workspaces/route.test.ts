@@ -1,4 +1,4 @@
-﻿import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { exampleWorkspaces } from "@/lib/launchlens/example-workspaces";
 import { resetWorkspaceRateLimitsForTests } from "@/lib/launchlens/workspace-api";

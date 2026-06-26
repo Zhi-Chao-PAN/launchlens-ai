@@ -108,22 +108,28 @@ export function ExpiryBadge({
   expiresAt,
   mounted,
   nowTick,
+  now,
 }: {
   expiresAt: string | null;
   mounted: boolean;
   /** Reference to subscribe this component to the 30s refresh interval. */
   nowTick: number;
+  /**
+   * Wall-clock timestamp captured by the parent (which subscribes to
+   * the 30s refresh interval). Passed in instead of computed here so
+   * ExpiryBadge stays a pure component — no `Date.now()` in render.
+   * The parent's `useState` lazy init supplies the SSR-safe value.
+   */
+  now: number;
 }) {
   // Defer rendering until after mount so Date.now() doesn't cause a
   // server/client hydration mismatch. Before mount, render nothing
   // (the surrounding toolbar already shows a 'Read-only snapshot' pill
   // so the visual layout is preserved).
   if (!mounted) return null;
-  // nowTick is referenced in the second arg so React re-renders the
-  // badge on every tick; otherwise the label would freeze on first mount.
-  // We compute the now timestamp locally per render and add nowTick
-  // (a non-zero counter) to defeat the call-site identical-args cache.
-  const now = Date.now() + nowTick;
+  // `nowTick` is read here so this component re-renders on every tick
+  // (otherwise the badge label would freeze on first mount).
+  void nowTick;
   const badge = formatExpiryBadge(expiresAt, now);
   if (!badge) return null;
   const className =
@@ -150,12 +156,29 @@ export function SharedWorkspaceView({
   // differs between server and client. Render an absolute UTC string until
   // the component has mounted on the client, then swap in the relative form.
   // `nowTick` is bumped every 30s so the relative timestamps and the
-  // 'Expires in X' badge stay fresh while the tab is open. The initial
-  // tick (mount) sets nowTick to 1 to flag that we're client-side.
-  const [nowTick, setNowTick] = useState(0);
+  // 'Expires in X' badge stay fresh while the tab is open. Initial value
+  // is 0 on the server (so the hydration-safe branches fire) and 1 on
+  // the client (signalling that we're mounted); the interval then keeps
+  // incrementing it.
+  const [nowTick, setNowTick] = useState(() =>
+    typeof window === "undefined" ? 0 : 1,
+  );
+  // Captured at mount and re-captured every 30s tick. SSR returns
+  // the record's `updatedAt` as a stable baseline so the first
+  // client render matches the server render; on the first client
+  // tick it becomes Date.now(). Using lazy `useState` init avoids
+  // calling Date.now() during render (which would trip the
+  // react-hooks/purity lint rule).
+  const [now, setNow] = useState(() =>
+    typeof window === "undefined"
+      ? new Date(record.updatedAt).getTime()
+      : Date.now(),
+  );
   useEffect(() => {
-    setNowTick(1);
-    const id = window.setInterval(() => setNowTick((n) => n + 1), 30_000);
+    const id = window.setInterval(() => {
+      setNowTick((n) => n + 1);
+      setNow(Date.now());
+    }, 30_000);
     return () => window.clearInterval(id);
   }, []);
   const mounted = nowTick > 0;
@@ -231,6 +254,7 @@ export function SharedWorkspaceView({
               expiresAt={record.expiresAt}
               mounted={mounted}
               nowTick={nowTick}
+              now={now}
             />
             <CopyMarkdownButton workspace={workspace} />
             <DownloadMarkdownButton workspace={workspace} />
@@ -448,7 +472,7 @@ export function SharedWorkspaceView({
               })}
               {visibleExperiments.length === 0 && (
                 <p className="py-6 text-center text-sm text-muted">
-                  No active hypotheses. Toggle "Show archived" above to view archived ones.
+                  No active hypotheses. Toggle &quot;Show archived&quot; above to view archived ones.
                 </p>
               )}
             </div>

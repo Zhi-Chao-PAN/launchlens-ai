@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   cloudStorageConfigured,
   hashOwnerToken,
+  sharedWorkspaceStatus,
   validateOwnerToken,
   WorkspaceStoreError,
 } from "./workspace-store";
@@ -43,5 +44,108 @@ describe("workspace store boundaries", () => {
         status: 401,
       }),
     );
+  });
+});
+
+describe("sharedWorkspaceStatus", () => {
+  const NOW = new Date("2026-06-26T12:00:00Z").getTime();
+
+  it("returns not_found when the row is null", () => {
+    expect(sharedWorkspaceStatus(null, NOW).status).toBe("not_found");
+  });
+
+  it("returns not_found when the row is undefined", () => {
+    expect(sharedWorkspaceStatus(undefined, NOW).status).toBe("not_found");
+  });
+
+  it("returns revoked when is_public is false", () => {
+    expect(
+      sharedWorkspaceStatus(
+        { is_public: false, share_expires_at: null },
+        NOW,
+      ).status,
+    ).toBe("revoked");
+  });
+
+  it("returns ok when is_public is true and share_expires_at is null", () => {
+    expect(
+      sharedWorkspaceStatus(
+        { is_public: true, share_expires_at: null },
+        NOW,
+      ).status,
+    ).toBe("ok");
+  });
+
+  it("returns ok when share_expires_at is in the future", () => {
+    const future = new Date(NOW + 86_400_000).toISOString();
+    expect(
+      sharedWorkspaceStatus(
+        { is_public: true, share_expires_at: future },
+        NOW,
+      ).status,
+    ).toBe("ok");
+  });
+
+  it("returns revoked when share_expires_at is exactly now (boundary)", () => {
+    const iso = new Date(NOW).toISOString();
+    expect(
+      sharedWorkspaceStatus(
+        { is_public: true, share_expires_at: iso },
+        NOW,
+      ).status,
+    ).toBe("revoked");
+  });
+
+  it("returns revoked when share_expires_at is in the past", () => {
+    const past = new Date(NOW - 60_000).toISOString();
+    expect(
+      sharedWorkspaceStatus(
+        { is_public: true, share_expires_at: past },
+        NOW,
+      ).status,
+    ).toBe("revoked");
+  });
+
+  it("accepts a Date object for share_expires_at", () => {
+    const past = new Date(NOW - 60_000);
+    expect(
+      sharedWorkspaceStatus(
+        { is_public: true, share_expires_at: past },
+        NOW,
+      ).status,
+    ).toBe("revoked");
+  });
+
+  it("accepts a Date object for now", () => {
+    const past = new Date(NOW - 60_000).toISOString();
+    expect(
+      sharedWorkspaceStatus(
+        { is_public: true, share_expires_at: past },
+        new Date(NOW),
+      ).status,
+    ).toBe("revoked");
+  });
+
+  it("returns ok when share_expires_at is a malformed string (defensive)", () => {
+    // NaN guard: an unparseable expiry must NOT be treated as expired,
+    // otherwise a malformed DB row would silently revoke every share.
+    expect(
+      sharedWorkspaceStatus(
+        { is_public: true, share_expires_at: "not-a-date" },
+        NOW,
+      ).status,
+    ).toBe("ok");
+  });
+
+  it("revoked takes precedence over expired when both apply", () => {
+    // If the share was turned off (is_public=false), the expiry
+    // check is skipped; the row is still revoked.
+    const past = new Date(NOW - 60_000).toISOString();
+    expect(
+      sharedWorkspaceStatus(
+        { is_public: false, share_expires_at: past },
+        NOW,
+      ).status,
+    ).toBe("revoked");
   });
 });

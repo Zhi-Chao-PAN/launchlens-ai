@@ -255,7 +255,7 @@ function ToastContainer() {
 }
 
 
-﻿function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
+function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
   const [entered, setEntered] = useState(false);
   /** Width percentage of the progress bar fill (100 = full time left, 0 = done). */
   const [widthPct, setWidthPct] = useState(100);

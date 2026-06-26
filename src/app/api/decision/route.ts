@@ -1,4 +1,4 @@
-﻿import { generateDecisionBrief } from "@/lib/launchlens/decision-provider";
+import { generateDecisionBrief } from "@/lib/launchlens/decision-provider";
 import { normalizeDecisionSource } from "@/lib/launchlens/decision";
 import {
   generateRequestId,

@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 // The Toast component is a React Client Component that depends on DOM
 // globals (window.setTimeout, window.addEventListener) and on React context,

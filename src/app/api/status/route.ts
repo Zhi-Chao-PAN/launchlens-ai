@@ -1,4 +1,4 @@
-﻿import { configuredRealProvider } from "@/lib/launchlens/provider-runtime";
+import { configuredRealProvider } from "@/lib/launchlens/provider-runtime";
 import {
   cloudStorageConfigured,
   pingCloudStorage,

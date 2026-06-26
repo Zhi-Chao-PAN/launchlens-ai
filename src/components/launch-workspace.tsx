@@ -868,7 +868,7 @@ export function LaunchWorkspace({
       if (!response.ok || data.error || !data.workspace) {
         const fallback =
           response.status === 429
-            ? "Too many requests ��please wait a moment and try again."
+            ? "Too many requests —please wait a moment and try again."
             : "Generation failed.";
         const message = friendlyApiMessage(data.code, data.error ?? fallback);
         const err = new Error(message);

@@ -2,24 +2,25 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ExpiryBadge } from "./shared-workspace-view";
 
-// ExpiryBadge calls Date.now() internally during render (via the
-// shared formatExpiryBadge default), so the expiresAt values must be
-// relative to the real wall clock at test-run time, not a frozen
-// timestamp.
-const iso = (msFromNow: number) => new Date(Date.now() + msFromNow).toISOString();
+// ExpiryBadge uses the `now` prop (computed by the parent) to feed
+// formatExpiryBadge. The expiresAt values must be relative to the
+// wall clock at test-run time so the future/past branches exercise
+// the right code path.
+const NOW = Date.now();
+const iso = (msFromNow: number) => new Date(NOW + msFromNow).toISOString();
 
 describe("<ExpiryBadge>", () => {
   describe("hydration safety", () => {
     it("renders nothing when mounted=false (avoiding hydration mismatch)", () => {
       const html = renderToStaticMarkup(
-        <ExpiryBadge expiresAt={iso(86_400_000)} mounted={false} nowTick={0} />,
+        <ExpiryBadge expiresAt={iso(86_400_000)} mounted={false} nowTick={0} now={NOW} />,
       );
       expect(html).toBe("");
     });
 
     it("renders the badge once mounted=true even with a 0 nowTick", () => {
       const html = renderToStaticMarkup(
-        <ExpiryBadge expiresAt={iso(86_400_000)} mounted={true} nowTick={0} />,
+        <ExpiryBadge expiresAt={iso(86_400_000)} mounted={true} nowTick={0} now={NOW} />,
       );
       expect(html).toContain("<span");
       expect(html).toContain("Expires");
@@ -29,14 +30,14 @@ describe("<ExpiryBadge>", () => {
   describe("null expiresAt (permanent link)", () => {
     it("renders the 'Permanent' label", () => {
       const html = renderToStaticMarkup(
-        <ExpiryBadge expiresAt={null} mounted={true} nowTick={0} />,
+        <ExpiryBadge expiresAt={null} mounted={true} nowTick={0} now={NOW} />,
       );
       expect(html).toContain("Permanent");
     });
 
     it("uses the neutral (emerald) styling variant", () => {
       const html = renderToStaticMarkup(
-        <ExpiryBadge expiresAt={null} mounted={true} nowTick={0} />,
+        <ExpiryBadge expiresAt={null} mounted={true} nowTick={0} now={NOW} />,
       );
       expect(html).toContain("bg-emerald-100");
       expect(html).toContain("text-emerald-800");
@@ -47,14 +48,14 @@ describe("<ExpiryBadge>", () => {
   describe("future expiresAt (active badge)", () => {
     it("renders the 'Expires tomorrow' label for a near-future expiry", () => {
       const html = renderToStaticMarkup(
-        <ExpiryBadge expiresAt={iso(60 * 60 * 1000)} mounted={true} nowTick={0} />,
+        <ExpiryBadge expiresAt={iso(60 * 60 * 1000)} mounted={true} nowTick={0} now={NOW} />,
       );
       expect(html).toContain("Expires tomorrow");
     });
 
     it("uses the danger (amber) styling variant", () => {
       const html = renderToStaticMarkup(
-        <ExpiryBadge expiresAt={iso(7 * 86_400_000)} mounted={true} nowTick={0} />,
+        <ExpiryBadge expiresAt={iso(7 * 86_400_000)} mounted={true} nowTick={0} now={NOW} />,
       );
       expect(html).toContain("bg-amber-100");
       expect(html).toContain("text-amber-800");
@@ -63,7 +64,7 @@ describe("<ExpiryBadge>", () => {
 
     it("includes the badge.title in the title attribute", () => {
       const html = renderToStaticMarkup(
-        <ExpiryBadge expiresAt={iso(7 * 86_400_000)} mounted={true} nowTick={0} />,
+        <ExpiryBadge expiresAt={iso(7 * 86_400_000)} mounted={true} nowTick={0} now={NOW} />,
       );
       expect(html).toContain("title=");
       expect(html).toContain("Expires");
@@ -73,7 +74,7 @@ describe("<ExpiryBadge>", () => {
   describe("past expiresAt (expired)", () => {
     it("renders nothing once the link has expired", () => {
       const html = renderToStaticMarkup(
-        <ExpiryBadge expiresAt={iso(-86_400_000)} mounted={true} nowTick={0} />,
+        <ExpiryBadge expiresAt={iso(-86_400_000)} mounted={true} nowTick={0} now={NOW} />,
       );
       expect(html).toBe("");
     });
@@ -88,10 +89,10 @@ describe("<ExpiryBadge>", () => {
       // Date.now() in SSR — but the render should not crash and
       // should still produce a span for a non-expired timestamp).
       const a = renderToStaticMarkup(
-        <ExpiryBadge expiresAt={iso(86_400_000)} mounted={true} nowTick={0} />,
+        <ExpiryBadge expiresAt={iso(86_400_000)} mounted={true} nowTick={0} now={NOW} />,
       );
       const b = renderToStaticMarkup(
-        <ExpiryBadge expiresAt={iso(86_400_000)} mounted={true} nowTick={9999} />,
+        <ExpiryBadge expiresAt={iso(86_400_000)} mounted={true} nowTick={9999} now={NOW} />,
       );
       expect(a).toContain("<span");
       expect(b).toContain("<span");

@@ -636,7 +636,7 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
     } else {
       [...experiment.evidence].sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned)).forEach((item, itemIdx) => {
         lines.push(
-          "### " + (item.pinned ? "鐚?" : "") + (itemIdx + 1) + ". " + signalLabel[item.signal] + " 闂?" + item.source,
+          "### " + (item.pinned ? "📌" : "") + (itemIdx + 1) + ". " + signalLabel[item.signal] + " —" + item.source,
         );
         lines.push("");
         lines.push("- **Weight**: " + weightLabel[item.weight]);
@@ -732,7 +732,7 @@ const confidenceLabel: Record<ConfidenceLevel, string> = {
     lines.push(
       "- **Hypotheses**: " +
         execution.experiments.length +
-        " total 闂?" +
+        " total —" +
         execution.experiments.filter((e) => e.status === "supported").length +
         " supported, " +
         execution.experiments.filter((e) => e.status === "refuted").length +
@@ -768,7 +768,7 @@ const confidenceLabel: Record<ConfidenceLevel, string> = {
               (itemIdx + 1) +
               ". " +
               signalLabel[item.signal] +
-              " 闂?" +
+              " —" +
               item.source,
           );
           lines.push("");
@@ -970,7 +970,7 @@ const confidenceLabel: Record<ConfidenceLevel, string> = {
     if (batchCount === 0) return;
     if (archived) { setPendingBatch({ kind: "archive", count: batchCount }); return; }
     performBatchArchive(false);
-  }, [batchCount, performBatchArchive]);
+  }, [batchCount, performBatchArchive, setPendingBatch]);
   function batchAddTag(tag: string) {
     const t = tag.trim();
     if (!t || batchCount === 0) return;
@@ -1532,7 +1532,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
     // Toast notification - subtle, auto-dismisses
     const labels: Record<ConfidenceLevel, string> = { low: "Low", medium: "Medium", high: "High" };
     showToast(
-      `Confidence updated: ${labels[oldConfidence]} 闂?${labels[newConfidence]}`,
+      `Confidence updated: ${labels[oldConfidence]} —${labels[newConfidence]}`,
       "info",
       2200,
     );
@@ -1690,11 +1690,11 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
           let signal: EvidenceSignal = draft.signal;
           let weight: EvidenceWeight = draft.weight;
           let rest = line;
-          // Prefix signals: +/-/~ or Chinese 鏀?姝?鍙?璐?涓??. Optional weight letter s/m/a or Chinese 寮?寮?
+          // Prefix signals: +/-/~ or Chinese 支/正/反/负/中. Optional weight letter s/m/a or Chinese 强/重/弱.
           const signalMap: Record<string, EvidenceSignal> = {
             "+": "supports", "支": "supports", "正": "supports",
             "-": "challenges", "反": "challenges", "负": "challenges",
-            "~": "neutral", "?": "neutral", "中": "neutral",
+            "~": "neutral", "中": "neutral",
           };
           const weightMap: Record<string, EvidenceWeight> = {
             s: "strong", S: "strong", "强": "strong",
@@ -2480,7 +2480,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       />
                       {titleCase(experiment.confidence)}
                       {!experiment.confidenceManual && experiment.evidence.length > 0 && (
-                        <span className="text-[10px] font-medium opacity-75">闂?auto</span>
+                        <span className="text-[10px] font-medium opacity-75">—auto</span>
                       )}
                     </span>
                     <span className="text-xs text-muted" aria-label={`${experiment.evidence.length} evidence item${experiment.evidence.length === 1 ? "" : "s"}`}>
@@ -3210,7 +3210,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           }
                           aria-hidden="true"
                         >
-                          闂?                        </span>
+                          —                        </span>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2 text-xs">
                             <span className="font-semibold text-foreground">

@@ -722,6 +722,7 @@ export async function getSharedWorkspace(id: string): Promise<SharedWorkspaceRes
         )
       ) AS execution_summary,
       is_public,
+      share_expires_at,
       created_at,
       updated_at
     FROM launchlens_workspaces
@@ -731,9 +732,43 @@ export async function getSharedWorkspace(id: string): Promise<SharedWorkspaceRes
   const row = firstRow<SharedWorkspaceRow>(rows);
 
   if (!row) return { status: "not_found" };
+  const status = sharedWorkspaceStatus(row, new Date());
+  if (status.status === "ok") return { status: "ok", record: toSharedRecord(row) };
+  return status;
+}
+
+export type SharedStatusInput = {
+  is_public: boolean;
+  share_expires_at: string | Date | null;
+};
+
+/**
+ * Pure derivation: map a fetched shared-workspace row to its
+ * `SharedWorkspaceResult`. Extracted so the not-found / not-public /
+ * expired branches can be unit-tested without a database.
+ *
+ * Returns:
+ * - "not_found" if the row is missing
+ * - "revoked"   if the share link was turned off (`is_public=false`)
+ * - "revoked"   if a `share_expires_at` timestamp is set and in the
+ *               past
+ * - "ok"        otherwise (the caller attaches the parsed record)
+ *
+ * `now` defaults to `Date.now()` so the test suite can pass a
+ * deterministic value.
+ */
+export function sharedWorkspaceStatus(
+  row: SharedStatusInput | null | undefined,
+  now: Date | number = new Date(),
+): { status: "not_found" } | { status: "revoked" } | { status: "ok" } {
+  if (!row) return { status: "not_found" };
   if (!row.is_public) return { status: "revoked" };
-  if (row.share_expires_at && new Date(row.share_expires_at).getTime() <= Date.now()) return { status: "revoked" };
-  return { status: "ok", record: toSharedRecord(row) };
+  const nowMs = typeof now === "number" ? now : now.getTime();
+  if (row.share_expires_at) {
+    const expiresMs = new Date(row.share_expires_at).getTime();
+    if (!Number.isNaN(expiresMs) && expiresMs <= nowMs) return { status: "revoked" };
+  }
+  return { status: "ok" };
 }
 
 export function resetWorkspaceStoreForTests() {

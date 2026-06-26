@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Utilities for coordinating overlay layers so that Escape closes the
  * topmost overlay and does not cascade into toasts/other overlays.
  *
