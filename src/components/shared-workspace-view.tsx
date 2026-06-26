@@ -16,6 +16,7 @@ import {
   Compass,
   FlaskConical,
   Megaphone,
+  Star,
   Target,
   UsersRound,
   type LucideIcon,
@@ -102,7 +103,11 @@ function ReadOnlySection({
   );
 }
 
-function Bullets({ items }: { items: string[] }) {
+function Bullets({ items, icon: Icon = CheckCircle2, iconClassName = "text-accent" }: {
+  items: string[];
+  icon?: typeof CheckCircle2;
+  iconClassName?: string;
+}) {
   return (
     <ul className="space-y-3">
       {items.map((item, index) => (
@@ -115,8 +120,8 @@ function Bullets({ items }: { items: string[] }) {
           key={index}
           className="flex gap-3 text-sm leading-6 text-foreground/80"
         >
-          <CheckCircle2
-            className="mt-1 size-4 shrink-0 text-accent"
+          <Icon
+            className={`mt-1 size-4 shrink-0 ${iconClassName}`}
             aria-hidden="true"
           />
           <span>{item}</span>
@@ -229,6 +234,11 @@ export function SharedWorkspaceView({
               <h1 className="text-xl font-semibold">
                 {workspace.landingPage?.headline || "Shared GTM workspace"}
               </h1>
+              {workspace.landingPage?.subheadline && (
+                <p className="mt-1 max-w-2xl text-sm leading-5 text-foreground/80">
+                  {workspace.landingPage.subheadline}
+                </p>
+              )}
               <p className="mt-1 text-xs text-muted">
                 Read-only shared snapshot
               </p>
@@ -289,7 +299,11 @@ export function SharedWorkspaceView({
             <p className="mb-4 text-sm font-semibold leading-6">
               {workspace.landingPage.subheadline}
             </p>
-            <Bullets items={workspace.landingPage.proofBullets} />
+            <Bullets
+              items={workspace.landingPage.proofBullets}
+              icon={Star}
+              iconClassName="text-amber-500"
+            />
           </ReadOnlySection>
         </div>
 

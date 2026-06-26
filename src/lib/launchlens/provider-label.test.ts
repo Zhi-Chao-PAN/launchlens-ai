@@ -22,4 +22,23 @@ describe("formatProviderLabel", () => {
     // function should not throw.
     expect(() => formatProviderLabel("mock" as never)).not.toThrow();
   });
+  it("uses the same word for minimax and minimax (case sensitive)", () => {
+    // ProviderName is a union literal type; 'minimax' is the only accepted
+    // form. A typo like 'minimax' would still go through the
+    // mock branch (since none of the explicit branches match) and produce
+    // the demo label rather than something garbled.
+    expect(formatProviderLabel("minimax" as never)).toBe("Demo mock provider");
+  });
+  it("returns a non-empty label for every known provider", () => {
+    expect(formatProviderLabel("minimax").length).toBeGreaterThan(0);
+    expect(formatProviderLabel("openai").length).toBeGreaterThan(0);
+    expect(formatProviderLabel("mock").length).toBeGreaterThan(0);
+  });
+  it("uses brand casing ('MiniMax' not 'minimax')", () => {
+    // The brand name is intentionally 'MiniMax' (case-preserved) — a
+    // search for 'minimax' in the label would not be a useful assertion,
+    // but a check for the canonical 'MiniMax' (with capital M, lowercase
+    // rest) makes the contract explicit.
+    expect(formatProviderLabel("minimax")).toMatch(/MiniMax/);
+  });
 });
