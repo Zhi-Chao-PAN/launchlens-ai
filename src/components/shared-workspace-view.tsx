@@ -40,7 +40,7 @@ type ReadOnlySectionProps = {
   sectionId?: string;
 };
 
-function ReadOnlySection({
+export function ReadOnlySection({
   title,
   icon: Icon,
   children,

@@ -62,6 +62,7 @@ import { formatProviderLabel } from "@/lib/launchlens/provider-label";
 import { formatSaveLabel } from "@/lib/launchlens/save-label";
 import { Bullets } from "@/components/bullets";
 import { splitLines } from "@/lib/launchlens/split-lines";
+import { joinLines } from "@/lib/launchlens/join-lines";
 import { evaluateWorkspaceQuality } from "@/lib/launchlens/workspace-quality";
 import { friendlyApiMessage } from "@/lib/launchlens/api-errors";
 import type {
@@ -269,7 +270,7 @@ function EditableLines({
   return (
     <EditableText
       label={label}
-      value={items.join("\n")}
+      value={joinLines(items)}
       rows={rows}
       onCommit={(value) => onCommit(splitLines(value))}
     />
