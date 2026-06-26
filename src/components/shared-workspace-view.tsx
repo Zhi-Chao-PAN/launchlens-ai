@@ -29,7 +29,7 @@ import type { SharedCloudWorkspaceRecord } from "@/lib/launchlens/cloud-workspac
 import { formatGeneratedTime, formatRelativeTime } from "@/lib/launchlens/generated-time";
 import { formatExpiryBadge } from "@/lib/launchlens/expiry-format";
 import { formatProviderLabel } from "@/lib/launchlens/provider-label";
-import { cleanBullets } from "@/lib/launchlens/bullets";
+import { Bullets } from "@/components/bullets";
 import { taskIdentity } from "@/lib/launchlens/execution";
 
 type ReadOnlySectionProps = {
@@ -101,34 +101,6 @@ function ReadOnlySection({
         </div>
       </div>
     </section>
-  );
-}
-
-function Bullets({ items, icon: Icon = CheckCircle2, iconClassName = "text-accent" }: {
-  items: string[];
-  icon?: typeof CheckCircle2;
-  iconClassName?: string;
-}) {
-  return (
-    <ul className="space-y-3">
-      {items.map((item, index) => (
-        <li
-          // Use the position only — two identical pain points are intentionally
-          // rendered as two list items, and the previous key (`${item}-${index}`)
-          // would still collide if the same text appeared at the same index
-          // after a re-render that mutated the source array. Index keys are
-          // correct here because the list is not reorderable in the share view.
-          key={index}
-          className="flex gap-3 text-sm leading-6 text-foreground/80"
-        >
-          <Icon
-            className={`mt-1 size-4 shrink-0 ${iconClassName}`}
-            aria-hidden="true"
-          />
-          <span>{item}</span>
-        </li>
-      ))}
-    </ul>
   );
 }
 
@@ -294,20 +266,20 @@ export function SharedWorkspaceView({
 
         <div className="grid gap-6 lg:grid-cols-2">
           <ReadOnlySection title="Target users" icon={UsersRound} collapsible sectionId="target-users">
-            <Bullets items={cleanBullets(workspace.targetUsers)} />
+            <Bullets items={workspace.targetUsers} />
           </ReadOnlySection>
           <ReadOnlySection title="Pain map" icon={Target} collapsible sectionId="pain-map">
-            <Bullets items={cleanBullets(workspace.pains)} />
+            <Bullets items={workspace.pains} />
           </ReadOnlySection>
           <ReadOnlySection title="MVP scope" icon={ClipboardList} collapsible sectionId="mvp-scope">
-            <Bullets items={cleanBullets(workspace.mvpScope)} />
+            <Bullets items={workspace.mvpScope} />
           </ReadOnlySection>
           <ReadOnlySection title="Landing page copy" icon={Megaphone} collapsible sectionId="landing-page-copy">
             <p className="mb-4 text-sm font-semibold leading-6">
               {workspace.landingPage.subheadline}
             </p>
             <Bullets
-              items={cleanBullets(workspace.landingPage.proofBullets)}
+              items={workspace.landingPage.proofBullets}
               icon={Star}
               iconClassName="text-amber-500"
             />
@@ -342,10 +314,10 @@ export function SharedWorkspaceView({
             <p className="mb-4 text-sm leading-6 text-foreground/80">
               {workspace.pricing.hypothesis}
             </p>
-            <Bullets items={cleanBullets(workspace.pricing.tiers)} />
+            <Bullets items={workspace.pricing.tiers} />
           </ReadOnlySection>
           <ReadOnlySection title="Launch plan" icon={CalendarDays} collapsible sectionId="launch-plan">
-            <Bullets items={cleanBullets(workspace.launchPlan)} />
+            <Bullets items={workspace.launchPlan} />
           </ReadOnlySection>
           <ReadOnlySection title="Execution tasks" icon={CheckCircle2} collapsible sectionId="execution-tasks">
             <div className="space-y-3">

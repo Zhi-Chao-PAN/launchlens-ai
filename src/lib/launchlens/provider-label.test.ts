@@ -22,12 +22,12 @@ describe("formatProviderLabel", () => {
     // function should not throw.
     expect(() => formatProviderLabel("mock" as never)).not.toThrow();
   });
-  it("uses the same word for minimax and minimax (case sensitive)", () => {
-    // ProviderName is a union literal type; 'minimax' is the only accepted
-    // form. A typo like 'minimax' would still go through the
-    // mock branch (since none of the explicit branches match) and produce
-    // the demo label rather than something garbled.
-    expect(formatProviderLabel("minimax" as never)).toBe("Demo mock provider");
+  it("falls back to demo label for an unrelated provider string (forward-compat)", () => {
+    // A typo / future brand ('anthropic', 'gemini', etc.) is not in the
+    // explicit switch and should still produce the demo label rather
+    // than throwing or returning a raw lowercase brand name.
+    expect(formatProviderLabel("anthropic" as never)).toBe("Demo mock provider");
+    expect(formatProviderLabel("" as never)).toBe("Demo mock provider");
   });
   it("returns a non-empty label for every known provider", () => {
     expect(formatProviderLabel("minimax").length).toBeGreaterThan(0);

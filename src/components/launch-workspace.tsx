@@ -60,7 +60,7 @@ import { formatGeneratedTime } from "@/lib/launchlens/generated-time";
 import { formatGenerationModeLabel } from "@/lib/launchlens/generation-mode-label";
 import { formatProviderLabel } from "@/lib/launchlens/provider-label";
 import { formatSaveLabel } from "@/lib/launchlens/save-label";
-import { cleanBullets } from "@/lib/launchlens/bullets";
+import { Bullets } from "@/components/bullets";
 import { evaluateWorkspaceQuality } from "@/lib/launchlens/workspace-quality";
 import { friendlyApiMessage } from "@/lib/launchlens/api-errors";
 import type {
@@ -283,27 +283,7 @@ function EditableLines({
 }
 
 function BulletList({ items }: { items: string[] }) {
-  return (
-    <ul className="space-y-3">
-      {cleanBullets(items).map((item, index) => (
-        <li
-          // Use the position only — two identical items are intentionally
-          // rendered as two list items, and the previous
-          // \`\${item}-\${index}\` key could collide after a re-render
-          // that mutated the source array. The list is not reorderable
-          // in this view so index keys are stable.
-          key={index}
-          className="flex gap-3 text-sm leading-6 text-foreground/80"
-        >
-          <CheckCircle2
-            className="mt-1 size-4 shrink-0 text-accent"
-            aria-hidden="true"
-          />
-          <span>{item}</span>
-        </li>
-      ))}
-    </ul>
-  );
+  return <Bullets items={items} />;
 }
 
 function EncryptedImportDialog({
