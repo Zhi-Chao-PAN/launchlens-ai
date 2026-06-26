@@ -31,6 +31,7 @@ import { parseInlineMarkdown } from "@/lib/launchlens/inline-markdown";
 import { decisionSourceFromExperiment, normalizeDecisionBrief } from "@/lib/launchlens/decision";
 import { extractSourceUrl } from "@/lib/launchlens/source-url";
 import { statusClass } from "@/lib/launchlens/status-class";
+import { tagStyle } from "@/lib/launchlens/tag-style";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
@@ -68,16 +69,6 @@ type EvidenceDraft = {
   signal: EvidenceSignal;
   weight: EvidenceWeight;
 };
-
-function tagStyle(tag: string): { pill: string; text: string } {
-  const t = tag.toLowerCase();
-  if (/(critical|block(ed|er)?|urgent|hotfix|p0|must)/.test(t)) return { pill: "bg-red-500/15", text: "text-red-600 dark:text-red-300" };
-  if (/(warn|risk|caution|p1|todo|flag)/.test(t)) return { pill: "bg-amber-500/15", text: "text-amber-700 dark:text-amber-300" };
-  if (/(validated|shipped|done|launch|live|won|pivot)/.test(t)) return { pill: "bg-emerald-500/15", text: "text-emerald-700 dark:text-emerald-300" };
-  if (/(testing|experiment|running|wip)/.test(t)) return { pill: "bg-sky-500/15", text: "text-sky-700 dark:text-sky-300" };
-  if (/(idea|nice|later|backlog|maybe)/.test(t)) return { pill: "bg-violet-500/15", text: "text-violet-700 dark:text-violet-300" };
-  return { pill: "bg-muted", text: "text-muted" };
-}
 
 const emptyDraft: EvidenceDraft = {
   note: "",
