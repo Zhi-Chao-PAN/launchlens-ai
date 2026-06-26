@@ -125,6 +125,36 @@ function Bullets({ items }: { items: string[] }) {
   );
 }
 
+function ExpiryBadge({
+  expiresAt,
+  mounted,
+  nowTick,
+}: {
+  expiresAt: string | null;
+  mounted: boolean;
+  /** Reference to subscribe this component to the 30s refresh interval. */
+  nowTick: number;
+}) {
+  // Defer rendering until after mount so Date.now() doesn't cause a
+  // server/client hydration mismatch. Before mount, render nothing
+  // (the surrounding toolbar already shows a 'Read-only snapshot' pill
+  // so the visual layout is preserved).
+  if (!mounted) return null;
+  // nowTick is referenced in the second arg so React re-renders the
+  // badge on every tick; otherwise the label would freeze on first mount.
+  const badge = formatExpiryBadge(expiresAt, Date.now() + nowTick);
+  if (!badge) return null;
+  const className =
+    badge.variant === "neutral"
+      ? "w-fit rounded-md bg-emerald-100 px-3 py-2 text-sm font-medium text-emerald-800"
+      : "w-fit rounded-md bg-amber-100 px-3 py-2 text-sm font-medium text-amber-800";
+  return (
+    <span className={className} title={badge.title}>
+      {badge.label}
+    </span>
+  );
+}
+
 export function SharedWorkspaceView({
   record,
 }: {
@@ -204,25 +234,11 @@ export function SharedWorkspaceView({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="w-fit rounded-md border border-card bg-card px-3 py-2 text-sm text-foreground/80" title="This shared snapshot is read-only. You can view, copy, or export the workspace, but edits are disabled." aria-label="Read-only: view and export only">Read-only snapshot</span>
-            {(() => {
-              // Compute expiry only after mount to avoid hydration mismatch
-              // (Date.now() differs between server-render and client-hydrate).
-              // nowTick is referenced to subscribe this IIFE to the
-              // 30s refresh interval; otherwise the badge would never
-              // re-render to update 'Expires in 5 days' -> 'Expires in 4 days'.
-              if (!mounted) return null;
-              const badge = formatExpiryBadge(record.expiresAt, Date.now() + nowTick);
-              if (!badge) return null;
-              const className =
-                badge.variant === "neutral"
-                  ? "w-fit rounded-md bg-emerald-100 px-3 py-2 text-sm font-medium text-emerald-800"
-                  : "w-fit rounded-md bg-amber-100 px-3 py-2 text-sm font-medium text-amber-800";
-              return (
-                <span className={className} title={badge.title}>
-                  {badge.label}
-                </span>
-              );
-            })()}
+            <ExpiryBadge
+              expiresAt={record.expiresAt}
+              mounted={mounted}
+              nowTick={nowTick}
+            />
             <CopyMarkdownButton workspace={workspace} />
             <DownloadMarkdownButton workspace={workspace} />
             <DownloadJsonButton workspace={workspace} />
