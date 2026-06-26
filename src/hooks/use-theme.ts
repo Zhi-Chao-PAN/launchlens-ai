@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-export type Theme = "light" | "dark" | "system";
+import { nextTheme } from "@/lib/launchlens/theme-cycle";
+import type { Theme } from "@/lib/launchlens/theme-cycle";
+
+export type { Theme };
 
 const THEME_KEY = "launchlens:theme";
 
@@ -66,11 +69,7 @@ export function useTheme() {
   }, [theme, mounted]);
 
   const toggleTheme = useCallback(() => {
-    setTheme((current) => {
-      const order: Theme[] = ["light", "dark", "system"];
-      const idx = order.indexOf(current);
-      return order[(idx + 1) % order.length];
-    });
+    setTheme((current) => nextTheme(current));
   }, []);
 
   const resolvedTheme = mounted
