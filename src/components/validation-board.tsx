@@ -38,6 +38,7 @@ import { yamlQuote } from "@/lib/launchlens/yaml-quote";
 import { titleCase } from "@/lib/launchlens/title-case";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { FilterChip } from "@/components/filter-chip";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
 
 import {
@@ -2765,20 +2766,13 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                 const challengesCount = experiment.evidence.filter((e) => e.signal === "challenges").length;
                 const neutralCount = experiment.evidence.filter((e) => e.signal === "neutral").length;
                 const setSig = (s: "all" | EvidenceSignal) => setEvidenceFilters((prev) => ({ ...prev, [experiment.id]: { ...getEvidenceFilter(experiment.id), signal: s } }));
-                const chip = (active: boolean, label: string, count: number, sig: "all" | EvidenceSignal) => {
-                  const chipTitle = sig === "all" ? "Show all evidence" : SIGNAL_DESCRIPTIONS[sig];
-                  return (
-                  <button type="button" onClick={() => setSig(sig)} aria-pressed={active} title={chipTitle + (active ? " (currently active)" : "")} aria-label={`Filter evidence by signal: ${sig}. ${count} item${count === 1 ? "" : "s"}.`} className={"rounded-full px-2 py-0.5 text-[10px] font-medium transition " + (active ? "bg-accent text-white" : "bg-card text-muted hover:text-foreground")}>
-                    {label} ({count})
-                  </button>
-                );
-                };
+                const chipTitleForSignal = (sig: "all" | EvidenceSignal) => sig === "all" ? "Show all evidence" : SIGNAL_DESCRIPTIONS[sig];
                 return (<>
                   <div className="mt-3 flex flex-wrap items-center gap-1">
-                    {chip(ef.signal === "all", "All", experiment.evidence.length, "all")}
-                    {chip(ef.signal === "supports", "Supports", supportsCount, "supports")}
-                    {chip(ef.signal === "challenges", "Challenges", challengesCount, "challenges")}
-                    {chip(ef.signal === "neutral", "Neutral", neutralCount, "neutral")}
+                    <FilterChip label="All" count={experiment.evidence.length} active={ef.signal === "all"} onClick={() => setSig("all")} title={chipTitleForSignal("all")} ariaLabelPrefix="Filter evidence by signal" ariaValue="all" />
+                    <FilterChip label="Supports" count={supportsCount} active={ef.signal === "supports"} onClick={() => setSig("supports")} title={chipTitleForSignal("supports")} ariaLabelPrefix="Filter evidence by signal" ariaValue="supports" />
+                    <FilterChip label="Challenges" count={challengesCount} active={ef.signal === "challenges"} onClick={() => setSig("challenges")} title={chipTitleForSignal("challenges")} ariaLabelPrefix="Filter evidence by signal" ariaValue="challenges" />
+                    <FilterChip label="Neutral" count={neutralCount} active={ef.signal === "neutral"} onClick={() => setSig("neutral")} title={chipTitleForSignal("neutral")} ariaLabelPrefix="Filter evidence by signal" ariaValue="neutral" />
                   </div>
                   <div className="mt-0.5 flex flex-wrap items-center gap-1">
                     {(() => {
@@ -2786,19 +2780,12 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       const moderateCount = experiment.evidence.filter((e) => e.weight === "moderate").length;
                       const anecdotalCount = experiment.evidence.filter((e) => e.weight === "anecdotal").length;
                       const setWt = (w: "all" | EvidenceWeight) => setEvidenceFilters((prev) => ({ ...prev, [experiment.id]: { ...getEvidenceFilter(experiment.id), weight: w } }));
-                      const wchip = (active: boolean, label: string, count: number, w: "all" | EvidenceWeight) => {
-                        const chipTitle = w === "all" ? "Show all weights" : WEIGHT_DESCRIPTIONS[w];
-                        return (
-                        <button type="button" onClick={() => setWt(w)} aria-pressed={active} title={chipTitle + (active ? " (currently active)" : "")} aria-label={`Filter evidence by weight: ${w}. ${count} item${count === 1 ? "" : "s"}.`} className={"rounded-full px-2 py-0.5 text-[10px] font-medium transition " + (active ? "bg-card ring-1 ring-accent text-foreground" : "bg-transparent text-muted hover:text-foreground")}>
-                          {label} ({count})
-                        </button>
-                      );
-                      };
+                      const chipTitleForWeight = (w: "all" | EvidenceWeight) => w === "all" ? "Show all weights" : WEIGHT_DESCRIPTIONS[w];
                       return (<>
-                        {wchip(ef.weight === "all", "All wts", experiment.evidence.length, "all")}
-                        {wchip(ef.weight === "strong", "Strong", strongCount, "strong")}
-                        {wchip(ef.weight === "moderate", "Moderate", moderateCount, "moderate")}
-                        {wchip(ef.weight === "anecdotal", "Anecdotal", anecdotalCount, "anecdotal")}
+                        <FilterChip variant="ringed" label="All wts" count={experiment.evidence.length} active={ef.weight === "all"} onClick={() => setWt("all")} title={chipTitleForWeight("all")} ariaLabelPrefix="Filter evidence by weight" ariaValue="all" />
+                        <FilterChip variant="ringed" label="Strong" count={strongCount} active={ef.weight === "strong"} onClick={() => setWt("strong")} title={chipTitleForWeight("strong")} ariaLabelPrefix="Filter evidence by weight" ariaValue="strong" />
+                        <FilterChip variant="ringed" label="Moderate" count={moderateCount} active={ef.weight === "moderate"} onClick={() => setWt("moderate")} title={chipTitleForWeight("moderate")} ariaLabelPrefix="Filter evidence by weight" ariaValue="moderate" />
+                        <FilterChip variant="ringed" label="Anecdotal" count={anecdotalCount} active={ef.weight === "anecdotal"} onClick={() => setWt("anecdotal")} title={chipTitleForWeight("anecdotal")} ariaLabelPrefix="Filter evidence by weight" ariaValue="anecdotal" />
                       </>);
                     })()}
                   <div className="mt-1 flex flex-wrap items-center gap-1.5">
