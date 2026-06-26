@@ -258,10 +258,10 @@ export function SharedWorkspaceView({
             <span className="rounded-md bg-signal-supports px-2 py-1 font-medium text-signal-supports">
               {workspace.provider} provider
             </span>
-            <span title={new Date(workspace.generatedAt).toLocaleString()}>
+            <span title={`Generated at ${workspace.generatedAt}`}>
               Generated {formatGeneratedTime(workspace.generatedAt)}
             </span>
-            <span title={new Date(record.updatedAt).toLocaleString()}>
+            <span title={`Shared at ${record.updatedAt}`}>
               Shared {sharedAtLabel}
             </span>
           </div>
