@@ -9,8 +9,12 @@ function iso(deltaMs: number): string {
 }
 
 describe("formatExpiryBadge", () => {
-  it("returns null when expiresAt is null", () => {
-    expect(formatExpiryBadge(null, NOW)).toBeNull();
+  it("returns a 'Permanent' badge with neutral variant when expiresAt is null", () => {
+    expect(formatExpiryBadge(null, NOW)).toEqual({
+      label: "Permanent",
+      title: "This shared link never expires",
+      variant: "neutral",
+    });
   });
 
   it("returns null when already expired (target <= now)", () => {
@@ -26,6 +30,7 @@ describe("formatExpiryBadge", () => {
     expect(formatExpiryBadge(iso(365 * DAY), NOW)).toEqual({
       label: "Expires in 1 year",
       title: "Expires " + iso(365 * DAY),
+      variant: "danger",
     });
   });
 
@@ -105,5 +110,13 @@ describe("formatExpiryBadge", () => {
     const ts = iso(7 * DAY);
     const out = formatExpiryBadge(ts, NOW);
     expect(out?.title).toBe("Expires " + ts);
+  });
+
+  it("tags a future expiry with variant 'danger'", () => {
+    expect(formatExpiryBadge(iso(7 * DAY), NOW)?.variant).toBe("danger");
+  });
+
+  it("tags a permanent link with variant 'neutral'", () => {
+    expect(formatExpiryBadge(null, NOW)?.variant).toBe("neutral");
   });
 });

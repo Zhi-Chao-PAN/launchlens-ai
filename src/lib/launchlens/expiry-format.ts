@@ -13,13 +13,16 @@
  *   days     ->  >= 2   days
  *   singular ->  1 day
  *   "tomorrow"-> exactly within 24h but > 0
- *   null     ->  expired (ms <= 0) or no expiresAt
+ *   permanent->  expiresAt is null
+ *   null     ->  expired (ms <= 0)
  */
 export function formatExpiryBadge(
   expiresAt: string | null,
   now: number = Date.now(),
-): { label: string; title: string } | null {
-  if (!expiresAt) return null;
+): { label: string; title: string; variant: "danger" | "neutral" } | null {
+  if (!expiresAt) {
+    return { label: "Permanent", title: "This shared link never expires", variant: "neutral" };
+  }
   const target = new Date(expiresAt).getTime();
   const ms = target - now;
   if (ms <= 0) return null;
@@ -40,5 +43,5 @@ export function formatExpiryBadge(
     const weeks = Math.round(days / 7);
     label = "Expires in " + weeks + " week" + (weeks === 1 ? "" : "s");
   }
-  return { label, title: "Expires " + new Date(expiresAt).toISOString() };
+  return { label, title: "Expires " + new Date(expiresAt).toISOString(), variant: "danger" };
 }
