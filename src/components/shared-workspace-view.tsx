@@ -303,7 +303,10 @@ export function SharedWorkspaceView({
             <div className="space-y-3">
               {workspace.tasks.map((task, index) => (
                 <article
-                  key={`${task.title}-${index}`}
+                  // Position key — tasks are not reorderable in the share
+                  // view and two tasks may legitimately share a title
+                  // (e.g. "TBD" placeholders).
+                  key={index}
                   className="rounded-md border border-card bg-input p-4"
                 >
                   <h3 className="text-sm font-semibold">{task.title}</h3>
