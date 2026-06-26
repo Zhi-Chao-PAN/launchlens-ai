@@ -31,6 +31,7 @@ import type {
 } from "@/lib/launchlens/cloud-workspace";
 import { MAX_CLOUD_WORKSPACES } from "@/lib/launchlens/cloud-workspace";
 import { formatSnapshotTime } from "@/lib/launchlens/snapshot-time";
+import { formatExpiryBadge } from "@/lib/launchlens/expiry-format";
 import type { WorkspaceExecutionState } from "@/lib/launchlens/execution";
 import {
   createRecoveryKey,
@@ -492,11 +493,9 @@ export function CloudWorkspaces({
   }
 
   function shareExpirySuffix(item: CloudWorkspaceSummary) {
-    if (!item.expiresAt) return "";
-    const ms = new Date(item.expiresAt).getTime() - Date.now();
-    if (ms <= 0) return " It has expired.";
-    const days = Math.max(1, Math.ceil(ms / 86400000));
-    return " It expires in " + days + " day" + (days === 1 ? "" : "s") + ".";
+    const badge = formatExpiryBadge(item.expiresAt);
+    if (!badge) return " It has expired.";
+    return " " + badge.label + ".";
   }
 
   const isBusy = Boolean(busyAction);
