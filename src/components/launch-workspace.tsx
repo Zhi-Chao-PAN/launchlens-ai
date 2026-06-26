@@ -63,6 +63,7 @@ import { formatSaveLabel } from "@/lib/launchlens/save-label";
 import { Bullets } from "@/components/bullets";
 import { splitLines } from "@/lib/launchlens/split-lines";
 import { joinLines } from "@/lib/launchlens/join-lines";
+import { clearIfStill, FLASH_STATE_DURATION_MS } from "@/lib/launchlens/flash-state";
 import { evaluateWorkspaceQuality } from "@/lib/launchlens/workspace-quality";
 import { friendlyApiMessage } from "@/lib/launchlens/api-errors";
 import type {
@@ -938,8 +939,8 @@ export function LaunchWorkspace({
   function flashCopySuccess(kind: "markdown" | "json") {
     setCopyJustSucceeded(kind);
     window.setTimeout(() => {
-      setCopyJustSucceeded((current) => (current === kind ? "" : current));
-    }, 1800);
+      setCopyJustSucceeded((current) => clearIfStill(current, kind));
+    }, FLASH_STATE_DURATION_MS);
   }
 
   async function copyMarkdown() {

@@ -2,8 +2,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ExpiryBadge } from "./shared-workspace-view";
 
-const FIXED_NOW = new Date("2026-06-26T12:00:00Z").getTime();
-const iso = (msFromNow: number) => new Date(FIXED_NOW + msFromNow).toISOString();
+// ExpiryBadge calls Date.now() internally during render (via the
+// shared formatExpiryBadge default), so the expiresAt values must be
+// relative to the real wall clock at test-run time, not a frozen
+// timestamp.
+const iso = (msFromNow: number) => new Date(Date.now() + msFromNow).toISOString();
 
 describe("<ExpiryBadge>", () => {
   describe("hydration safety", () => {

@@ -36,6 +36,7 @@ import { buildSafeFilename } from "@/lib/launchlens/safe-filename";
 import { evidenceId } from "@/lib/launchlens/evidence-id";
 import { yamlQuote } from "@/lib/launchlens/yaml-quote";
 import { titleCase } from "@/lib/launchlens/title-case";
+import { patchEvidenceFilter } from "@/lib/launchlens/evidence-filter-patch";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { FilterChip } from "@/components/filter-chip";
@@ -2765,7 +2766,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                 const supportsCount = experiment.evidence.filter((e) => e.signal === "supports").length;
                 const challengesCount = experiment.evidence.filter((e) => e.signal === "challenges").length;
                 const neutralCount = experiment.evidence.filter((e) => e.signal === "neutral").length;
-                const setSig = (s: "all" | EvidenceSignal) => setEvidenceFilters((prev) => ({ ...prev, [experiment.id]: { ...getEvidenceFilter(experiment.id), signal: s } }));
+                const setSig = (s: "all" | EvidenceSignal) => setEvidenceFilters((prev) => patchEvidenceFilter(prev, experiment.id, { signal: s }, { signal: "all" as const, weight: "all" as const }));
                 const chipTitleForSignal = (sig: "all" | EvidenceSignal) => sig === "all" ? "Show all evidence" : SIGNAL_DESCRIPTIONS[sig];
                 return (<>
                   <div className="mt-3 flex flex-wrap items-center gap-1">
@@ -2779,7 +2780,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       const strongCount = experiment.evidence.filter((e) => e.weight === "strong").length;
                       const moderateCount = experiment.evidence.filter((e) => e.weight === "moderate").length;
                       const anecdotalCount = experiment.evidence.filter((e) => e.weight === "anecdotal").length;
-                      const setWt = (w: "all" | EvidenceWeight) => setEvidenceFilters((prev) => ({ ...prev, [experiment.id]: { ...getEvidenceFilter(experiment.id), weight: w } }));
+                      const setWt = (w: "all" | EvidenceWeight) => setEvidenceFilters((prev) => patchEvidenceFilter(prev, experiment.id, { weight: w }, { signal: "all" as const, weight: "all" as const }));
                       const chipTitleForWeight = (w: "all" | EvidenceWeight) => w === "all" ? "Show all weights" : WEIGHT_DESCRIPTIONS[w];
                       return (<>
                         <FilterChip variant="ringed" label="All wts" count={experiment.evidence.length} active={ef.weight === "all"} onClick={() => setWt("all")} title={chipTitleForWeight("all")} ariaLabelPrefix="Filter evidence by weight" ariaValue="all" />
@@ -2789,7 +2790,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       </>);
                     })()}
                   <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                    {(ef.signal !== "all" || ef.weight !== "all") && (<button type="button" onClick={() => setEvidenceFilters((prev) => ({ ...prev, [experiment.id]: { signal: "all", weight: "all" } }))} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-muted underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Reset filters</button>)}
+                    {(ef.signal !== "all" || ef.weight !== "all") && (<button type="button" onClick={() => setEvidenceFilters((prev) => patchEvidenceFilter(prev, experiment.id, { signal: "all", weight: "all" }, { signal: "all" as const, weight: "all" as const }))} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-muted underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Reset filters</button>)}
                     {experiment.evidence.length > 1 && (<button type="button" onClick={(e) => { e.stopPropagation(); const on = !evidenceSelectMode[experiment.id]; setEvidenceSelectMode((prev) => ({ ...prev, [experiment.id]: on })); if (on) setSelectedEvidenceIds((prev) => ({ ...prev, [experiment.id]: new Set() })); else setSelectedEvidenceIds((prev) => ({ ...prev, [experiment.id]: new Set() })); }} className={"rounded-full px-2 py-0.5 text-[10px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + (evidenceSelectMode[experiment.id] ? "bg-accent text-white" : "text-muted hover:text-foreground hover:underline")} title={evidenceSelectMode[experiment.id] ? "Exit evidence select mode" : "Select multiple evidence items"} aria-pressed={Boolean(evidenceSelectMode[experiment.id])} data-evidence-select-pill data-experiment-id={experiment.id}>{evidenceSelectMode[experiment.id] ? "Exit select" : "Select"}</button>)}
                     {evidenceSelectMode[experiment.id] && (() => {
                       const sel = selectedEvidenceIds[experiment.id] || new Set();
