@@ -56,7 +56,8 @@ import {
   type WorkspaceExecutionState,
 } from "@/lib/launchlens/execution";
 import type { ExampleWorkspace } from "@/lib/launchlens/example-workspaces";
-import { formatGeneratedTime, formatRelativeTime } from "@/lib/launchlens/generated-time";
+import { formatGeneratedTime } from "@/lib/launchlens/generated-time";
+import { formatSaveLabel } from "@/lib/launchlens/save-label";
 import { evaluateWorkspaceQuality } from "@/lib/launchlens/workspace-quality";
 import { friendlyApiMessage } from "@/lib/launchlens/api-errors";
 import type {
@@ -573,9 +574,7 @@ export function LaunchWorkspace({
 
   const saveLabel = useMemo(() => {
     void nowTick; // used as a periodic refresh tick
-    if (!isStorageReady) return "Preparing save";
-    if (!savedAt) return "Saved locally";
-    return `Saved ${formatRelativeTime(savedAt)}`;
+    return formatSaveLabel({ isStorageReady, savedAt });
   }, [isStorageReady, savedAt, nowTick]);
 
 
