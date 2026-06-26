@@ -12,7 +12,7 @@
  */
 export function splitLines(value: string): string[] {
   return value
-    .split(/\r?\n/)
+    .split(/\r\n|\r|\n/)
     .map((item) => item.trim())
     .filter(Boolean);
 }

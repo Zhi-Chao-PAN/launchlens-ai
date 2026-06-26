@@ -121,7 +121,10 @@ function ExpiryBadge({
   if (!mounted) return null;
   // nowTick is referenced in the second arg so React re-renders the
   // badge on every tick; otherwise the label would freeze on first mount.
-  const badge = formatExpiryBadge(expiresAt, Date.now() + nowTick);
+  // We compute the now timestamp locally per render and add nowTick
+  // (a non-zero counter) to defeat the call-site identical-args cache.
+  const now = Date.now() + nowTick;
+  const badge = formatExpiryBadge(expiresAt, now);
   if (!badge) return null;
   const className =
     badge.variant === "neutral"
