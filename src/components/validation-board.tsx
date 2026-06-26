@@ -37,6 +37,7 @@ import { evidenceId } from "@/lib/launchlens/evidence-id";
 import { yamlQuote } from "@/lib/launchlens/yaml-quote";
 import { titleCase } from "@/lib/launchlens/title-case";
 import { patchEvidenceFilter } from "@/lib/launchlens/evidence-filter-patch";
+import { pinnedFirst } from "@/lib/launchlens/pinned-first";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { FilterChip } from "@/components/filter-chip";
@@ -634,7 +635,7 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
     if (experiment.evidence.length === 0) {
       lines.push("_No evidence recorded yet._");
     } else {
-      [...experiment.evidence].sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned)).forEach((item, itemIdx) => {
+      [...experiment.evidence].sort(pinnedFirst).forEach((item, itemIdx) => {
         lines.push(
           "### " + (item.pinned ? "📌" : "") + (itemIdx + 1) + ". " + signalLabel[item.signal] + " —" + item.source,
         );

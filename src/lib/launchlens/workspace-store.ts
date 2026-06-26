@@ -24,6 +24,7 @@ import {
   isLaunchLensInput,
   isLaunchLensWorkspace,
 } from "./workspace-validation";
+import { pickEnvConnection } from "./env-clean";
 import {
   isWorkspaceRole,
   type WorkspaceRole,
@@ -64,24 +65,8 @@ export class WorkspaceStoreError extends Error {
   }
 }
 
-function cleanEnvValue(value: string | undefined) {
-  const trimmed = value?.trim() ?? "";
-  const quote = trimmed[0];
-
-  return trimmed.length >= 2 &&
-    (quote === "\"" || quote === "'") &&
-    trimmed.endsWith(quote)
-    ? trimmed.slice(1, -1)
-    : trimmed;
-}
-
 function connectionString() {
-  return (
-    cleanEnvValue(process.env.DATABASE_URL) ||
-    cleanEnvValue(process.env.POSTGRES_URL) ||
-    cleanEnvValue(process.env.NEON_DATABASE_URL) ||
-    ""
-  );
+  return pickEnvConnection(["DATABASE_URL", "POSTGRES_URL", "NEON_DATABASE_URL"]);
 }
 
 export function cloudStorageConfigured() {
