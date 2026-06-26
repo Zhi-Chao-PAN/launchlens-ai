@@ -24,6 +24,7 @@ export function formatExpiryBadge(
     return { label: "Permanent", title: "This shared link never expires", variant: "neutral" };
   }
   const target = new Date(expiresAt).getTime();
+  if (Number.isNaN(target)) return null;
   const ms = target - now;
   if (ms <= 0) return null;
   // Round up so "still 1ms left" reads as "1 day remaining".

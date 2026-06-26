@@ -119,4 +119,16 @@ describe("formatExpiryBadge", () => {
   it("tags a permanent link with variant 'neutral'", () => {
     expect(formatExpiryBadge(null, NOW)?.variant).toBe("neutral");
   });
+
+  it("returns null for an unparseable expiresAt string (no 'NaN years' leak)", () => {
+    expect(formatExpiryBadge("not a date", NOW)).toBeNull();
+    expect(formatExpiryBadge("2026-99-99", NOW)).toBeNull();
+  });
+
+  it("treats an empty string as a permanent link (falsy == null)", () => {
+    // Empty string is deliberately treated the same as null: it is
+    // falsy, so the formatter falls into the permanent branch rather
+    // than the NaN-arithmetic trap.
+    expect(formatExpiryBadge("", NOW)?.variant).toBe("neutral");
+  });
 });
