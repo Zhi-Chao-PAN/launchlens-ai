@@ -27,6 +27,8 @@ import type {
 } from "@/lib/launchlens/execution";
 import { friendlyApiMessage } from "@/lib/launchlens/api-errors";
 import { toneClass } from "@/lib/launchlens/tone-class";
+import { decisionLabel } from "@/lib/launchlens/decision-label";
+import { claimStatusLabel } from "@/lib/launchlens/claim-status-label";
 
 type DecisionCopilotProps = {
   execution: WorkspaceExecutionState;
@@ -40,12 +42,7 @@ const evidenceStrengthMeta: Record<EvidenceStrength, { label: string; pct: numbe
   strong: { label: "Strong evidence", pct: 100, color: "text-signal-supports", bg: "bg-signal-supports" },
 };
 
-const recommendationLabels: Record<DecisionRecommendation, string> = {
-  proceed: "Proceed",
-  iterate: "Iterate",
-  pivot: "Pivot",
-  pause: "Pause",
-};
+
 
 function recommendationClass(recommendation: DecisionRecommendation) {
   return toneClass(recommendation);
@@ -281,8 +278,8 @@ export function DecisionCopilot({
       newStatus = "testing";
     }
 
-    const decisionLabel = rec.charAt(0).toUpperCase() + rec.slice(1);
-    const newDecision = `${decisionLabel} - ${headline}`;
+    const recommendationText = decisionLabel(rec);
+    const newDecision = `${recommendationText} - ${headline}`;
     const nextAction = currentBrief.nextActions?.[0] || experiment.nextAction;
 
     onChange({
@@ -704,7 +701,7 @@ export function DecisionCopilot({
                       aria-label={"Restore " + rec + " recommendation generated " + time}
                       className={"rounded-full border px-2 py-0.5 text-[11px] font-medium transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + recommendationClass(rec)}
                     >
-                      v{historyForExperiment.length - idx} {recommendationLabels[rec]}
+                      v{historyForExperiment.length - idx} {decisionLabel(rec)}
                     </button>
                   );
                 })}
@@ -756,11 +753,10 @@ export function DecisionCopilot({
             else if (rec === "pivot" || rec === "pause") newStatus = "refuted";
             else if (rec === "iterate") newStatus = "testing";
             const nextAction = currentBrief.nextActions?.[0] || experiment.nextAction || "";
-            const newDecision = (rec.charAt(0).toUpperCase() + rec.slice(1)) + " - " + (currentBrief.headline || "");
-            const label = (s: string) => ({ untested: "Untested", testing: "Testing", supported: "Validated", refuted: "Invalidated" } as Record<string,string>)[s] || s;
+            const newDecision = decisionLabel(rec) + " - " + (currentBrief.headline || "");
             const changed = (a: string, b: string) => (a || "").trim() !== (b || "").trim();
             const fields: Array<{k: string; from: string; to: string}> = [];
-            if (changed(experiment.status, newStatus)) fields.push({ k: "Status", from: label(experiment.status), to: label(newStatus) });
+            if (changed(experiment.status, newStatus)) fields.push({ k: "Status", from: claimStatusLabel(experiment.status), to: claimStatusLabel(newStatus) });
             if (changed(experiment.decision || "", newDecision)) fields.push({ k: "Decision", from: experiment.decision || "(empty)", to: newDecision });
             if (changed(experiment.nextAction || "", nextAction)) fields.push({ k: "Next action", from: experiment.nextAction || "(empty)", to: nextAction });
             return (
@@ -862,7 +858,7 @@ export function DecisionCopilot({
               <span
                 className={`rounded-md px-2 py-1 text-xs font-semibold ${recommendationClass(currentBrief.recommendation)}`}
               >
-                {recommendationLabels[currentBrief.recommendation]}
+                {decisionLabel(currentBrief.recommendation)}
               </span>
               {currentBrief.usedFallback ? (
                 <span
