@@ -29,6 +29,7 @@ import type { SharedCloudWorkspaceRecord } from "@/lib/launchlens/cloud-workspac
 import { formatGeneratedTime, formatRelativeTime } from "@/lib/launchlens/generated-time";
 import { formatExpiryBadge } from "@/lib/launchlens/expiry-format";
 import { formatProviderLabel } from "@/lib/launchlens/provider-label";
+import { cleanBullets } from "@/lib/launchlens/bullets";
 import { taskIdentity } from "@/lib/launchlens/execution";
 
 type ReadOnlySectionProps = {
@@ -246,6 +247,11 @@ export function SharedWorkspaceView({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="w-fit rounded-md border border-card bg-card px-3 py-2 text-sm text-foreground/80" title="This shared snapshot is read-only. You can view, copy, or export the workspace, but edits are disabled." aria-label="Read-only: view and export only">Read-only snapshot</span>
+            {/* Polite live region so screen-reader users learn the snapshot
+                is read-only without re-tabbing to the pill. */}
+            <span role="status" aria-live="polite" className="sr-only">
+              This shared snapshot is read-only. View, copy, and export are enabled; edits are disabled.
+            </span>
             <ExpiryBadge
               expiresAt={record.expiresAt}
               mounted={mounted}
@@ -287,20 +293,20 @@ export function SharedWorkspaceView({
 
         <div className="grid gap-6 lg:grid-cols-2">
           <ReadOnlySection title="Target users" icon={UsersRound} collapsible sectionId="target-users">
-            <Bullets items={workspace.targetUsers} />
+            <Bullets items={cleanBullets(workspace.targetUsers)} />
           </ReadOnlySection>
           <ReadOnlySection title="Pain map" icon={Target} collapsible sectionId="pain-map">
-            <Bullets items={workspace.pains} />
+            <Bullets items={cleanBullets(workspace.pains)} />
           </ReadOnlySection>
           <ReadOnlySection title="MVP scope" icon={ClipboardList} collapsible sectionId="mvp-scope">
-            <Bullets items={workspace.mvpScope} />
+            <Bullets items={cleanBullets(workspace.mvpScope)} />
           </ReadOnlySection>
           <ReadOnlySection title="Landing page copy" icon={Megaphone} collapsible sectionId="landing-page-copy">
             <p className="mb-4 text-sm font-semibold leading-6">
               {workspace.landingPage.subheadline}
             </p>
             <Bullets
-              items={workspace.landingPage.proofBullets}
+              items={cleanBullets(workspace.landingPage.proofBullets)}
               icon={Star}
               iconClassName="text-amber-500"
             />
@@ -335,10 +341,10 @@ export function SharedWorkspaceView({
             <p className="mb-4 text-sm leading-6 text-foreground/80">
               {workspace.pricing.hypothesis}
             </p>
-            <Bullets items={workspace.pricing.tiers} />
+            <Bullets items={cleanBullets(workspace.pricing.tiers)} />
           </ReadOnlySection>
           <ReadOnlySection title="Launch plan" icon={CalendarDays} collapsible sectionId="launch-plan">
-            <Bullets items={workspace.launchPlan} />
+            <Bullets items={cleanBullets(workspace.launchPlan)} />
           </ReadOnlySection>
           <ReadOnlySection title="Execution tasks" icon={CheckCircle2} collapsible sectionId="execution-tasks">
             <div className="space-y-3">
