@@ -34,6 +34,7 @@ import { formatShortcut, useKeyboardShortcuts } from "@/hooks/use-keyboard-short
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
 
 import { ThemeToggle } from "./theme-toggle";
+import { EditableText } from "./editable-text";
 import { CloudWorkspaces } from "@/components/cloud-workspaces";
 import { SystemStatus } from "@/components/system-status";
 import { ReplayTourButton } from "@/components/onboarding-wizard";
@@ -94,12 +95,6 @@ type SectionProps = {
   onToggle?: () => void;
 };
 
-type EditableTextProps = {
-  label: string;
-  value: string;
-  rows?: number;
-  onCommit: (value: string) => void;
-};
 
 type EditableLinesProps = {
   label: string;
@@ -247,18 +242,6 @@ function Section({ title, icon: Icon, children, collapsible = false, sectionId, 
         </div>
       </div>
     </section>
-  );
-}
-
-function EditableText({ label, value, rows = 3, onCommit }: EditableTextProps) {
-  return (
-    <textarea
-      aria-label={label}
-      value={value}
-      rows={rows}
-      onChange={(event) => onCommit(event.target.value)}
-      className="w-full resize-y rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 text-foreground outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
-    />
   );
 }
 
