@@ -57,6 +57,7 @@ import {
 } from "@/lib/launchlens/execution";
 import type { ExampleWorkspace } from "@/lib/launchlens/example-workspaces";
 import { formatGeneratedTime } from "@/lib/launchlens/generated-time";
+import { formatGenerationModeLabel } from "@/lib/launchlens/generation-mode-label";
 import { formatProviderLabel } from "@/lib/launchlens/provider-label";
 import { formatSaveLabel } from "@/lib/launchlens/save-label";
 import { evaluateWorkspaceQuality } from "@/lib/launchlens/workspace-quality";
@@ -572,10 +573,10 @@ export function LaunchWorkspace({
   }, [isStorageReady, savedAt, nowTick]);
 
 
-  const generationModeLabel =
-    generationMeta.mode === "real" && !generationMeta.usedFallback
-      ? "Real provider"
-      : "Demo mode";
+  const generationModeLabel = formatGenerationModeLabel({
+    mode: generationMeta.mode,
+    usedFallback: generationMeta.usedFallback,
+  });
   const qualityResult = useMemo(
     () => evaluateWorkspaceQuality(workspace),
     [workspace],
