@@ -26,6 +26,7 @@ import { ChevronDown } from "lucide-react";
 
 import type { SharedCloudWorkspaceRecord } from "@/lib/launchlens/cloud-workspace";
 import { formatGeneratedTime, formatRelativeTime } from "@/lib/launchlens/generated-time";
+import { formatExpiryBadge } from "@/lib/launchlens/expiry-format";
 import { taskIdentity } from "@/lib/launchlens/execution";
 
 type ReadOnlySectionProps = {
@@ -122,14 +123,6 @@ function Bullets({ items }: { items: string[] }) {
       ))}
     </ul>
   );
-}
-
-function formatExpiryBadge(expiresAt: string | null, now: number = Date.now()): { label: string; title: string } | null {
-  if (!expiresAt) return null;
-  const ms = new Date(expiresAt).getTime() - now;
-  if (ms <= 0) return null;
-  const days = Math.max(1, Math.ceil(ms / 86400000));
-  return { label: "Expires in " + days + "d", title: "Expires " + new Date(expiresAt).toLocaleString() };
 }
 
 export function SharedWorkspaceView({
