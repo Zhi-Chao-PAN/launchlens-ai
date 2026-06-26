@@ -30,6 +30,7 @@ import { useSrAnnounce } from "@/hooks/use-sr-announce";
 import { parseInlineMarkdown } from "@/lib/launchlens/inline-markdown";
 import { decisionSourceFromExperiment, normalizeDecisionBrief } from "@/lib/launchlens/decision";
 import { extractSourceUrl } from "@/lib/launchlens/source-url";
+import { statusClass } from "@/lib/launchlens/status-class";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
@@ -165,22 +166,6 @@ const signalLabels = {
   challenges: "Challenges",
   neutral: "Neutral",
 } as const;
-
-function statusClass(status: ValidationExperiment["status"]) {
-  if (status === "supported") {
-    return "bg-signal-supports text-signal-supports";
-  }
-
-  if (status === "refuted") {
-    return "bg-signal-challenges text-signal-challenges";
-  }
-
-  if (status === "testing") {
-    return "bg-signal-neutral text-signal-neutral";
-  }
-
-  return "bg-muted text-muted";
-}
 
 function evidenceId() {
   return crypto.randomUUID();
