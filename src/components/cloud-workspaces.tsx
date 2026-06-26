@@ -33,6 +33,8 @@ import { MAX_CLOUD_WORKSPACES } from "@/lib/launchlens/cloud-workspace";
 import { formatSnapshotTime } from "@/lib/launchlens/snapshot-time";
 import { shareExpirySuffix } from "@/lib/launchlens/share-expiry-suffix";
 import { cloudRowExpiry } from "@/lib/launchlens/cloud-row-expiry";
+import { validateRecoveryInput } from "@/lib/launchlens/recovery-input";
+import { ownerScopeLabel } from "@/lib/launchlens/owner-scope";
 import { futureIso } from "@/lib/launchlens/future-iso";
 import { createOwnerToken } from "@/lib/launchlens/owner-token";
 import type { WorkspaceExecutionState } from "@/lib/launchlens/execution";
@@ -90,20 +92,13 @@ export function CloudWorkspaces({
   const [shareExpiry, setShareExpiry] = useState<ShareExpiry>("permanent");
   const { showToast } = useToast();
 
-  const trimmedLabel = recoveryLabel.trim();
-  const trimmedKey = recoveryKey.trim();
-  const labelError =
-    !trimmedLabel
-      ? "Enter the handle you used when you first saved the key."
-      : trimmedLabel.length > 160
-        ? "Handle is too long (max 160 characters)."
-        : "";
-  const keyError = !recoveryKey
-    ? "Enter or generate your recovery key."
-    : !/^[A-Za-z0-9_-]{24,128}$/.test(trimmedKey)
-      ? "Key does not look like a valid LaunchLens recovery key."
-      : "";
-  const recoveryReady = !labelError && !keyError && trimmedLabel && trimmedKey;
+  const {
+    trimmedLabel,
+    trimmedKey,
+    labelError,
+    keyError,
+    ready: recoveryReady,
+  } = validateRecoveryInput({ label: recoveryLabel, key: recoveryKey });
 
   async function cloudRequest<T>(path: string, init?: RequestInit) {
     const headers = new Headers(init?.headers);
@@ -481,9 +476,7 @@ export function CloudWorkspaces({
   }
 
   const isBusy = Boolean(busyAction);
-  const ownerScope = ownerToken.startsWith("acct_")
-    ? "Recovery-linked"
-    : "This browser";
+  const ownerScope = ownerScopeLabel(ownerToken);
 
 
   return (
