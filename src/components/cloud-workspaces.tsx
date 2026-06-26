@@ -32,6 +32,8 @@ import type {
 import { MAX_CLOUD_WORKSPACES } from "@/lib/launchlens/cloud-workspace";
 import { formatSnapshotTime } from "@/lib/launchlens/snapshot-time";
 import { formatExpiryBadge } from "@/lib/launchlens/expiry-format";
+import { futureIso } from "@/lib/launchlens/future-iso";
+import { createOwnerToken } from "@/lib/launchlens/owner-token";
 import type { WorkspaceExecutionState } from "@/lib/launchlens/execution";
 import {
   createRecoveryKey,
@@ -55,11 +57,6 @@ type CloudWorkspacesProps = {
 
 type CloudState = "checking" | "ready" | "unavailable" | "error";
 
-function futureIso(days: number | null): string | null {
-  if (!days) return null;
-  return new Date(Date.now() + days * 86400000).toISOString();
-}
-
 type ConfirmKind = "share-enable" | "snapshot-delete";
 type ShareExpiry = "permanent" | "days7" | "days30";
 type PendingConfirm = {
@@ -71,16 +68,6 @@ type PendingConfirm = {
   danger?: boolean;
   shareExpiry?: ShareExpiry;
 };
-
-function createOwnerToken() {
-  const bytes = crypto.getRandomValues(new Uint8Array(32));
-  const binary = Array.from(bytes, (byte) => String.fromCharCode(byte)).join("");
-
-  return btoa(binary)
-    .replaceAll("+", "-")
-    .replaceAll("/", "_")
-    .replaceAll("=", "");
-}
 
 export function CloudWorkspaces({
   input,
