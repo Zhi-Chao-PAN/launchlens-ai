@@ -9,6 +9,7 @@ import {
   WorkspaceStoreError,
 } from "@/lib/launchlens/workspace-store";
 import { isUuid } from "@/lib/launchlens/workspace-validation";
+import { truncateSummary } from "@/lib/launchlens/truncate-summary";
 
 export const dynamic = "force-dynamic";
 // Shared workspace snapshots may contain private GTM material; keep them
@@ -46,9 +47,9 @@ export async function generateMetadata(
       title = `${headline} - LaunchLens AI shared workspace`;
       projectName = headline;
       snapshotUpdatedAt = result.record.updatedAt;
-      if (workspace.summary?.length) {
-        description = workspace.summary.slice(0, 160);
-        if (workspace.summary.length > 160) description += "…";
+      const truncated = truncateSummary(workspace.summary);
+      if (truncated) {
+        description = truncated;
       }
     } else if (result.status === "revoked") {
       title = "Link no longer available - LaunchLens AI";
