@@ -31,7 +31,7 @@ import type {
 } from "@/lib/launchlens/cloud-workspace";
 import { MAX_CLOUD_WORKSPACES } from "@/lib/launchlens/cloud-workspace";
 import { formatSnapshotTime } from "@/lib/launchlens/snapshot-time";
-import { formatExpiryBadge } from "@/lib/launchlens/expiry-format";
+import { shareExpirySuffix } from "@/lib/launchlens/share-expiry-suffix";
 import { futureIso } from "@/lib/launchlens/future-iso";
 import { createOwnerToken } from "@/lib/launchlens/owner-token";
 import type { WorkspaceExecutionState } from "@/lib/launchlens/execution";
@@ -307,9 +307,9 @@ export function CloudWorkspaces({
         };
         const copied = await copyTextToClipboard(shareUrl);
         if (copied) {
-          showToast("Read-only share link copied to clipboard." + shareExpirySuffix(justShared), "success");
+          showToast("Read-only share link copied to clipboard." + shareExpirySuffix(justShared.expiresAt), "success");
         } else {
-          showToast(`Share link ready: ${shareUrl}` + shareExpirySuffix(justShared), "info");
+          showToast(`Share link ready: ${shareUrl}` + shareExpirySuffix(justShared.expiresAt), "info");
         }
       } else {
         showToast(
@@ -358,7 +358,7 @@ export function CloudWorkspaces({
 
   async function copyShareLink(item: CloudWorkspaceSummary) {
     const shareUrl = `${window.location.origin}/share/${item.id}`;
-    const suffix = shareExpirySuffix(item);
+    const suffix = shareExpirySuffix(item.expiresAt);
 
     const copied = await copyTextToClipboard(shareUrl);
     if (copied) {
@@ -477,12 +477,6 @@ export function CloudWorkspaces({
     } finally {
       setBusyAction("");
     }
-  }
-
-  function shareExpirySuffix(item: CloudWorkspaceSummary) {
-    const badge = formatExpiryBadge(item.expiresAt);
-    if (!badge) return " It has expired.";
-    return " " + badge.label + ".";
   }
 
   const isBusy = Boolean(busyAction);

@@ -26,6 +26,7 @@ import type {
   WorkspaceExecutionState,
 } from "@/lib/launchlens/execution";
 import { friendlyApiMessage } from "@/lib/launchlens/api-errors";
+import { toneClass } from "@/lib/launchlens/tone-class";
 
 type DecisionCopilotProps = {
   execution: WorkspaceExecutionState;
@@ -47,19 +48,7 @@ const recommendationLabels: Record<DecisionRecommendation, string> = {
 };
 
 function recommendationClass(recommendation: DecisionRecommendation) {
-  if (recommendation === "proceed") {
-    return "bg-signal-supports text-signal-supports";
-  }
-
-  if (recommendation === "pivot") {
-    return "bg-signal-challenges text-signal-challenges";
-  }
-
-  if (recommendation === "iterate") {
-    return "bg-signal-neutral text-signal-neutral";
-  }
-
-  return "bg-muted text-muted";
+  return toneClass(recommendation);
 }
 
 function TextList({
@@ -105,12 +94,7 @@ function ClaimList({
 }) {
   const [expandedClaim, setExpandedClaim] = useState<number | null>(null);
 
-  const stanceClass = (stance: string) => {
-    if (stance === "supports") return "bg-signal-supports text-signal-supports";
-    if (stance === "challenges")
-      return "bg-signal-challenges text-signal-challenges";
-    return "bg-signal-neutral text-signal-neutral";
-  };
+  const stanceClass = (stance: string) => toneClass(stance);
 
   return (
     <div>
