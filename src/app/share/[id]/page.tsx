@@ -52,6 +52,10 @@ export async function generateMetadata(
       title = "Link no longer available - LaunchLens AI";
       description =
         "This shared workspace link has been revoked by its owner.";
+    } else if (result.status === "expired") {
+      title = "Link expired - LaunchLens AI";
+      description =
+        "This shared workspace link has expired. Ask the owner to publish a new snapshot.";
     }
   } catch (error) {
     if (
