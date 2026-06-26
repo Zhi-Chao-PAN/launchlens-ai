@@ -232,6 +232,7 @@ Vercel Marketplace Neon injects `DATABASE_URL` automatically. Run the migration 
 
 ```bash
 npm run db:migrate
+npm run verify:cloud-db
 ```
 
 Use `DATABASE_MIGRATION_URL` for an elevated migration role when available, and keep the runtime `DATABASE_URL` limited to table DML.
@@ -239,10 +240,10 @@ Use `DATABASE_MIGRATION_URL` for an elevated migration role when available, and 
 After a database-enabled deployment, verify the full cloud flow with:
 
 ```bash
-LAUNCHLENS_BASE_URL=https://your-deployment.example.com npm run smoke:cloud
+LAUNCHLENS_BASE_URL=https://your-deployment.example.com npm run release:cloud
 ```
 
-The smoke creates a temporary workspace, restores it, migrates it to a recovery account, proves the previous credential lost access, enables a public share, checks that private evidence and decision-brief details are not exposed, disables sharing, and deletes the workspace.
+The cloud release gate migrates the database, verifies the expected schema contract, then runs workspace recovery/share/privacy, tenant isolation, and RBAC smoke checks. The workspace smoke creates a temporary workspace, restores it, migrates it to a recovery account, proves the previous credential lost access, verifies tenant-scoped recovery visibility, enables a public expiring share, checks that private evidence and decision-brief details are not exposed, disables sharing, and deletes the workspace.
 
 ## Security Boundaries
 
@@ -267,14 +268,35 @@ Open `http://localhost:3000`.
 
 [launchlens-ai-two.vercel.app](https://launchlens-ai-two.vercel.app)
 
+## Release Candidate
+
+Current RC evidence, promotion checklist, and demo flow are tracked in
+[`docs/RELEASE_CANDIDATE.md`](docs/RELEASE_CANDIDATE.md).
+
+Production promotion and rollback steps are tracked in
+[`docs/PRODUCTION_RUNBOOK.md`](docs/PRODUCTION_RUNBOOK.md). The polished
+portfolio walkthrough is tracked in
+[`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md).
+The production-stage handoff packet is tracked in
+[`docs/PRODUCTION_RELEASE_PACKET.md`](docs/PRODUCTION_RELEASE_PACKET.md).
+For a hosted pre-promotion audit, run the GitHub Actions workflow
+`Release candidate verification`.
+
 ## Validate
 
 ```bash
 npm run lint
 npm run test
+npm run verify:release-readiness
+npm run release:local
+npm run evidence:release # writes ignored Markdown/JSON release evidence
 npm run eval:provider
 npm run eval:decision
 npm run smoke:cloud # only against a database-enabled deployment
+npm run smoke:tenant # only against a database-enabled deployment
+npm run smoke:rbac # only against a database-enabled deployment
+npm run verify:public-demo # checks the public URL status endpoint
+npm run verify:cloud-db # only after configuring a database
 npm run db:migrate # only after configuring a database
 npm run build
 npm audit --audit-level=moderate

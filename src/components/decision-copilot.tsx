@@ -29,6 +29,7 @@ import { friendlyApiMessage } from "@/lib/launchlens/api-errors";
 import { toneClass } from "@/lib/launchlens/tone-class";
 import { decisionLabel } from "@/lib/launchlens/decision-label";
 import { claimStatusLabel } from "@/lib/launchlens/claim-status-label";
+import { formatValidationTimelineTime } from "@/lib/launchlens/validation-date-format";
 
 type DecisionCopilotProps = {
   execution: WorkspaceExecutionState;
@@ -679,7 +680,7 @@ export function DecisionCopilot({
 
           {currentBrief && (
             <div className="mt-3 flex items-center justify-between text-[11px] text-muted">
-              <span>Last generated {new Date(currentBrief.generatedAt).toLocaleString()}</span>
+              <span>Last generated {formatValidationTimelineTime(currentBrief.generatedAt)}</span>
               {experiment && !decisionBriefIsCurrent(experiment) && (
                 <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-amber-700 dark:text-amber-300">Stale - evidence changed</span>
               )}
@@ -691,7 +692,7 @@ export function DecisionCopilot({
               <div className="flex flex-wrap gap-1.5" role="group" aria-label="Restore an earlier recommendation">
                 {historyForExperiment.map((brief, idx) => {
                   const rec = brief.recommendation;
-                  const time = new Date(brief.generatedAt).toLocaleString();
+                  const time = formatValidationTimelineTime(brief.generatedAt);
                   return (
                     <button
                       key={brief.generatedAt}

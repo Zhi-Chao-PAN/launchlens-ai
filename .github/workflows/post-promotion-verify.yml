@@ -1,0 +1,63 @@
+name: Post-promotion verification
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Public production URL to verify
+        required: true
+        default: https://launchlens-ai-two.vercel.app
+      expected_git_sha:
+        description: Expected deployed git SHA. Leave blank to use this workflow SHA.
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  production-cloud-gate:
+    name: Production public status + cloud smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      LAUNCHLENS_BASE_URL: ${{ inputs.base_url }}
+      LAUNCHLENS_EXPECTED_GIT_SHA: ${{ inputs.expected_git_sha || github.sha }}
+      DATABASE_URL: ${{ secrets.LAUNCHLENS_SMOKE_DATABASE_URL }}
+      DATABASE_MIGRATION_URL: ${{ secrets.LAUNCHLENS_SMOKE_DATABASE_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Require cloud smoke database secret
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "LAUNCHLENS_SMOKE_DATABASE_URL secret is required for post-promotion verification."
+            exit 1
+          fi
+
+      - name: Verify release readiness packet
+        run: npm run verify:release-readiness
+
+      - name: Verify production release candidate
+        run: npm run release:cloud
+
+      - name: Collect release evidence
+        if: always()
+        run: npm run evidence:release
+
+      - name: Upload release evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: launchlens-release-evidence
+          path: output/release-evidence/
+          if-no-files-found: warn

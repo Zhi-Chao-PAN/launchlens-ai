@@ -56,9 +56,56 @@ function workspaceId(value: unknown) {
   return id;
 }
 
+function responseWorkspaces(value: unknown) {
+  return value &&
+    typeof value === "object" &&
+    "workspaces" in value &&
+    Array.isArray(value.workspaces)
+    ? (value.workspaces as Array<{ id?: unknown; expiresAt?: unknown }>)
+    : [];
+}
+
+function responseTenants(value: unknown) {
+  return value &&
+    typeof value === "object" &&
+    "tenants" in value &&
+    Array.isArray(value.tenants)
+    ? (value.tenants as Array<{ id?: unknown }>)
+    : [];
+}
+
+async function findTenantWorkspace(workspaceIdToFind: string) {
+  const tenants = await requestJson("/api/tenants");
+  assert(tenants.response.status === 200, "Recovered owner could not list tenants.");
+
+  for (const tenant of responseTenants(tenants.body)) {
+    if (typeof tenant.id !== "string") {
+      continue;
+    }
+
+    const workspaces = await requestJson(`/api/tenants/${tenant.id}/workspaces`);
+    assert(
+      workspaces.response.status === 200,
+      `Recovered owner could not list workspaces for tenant ${tenant.id}.`,
+    );
+
+    const match = responseWorkspaces(workspaces.body).find(
+      (workspace) => workspace.id === workspaceIdToFind,
+    );
+
+    if (match) {
+      return match;
+    }
+  }
+
+  return null;
+}
+
 async function main() {
   const originalOwnerToken = ownerToken;
   const example = exampleWorkspaces[0];
+  let id = "";
+  let deletedDuringSmoke = false;
   const title = `Cloud smoke ${new Date().toISOString()}`;
   const payload = {
     title,
@@ -67,121 +114,191 @@ async function main() {
     execution: example.execution,
   };
 
-  const initialList = await requestJson("/api/workspaces");
+  try {
+    const initialList = await requestJson("/api/workspaces");
 
-  assert(
-    initialList.response.status === 200,
-    `Workspace list failed with HTTP ${initialList.response.status}.`,
-  );
-  assert(
-    initialList.body.configured === true,
-    "Cloud workspace storage is not configured on the target deployment.",
-  );
+    assert(
+      initialList.response.status === 200,
+      `Workspace list failed with HTTP ${initialList.response.status}.`,
+    );
+    assert(
+      initialList.body.configured === true,
+      "Cloud workspace storage is not configured on the target deployment.",
+    );
 
-  const create = await requestJson("/api/workspaces", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+    const create = await requestJson("/api/workspaces", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
 
-  assert(create.response.status === 201, "Workspace create did not return 201.");
+    assert(create.response.status === 201, "Workspace create did not return 201.");
 
-  const id = workspaceId(create.body);
-  const restored = await requestJson(`/api/workspaces/${id}`);
+    id = workspaceId(create.body);
+    const restored = await requestJson(`/api/workspaces/${id}`);
 
-  assert(restored.response.status === 200, "Workspace restore failed.");
-  assert(
-    JSON.stringify(restored.body).includes("decisionBrief"),
-    "Restored workspace did not include private decision brief state.",
-  );
+    assert(restored.response.status === 200, "Workspace restore failed.");
+    assert(
+      JSON.stringify(restored.body).includes("decisionBrief"),
+      "Restored workspace did not include private decision brief state.",
+    );
 
-  const recovery = await requestJson("/api/workspaces/recovery", {
-    method: "POST",
-    body: JSON.stringify({ recoveryOwnerToken }),
-  });
+    const recovery = await requestJson("/api/workspaces/recovery", {
+      method: "POST",
+      body: JSON.stringify({ recoveryOwnerToken }),
+    });
 
-  assert(recovery.response.status === 200, "Recovery owner migration failed.");
-  ownerToken = recoveryOwnerToken;
+    assert(recovery.response.status === 200, "Recovery owner migration failed.");
+    ownerToken = recoveryOwnerToken;
 
-  const legacyOwnerList = await requestJson("/api/workspaces", {
-    headers: { "x-launchlens-owner": originalOwnerToken },
-  });
+    const legacyOwnerList = await requestJson("/api/workspaces", {
+      headers: { "x-launchlens-owner": originalOwnerToken },
+    });
 
-  assert(
-    legacyOwnerList.response.status === 200 &&
-      !JSON.stringify(legacyOwnerList.body).includes(id),
-    "Original owner token retained access after recovery migration.",
-  );
+    assert(
+      legacyOwnerList.response.status === 200 &&
+        !JSON.stringify(legacyOwnerList.body).includes(id),
+      "Original owner token retained access after recovery migration.",
+    );
 
-  const recoveredList = await requestJson("/api/workspaces");
+    const recoveredList = await requestJson("/api/workspaces");
 
-  assert(
-    recoveredList.response.status === 200 &&
-      JSON.stringify(recoveredList.body).includes(id),
-    "Recovered owner token could not list the migrated workspace.",
-  );
+    assert(
+      recoveredList.response.status === 200 &&
+        JSON.stringify(recoveredList.body).includes(id),
+      "Recovered owner token could not list the migrated workspace.",
+    );
 
-  const shareOn = await requestJson(`/api/workspaces/${id}/share`, {
-    method: "POST",
-    body: JSON.stringify({ enabled: true }),
-  });
+    const recoveredTenantWorkspace = await findTenantWorkspace(id);
+    assert(
+      recoveredTenantWorkspace,
+      "Recovered owner token could not find the migrated workspace through tenant-scoped APIs.",
+    );
 
-  assert(shareOn.response.status === 200, "Enable share failed.");
+    const shareOn = await requestJson(`/api/workspaces/${id}/share`, {
+      method: "POST",
+      body: JSON.stringify({ enabled: true, expiresInDays: 7 }),
+    });
 
-  const publicShare = await fetch(`${baseUrl}/share/${id}`);
-  const publicHtml = await publicShare.text();
+    assert(shareOn.response.status === 200, "Enable share failed.");
+    const shareExpiresAt =
+      shareOn.body &&
+      typeof shareOn.body === "object" &&
+      "workspace" in shareOn.body &&
+      shareOn.body.workspace &&
+      typeof shareOn.body.workspace === "object" &&
+      "expiresAt" in shareOn.body.workspace &&
+      typeof shareOn.body.workspace.expiresAt === "string"
+        ? shareOn.body.workspace.expiresAt
+        : "";
+    assert(shareExpiresAt, "Enable share did not return an expiration timestamp.");
 
-  assert(publicShare.status === 200, "Public share page did not render.");
-  assert(
-    !publicHtml.includes("activation-interviews") &&
-      !publicHtml.includes("5 founder interviews") &&
-      !publicHtml.includes("decisionBrief"),
-    "Public share leaked private evidence or decision brief details.",
-  );
+    const restoredShared = await requestJson(`/api/workspaces/${id}`);
+    const restoredExpiresAt =
+      restoredShared.body &&
+      typeof restoredShared.body === "object" &&
+      "workspace" in restoredShared.body &&
+      restoredShared.body.workspace &&
+      typeof restoredShared.body.workspace === "object" &&
+      "expiresAt" in restoredShared.body.workspace &&
+      typeof restoredShared.body.workspace.expiresAt === "string"
+        ? restoredShared.body.workspace.expiresAt
+        : "";
+    assert(
+      restoredExpiresAt === shareExpiresAt,
+      "Private workspace restore did not preserve the public share expiration timestamp.",
+    );
 
-  const shareOff = await requestJson(`/api/workspaces/${id}/share`, {
-    method: "POST",
-    body: JSON.stringify({ enabled: false }),
-  });
+    const tenantWorkspaceAfterShare = await findTenantWorkspace(id);
+    assert(
+      tenantWorkspaceAfterShare?.expiresAt === shareExpiresAt,
+      "Tenant workspace list did not preserve the public share expiration timestamp.",
+    );
 
-  assert(shareOff.response.status === 200, "Disable share failed.");
+    const publicShare = await fetch(`${baseUrl}/share/${id}`);
+    const publicHtml = await publicShare.text();
 
-  const disabledShare = await fetch(`${baseUrl}/share/${id}`);
+    assert(publicShare.status === 200, "Public share page did not render.");
+    assert(
+      !publicHtml.includes("activation-interviews") &&
+        !publicHtml.includes("5 founder interviews") &&
+        !publicHtml.includes("decisionBrief"),
+      "Public share leaked private evidence or decision brief details.",
+    );
 
-  assert(disabledShare.status === 404, "Disabled share page still rendered.");
+    const shareOff = await requestJson(`/api/workspaces/${id}/share`, {
+      method: "POST",
+      body: JSON.stringify({ enabled: false }),
+    });
 
-  const deleted = await fetch(`${baseUrl}/api/workspaces/${id}`, {
-    method: "DELETE",
-    headers: { "x-launchlens-owner": ownerToken },
-  });
+    assert(shareOff.response.status === 200, "Disable share failed.");
 
-  assert(deleted.status === 204, "Workspace delete did not return 204.");
+    const disabledShare = await fetch(`${baseUrl}/share/${id}`);
+    const disabledShareHtml = await disabledShare.text();
 
-  const finalList = await requestJson("/api/workspaces");
+    assert(
+      disabledShare.status === 200 || disabledShare.status === 404,
+      `Disabled share page returned unexpected HTTP ${disabledShare.status}.`,
+    );
+    assert(
+      disabledShareHtml.includes("Link no longer available") ||
+        disabledShareHtml.includes("could not be found"),
+      "Disabled share page did not show a revoked/not-found state.",
+    );
+    assert(
+      !disabledShareHtml.includes("activation-interviews") &&
+        !disabledShareHtml.includes("5 founder interviews") &&
+        !disabledShareHtml.includes("decisionBrief"),
+      "Disabled share leaked private evidence or decision brief details.",
+    );
 
-  assert(
-    finalList.response.status === 200 &&
-      !JSON.stringify(finalList.body).includes(id),
-    "Deleted workspace still appeared in owner list.",
-  );
+    const deleted = await fetch(`${baseUrl}/api/workspaces/${id}`, {
+      method: "DELETE",
+      headers: { "x-launchlens-owner": ownerToken },
+    });
 
-  console.log(
-    JSON.stringify(
-      {
-        baseUrl,
-        configured: true,
-        created: true,
-        restored: true,
-        recovered: true,
-        previousOwnerRevoked: true,
-        shared: true,
-        privateShareBoundary: true,
-        disabledShare: true,
-        deleted: true,
-      },
-      null,
-      2,
-    ),
-  );
+    assert(deleted.status === 204, "Workspace delete did not return 204.");
+    deletedDuringSmoke = true;
+
+    const finalList = await requestJson("/api/workspaces");
+
+    assert(
+      finalList.response.status === 200 &&
+        !JSON.stringify(finalList.body).includes(id),
+      "Deleted workspace still appeared in owner list.",
+    );
+
+    console.log(
+      JSON.stringify(
+        {
+          baseUrl,
+          configured: true,
+          created: true,
+          restored: true,
+          recovered: true,
+          previousOwnerRevoked: true,
+          recoveredTenantVisible: true,
+          shared: true,
+          shareExpiryRoundTrip: true,
+          privateShareBoundary: true,
+          disabledShare: true,
+          deleted: true,
+        },
+        null,
+        2,
+      ),
+    );
+  } finally {
+    if (id && !deletedDuringSmoke) {
+      try {
+        await fetch(`${baseUrl}/api/workspaces/${id}`, {
+          method: "DELETE",
+          headers: { "x-launchlens-owner": ownerToken },
+        });
+      } catch {
+        // Best-effort cleanup only; keep the original smoke failure visible.
+      }
+    }
+  }
 }
 
 main().catch((error: unknown) => {

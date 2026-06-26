@@ -41,6 +41,11 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     description: "Focus founder brief input",
     category: "Navigation",
   },
+  focusSearch: {
+    key: "/",
+    description: "Focus validation search",
+    category: "Navigation",
+  },
   collapseAll: {
     key: "[",
     description: "Collapse all sections",
@@ -172,6 +177,10 @@ export function matchesConfig(event: KeyboardEvent, config: ShortcutConfig) {
     return false;
   }
 
+  if (config.key === "Escape") {
+    return true;
+  }
+
   const metaRequired = config.meta;
   const ctrlRequired = config.ctrl;
   const shiftRequired = config.shift;
@@ -188,7 +197,13 @@ export function matchesConfig(event: KeyboardEvent, config: ShortcutConfig) {
   if (shiftRequired && !event.shiftKey) {
     return false;
   }
+  if (!shiftRequired && event.shiftKey) {
+    return false;
+  }
   if (altRequired && !event.altKey) {
+    return false;
+  }
+  if (!altRequired && event.altKey) {
     return false;
   }
 
@@ -253,18 +268,8 @@ function initGlobalListener() {
       window.dispatchEvent(new CustomEvent("launchlens:escape"));
     }
 
-    // Special cases: open shortcuts help on "/" (unshifted, GitHub/Linear convention)
-    // or on Ctrl/Cmd+K (command-palette convention used in Linear, Vercel, Notion, etc.).
-    const isSlashForShortcutsHelp =
-      event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey;
-    const isCmdK =
-      event.key.toLowerCase() === "k" && (event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey;
-    const opensHelp = isSlashForShortcutsHelp || isCmdK;
-
-    for (const [id, entry] of registry) {
-      const matches =
-        matchesConfig(event, entry) ||
-        (opensHelp && id === "toggleShortcuts");
+    for (const entry of registry.values()) {
+      const matches = matchesConfig(event, entry);
       if (matches) {
         event.preventDefault();
         entry.handler(event);

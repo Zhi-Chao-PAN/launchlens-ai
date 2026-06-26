@@ -202,7 +202,7 @@ export async function listWorkspacesForMember(ownerToken: string) {
   const memberHash = hashOwnerToken(ownerToken);
   const sql = getSql();
   const rows = (await sql`
-    SELECT id, title, is_public, created_at, updated_at
+    SELECT id, title, is_public, share_expires_at, created_at, updated_at
     FROM launchlens_workspaces
     WHERE id IN (
       SELECT workspace_id FROM launchlens_workspace_members WHERE member_hash = ${memberHash}
@@ -233,7 +233,7 @@ export async function getWorkspaceForMember(
   }
 
   const rows = (await sql`
-    SELECT id, title, input, workspace, execution, is_public, created_at, updated_at
+    SELECT id, title, input, workspace, execution, is_public, share_expires_at, created_at, updated_at
     FROM launchlens_workspaces
     WHERE id = ${id}
     LIMIT 1
@@ -408,6 +408,16 @@ export async function migrateWorkspaceOwner(
       FROM launchlens_workspaces
       WHERE owner_hash = ${recoveryOwnerHash}
       ON CONFLICT (workspace_id, member_hash) DO NOTHING
+    `,
+    transaction`
+      UPDATE launchlens_tenants
+      SET owner_hash = ${recoveryOwnerHash}
+      WHERE owner_hash = ${currentOwnerHash}
+    `,
+    transaction`
+      UPDATE launchlens_workspace_invites
+      SET invited_by_hash = ${recoveryOwnerHash}
+      WHERE invited_by_hash = ${currentOwnerHash}
     `,
     transaction`
       DELETE FROM launchlens_workspace_members

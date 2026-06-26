@@ -13,26 +13,45 @@ jobs:
     name: Production Neon cloud smoke
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: ${{ vars.LAUNCHLENS_SMOKE_DATABASE_URL != '' }}
     env:
-      DATABASE_URL: ${{ vars.LAUNCHLENS_SMOKE_DATABASE_URL }}
-      DATABASE_MIGRATION_URL: ${{ vars.LAUNCHLENS_SMOKE_DATABASE_URL }}
+      LAUNCHLENS_SMOKE_DATABASE_URL: ${{ secrets.LAUNCHLENS_SMOKE_DATABASE_URL }}
     steps:
+      - name: Skip when cloud smoke secret is absent
+        if: env.LAUNCHLENS_SMOKE_DATABASE_URL == ''
+        run: echo "LAUNCHLENS_SMOKE_DATABASE_URL secret is not configured; skipping optional cloud smoke."
+
       - name: Checkout
+        if: env.LAUNCHLENS_SMOKE_DATABASE_URL != ''
         uses: actions/checkout@v6
 
       - name: Setup Node
+        if: env.LAUNCHLENS_SMOKE_DATABASE_URL != ''
         uses: actions/setup-node@v6
         with:
           node-version: 22
 
       - name: Install dependencies
+        if: env.LAUNCHLENS_SMOKE_DATABASE_URL != ''
         run: npm ci
 
       - name: Run migration
+        if: env.LAUNCHLENS_SMOKE_DATABASE_URL != ''
+        env:
+          DATABASE_URL: ${{ env.LAUNCHLENS_SMOKE_DATABASE_URL }}
+          DATABASE_MIGRATION_URL: ${{ env.LAUNCHLENS_SMOKE_DATABASE_URL }}
         run: npm run db:migrate
 
+      - name: Verify cloud database schema
+        if: env.LAUNCHLENS_SMOKE_DATABASE_URL != ''
+        env:
+          DATABASE_URL: ${{ env.LAUNCHLENS_SMOKE_DATABASE_URL }}
+          DATABASE_MIGRATION_URL: ${{ env.LAUNCHLENS_SMOKE_DATABASE_URL }}
+        run: npm run verify:cloud-db
+
       - name: Start production server
+        if: env.LAUNCHLENS_SMOKE_DATABASE_URL != ''
+        env:
+          DATABASE_URL: ${{ env.LAUNCHLENS_SMOKE_DATABASE_URL }}
         run: |
           npm run build
           nohup npx next start --hostname 127.0.0.1 --port 3011 > .next/cloud-smoke.log 2>&1 &
@@ -45,11 +64,19 @@ jobs:
           done
 
       - name: Run cloud smoke (recovery + share + privacy + delete)
+        if: env.LAUNCHLENS_SMOKE_DATABASE_URL != ''
         env:
           LAUNCHLENS_BASE_URL: http://127.0.0.1:3011
         run: npm run smoke:cloud
 
+      - name: Run tenant smoke (cross-tenant isolation)
+        if: env.LAUNCHLENS_SMOKE_DATABASE_URL != ''
+        env:
+          LAUNCHLENS_BASE_URL: http://127.0.0.1:3011
+        run: npm run smoke:tenant
+
       - name: Run RBAC smoke (invite + accept + viewer forbidden)
+        if: env.LAUNCHLENS_SMOKE_DATABASE_URL != ''
         env:
           LAUNCHLENS_BASE_URL: http://127.0.0.1:3011
         run: npm run smoke:rbac

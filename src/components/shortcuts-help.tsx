@@ -74,7 +74,7 @@ export function ShortcutsHelp() {
             <li className="flex items-center justify-between gap-4 py-1.5"><span className="text-foreground/90">Bulk-add evidence from pasted text</span><span className="shrink-0 text-muted">Paste multi-line text into the note box</span></li>
           </ul>
         </div>
-        <p className="mt-4 text-[11px] text-muted">Press <kbd className="rounded border border-border bg-muted px-1 font-mono">?</kbd> any time to toggle this panel. Key labels match your operating system.</p>
+        <p className="mt-4 text-[11px] text-muted">Press <kbd className="rounded border border-border bg-muted px-1 font-mono">Shift+?</kbd> any time to toggle this panel. Key labels match your operating system.</p>
       </div>
     </div>
   );

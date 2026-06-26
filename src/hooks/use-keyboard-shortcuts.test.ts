@@ -30,11 +30,21 @@ const ALL_SHORTCUT_IDS = [
   "edit",
   "save",
   "focusBrief",
+  "focusSearch",
+  "collapseAll",
+  "expandAll",
+  "commandPalette",
   "toggleShortcuts",
   "closeModal",
   "copyMarkdown",
   "reset",
   "showTour",
+  "addEvidence",
+  "newHypothesis",
+  "submitEvidence",
+  "toggleSelectMode",
+  "undo",
+  "redo",
 ] as const;
 
 function clearRegistry() {
@@ -290,17 +300,20 @@ describe("registerShortcut / registry", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Slash-key fallback for help ("/" without shift triggers toggleShortcuts)
+// Validation-board slash search and shortcut-help conventions
 // ---------------------------------------------------------------------------
-// The keydown listener special-cases event.key === "/" to fire toggleShortcuts.
-// Since the listener is installed globally and we run in node without jsdom,
-// we test the underlying predicate that drives it: "/" alone (no modifiers)
-// should NOT match the ? config (shift:true), but the listener's explicit
-// branch is responsible for routing it. We verify the predicate here and
-// cover the handler semantics with a dedicated test that installs its own
-// listener mirror.
-describe("slash key help convention", () => {
-  it("does NOT match shift+? config when unshifted slash is pressed", () => {
+describe("slash key search convention", () => {
+  it("matches the focus-search config when unshifted slash is pressed", () => {
+    expect(
+      matchesConfig(makeEvent({ key: "/" }), {
+        key: "/",
+        description: "",
+        category: "",
+      }),
+    ).toBe(true);
+  });
+
+  it("does not match shift+? config when unshifted slash is pressed", () => {
     expect(matchesConfig(makeEvent({ key: "/" }), { key: "?", shift: true, description: "", category: "" })).toBe(false);
   });
 
@@ -309,26 +322,26 @@ describe("slash key help convention", () => {
   });
 
   it("rejects slash with ctrl modifier (would collide with browser find)", () => {
-    // matchesConfig letter-key guard already rejects modified letters; the slash
-    // special-case in the listener also requires !metaKey && !ctrlKey && !altKey.
     expect(matchesConfig(makeEvent({ key: "/", ctrlKey: true }), { key: "/", description: "", category: "" })).toBe(false);
   });
 
-  it("treats Ctrl+K / Cmd+K as a help-panel opener (contract verified via listener branch)", () => {
-    // Ctrl+K and Meta+K should both route to the help panel via the explicit
-    // listener branch (not via matchesConfig, which would see the 'k' letter).
-    // We verify the predicate that drives it: modified K with no shift/alt.
-    const ev1 = makeEvent({ key: "k", ctrlKey: true });
-    const ev2 = makeEvent({ key: "k", metaKey: true });
-    const ev3 = makeEvent({ key: "k", shiftKey: true, ctrlKey: true });
-    const isCmdK = (e: KeyboardEvent) =>
-      e.key.toLowerCase() === "k" &&
-      (e.metaKey || e.ctrlKey) &&
-      !e.altKey &&
-      !e.shiftKey;
-    expect(isCmdK(ev1)).toBe(true);
-    expect(isCmdK(ev2)).toBe(true);
-    expect(isCmdK(ev3)).toBe(false);
+  it("matches Ctrl+K / Cmd+K through the command-palette config", () => {
+    const config = {
+      key: "k",
+      ctrl: true,
+      meta: true,
+      description: "",
+      category: "",
+    };
+    expect(matchesConfig(makeEvent({ key: "k", ctrlKey: true }), config)).toBe(
+      true,
+    );
+    expect(matchesConfig(makeEvent({ key: "k", metaKey: true }), config)).toBe(
+      true,
+    );
+    expect(
+      matchesConfig(makeEvent({ key: "k", shiftKey: true, ctrlKey: true }), config),
+    ).toBe(false);
   });
 
   it("ignores slash when shift is held (shift+/ already maps to '?' via matchesConfig)", () => {

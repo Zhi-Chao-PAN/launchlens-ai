@@ -84,16 +84,17 @@ test.describe("LaunchLens AI end-to-end", () => {
     expect(privacyResult.body).not.toContain("grounded");
 
     // 5. The public share route renders a safe not-found state when
-    //    the workspace id is unknown. The actual response code is
-    //    either 404 (no such share) or any other non-2xx status; what
-    //    matters is that the body never contains founder brief or
-    //    decision content from a different workspace.
+    //    the workspace id is malformed. Next dev can still return 200
+    //    for the rendered not-found shell, so the privacy boundary is
+    //    asserted through the safe copy and absence of private content
+    //    without requiring the e2e run to query an external database.
     const shareResult = await page.evaluate(async () => {
       const response = await fetch("/share/not-a-real-id");
       const text = await response.text();
       return { status: response.status, body: text };
     });
-    expect(shareResult.status).toBeGreaterThanOrEqual(400);
+    expect([200, 404]).toContain(shareResult.status);
+    expect(shareResult.body).toContain("could not be found");
     expect(shareResult.body).not.toContain("activation-fix");
     expect(shareResult.body).not.toContain("Grounded claims");
   });

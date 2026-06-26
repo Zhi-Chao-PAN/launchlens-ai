@@ -7,7 +7,6 @@ import {
   CheckSquare,
   Square,
   ChevronDown,
-  Filter,
   ChevronUp,
   CircleGauge,
   FlaskConical,
@@ -18,10 +17,8 @@ import {
   Link2,
   MoreHorizontal,
   PencilLine,
-  Search,
   Plus,
   Trash2,
-  Target,
   Star,
   X,
 } from "lucide-react";
@@ -32,17 +29,53 @@ import { decisionSourceFromExperiment, normalizeDecisionBrief } from "@/lib/laun
 import { extractSourceUrl } from "@/lib/launchlens/source-url";
 import { statusClass } from "@/lib/launchlens/status-class";
 import { tagStyle } from "@/lib/launchlens/tag-style";
-import { buildSafeFilename } from "@/lib/launchlens/safe-filename";
 import { evidenceId } from "@/lib/launchlens/evidence-id";
-import { yamlQuote } from "@/lib/launchlens/yaml-quote";
 import { titleCase } from "@/lib/launchlens/title-case";
 import { patchEvidenceFilter } from "@/lib/launchlens/evidence-filter-patch";
-import { pinnedFirst } from "@/lib/launchlens/pinned-first";
 import { SIGNAL_LABELS, WEIGHT_LABELS } from "@/lib/launchlens/evidence-labels";
+import {
+  CONFIDENCE_DESCRIPTIONS,
+  SIGNAL_DESCRIPTIONS,
+  STATUS_DESCRIPTIONS,
+  WEIGHT_DESCRIPTIONS,
+} from "@/lib/launchlens/evidence-descriptions";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { FilterChip } from "@/components/filter-chip";
+import { ArchivedHypothesesPanel } from "@/components/archived-hypotheses-panel";
+import {
+  ValidationBoardFilterBar,
+  type ValidationBoardSortMode,
+  type ValidationBoardStatusFilter,
+} from "@/components/validation-board-filter-bar";
+import { ValidationBoardExportMenu } from "@/components/validation-board-export-menu";
+import { ValidationBoardFooter } from "@/components/validation-board-footer";
+import { ValidationEmptyStates } from "@/components/validation-empty-states";
+import {
+  ValidationBulkActionsToolbar,
+  type ValidationBatchTagMode,
+} from "@/components/validation-bulk-actions-toolbar";
+import { ValidationHistoryPreview } from "@/components/validation-history-preview";
+import { ValidationTimeline } from "@/components/validation-timeline";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
+import { EXPERIMENT_STATUS_LABELS } from "@/lib/launchlens/experiment-status-labels";
+import {
+  createNewValidationExperiment,
+  isDuplicateAssumption,
+} from "@/lib/launchlens/new-validation-experiment";
+import {
+  formatValidationObservedDate,
+  formatValidationObservedDateTitle,
+} from "@/lib/launchlens/validation-date-format";
+import {
+  validationBoardFilename,
+  validationBoardToJson,
+  validationBoardToMarkdown,
+  validationExperimentFilename,
+  validationExperimentToJson,
+  validationExperimentToMarkdown,
+} from "@/lib/launchlens/validation-export";
+import { matchesValidationExperimentSearch } from "@/lib/launchlens/validation-search";
 
 import {
   DEFAULT_PROGRESS_WEIGHTS,
@@ -58,7 +91,6 @@ import {
   type HypothesisChangeEvent,
   type ValidationEvidence,
   type ValidationExperiment,
-  assumptionIdentity,
   type WorkspaceExecutionState,
   computeExperimentConfidence,
 } from "@/lib/launchlens/execution";
@@ -84,23 +116,6 @@ const emptyDraft: EvidenceDraft = {
   signal: "supports",
   weight: "moderate",
 };
-
-const statusLabels = {
-  untested: "Untested",
-  testing: "Testing",
-  supported: "Supported",
-  refuted: "Refuted",
-} as const;
-
-const DECISION_DESCRIPTIONS: Record<string, string> = { proceed: "Proceed: the evidence supports this hypothesis; move forward.", pivot: "Pivot: the evidence contradicts this hypothesis; consider changing direction.", iterate: "Iterate: signals are mixed; keep testing and refining.", pause: "Pause: set this hypothesis aside for now." };
-
-const STATUS_DESCRIPTIONS: Record<string, string> = { untested: "Untested: no evidence has been collected yet.", testing: "Testing: evidence is actively being gathered.", supported: "Supported: the hypothesis is holding up against the evidence.", refuted: "Refuted: the evidence contradicts the hypothesis." };
-
-const SIGNAL_DESCRIPTIONS: Record<EvidenceSignal, string> = { supports: "Supports: this evidence reinforces the hypothesis.", challenges: "Challenges: this evidence contradicts or weakens the hypothesis.", neutral: "Neutral: this evidence is informational, neither supporting nor contradicting." };
-
-const WEIGHT_DESCRIPTIONS: Record<EvidenceWeight, string> = { anecdotal: "Anecdotal: a single story or hunch, not yet a pattern.", moderate: "Moderate: a pattern seen a few times but not yet conclusive.", strong: "Strong: repeated, high-quality signal across multiple sources." };
-
-const CONFIDENCE_DESCRIPTIONS: Record<ConfidenceLevel, string> = { low: "Low confidence: this is still a guess; more evidence is needed.", medium: "Medium confidence: some supporting evidence, but still uncertain.", high: "High confidence: strongly supported by the evidence collected so far." };
 
 const InlineMarkdown = memo(function InlineMarkdown({ text }: { text: string }) {
   const segments = parseInlineMarkdown(text);
@@ -335,8 +350,9 @@ export function ValidationBoard({
   const [weightPreset, setWeightPresetState] = useState<"default" | "evidence" | "decision">(() => { if (typeof window === "undefined") return "default"; try { const v = window.localStorage.getItem("launchlens:weight-preset"); if (v === "default" || v === "evidence" || v === "decision") return v; } catch {} return "default"; });
   const setWeightPreset = useCallback((v: "default" | "evidence" | "decision") => { setWeightPresetState(v); try { window.localStorage.setItem("launchlens:weight-preset", v); } catch {} }, []);
   const [showWeightPicker, setShowWeightPicker] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "decided">("all");
-  const [sortBy, setSortBy] = useState<"default" | "confidence" | "status" | "progress">("default");
+  const [statusFilter, setStatusFilter] =
+    useState<ValidationBoardStatusFilter>("all");
+  const [sortBy, setSortBy] = useState<ValidationBoardSortMode>("default");
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
@@ -371,23 +387,6 @@ export function ValidationBoard({
     [execution, currentWeights],
   );
 
-  const parseSearchQuery = useCallback((raw: string): { required: string[]; excluded: string[] } => {
-    const required: string[] = [];
-    const excluded: string[] = [];
-    const regex = /("([^"]+)"|(\S+))/g;
-    let m: RegExpExecArray | null;
-    while ((m = regex.exec(raw)) !== null) {
-      const token = (m[2] ?? m[3] ?? "").toLowerCase().trim();
-      if (!token) continue;
-      if (token.startsWith("-") && token.length > 1) {
-        excluded.push(token.slice(1));
-      } else {
-        required.push(token);
-      }
-    }
-    return { required, excluded };
-    return { required, excluded };
-  }, []);
 function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { onDuplicate: () => void; onEdit: () => void; onDelete: () => void; sourceLabel: string }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -441,19 +440,12 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
     </div>
   );
 }
-  const experimentMatchesSearch = useCallback((exp: ValidationExperiment, raw: string): boolean => {
-    const q = raw.trim();
-    if (!q) return true;
-    const haystack = [exp.assumption, exp.decision, exp.nextAction, ...(exp.tags || []), ...exp.evidence.flatMap((ev) => [ev.note, ev.source, ev.signal, ev.weight])].join(" ").toLowerCase();
-    const { required, excluded } = parseSearchQuery(q);
-    if (excluded.some((t) => haystack.includes(t))) return false;
-    return required.every((t) => haystack.includes(t));
-  }, [parseSearchQuery]);
-
   const filteredExperiments = useMemo(() => {
     let list = execution.experiments;
     if (deferredSearchQuery.trim()) {
-      list = list.filter((exp) => experimentMatchesSearch(exp, deferredSearchQuery));
+      list = list.filter((exp) =>
+        matchesValidationExperimentSearch(exp, deferredSearchQuery),
+      );
     }
     if (statusFilter === "active") {
       list = list.filter(
@@ -494,7 +486,7 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
     }
 
     return list;
-  }, [execution.experiments, statusFilter, sortBy, deferredSearchQuery, experimentMatchesSearch]);
+  }, [execution.experiments, statusFilter, sortBy, deferredSearchQuery]);
   const activeExperiments = filteredExperiments.filter((e) => !e.archived);
   const allWorkspaceTags = useMemo(() => {
     const counts = new Map<string, number>();
@@ -574,6 +566,52 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
     setNewExperimentTagDraft("");
   }
 
+  function isInvalidNewExperimentDraft() {
+    const assumption = newExperimentDraft.trim();
+    return (
+      assumption.length < 5 ||
+      isDuplicateAssumption(assumption, execution.experiments)
+    );
+  }
+
+  function submitNewExperiment() {
+    const assumption = newExperimentDraft.trim();
+
+    if (
+      assumption.length < 5 ||
+      isDuplicateAssumption(assumption, execution.experiments)
+    ) {
+      return;
+    }
+
+    const newExperiment = createNewValidationExperiment({
+      assumption,
+      index: execution.experiments.length,
+      tags: newExperimentTags,
+    });
+
+    pushHistory(execution, "add hypothesis");
+    onChange({
+      ...execution,
+      experiments: [...execution.experiments, newExperiment],
+      updatedAt: new Date().toISOString(),
+    });
+    setNewExperimentDraft("");
+    setNewExperimentTags([]);
+    setNewExperimentTagDraft("");
+    setIsAddingExperiment(false);
+    setRequestedExpandedExperimentId(newExperiment.id);
+    if (statusFilter !== "all") setStatusFilter("all");
+    srAnnounce("New hypothesis added: " + newExperiment.assumption);
+    window.requestAnimationFrame(() => {
+      const element = document.querySelector(
+        `[data-experiment-article][data-experiment-id="${newExperiment.id}"]`,
+      ) as HTMLElement | null;
+      element?.scrollIntoView({ behavior: "smooth", block: "center" });
+      element?.focus();
+    });
+  }
+
   function openEvidenceForm(experimentId: string) {
     setRequestedExpandedExperimentId(experimentId);
     setActiveExperimentId((current) =>
@@ -582,65 +620,8 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
     setDraft(emptyDraft);
     setEditingEvidenceId(null);
   }
-  function experimentToMarkdown(experiment: ValidationExperiment) {
-    const signalLabel = SIGNAL_LABELS;
-    const weightLabel = WEIGHT_LABELS;
-    const status = titleCase(experiment.status);
-    const confidence = titleCase(experiment.confidence);
-    const yamlTags = experiment.tags && experiment.tags.length ? "[" + experiment.tags.map((t) => yamlQuote(t)).join(", ") + "]" : "[]";
-    const yamlPinned = experiment.evidence.filter((e) => e.pinned).length;
-    const fm = [
-      "---",
-      "title: " + yamlQuote(experiment.assumption),
-      "status: " + experiment.status,
-      "confidence: " + experiment.confidence,
-      "evidence_count: " + experiment.evidence.length,
-      "pinned_evidence: " + yamlPinned,
-      "archived: " + (experiment.archived ? "true" : "false"),
-      "tags: " + yamlTags,
-      "updated: " + new Date().toISOString(),
-      "source: launchlens-ai",
-      "---",
-      "",
-    ];
-    const lines = fm.concat([
-      "# " + experiment.assumption,
-      "",
-      "- **Status**: " + status,
-      "- **Confidence**: " + confidence + (experiment.confidenceManual ? " (manual)" : ""),
-      "- **Evidence**: " + experiment.evidence.length + " items",
-      "",
-      "## Evidence",
-      "",
-    ]);
-    if (experiment.evidence.length === 0) {
-      lines.push("_No evidence recorded yet._");
-    } else {
-      [...experiment.evidence].sort(pinnedFirst).forEach((item, itemIdx) => {
-        lines.push(
-          "### " + (item.pinned ? "📌" : "") + (itemIdx + 1) + ". " + signalLabel[item.signal] + " —" + item.source,
-        );
-        lines.push("");
-        lines.push("- **Weight**: " + weightLabel[item.weight]);
-        lines.push("- **Observed**: " + new Date(item.observedAt).toLocaleDateString());
-        lines.push("");
-        lines.push(item.note);
-        lines.push("");
-      });
-    }
-    return lines.join("\n");
-  }
-
-  function experimentToJson(experiment: ValidationExperiment) {
-    return JSON.stringify(experiment, null, 2);
-  }
-
-  function safeHypothesisFilename(experiment: ValidationExperiment, ext: string) {
-    return buildSafeFilename({ source: experiment.assumption, ext, fallback: "hypothesis" });
-  }
-
   async function copyExperimentMarkdown(experiment: ValidationExperiment) {
-    const md = experimentToMarkdown(experiment);
+    const md = validationExperimentToMarkdown(experiment);
     const ok = await copyTextToClipboard(md);
     if (ok) {
       showToast("Hypothesis markdown copied", "success", 2500);
@@ -651,121 +632,47 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
   }
 
   function downloadExperimentMarkdown(experiment: ValidationExperiment) {
-    const md = experimentToMarkdown(experiment);
-    downloadTextFile(md, safeHypothesisFilename(experiment, "md"), "text/markdown");
-    showToast("Markdown downloaded", "success", 2000);
-    srAnnounce("Hypothesis markdown downloaded.");
+    const now = new Date();
+    const md = validationExperimentToMarkdown(experiment, { now });
+    const ok = downloadTextFile(
+      validationExperimentFilename(experiment, "md", now),
+      md,
+      "text/markdown;charset=utf-8",
+    );
+    if (ok) {
+      showToast("Markdown downloaded", "success", 2000);
+      srAnnounce("Hypothesis markdown downloaded.");
+    } else {
+      showToast("Could not start markdown download", "error", 3000);
+    }
   }
 
   function downloadExperimentJson(experiment: ValidationExperiment) {
-    const json = experimentToJson(experiment);
-    downloadTextFile(json, safeHypothesisFilename(experiment, "json"), "application/json");
-    showToast("JSON downloaded", "success", 2000);
-    srAnnounce("Hypothesis JSON downloaded.");
+    const now = new Date();
+    const json = validationExperimentToJson(experiment);
+    const ok = downloadTextFile(
+      validationExperimentFilename(experiment, "json", now),
+      json,
+      "application/json;charset=utf-8",
+    );
+    if (ok) {
+      showToast("JSON downloaded", "success", 2000);
+      srAnnounce("Hypothesis JSON downloaded.");
+    } else {
+      showToast("Could not start JSON download", "error", 3000);
+    }
   }
 
   const [exportMenuId, setExportMenuId] = useState<string | null>(null);
   const [boardExportOpen, setBoardExportOpen] = useState(false);
   const [batchTagInput, setBatchTagInput] = useState("");
-  const [batchTagMode, setBatchTagMode] = useState<null | "add" | "remove">(null);
+  const [batchTagMode, setBatchTagMode] =
+    useState<ValidationBatchTagMode>(null);
   const [isBatchBriefing, setIsBatchBriefing] = useState(false);
   const [batchBriefProgress, setBatchBriefProgress] = useState({ done: 0, total: 0 });
 
-  function boardToMarkdown() {
-    const signalLabel = SIGNAL_LABELS;
-    const weightLabel = WEIGHT_LABELS;
-    const statusLabel: Record<string, string> = {
-      untested: "Untested",
-      testing: "Testing",
-      supported: "Supported",
-      refuted: "Refuted",
-    };
-const confidenceLabel: Record<ConfidenceLevel, string> = {
-      low: "Low",
-      medium: "Medium",
-      high: "High",
-    };
-
-    const allTags = Array.from(new Set(execution.experiments.flatMap((e) => e.tags || [])));
-    const lines: string[] = [
-      "---",
-      "title: " + yamlQuote("Validation Board"),
-      "source: launchlens-ai",
-      "hypotheses: " + execution.experiments.length,
-      "supported: " + execution.experiments.filter((e) => e.status === "supported").length,
-      "refuted: " + execution.experiments.filter((e) => e.status === "refuted").length,
-      "testing: " + execution.experiments.filter((e) => e.status === "testing").length,
-      "untested: " + execution.experiments.filter((e) => e.status === "untested").length,
-      "tags: [" + allTags.map((t) => yamlQuote(t)).join(", ") + "]",
-      "updated: " + new Date().toISOString(),
-      "---",
-      "",
-      "# Validation Board",
-    ];
-    lines.push("");
-    lines.push(
-      "- **Hypotheses**: " +
-        execution.experiments.length +
-        " total —" +
-        execution.experiments.filter((e) => e.status === "supported").length +
-        " supported, " +
-        execution.experiments.filter((e) => e.status === "refuted").length +
-        " refuted, " +
-        execution.experiments.filter((e) => e.status === "testing").length +
-        " testing, " +
-        execution.experiments.filter((e) => e.status === "untested").length +
-        " untested",
-    );
-    lines.push("");
-
-    execution.experiments.forEach((experiment, expIdx) => {
-      const status = statusLabel[experiment.status] || experiment.status;
-      const confidence = confidenceLabel[experiment.confidence] || experiment.confidence;
-      lines.push("## " + (expIdx + 1) + ". " + experiment.assumption);
-      lines.push("");
-      lines.push("- **Status**: " + status);
-      lines.push(
-        "- **Confidence**: " +
-          confidence +
-          (experiment.confidenceManual ? " (manual)" : " (auto)"),
-      );
-      lines.push("- **Evidence**: " + experiment.evidence.length + " items");
-      lines.push("");
-
-      if (experiment.evidence.length === 0) {
-        lines.push("_No evidence recorded yet._");
-        lines.push("");
-      } else {
-        experiment.evidence.forEach((item, itemIdx) => {
-          lines.push(
-            "### " +
-              (itemIdx + 1) +
-              ". " +
-              signalLabel[item.signal] +
-              " —" +
-              item.source,
-          );
-          lines.push("");
-          lines.push("- **Weight**: " + weightLabel[item.weight]);
-          lines.push(
-            "- **Observed**: " + new Date(item.observedAt).toLocaleDateString(),
-          );
-          lines.push("");
-          lines.push(item.note);
-          lines.push("");
-        });
-      }
-    });
-
-    return lines.join("\n");
-  }
-
-  function boardToJson() {
-    return JSON.stringify(execution.experiments, null, 2);
-  }
-
   async function copyBoardMarkdown() {
-    const md = boardToMarkdown();
+    const md = validationBoardToMarkdown(execution.experiments);
     const ok = await copyTextToClipboard(md);
     if (ok) {
       showToast("Validation board copied as markdown", "success", 2500);
@@ -777,18 +684,36 @@ const confidenceLabel: Record<ConfidenceLevel, string> = {
   }
 
   function downloadBoardMarkdown() {
-    const md = boardToMarkdown();
-    downloadTextFile(md, (() => { const ts = new Date().toISOString().replace(/[-:T]/g, "").slice(0,14); return "validation-board-" + ts + ".md"; })(), "text/markdown");
-    showToast("Markdown downloaded", "success", 2000);
-    srAnnounce("Validation board markdown downloaded.");
+    const now = new Date();
+    const md = validationBoardToMarkdown(execution.experiments, { now });
+    const ok = downloadTextFile(
+      validationBoardFilename("md", now),
+      md,
+      "text/markdown;charset=utf-8",
+    );
+    if (ok) {
+      showToast("Markdown downloaded", "success", 2000);
+      srAnnounce("Validation board markdown downloaded.");
+    } else {
+      showToast("Could not start markdown download", "error", 3000);
+    }
     setBoardExportOpen(false);
   }
 
   function downloadBoardJson() {
-    const json = boardToJson();
-    downloadTextFile(json, (() => { const ts = new Date().toISOString().replace(/[-:T]/g, "").slice(0,14); return "validation-board-" + ts + ".json"; })(), "application/json");
-    showToast("JSON downloaded", "success", 2000);
-    srAnnounce("Validation board JSON downloaded.");
+    const now = new Date();
+    const json = validationBoardToJson(execution.experiments);
+    const ok = downloadTextFile(
+      validationBoardFilename("json", now),
+      json,
+      "application/json;charset=utf-8",
+    );
+    if (ok) {
+      showToast("JSON downloaded", "success", 2000);
+      srAnnounce("Validation board JSON downloaded.");
+    } else {
+      showToast("Could not start JSON download", "error", 3000);
+    }
     setBoardExportOpen(false);
   }
 
@@ -1417,7 +1342,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
     }
 
     // Number keys to change status (1=untested, 2=testing, 3=supported, 4=refuted)
-    const statusOrder: Array<keyof typeof statusLabels> = [
+    const statusOrder: Array<keyof typeof EXPERIMENT_STATUS_LABELS> = [
       "untested",
       "testing",
       "supported",
@@ -1506,7 +1431,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
     // Toast notification - subtle, auto-dismisses
     const labels: Record<ConfidenceLevel, string> = { low: "Low", medium: "Medium", high: "High" };
     showToast(
-      `Confidence updated: ${labels[oldConfidence]} —${labels[newConfidence]}`,
+      `Confidence updated: ${labels[oldConfidence]} -> ${labels[newConfidence]}`,
       "info",
       2200,
     );
@@ -1664,16 +1589,19 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
           let signal: EvidenceSignal = draft.signal;
           let weight: EvidenceWeight = draft.weight;
           let rest = line;
-          // Prefix signals: +/-/~ or Chinese 支/正/反/负/中. Optional weight letter s/m/a or Chinese 强/重/弱.
+          // Prefix signals: +/-/~ with optional weight letter s/m/a.
           const signalMap: Record<string, EvidenceSignal> = {
-            "+": "supports", "支": "supports", "正": "supports",
-            "-": "challenges", "反": "challenges", "负": "challenges",
-            "~": "neutral", "中": "neutral",
+            "+": "supports",
+            "-": "challenges",
+            "~": "neutral",
           };
           const weightMap: Record<string, EvidenceWeight> = {
-            s: "strong", S: "strong", "强": "strong",
-            m: "moderate", M: "moderate", "重": "moderate",
-            a: "anecdotal", A: "anecdotal", "弱": "anecdotal",
+            s: "strong",
+            S: "strong",
+            m: "moderate",
+            M: "moderate",
+            a: "anecdotal",
+            A: "anecdotal",
           };
           const c0 = line[0];
           if (c0 in signalMap) {
@@ -1682,7 +1610,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
             const c1 = line[1];
             if (c1 && c1 in weightMap) {
               const c2 = line[2];
-              const isSep = !c2 || c2 === " " || c2 === "\t" || c2 === ":" || c2 === "：" || c2 === "-" || c2 === "—" || c2 === "–" || c2 === "\u3000";
+              const isSep = !c2 || c2 === " " || c2 === "\t" || c2 === ":" || c2 === "-";
               if (isSep) {
                 weight = weightMap[c1];
                 consume = 2;
@@ -1700,7 +1628,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
           let source = "";
           let note = "";
           let sepIdx = -1;
-          const sepCandidates = [" - ", " — ", " – ", "\t", "：", ": "];
+          const sepCandidates = [" - ", "\t", ": "];
           for (const s of sepCandidates) { const i = rest.indexOf(s); if (i >= 0 && (sepIdx === -1 || i < sepIdx)) sepIdx = i; }
           if (sepIdx >= 0) {
             const matched = sepCandidates.find((s) => rest.indexOf(s) === sepIdx) ?? " - ";
@@ -1980,119 +1908,54 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
       </div>
 
       <div className="flex items-center justify-between gap-2 border-b border-card px-3 py-2 sm:px-5">
-        <div className="flex items-center gap-1">
-          <Filter className="size-3.5 text-muted" aria-hidden="true" />
-          <div role="tablist" aria-label="Filter experiments by status" className="flex gap-0.5">
-          {[
-            { id: "all", label: "All", count: execution.experiments.length },
-            { id: "active", label: "Active", count: execution.experiments.filter((e) => e.status === "untested" || e.status === "testing").length },
-            { id: "decided", label: "Decided", count: execution.experiments.filter((e) => e.status === "supported" || e.status === "refuted").length },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              role="tab"
-              aria-selected={statusFilter === tab.id}
-              onClick={() => setStatusFilter(tab.id as typeof statusFilter)}
-              className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${
-                statusFilter === tab.id
-                  ? "bg-accent text-white"
-                  : "text-muted hover:bg-muted hover:text-foreground"
-              }`}
-            >
-              {tab.label}
-              <span className="ml-1 opacity-70">({tab.count})</span>
-            </button>
-          ))}
-          </div>
-          {allTags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1">
-              <span className="pr-1 text-[11px] font-semibold uppercase text-muted">Tags:</span>
-              <button type="button" onClick={() => setTagFilter(null)} title="Show hypotheses with any tag" className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition ${tagFilter === null ? "bg-accent text-white" : "bg-muted text-muted hover:text-foreground"}`}>all</button>
-              {allTags.map((tag) => (
-                <button key={tag} type="button" onClick={() => setTagFilter(tagFilter === tag ? null : tag)} title={tagFilter === tag ? `Clear tag filter "${tag}"` : `Filter to hypotheses tagged "${tag}" (click again to clear)`} aria-label={`Filter by tag ${tag}`} className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition ${tagFilter === tag ? "bg-accent text-white" : "bg-muted text-muted hover:text-foreground"}`}>#{tag}</button>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted" aria-hidden="true" />
-          <input
-            ref={searchInputRef}
-            type="search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search..."
-            aria-label="Search hypotheses, evidence, tags"
-            className="h-7 w-40 rounded-md border border-input bg-card pl-7 pr-6 text-xs text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
-          />
-          {searchQuery && (
-            <button type="button" onClick={() => setSearchQuery("")} aria-label="Clear search" className="absolute right-1 top-1/2 -translate-y-1/2 flex size-5 items-center justify-center rounded text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-              <X className="size-3" aria-hidden="true" />
-            </button>
-          )}
-        </div>
-        <select
-          value={sortBy}
-          onChange={(e) =>
-            setSortBy(
-              e.target.value as "default" | "confidence" | "status" | "progress",
-            )
+        <ValidationBoardFilterBar
+          experimentCount={execution.experiments.length}
+          activeCount={
+            execution.experiments.filter(
+              (experiment) =>
+                experiment.status === "untested" ||
+                experiment.status === "testing",
+            ).length
           }
-          title="Default: manual order. Highest confidence: high to low. By status: supported/testing/untested/refuted. Most evidence: evidence count descending."
-          className="rounded-md border border-input bg-card px-2 py-1 text-xs font-semibold text-foreground/70 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
-          aria-label="Sort hypotheses"
-        >
-          <option value="default">Default order</option>
-          <option value="confidence">Highest confidence</option>
-          <option value="status">By status</option>
-          <option value="progress">Most evidence</option>
-        </select>
+          decidedCount={
+            execution.experiments.filter(
+              (experiment) =>
+                experiment.status === "supported" ||
+                experiment.status === "refuted",
+            ).length
+          }
+          statusFilter={statusFilter}
+          sortBy={sortBy}
+          tags={allTags}
+          tagFilter={tagFilter}
+          searchQuery={searchQuery}
+          searchInputRef={searchInputRef}
+          onStatusFilterChange={setStatusFilter}
+          onTagFilterChange={setTagFilter}
+          onSearchQueryChange={setSearchQuery}
+          onSortByChange={setSortBy}
+        />
         {selectMode && batchCount > 0 && (
-          <div role="toolbar" aria-label="Bulk actions on selected hypotheses" data-hypothesis-bulk-toolbar className="flex w-full flex-wrap items-center gap-2 rounded-md border border-accent/60 bg-accent/5 p-2 text-xs">
-            <span className="px-1 font-semibold text-foreground">{batchCount} selected</span>
-            <span className="ml-1 text-[10px] uppercase tracking-wide text-muted" aria-hidden="true">Shift+click range</span>
-            <button type="button" onClick={toggleSelectAllExperiments} className="rounded px-2 py-1 hover:bg-muted">All</button>
-            <span className="mx-1 h-4 w-px bg-border" />
-            <button type="button" onClick={() => setSelectedStatus("untested")} className="rounded px-2 py-1 hover:bg-muted">Mark untested</button>
-            <button type="button" onClick={() => setSelectedStatus("testing")} className="rounded px-2 py-1 text-accent hover:bg-muted">Mark testing</button>
-            <button type="button" onClick={() => setSelectedStatus("supported")} className="rounded px-2 py-1 text-signal-supports hover:bg-muted">Mark supported</button>
-            <button type="button" onClick={() => setSelectedStatus("refuted")} className="rounded px-2 py-1 text-signal-challenges hover:bg-muted">Mark refuted</button>
-            <span className="mx-1 h-4 w-px bg-border" />
-            <div className="relative">
-              <button type="button" onClick={() => setBatchTagMode(batchTagMode === "add" ? null : "add")} aria-expanded={batchTagMode === "add"} className={"rounded px-2 py-1 " + (batchTagMode === "add" ? "bg-accent text-white" : "hover:bg-muted")}>+ Tag</button>
-              {batchTagMode === "add" && (<div className="absolute left-0 top-full z-20 mt-1 w-64 rounded-md border border-input bg-card p-2 shadow-lg">
-                <div className="mb-1.5 flex flex-wrap gap-1">
-                  {allWorkspaceTags.slice(0, 8).filter((t) => !selectedTagsUnion.intersection.has(t.tag)).map((t) => (
-                    <button key={t.tag} type="button" onClick={() => batchAddTag(t.tag)} className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted hover:bg-accent hover:text-white" title={`Add "${t.tag}" (used ${t.count}x)`}>{t.tag}</button>
-                  ))}
-                  {allWorkspaceTags.length === 0 && <span className="text-[10px] text-muted">No existing tags yet.</span>}
-                </div>
-                <div className="flex items-center gap-1">
-                  <input autoFocus value={batchTagInput} onChange={(e) => setBatchTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") applyBatchTagFromInput("add"); if (e.key === "Escape") setBatchTagMode(null); }} placeholder="new or existing tag" className="flex-1 rounded bg-input px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-accent" />
-                  <button type="button" onClick={() => applyBatchTagFromInput("add")} className="rounded bg-accent px-2 py-1 text-xs text-white">Add</button>
-                </div>
-              </div>)}
-            </div>
-            <div className="relative">
-              <button type="button" onClick={() => setBatchTagMode(batchTagMode === "remove" ? null : "remove")} aria-expanded={batchTagMode === "remove"} className={"rounded px-2 py-1 " + (batchTagMode === "remove" ? "bg-signal-challenges text-white" : "hover:bg-muted")}>- Tag</button>
-              {batchTagMode === "remove" && (<div className="absolute left-0 top-full z-20 mt-1 w-64 rounded-md border border-input bg-card p-2 shadow-lg">
-                <div className="mb-1.5 flex flex-wrap gap-1">
-                  {Array.from(selectedTagsUnion.union).slice(0, 8).map((t) => (
-                    <button key={t} type="button" onClick={() => batchRemoveTag(t)} className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted hover:bg-signal-challenges hover:text-white" title={`Remove "${t}"`}>{t}</button>
-                  ))}
-                  {selectedTagsUnion.union.size === 0 && <span className="text-[10px] text-muted">No tags on selected.</span>}
-                </div>
-                <div className="flex items-center gap-1">
-                  <input autoFocus value={batchTagInput} onChange={(e) => setBatchTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") applyBatchTagFromInput("remove"); if (e.key === "Escape") setBatchTagMode(null); }} placeholder="tag to remove" className="flex-1 rounded bg-input px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-accent" />
-                  <button type="button" onClick={() => applyBatchTagFromInput("remove")} className="rounded bg-signal-challenges px-2 py-1 text-xs text-white">Remove</button>
-                </div>
-              </div>)}
-            </div>
-            {!isBatchBriefing ? (<button type="button" onClick={() => void batchGenerateBriefs()} className="rounded px-2 py-1 hover:bg-muted" title="Generate decision briefs for selected hypotheses with evidence and no brief">Briefs</button>) : (<span className="rounded px-2 py-1 text-xs text-muted">{batchBriefProgress.done}/{batchBriefProgress.total}</span>)}
-            <button type="button" onClick={() => batchArchive(true)} className="rounded px-2 py-1 hover:bg-muted">Archive</button>
-            <button type="button" onClick={batchDeleteExperiments} className="rounded px-2 py-1 text-signal-challenges hover:bg-signal-challenges/10">Delete</button>
-            <button type="button" onClick={() => setSelectedExperimentIds(new Set())} className="ml-auto rounded px-2 py-1 text-muted hover:bg-muted hover:text-foreground">Clear</button>
-          </div>
+          <ValidationBulkActionsToolbar
+            batchCount={batchCount}
+            batchTagInput={batchTagInput}
+            batchTagMode={batchTagMode}
+            allWorkspaceTags={allWorkspaceTags}
+            selectedTags={selectedTagsUnion}
+            isBatchBriefing={isBatchBriefing}
+            batchBriefProgress={batchBriefProgress}
+            onSelectAll={toggleSelectAllExperiments}
+            onSetStatus={setSelectedStatus}
+            onBatchTagModeChange={setBatchTagMode}
+            onBatchTagInputChange={setBatchTagInput}
+            onApplyBatchTagInput={applyBatchTagFromInput}
+            onBatchAddTag={batchAddTag}
+            onBatchRemoveTag={batchRemoveTag}
+            onGenerateBriefs={batchGenerateBriefs}
+            onArchive={() => batchArchive(true)}
+            onDelete={batchDeleteExperiments}
+            onClear={() => setSelectedExperimentIds(new Set())}
+          />
         )}
         <button
             type="button"
@@ -2104,58 +1967,14 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
             <CheckSquare className="size-3.5" aria-hidden="true" />
             <span className="hidden sm:inline">Select</span>
           </button>
-          <div className="relative">
-          <button
-            type="button"
-            onClick={() => setBoardExportOpen(!boardExportOpen)}
-            aria-expanded={boardExportOpen}
-            aria-haspopup="true"
-            aria-label="Export validation board"
-            title="Export all hypotheses"
-            className="flex items-center gap-1 rounded-md border border-input bg-card px-2 py-1 text-xs font-medium text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
-          >
-            <Download className="size-3.5" aria-hidden="true" />
-            <span className="hidden sm:inline">Export</span>
-          </button>
-          {boardExportOpen && (
-            <>
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setBoardExportOpen(false)}
-                aria-hidden="true"
-              />
-              <div
-                role="menu"
-                className="absolute right-0 top-full z-20 mt-1 w-48 overflow-hidden rounded-md border border-input bg-card py-1 text-sm shadow-lg"
-              >
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={copyBoardMarkdown}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-foreground/80 transition hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground focus:outline-none"
-                >
-                  Copy Markdown
-                </button>
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={downloadBoardMarkdown}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-foreground/80 transition hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground focus:outline-none"
-                >
-                  Download Markdown
-                </button>
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={downloadBoardJson}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-foreground/80 transition hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground focus:outline-none"
-                >
-                  Download JSON
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+        <ValidationBoardExportMenu
+          open={boardExportOpen}
+          onToggle={() => setBoardExportOpen((open) => !open)}
+          onClose={() => setBoardExportOpen(false)}
+          onCopyMarkdown={copyBoardMarkdown}
+          onDownloadMarkdown={downloadBoardMarkdown}
+          onDownloadJson={downloadBoardJson}
+        />
         <button
           type="button"
           onClick={() => { const opening = !isAddingExperiment; setIsAddingExperiment(opening); if (opening) window.setTimeout(() => newExperimentInputRef.current?.focus(), 50); }}
@@ -2175,7 +1994,9 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
             </span>
             {(() => {
                 const trimmed = newExperimentDraft.trim();
-                const dup = trimmed.length >= 5 && execution.experiments.some((e) => e.assumption.trim().toLowerCase() === trimmed.toLowerCase());
+                const dup =
+                  trimmed.length >= 5 &&
+                  isDuplicateAssumption(trimmed, execution.experiments);
                 const tooShort = trimmed.length > 0 && trimmed.length < 5;
                 return (<>
                   <p id="new-hypothesis-hint" className="sr-only">At least 5 characters. Press Enter to add.</p>
@@ -2194,32 +2015,9 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
               aria-invalid={newExperimentDraft.trim().length > 0 && newExperimentDraft.trim().length < 5}
               className={"h-10 w-full rounded-md border bg-card px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-[var(--ring-color)] " + (newExperimentDraft.trim().length > 0 && newExperimentDraft.trim().length < 5 ? "border-signal-challenges focus:border-signal-challenges" : "border-input focus:border-accent")}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && newExperimentDraft.trim().length >= 5 && !execution.experiments.some((ex) => ex.assumption.trim().toLowerCase() === newExperimentDraft.trim().toLowerCase())) {
+                if (e.key === "Enter" && !isInvalidNewExperimentDraft()) {
                   e.preventDefault();
-                  const assumption = newExperimentDraft.trim();
-                  const newExp: ValidationExperiment = {
-                    id: assumptionIdentity(assumption, execution.experiments.length),
-                    assumption,
-                    status: "untested",
-                    confidence: "low",
-      confidenceManual: false,
-                    decision: "",
-                    nextAction: "",
-                    linkedTaskId: "",
-                    evidence: [],
-                    tags: newExperimentTags.slice(0, 8),
-                  };
-                  pushHistory(execution, "add hypothesis"); onChange({
-                    ...execution,
-                    experiments: [...execution.experiments, newExp],
-                    updatedAt: new Date().toISOString(),
-                  });
-                  setNewExperimentDraft("");
-                  setIsAddingExperiment(false);
-                  setRequestedExpandedExperimentId(newExp.id);
-                  if (statusFilter !== "all") setStatusFilter("all");
-              srAnnounce("New hypothesis added: " + newExp.assumption);
-                  window.requestAnimationFrame(() => { const el = document.querySelector(`[data-experiment-article][data-experiment-id="${newExp.id}"]`) as HTMLElement | null; el?.scrollIntoView({ behavior: "smooth", block: "center" }); el?.focus(); });
+                  submitNewExperiment();
                 }
               }}
             />
@@ -2267,36 +2065,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
             </button>
             <button
               type="button"
-              onClick={() => {
-                const t = newExperimentDraft.trim();
-                if (t.length < 5) return;
-                if (execution.experiments.some((ex) => ex.assumption.trim().toLowerCase() === t.toLowerCase())) return;
-                const assumption = t;
-                const newExp: ValidationExperiment = {
-                  id: assumptionIdentity(assumption, execution.experiments.length),
-                  assumption,
-                  status: "untested",
-                  confidence: "low",
-      confidenceManual: false,
-                  decision: "",
-                  nextAction: "",
-                  linkedTaskId: "",
-                  evidence: [],
-                  tags: newExperimentTags.slice(0, 8),
-                };
-                pushHistory(execution, "add hypothesis"); onChange({
-                  ...execution,
-                  experiments: [...execution.experiments, newExp],
-                  updatedAt: new Date().toISOString(),
-                });
-                setNewExperimentDraft("");
-                setIsAddingExperiment(false);
-                setRequestedExpandedExperimentId(newExp.id);
-                if (statusFilter !== "all") setStatusFilter("all");
-              srAnnounce("New hypothesis added: " + newExp.assumption);
-                window.requestAnimationFrame(() => { const el = document.querySelector(`[data-experiment-article][data-experiment-id="${newExp.id}"]`) as HTMLElement | null; el?.scrollIntoView({ behavior: "smooth", block: "center" }); el?.focus(); });
-              }}
-              disabled={newExperimentDraft.trim().length < 5 || execution.experiments.some((ex) => ex.assumption.trim().toLowerCase() === newExperimentDraft.trim().toLowerCase())}
+              onClick={submitNewExperiment}
+              disabled={isInvalidNewExperimentDraft()}
               className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Add hypothesis
@@ -2352,7 +2122,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
               tabIndex={focusedExperimentId === null ? (index === 0 ? 0 : -1) : focusedExperimentId === experiment.id ? 0 : -1}
               onFocus={() => setFocusedExperimentId(experiment.id)}
               onKeyDown={(e) => handleExperimentKeyDown(e, experiment.id)}
-              aria-label={`Hypothesis ${index + 1}: ${experiment.assumption}. Status: ${statusLabels[experiment.status]}. ${experiment.evidence.length} evidence items.}`}
+              aria-label={`Hypothesis ${index + 1}: ${experiment.assumption}. Status: ${EXPERIMENT_STATUS_LABELS[experiment.status]}. ${experiment.evidence.length} evidence items.}`}
               className={
                 "relative flex flex-col rounded-xl border bg-card p-5 outline-none transition focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset " +
                 (draggedExperimentId === experiment.id ? "opacity-40 " : "") +
@@ -2424,11 +2194,11 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                     </span>
                     <span
                       role="status"
-                      aria-label={`Validation status: ${statusLabels[experiment.status]}. ${STATUS_DESCRIPTIONS[experiment.status] || ""}`}
+                      aria-label={`Validation status: ${EXPERIMENT_STATUS_LABELS[experiment.status]}. ${STATUS_DESCRIPTIONS[experiment.status] || ""}`}
                       title={STATUS_DESCRIPTIONS[experiment.status] || ""}
                       className={`rounded-md px-2 py-1 text-xs font-semibold ${statusClass(experiment.status)}`}
                     >
-                      {statusLabels[experiment.status]}
+                      {EXPERIMENT_STATUS_LABELS[experiment.status]}
                     </span>
                     <span
                       aria-label={`Confidence: ${experiment.confidence}. ${CONFIDENCE_DESCRIPTIONS[experiment.confidence]}` + (experiment.confidenceManual ? ", manually set" : experiment.evidence.length > 0 ? ", auto-computed from evidence" : "")}
@@ -2454,7 +2224,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       />
                       {titleCase(experiment.confidence)}
                       {!experiment.confidenceManual && experiment.evidence.length > 0 && (
-                        <span className="text-[10px] font-medium opacity-75">—auto</span>
+                        <span className="text-[10px] font-medium opacity-75">-auto</span>
                       )}
                     </span>
                     <span className="text-xs text-muted" aria-label={`${experiment.evidence.length} evidence item${experiment.evidence.length === 1 ? "" : "s"}`}>
@@ -2638,7 +2408,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                     }
                     className="h-10 w-full rounded-md border border-input bg-input px-3 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   >
-                    {Object.entries(statusLabels).map(([value, label]) => (
+                    {Object.entries(EXPERIMENT_STATUS_LABELS).map(([value, label]) => (
                       <option key={value} value={value}>
                         {label}
                       </option>
@@ -2915,11 +2685,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                               />
                             ))}
                           </button>
-                          <time className="text-muted" dateTime={item.observedAt} title={new Intl.DateTimeFormat(undefined, { year: "numeric", month: "long", day: "numeric", weekday: "long" }).format(new Date(item.observedAt))}>
-                            {new Intl.DateTimeFormat("en", {
-                              month: "short",
-                              day: "numeric",
-                            }).format(new Date(item.observedAt))}
+                          <time className="text-muted" dateTime={item.observedAt} title={formatValidationObservedDateTitle(item.observedAt)}>
+                            {formatValidationObservedDate(item.observedAt)}
                           </time>
                         </div>
                         <p className="mt-1 break-words leading-6 text-foreground/80">
@@ -3184,7 +2951,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           }
                           aria-hidden="true"
                         >
-                          —                        </span>
+                          *
+                        </span>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2 text-xs">
                             <span className="font-semibold text-foreground">
@@ -3415,150 +3183,29 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                     {experiment.nextAction.length}/800 characters
                   </p>
                 </label>
-                {(() => {
-                  const confEvents = (experiment.history || []).filter((h) => h.kind === "confidence" || h.kind === "created");
-                  const statusEvents = (experiment.history || []).filter((h) => h.kind === "created" || h.kind === "status").sort((a, b) => +new Date(a.at) - +new Date(b.at));
-                  const statusColor = (s?: string) => ({ supported: "bg-signal-supports", refuted: "bg-signal-challenges", testing: "bg-signal-pending", untested: "bg-muted-foreground/40" } as Record<string, string>)[s ?? ""] ?? "bg-muted-foreground/40";
-                  const segments = statusEvents.map((h, i) => {
-                    const start = i / Math.max(1, statusEvents.length);
-                    const end = (i + 1) / Math.max(1, statusEvents.length);
-                    const w = Math.max(0, Math.min(1, end - start)) * 60;
-                    const color = h.to ? statusColor(h.to) : "bg-muted-foreground/40";
-                    return { x: start * 60, w, color, status: h.to ?? "" };
-                  });
-                  const haveSpark = confEvents.length >= 2;
-                  const haveRibbon = segments.length > 0;
-                  if (!haveSpark && !haveRibbon) return null;
-                  const levels: Record<string, number> = { low: 0, medium: 0.5, high: 1 };
-                  const pts = haveSpark ? confEvents.map((h, i) => {
-                    const v = h.to ? levels[h.to] ?? 0 : levels["low"];
-                    const x = (i / Math.max(1, confEvents.length - 1)) * 60;
-                    const y = 12 - v * 10;
-                    return `${x.toFixed(1)},${y.toFixed(1)}`;
-                  }).join(" ") : "";
-                  return (
-                    <div className="mt-4 space-y-1">
-                      {haveSpark && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] uppercase text-muted">Confidence</span>
-                          <svg width={64} height={14} viewBox="0 0 64 14" aria-hidden="true" className="text-accent">
-                            <polyline fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" points={pts} />
-                          </svg>
-                        </div>
-                      )}
-                      {haveRibbon && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] uppercase text-muted">Status</span>
-                          <svg width={64} height={6} viewBox="0 0 64 6" role="img" aria-label="Status over time">
-                            {segments.map((seg, i) => (
-                              <rect key={i} x={seg.x.toFixed(1)} y={1} width={Math.max(seg.w, 1).toFixed(1)} height={4} rx={1} className={seg.color} opacity={0.85} />
-                            ))}
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
+                <ValidationHistoryPreview history={experiment.history ?? []} />
                 {experiment.history && experiment.history.length > 0 && (
-                  <div className="mt-4">
-                    <div className="mb-2 flex items-center justify-between">
-                      <h3 className="text-xs font-semibold uppercase text-muted">Timeline {experiment.history.length > 8 ? <span className="ml-1 font-normal normal-case text-muted/70">({experiment.history.length} events)</span> : null}</h3>
-                      {experiment.history.length > 8 ? (
-                        <button type="button" onClick={(e) => { e.stopPropagation(); setShowFullHistory((s) => { const n = new Set(s); if (n.has(experiment.id)) n.delete(experiment.id); else n.add(experiment.id); return n; }); }} className="text-[11px] text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm">
-                          {showFullHistory.has(experiment.id) ? "Show recent" : "Show all " + experiment.history.length}
-                        </button>
-                      ) : null}
-                    </div>
-                    <ol className="space-y-1.5 border-l border-border/60 pl-5 overflow-visible">
-                      {(() => {
-                        const kindChips: { id: string; label: string }[] = [
-                          { id: "all", label: "All" },
-                          { id: "created", label: "Created" },
-                          { id: "status", label: "Status" },
-                          { id: "confidence", label: "Confidence" },
-                          { id: "decision", label: "Decision" },
-                          { id: "evidence_added", label: "Evidence +" },
-                          { id: "evidence_removed", label: "Evidence -" },
-                          { id: "archived", label: "Archive" },
-                          { id: "pinned", label: "Pin" },
-                        ];
-                        const selectedKind = timelineKindFilter[experiment.id] || "all";
-                        const allTimeline = (showFullHistory.has(experiment.id) ? experiment.history : experiment.history.slice(-8)).slice().reverse();
-                        const visibleTimeline = selectedKind === "all" ? allTimeline : allTimeline.filter((e) => e.kind === selectedKind);
-                        const kindCounts: Record<string, number> = {};
-                        experiment.history.forEach((e) => { kindCounts[e.kind] = (kindCounts[e.kind] || 0) + 1; });
-                        return (
-                        <>
-                        {experiment.history.length > 5 && (
-                          <div className="mb-1.5 flex flex-wrap gap-0.5">
-                            {kindChips.filter((ch) => ch.id === "all" || kindCounts[ch.id]).map((ch) => (
-                              <button key={ch.id} type="button" onClick={(e) => { e.stopPropagation(); setTimelineKindFilter((prev) => ({ ...prev, [experiment.id]: ch.id })); }} className={`rounded px-1.5 py-0.5 text-[10px] font-medium transition ${selectedKind === ch.id ? "bg-accent text-white" : "text-muted hover:bg-muted hover:text-foreground"}`} title={`Filter timeline to ${ch.label.toLowerCase()} events`} aria-pressed={selectedKind === ch.id}>{ch.label} {ch.id === "all" ? (selectedKind === "all" ? allTimeline.length : visibleTimeline.length + "/" + allTimeline.length) : (kindCounts[ch.id] || 0)}</button>
-                            ))}
-                          </div>
-                        )}
-                        {visibleTimeline.length === 0 && selectedKind !== "all" ? (
-                          <p className="text-[11px] italic text-muted">No {selectedKind.replace("_", " ").replace(/\b\w/g, (s) => s.toUpperCase())} events in this view.</p>
-                        ) : visibleTimeline.map((evt) => {
-                        const when = new Date(evt.at);
-                        const timeLabel = when.toLocaleString();
-                        const kindLabel: Record<string, string> = {
-                          created: "Created",
-                          status: "Status",
-                          confidence: "Confidence",
-                          decision: "Decision updated",
-                          archived: evt.to === "true" ? "Archived" : "Unarchived",
-                          evidence_added: "Evidence added",
-                          evidence_removed: "Evidence removed",
-                          pinned: "Pin toggled",
-                        };
-                        const statusTokenClass = (v?: string) => ({
-                          supported: "text-signal-supports font-medium",
-                          refuted: "text-signal-challenges font-medium",
-                          testing: "text-signal-pending font-medium",
-                          untested: "text-muted-foreground",
-                          high: "text-signal-supports font-medium",
-                          medium: "text-amber-600 dark:text-amber-300 font-medium",
-                          low: "text-muted-foreground",
-                          proceed: "text-signal-supports font-medium",
-                          pivot: "text-signal-challenges font-medium",
-                          iterate: "text-signal-pending font-medium",
-                        } as Record<string, string>)[v ?? ""] ?? "text-muted";
-                        const isTransition = evt.kind === "status" || evt.kind === "confidence" || evt.kind === "decision";
-                        const detail = !isTransition ? (evt.kind === "archived" ? "" : (evt.source ?? "")) : "";
-                        const dotColor = evt.kind === "status" && evt.to
-                          ? ({ supported: "bg-signal-supports", refuted: "bg-signal-challenges", testing: "bg-signal-pending", untested: "bg-muted-foreground/50" } as Record<string, string>)[evt.to] ?? "bg-accent/70"
-                          : evt.kind === "archived" ? "bg-muted-foreground/40"
-                          : evt.kind === "confidence" && evt.to ? ({ high: "bg-signal-supports", medium: "bg-amber-500", low: "bg-muted-foreground/50" } as Record<string,string>)[evt.to] ?? "bg-accent/70"
-                          : evt.kind === "decision" && evt.to ? ({ proceed: "bg-signal-supports", pivot: "bg-signal-challenges", iterate: "bg-signal-pending" } as Record<string,string>)[evt.to] ?? "bg-accent/70"
-                          : evt.kind === "evidence_added" ? "bg-emerald-500/80"
-                          : evt.kind === "evidence_removed" ? "bg-amber-500/80"
-                          : evt.kind === "created" ? "bg-accent/70"
-                          : "bg-accent/70";
-                        const describeValue = (kind: string, v?: string) => {
-                          if (!v) return String(v ?? "?");
-                          if (kind === "status") return (STATUS_DESCRIPTIONS[v as keyof typeof STATUS_DESCRIPTIONS] || v);
-                          if (kind === "confidence") return (CONFIDENCE_DESCRIPTIONS[v as keyof typeof CONFIDENCE_DESCRIPTIONS] || v);
-                          if (kind === "decision") return (DECISION_DESCRIPTIONS[v as keyof typeof DECISION_DESCRIPTIONS] || v);
-                          return v;
-                        };
-                        const transitionTitle = isTransition
-                          ? ((kindLabel[evt.kind] || evt.kind) + ": " + describeValue(evt.kind, evt.from) + " -> " + describeValue(evt.kind, evt.to))
-                          : null;
-                        const dotTitle = transitionTitle || ((kindLabel[evt.kind] || evt.kind) + (evt.label ? " - " + evt.label : ""));
-                        return (
-                          <li key={evt.id} className="relative text-xs leading-5">
-                            <span role="button" tabIndex={0} onClick={(ev) => { ev.stopPropagation(); onTimelineEventClick(experiment.id, evt.kind, evt.targetId); }} onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); onTimelineEventClick(experiment.id, evt.kind, evt.targetId); } }} className={"absolute -left-[21px] top-2 size-2 cursor-pointer rounded-full ring-2 ring-background transition hover:scale-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + dotColor} title={dotTitle} aria-label={"Timeline: " + dotTitle} />
-                            <span className="font-medium text-foreground/80">{kindLabel[evt.kind] || evt.kind}</span>
-                            {evt.label ? <span className="ml-1.5 max-w-[180px] truncate text-muted" title={evt.label}>&ldquo;{evt.label}&rdquo;</span> : isTransition ? (<span className="ml-1.5 text-muted"><span className={statusTokenClass(evt.from)} title={describeValue(evt.kind, evt.from)} aria-label={"From: " + describeValue(evt.kind, evt.from)}>{evt.from ?? "?"}</span> <span className="text-muted-foreground/70">&rarr;</span> <span className={statusTokenClass(evt.to)} title={evt.to ? ((evt.kind === "decision" ? DECISION_DESCRIPTIONS[evt.to] : evt.kind === "status" ? STATUS_DESCRIPTIONS[evt.to] : evt.kind === "confidence" ? CONFIDENCE_DESCRIPTIONS[evt.to as keyof typeof CONFIDENCE_DESCRIPTIONS] : undefined) || evt.to) : undefined} aria-label={evt.to ? ((evt.kind === "decision" ? DECISION_DESCRIPTIONS[evt.to] : evt.kind === "status" ? STATUS_DESCRIPTIONS[evt.to] : evt.kind === "confidence" ? CONFIDENCE_DESCRIPTIONS[evt.to as keyof typeof CONFIDENCE_DESCRIPTIONS] : undefined) || evt.to) : undefined}>{evt.to ?? "?"}</span></span>) : (detail ? <span className="ml-1.5 text-muted">{detail}</span> : null)}
-                            <span className="ml-1 text-[10px] text-muted/80">· {timeLabel}</span>
-                          </li>
-                        );
-                        })}
-                        </>
-                        );
-                      })()}
-                    </ol>
-                  </div>
+                  <ValidationTimeline
+                    experimentId={experiment.id}
+                    history={experiment.history}
+                    expanded={showFullHistory.has(experiment.id)}
+                    selectedKind={timelineKindFilter[experiment.id] || "all"}
+                    onToggleExpanded={(experimentId) => {
+                      setShowFullHistory((current) => {
+                        const next = new Set(current);
+                        if (next.has(experimentId)) next.delete(experimentId);
+                        else next.add(experimentId);
+                        return next;
+                      });
+                    }}
+                    onSelectKind={(experimentId, kind) => {
+                      setTimelineKindFilter((current) => ({
+                        ...current,
+                        [experimentId]: kind,
+                      }));
+                    }}
+                    onEventClick={onTimelineEventClick}
+                  />
                 )}
               </div>
                 </div>
@@ -3568,87 +3215,33 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
         })}
 
 
-      {activeExperiments.length === 0 && (searchQuery || statusFilter !== "all" || tagFilter) ? (
-        <div className="mt-10 flex flex-col items-center gap-2 rounded-lg border border-dashed border-input bg-muted/30 py-12 text-center">
-          <Search className="size-6 text-muted/50" aria-hidden="true" />
-          <p className="text-sm font-medium text-foreground/70">No hypotheses match your current filters</p>
-          <p className="text-xs text-muted">Try clearing your search, tag, or status filter.</p>
-          <button type="button" onClick={() => { setSearchQuery(""); setStatusFilter("all"); setTagFilter(null); }} className="mt-2 rounded-md border border-input bg-card px-3 py-1.5 text-xs font-medium hover:border-accent">Clear all filters</button>
-        </div>
-      ) : activeExperiments.length === 0 && archivedExperiments.length > 0 && (!searchQuery && statusFilter === "all" && !tagFilter) ? (
-        <div className="mt-10 flex flex-col items-center gap-2 rounded-lg border border-dashed border-input bg-muted/30 py-10 text-center">
-          <Archive className="size-6 text-muted/60" aria-hidden="true" />
-          <p className="text-sm font-medium text-foreground/70">All your hypotheses are archived</p>
-          <p className="max-w-md text-xs leading-5 text-muted">Active hypotheses appear here. Expand the archived section below to restore one, or add a new hypothesis to begin validating again.</p>
-          <div className="mt-1 flex items-center gap-2">
-            <button type="button" onClick={() => setShowArchived(true)} className="rounded-md border border-input bg-card px-3 py-1.5 text-xs font-medium hover:border-accent">Show archived ({archivedExperiments.length})</button>
-            <button type="button" onClick={() => setIsAddingExperiment(true)} className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-text hover:bg-primary-hover"><Plus className="size-3.5" aria-hidden="true" /> New hypothesis</button>
-          </div>
-        </div>
-      ) : activeExperiments.length === 0 && archivedExperiments.length === 0 && (
-        <div className="mt-10 flex flex-col items-center gap-3 rounded-lg border border-dashed border-input bg-muted/30 py-14 text-center">
-          <Target className="size-8 text-accent/60" aria-hidden="true" />
-          <p className="text-base font-semibold text-foreground">Map out your first validation hypotheses</p>
-          <p className="max-w-md text-sm leading-6 text-muted">Each card captures one risky assumption. Add the boldest bets first, then attach evidence as you learn.</p>
-          <button type="button" onClick={() => setIsAddingExperiment(true)} className="mt-1 flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-text shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-            <Plus className="size-4" aria-hidden="true" /> Add your first hypothesis
-          </button>
-        </div>
-      )}
+      <ValidationEmptyStates
+        activeCount={activeExperiments.length}
+        archivedCount={archivedExperiments.length}
+        hasActiveFilters={Boolean(searchQuery || statusFilter !== "all" || tagFilter)}
+        onClearFilters={() => {
+          setSearchQuery("");
+          setStatusFilter("all");
+          setTagFilter(null);
+        }}
+        onShowArchived={() => setShowArchived(true)}
+        onAddHypothesis={() => setIsAddingExperiment(true)}
+      />
 
-      {archivedExperiments.length > 0 && (
-        <div className="mt-4 rounded-lg border border-dashed border-input bg-muted/30 p-3">
-          <button
-            type="button"
-            onClick={() => setShowArchived((v) => !v)}
-            aria-expanded={showArchived}
-            aria-label={showArchived ? "Collapse archived hypotheses" : "Expand archived hypotheses"}
-            title={showArchived ? "Collapse archived hypotheses" : (archivedExperiments.length + " archived hypothesis/hypotheses. Click to expand.")}
-            className="flex w-full items-center justify-between gap-2 text-left text-xs font-semibold uppercase text-muted transition hover:text-foreground"
-          >
-            <span>Archived ({archivedExperiments.length})
-              <span className="ml-2 font-normal normal-case tracking-normal text-muted/70">
-                {(() => {
-                  const summary: Record<string, number> = {};
-                  archivedExperiments.forEach((e) => { const k = ({ supported: "validated", refuted: "invalidated", testing: e.decision ? "decided" : "testing", untested: e.decision ? "decided" : "untested" } as Record<string,string>)[e.status] || e.status; summary[k] = (summary[k] || 0) + 1; });
-                  return Object.entries(summary).map(([k, v]) => v + " " + k).join(" \u00b7 ");
-                })()}
-              </span>
-            </span>
-            {showArchived ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
-          </button>
-          {showArchived && (
-            <div className="mt-2 divide-y divide-border/50">
-              {archivedExperiments.map((experiment) => {
-                const gIdx = execution.experiments.findIndex((e) => e.id === experiment.id);
-                const stCls = experiment.status === "supported" ? "bg-signal-supports/20 text-signal-supports"
-                  : experiment.status === "refuted" ? "bg-signal-challenges/20 text-signal-challenges"
-                  : experiment.status === "testing" ? "bg-accent/20 text-accent"
-                  : "bg-muted text-muted";
-                return (
-                  <div key={experiment.id} className="flex items-center gap-2 py-2 text-sm opacity-70">
-                    <button
-                      type="button"
-                      onClick={() => updateExperiment(experiment.id, (exp) => ({ ...exp, archived: false }))}
-                      className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted transition hover:bg-muted hover:text-foreground"
-                    >
-                      Unarchive
-                    </button>
-                    <span className="font-mono text-[10px] text-signal-challenges/70">H{gIdx + 1}</span>
-                    <span className={"rounded px-1.5 py-0.5 text-[10px] font-semibold " + stCls}>{statusLabels[experiment.status]}</span>
-                    <span className="truncate text-foreground/70">{experiment.assumption}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
+      <ArchivedHypothesesPanel
+        experiments={archivedExperiments}
+        allExperimentIds={execution.experiments.map((experiment) => experiment.id)}
+        open={showArchived}
+        onToggle={() => setShowArchived((value) => !value)}
+        onUnarchive={(experimentId) =>
+          updateExperiment(experimentId, (experiment) => ({
+            ...experiment,
+            archived: false,
+          }))
+        }
+      />
       </div>
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-[11px] text-muted">
-        <span>Tip: press <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">/</kbd> to search, <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">Shift</kbd>+<kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">S</kbd> to multi-select, hold <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">Shift</kbd>+click a checkbox for range select, <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">-tag</kbd> or <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">&quot;phrase&quot;</kbd> in search.</span>
-        <span>Shortcuts: <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">Ctrl/⌘</kbd>+<kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">K</kbd> palette · <kbd className="rounded border border-border bg-muted px-1 font-mono text-foreground">Shift+?</kbd> help</span>
-      </div>
+      <ValidationBoardFooter />
 
       <ConfirmDialog
         open={pendingBatch?.kind === "delete"}
@@ -3683,5 +3276,3 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
     </section>
   );
 }
-
-

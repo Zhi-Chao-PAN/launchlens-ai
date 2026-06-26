@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["127.0.0.1"],
+
+  turbopack: {
+    root: process.cwd(),
+  },
+
   // Ensures the openGraph and twitter image URLs in the root layout
   // resolve to the public deployment domain instead of the internal
   // Next.js dev server. The value is a build-time constant for the

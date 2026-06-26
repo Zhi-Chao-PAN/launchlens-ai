@@ -1,73 +1,108 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
-test.describe("Dark mode toggle", () => {
+const THEME_STORAGE_KEY = "launchlens:theme";
+
+async function isVisible(locator: Locator, timeout = 1_000): Promise<boolean> {
+  try {
+    await expect(locator).toBeVisible({ timeout });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function dismissQuickStart(page: Page): Promise<void> {
+  const quickStart = page.getByRole("dialog", { name: /quick start guide/i });
+  if (await isVisible(quickStart, 3_000)) {
+    await page.getByRole("button", { name: /get started/i }).click();
+    await expect(quickStart).toBeHidden();
+  }
+}
+
+function themeToggle(page: Page) {
+  return page.getByRole("button", {
+    name: /(theme|mode) \(click to cycle\)/i,
+  });
+}
+
+async function gotoHomeReady(page: Page) {
+  await page.goto("/");
+  await dismissQuickStart(page);
+  await expect(themeToggle(page)).toBeVisible({ timeout: 10_000 });
+  await expect
+    .poll(() =>
+      page.evaluate((themeStorageKey) => ({
+        dataTheme: document.documentElement.getAttribute("data-theme"),
+        stored: localStorage.getItem(themeStorageKey),
+      }), THEME_STORAGE_KEY),
+    )
+    .toMatchObject({ stored: "system" });
+}
+
+async function currentThemeState(page: Page) {
+  return page.evaluate((themeStorageKey) => ({
+    dataTheme: document.documentElement.getAttribute("data-theme"),
+    stored: localStorage.getItem(themeStorageKey),
+    colorScheme: document.documentElement.style.colorScheme,
+  }), THEME_STORAGE_KEY);
+}
+
+test.describe("Theme toggle", () => {
   test("theme toggle button is present and clickable on the home page", async ({
     page,
   }) => {
-    await page.goto("/");
+    await gotoHomeReady(page);
 
-    const toggle = page.getByRole("button", { name: /toggle theme/i });
+    const toggle = themeToggle(page);
     await expect(toggle).toBeVisible();
     await expect(toggle).toBeEnabled();
   });
 
-  test("clicking theme toggle switches between light and dark modes", async ({
-    page,
-  }) => {
-    await page.goto("/");
-    const toggle = page.getByRole("button", { name: /toggle theme/i });
+  test("clicking theme toggle cycles saved preferences", async ({ page }) => {
+    await gotoHomeReady(page);
+    const toggle = themeToggle(page);
 
-    // Get initial theme
-    const initialTheme = await page.evaluate(() =>
-      document.documentElement.getAttribute("data-theme"),
-    );
-
-    // Toggle once
     await toggle.click();
-    const afterFirst = await page.evaluate(() =>
-      document.documentElement.getAttribute("data-theme"),
-    );
-    expect(afterFirst).not.toBe(initialTheme);
+    await expect
+      .poll(() => currentThemeState(page))
+      .toMatchObject({ stored: "light", dataTheme: "light" });
 
-    // Toggle again
     await toggle.click();
-    const afterSecond = await page.evaluate(() =>
-      document.documentElement.getAttribute("data-theme"),
-    );
-    expect(afterSecond).toBe(initialTheme);
+    await expect
+      .poll(() => currentThemeState(page))
+      .toMatchObject({ stored: "dark", dataTheme: "dark" });
+
+    await toggle.click();
+    await expect
+      .poll(() => currentThemeState(page))
+      .toMatchObject({ stored: "system" });
   });
 
   test("theme preference persists across page reloads", async ({ page }) => {
-    await page.goto("/");
-    const toggle = page.getByRole("button", { name: /toggle theme/i });
+    await gotoHomeReady(page);
+    const toggle = themeToggle(page);
 
-    // Toggle to the opposite of current
-    const before = await page.evaluate(() =>
-      document.documentElement.getAttribute("data-theme"),
-    );
     await toggle.click();
+    await toggle.click();
+    await expect
+      .poll(() => currentThemeState(page))
+      .toMatchObject({ stored: "dark", dataTheme: "dark" });
 
-    // Reload
     await page.reload();
-    const afterReload = await page.evaluate(() =>
-      document.documentElement.getAttribute("data-theme"),
-    );
-
-    // Should be the toggled theme, not the original
-    expect(afterReload).not.toBe(before);
+    await expect(themeToggle(page)).toBeVisible({ timeout: 10_000 });
+    await expect
+      .poll(() => currentThemeState(page))
+      .toMatchObject({ stored: "dark", dataTheme: "dark" });
   });
 
   test("theme toggle respects system preference on first visit", async ({
     page,
   }) => {
-    // Emulate dark color scheme
     await page.emulateMedia({ colorScheme: "dark" });
-    await page.goto("/");
+    await gotoHomeReady(page);
 
-    const theme = await page.evaluate(() =>
-      document.documentElement.getAttribute("data-theme"),
-    );
-    // On first visit with no localStorage, should follow system (dark)
-    expect(theme).toBe("dark");
+    await expect
+      .poll(() => currentThemeState(page))
+      .toMatchObject({ stored: "system", dataTheme: "dark" });
   });
 });

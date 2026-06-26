@@ -1,10 +1,13 @@
 import { neon } from "@neondatabase/serverless";
+import { loadEnvConfig } from "@next/env";
 
 import {
   cleanEnvValue,
   pickEnvConnection,
   sanitizedErrorMessage,
 } from "../src/lib/launchlens/env-clean";
+
+loadEnvConfig(process.cwd());
 
 function migrationConnectionString() {
   return pickEnvConnection(["DATABASE_MIGRATION_URL", "DATABASE_URL"]);
@@ -130,6 +133,11 @@ async function main() {
     FROM (
       SELECT DISTINCT owner_hash FROM launchlens_workspaces
     ) AS distinct_owners
+    WHERE NOT EXISTS (
+      SELECT 1
+      FROM launchlens_tenants
+      WHERE launchlens_tenants.owner_hash = distinct_owners.owner_hash
+    )
     ON CONFLICT DO NOTHING
   `;
 

@@ -1,0 +1,57 @@
+name: Release candidate verification
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Public URL used only for status/evidence collection
+        required: true
+        default: https://launchlens-ai-two.vercel.app
+      expected_git_sha:
+        description: Expected public git SHA. Leave blank to use this workflow SHA.
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  rc-preflight:
+    name: Local release gate + evidence artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      LAUNCHLENS_BASE_URL: ${{ inputs.base_url }}
+      LAUNCHLENS_EXPECTED_GIT_SHA: ${{ inputs.expected_git_sha || github.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify release readiness packet
+        run: npm run verify:release-readiness
+
+      - name: Run local release gate
+        run: npm run release:local
+
+      - name: Collect release evidence
+        if: always()
+        run: npm run evidence:release
+
+      - name: Upload release evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: launchlens-rc-evidence
+          path: output/release-evidence/
+          if-no-files-found: warn

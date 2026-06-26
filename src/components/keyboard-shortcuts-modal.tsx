@@ -242,12 +242,16 @@ export function KeyboardShortcutsModal() {
 
             <div className="border-t border-card px-5 py-3 text-xs leading-5 text-muted sm:px-6">
               Press{" "}
-              <kbd className="rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-foreground">?</kbd>,{" "}
-              <kbd className="rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-foreground">/</kbd>, or{" "}
+              <kbd className="rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-foreground">
+                {formatShortcut({ key: "?", shift: true, description: "", category: "" })}
+              </kbd>{" "}
+              to open this panel. Press{" "}
               <kbd className="rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-foreground">
                 {formatShortcut({ key: "k", meta: true, ctrl: true, description: "", category: "" })}
               </kbd>{" "}
-              to open this panel. Press{" "}
+              for the command palette, or{" "}
+              <kbd className="rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-foreground">/</kbd>{" "}
+              to focus validation search. Press{" "}
               <kbd className="rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-foreground">Esc</kbd>{" "}
               to dismiss the newest toast or topmost overlay; hold{" "}
               <kbd className="rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-foreground">Shift</kbd>{" "}

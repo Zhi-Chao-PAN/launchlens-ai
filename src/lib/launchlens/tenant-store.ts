@@ -183,23 +183,17 @@ export async function createTenant(
       "Tenant name is required.",
     );
   }
-  // Quota enforcement must happen in a single atomic transaction so a
-  // concurrent over-cap insert is rolled back rather than committed.
-  // The check + insert are encoded as one SQL statement: an INSERT
-  // guarded by a NOT EXISTS clause that bails out (RETURNING nothing)
-  // when the existing count is already at the cap. After the
-  // transaction resolves, we verify the row landed; if it didn't,
-  // the cap was hit and we raise the quota error in user code (the
-  // transaction is already committed with zero rows changed).
-  const [rows] = await sql.transaction((transaction) => [
+  // Keep the per-owner tenant cap race-free across serverless instances.
+  // The advisory lock scopes the count + insert to this owner without
+  // blocking unrelated capability accounts.
+  const [, rows] = await sql.transaction((transaction) => [
+    transaction`
+      SELECT pg_advisory_xact_lock(hashtextextended(${ownerHash}, 1))
+    `,
     transaction`
       INSERT INTO launchlens_tenants (id, name, owner_hash)
       SELECT ${randomUUID()}, ${trimmed}, ${ownerHash}
-      WHERE NOT EXISTS (
-        SELECT 1 FROM launchlens_tenants
-        WHERE owner_hash = ${ownerHash}
-        LIMIT ${MAX_TENANTS_PER_OWNER}
-      ) AND (
+      WHERE (
         SELECT COUNT(*) FROM launchlens_tenants
         WHERE owner_hash = ${ownerHash}
       ) < ${MAX_TENANTS_PER_OWNER}
@@ -243,7 +237,7 @@ export async function listWorkspacesInTenant(
     return null;
   }
   const rows = (await sql`
-    SELECT id, title, is_public, created_at, updated_at, tenant_id
+    SELECT id, title, is_public, share_expires_at, created_at, updated_at, tenant_id
     FROM launchlens_workspaces
     WHERE tenant_id = ${tenantId}
     ORDER BY updated_at DESC
@@ -266,7 +260,7 @@ export async function getWorkspaceInTenant(
     return { kind: "not_found" as const };
   }
   const rows = (await sql`
-    SELECT id, title, input, workspace, execution, is_public, created_at, updated_at, tenant_id
+    SELECT id, title, input, workspace, execution, is_public, share_expires_at, created_at, updated_at, tenant_id
     FROM launchlens_workspaces
     WHERE id = ${workspaceId} AND tenant_id = ${tenantId}
     LIMIT 1
