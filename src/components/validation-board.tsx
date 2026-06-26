@@ -33,6 +33,7 @@ import { extractSourceUrl } from "@/lib/launchlens/source-url";
 import { statusClass } from "@/lib/launchlens/status-class";
 import { tagStyle } from "@/lib/launchlens/tag-style";
 import { buildSafeFilename } from "@/lib/launchlens/safe-filename";
+import { evidenceId } from "@/lib/launchlens/evidence-id";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
@@ -158,10 +159,6 @@ const signalLabels = {
   challenges: "Challenges",
   neutral: "Neutral",
 } as const;
-
-function evidenceId() {
-  return crypto.randomUUID();
-}
 
 export function ValidationBoard({
   execution,
@@ -450,10 +447,6 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
     </div>
   );
 }
-function sourceUrl(source: string): string | null {
-  return extractSourceUrl(source);
-}
-
   const experimentMatchesSearch = useCallback((exp: ValidationExperiment, raw: string): boolean => {
     const q = raw.trim();
     if (!q) return true;
@@ -2923,7 +2916,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2 text-xs">
                           {(() => {
-                            const u = sourceUrl(item.source);
+                            const u = extractSourceUrl(item.source);
                             if (u) return <a href={u} target="_blank" rel="noopener noreferrer" title={item.source} aria-label={`Open source: ${item.source}`} className="font-semibold text-foreground underline decoration-dotted underline-offset-2 hover:text-accent" onClick={(e) => e.stopPropagation()}>{item.source}</a>;
                             return <span className="font-semibold text-foreground">{item.source}</span>;
                           })()}
