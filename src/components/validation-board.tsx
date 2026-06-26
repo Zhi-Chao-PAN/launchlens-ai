@@ -32,6 +32,7 @@ import { decisionSourceFromExperiment, normalizeDecisionBrief } from "@/lib/laun
 import { extractSourceUrl } from "@/lib/launchlens/source-url";
 import { statusClass } from "@/lib/launchlens/status-class";
 import { tagStyle } from "@/lib/launchlens/tag-style";
+import { buildSafeFilename } from "@/lib/launchlens/safe-filename";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
@@ -657,15 +658,7 @@ function sourceUrl(source: string): string | null {
   }
 
   function safeHypothesisFilename(experiment: ValidationExperiment, ext: string) {
-    const base = experiment.assumption
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 60);
-    const ts = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14);
-    return (base || "hypothesis") + "-" + ts + "." + ext;
+    return buildSafeFilename({ source: experiment.assumption, ext, fallback: "hypothesis" });
   }
 
   async function copyExperimentMarkdown(experiment: ValidationExperiment) {
