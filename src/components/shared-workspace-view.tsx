@@ -169,14 +169,15 @@ export function SharedWorkspaceView({
   // differs between server and client. Render an absolute UTC string until
   // the component has mounted on the client, then swap in the relative form.
   // `nowTick` is bumped every 30s so the relative timestamps and the
-  // 'Expires in X' badge stay fresh while the tab is open.
-  const [mounted, setMounted] = useState(false);
+  // 'Expires in X' badge stay fresh while the tab is open. The initial
+  // tick (mount) sets nowTick to 1 to flag that we're client-side.
   const [nowTick, setNowTick] = useState(0);
   useEffect(() => {
-    setMounted(true);
+    setNowTick(1);
     const id = window.setInterval(() => setNowTick((n) => n + 1), 30_000);
     return () => window.clearInterval(id);
   }, []);
+  const mounted = nowTick > 0;
   const activeExperiments = experiments.filter((e) => !e.archived);
   const archivedExperiments = experiments.filter((e) => e.archived);
   const visibleExperiments = showArchived ? experiments : activeExperiments;
