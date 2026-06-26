@@ -2,19 +2,21 @@
 
 Date: 2026-06-27 Asia/Shanghai
 
-This packet is the handoff for the next major stage: promoting the current
-release candidate to the public production URL, proving it with cloud gates, and
-leaving a reviewer-friendly evidence trail.
+This packet records the production release of the current release candidate to
+the public production URL, the cloud gates that proved it, and the evidence that
+should travel with the reviewer-facing handoff.
 
 ## Current State
 
-- Local RC status: ready for production approval.
+- Local RC status: promoted and verified.
 - Public production URL: `https://launchlens-ai-two.vercel.app`
-- Current public URL state before promotion: healthy but serving the previous
-  production SHA.
-- Expected evidence state before promotion: `promotion_pending`.
-- Expected evidence state after promotion: `production_verified`.
-- Production deploy status: not performed in this packet.
+- Production deployment URL:
+  `https://launchlens-81kh3sk57-krogerhoxit-7182s-projects.vercel.app`
+- Production deployment id: `dpl_SPNDnKoJQaPD5SMRR27HwtMGq9os`
+- Promoted git SHA: `a8982b4893a49bd40ed8b8322f09aab2dd5eb42e`
+- Evidence state before promotion: `promotion_pending`.
+- Evidence state after promotion: `production_verified`.
+- Production deploy status: completed through the `main` branch push.
 
 The latest generated evidence lives under:
 
@@ -50,21 +52,22 @@ No-go when any of these are true:
 
 ## Explicit Production Approval
 
-Production promotion is the only remaining external action. It should happen
-only after a clear instruction such as:
+Production promotion was authorized before this packet was moved from
+pre-promotion to verified production state. Future production promotions should
+still happen only after a clear instruction such as:
 
 ```text
-发布 production
+Deploy production.
 ```
 
-or an equally explicit English instruction such as:
+or an equally explicit instruction such as:
 
 ```text
 Deploy this RC to production.
 ```
 
-Absent that approval, continue with verification, evidence, documentation, and
-dry-run style checks only.
+Absent that approval, future work should continue with verification, evidence,
+documentation, and dry-run style checks only.
 
 ## Pre-Promotion Execution
 
@@ -88,7 +91,7 @@ is expected to still serve the previous SHA before promotion.
 
 ## Promotion Execution
 
-Use one approved path:
+This release used the first approved path:
 
 1. Push the verified commit to `main` and let Vercel's Git integration deploy
    production.
@@ -98,15 +101,20 @@ Use one approved path:
 npx vercel deploy . --prod -y
 ```
 
-Record the promoted git SHA, production URL, Vercel inspect URL, and the time of
-promotion.
+Recorded production details:
+
+- Promoted git SHA: `a8982b4893a49bd40ed8b8322f09aab2dd5eb42e`
+- Production URL: `https://launchlens-ai-two.vercel.app`
+- Deployment URL:
+  `https://launchlens-81kh3sk57-krogerhoxit-7182s-projects.vercel.app`
+- Deployment id: `dpl_SPNDnKoJQaPD5SMRR27HwtMGq9os`
 
 ## Post-Promotion Execution
 
 Run:
 
 ```bash
-LAUNCHLENS_BASE_URL=https://launchlens-ai-two.vercel.app LAUNCHLENS_EXPECTED_GIT_SHA=$(git rev-parse --short HEAD) npm run release:cloud
+LAUNCHLENS_BASE_URL=https://launchlens-ai-two.vercel.app LAUNCHLENS_EXPECTED_GIT_SHA=a8982b4 npm run release:cloud
 npm run evidence:release
 ```
 
@@ -116,12 +124,12 @@ Then run the hosted post-promotion workflow:
 Actions -> Post-promotion verification -> Run workflow
 ```
 
-Success means:
+Observed success:
 
-- `release:cloud` passes.
-- `/api/status` reports the expected git SHA.
-- `evidence:release` reports `production_verified`.
-- The workflow uploads `launchlens-release-evidence`.
+- `release:cloud` passed.
+- `/api/status` reported the expected git SHA.
+- `evidence:release` reported `production_verified`.
+- Local evidence was written under `output/release-evidence/`.
 
 ## Demo Handoff
 
@@ -145,7 +153,9 @@ Attach these to the release note:
 - Local `release:local` result.
 - `verify:release-readiness` result.
 - `release:cloud` result.
-- `launchlens-rc-evidence` artifact from GitHub.
-- `launchlens-release-evidence` artifact from GitHub.
-- Vercel production inspect URL.
-- Final public demo URL.
+- `launchlens-rc-evidence` artifact from GitHub, if the hosted pre-promotion
+  workflow was run.
+- `launchlens-release-evidence` artifact from GitHub, if the hosted
+  post-promotion workflow was run.
+- Vercel production deployment id: `dpl_SPNDnKoJQaPD5SMRR27HwtMGq9os`
+- Final public demo URL: `https://launchlens-ai-two.vercel.app`

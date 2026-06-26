@@ -8,17 +8,24 @@ and handoff-ready operation.
 
 ## Candidate Deployment
 
-- Preview deployment:
+- Historical preview deployment:
   https://launchlens-js93654w2-krogerhoxit-7182s-projects.vercel.app
-- Inspect URL:
+- Historical preview inspect URL:
   https://vercel.com/krogerhoxit-7182s-projects/launchlens-ai/9cZdNrft7sjtNek8sqzMcNzArUDM
-- Production demo URL currently listed in the README:
+- Verified production demo URL:
   https://launchlens-ai-two.vercel.app
+- Verified production deployment URL:
+  https://launchlens-81kh3sk57-krogerhoxit-7182s-projects.vercel.app
+- Verified production deployment id:
+  `dpl_SPNDnKoJQaPD5SMRR27HwtMGq9os`
+- Verified production git SHA:
+  `a8982b4893a49bd40ed8b8322f09aab2dd5eb42e`
 
 The preview deployment built successfully on Vercel with Next.js 16.2.9.
 This team's preview deployment currently requires Vercel authentication,
 so it is useful as a cloud build artifact but not as a public demo URL.
-It has not been promoted to the production alias in this RC snapshot.
+The current RC has now been promoted to the production alias and verified
+against the public URL.
 
 ## Verified Gates
 
@@ -31,7 +38,7 @@ npm run release:local
 Observed result:
 
 - `npm run quality` passed.
-- Vitest passed 111 test files and 1040 tests.
+- Vitest passed 114 test files and 1051 tests.
 - TypeScript typecheck passed.
 - Mock provider eval passed.
 - Mock decision eval passed.
@@ -130,46 +137,32 @@ Observed result:
 - `smoke:cloud` and `smoke:tenant` now include stronger cloud-readiness
   assertions and best-effort cleanup for temporary workspaces.
 
-## Current Known Gap
+## Production Verification
 
-The current production URL is healthy, but it is still serving the previous
-production commit until this RC is explicitly promoted. The SHA-aware public
-demo gate is expected to fail before promotion when it is pointed at the
-current RC commit:
-
-```text
-Public demo gitSha <previous-production-sha> does not match expected <current-rc-sha>.
-```
-
-This is the right failure mode: it proves the public URL is alive, but it also
-prevents an older deployment from being mistaken for the current RC. The
-database schema is already migrated and verified; the remaining gap is
-production code parity.
-
-The preview URL also cannot be used as the public release gate target
-because `/api/status` returns the Vercel authentication page rather than
-the LaunchLens API JSON. Production promotion is therefore required before
-the public demo URL can be called cloud-verified.
-
-Operational details for promotion, post-promotion verification, and rollback
-are tracked in `docs/PRODUCTION_RUNBOOK.md`. A reviewer-facing live demo track
-is tracked in `docs/DEMO_SCRIPT.md`.
-
-## Promotion Checklist
-
-Before calling this RC production-ready:
-
-1. Promote or deploy the current RC code to the production alias.
-2. Run:
+The RC has been promoted to production and verified with:
 
 ```bash
-LAUNCHLENS_BASE_URL=https://launchlens-ai-two.vercel.app LAUNCHLENS_EXPECTED_GIT_SHA=$(git rev-parse --short HEAD) npm run release:cloud
+LAUNCHLENS_BASE_URL=https://launchlens-ai-two.vercel.app LAUNCHLENS_EXPECTED_GIT_SHA=a8982b4 npm run release:cloud
 ```
 
-3. Confirm the GitHub `Cloud smoke (optional)` workflow has
-   `LAUNCHLENS_SMOKE_DATABASE_URL` configured as a secret.
-4. Run the workflow manually or through a main-branch push.
-5. Keep `npm run release:local` green before any production promotion.
+Observed result:
+
+- `/api/status` returned LaunchLens JSON from the production URL.
+- The public deployment reported git SHA
+  `a8982b4893a49bd40ed8b8322f09aab2dd5eb42e`.
+- `npm run db:migrate` completed idempotently.
+- `npm run verify:cloud-db` passed with 5 tables, 29 columns, and 10 indexes.
+- `npm run smoke:cloud` passed workspace create, restore, recovery,
+  previous-owner revocation, tenant visibility, expiring share, privacy
+  boundary, share disable, and cleanup.
+- `npm run smoke:tenant` passed per-tenant isolation and cross-owner denial.
+- `npm run smoke:rbac` passed invite, accept, viewer read, viewer share denial,
+  and owner cleanup.
+- `npm run evidence:release` reported `production_verified`.
+
+Operational details for future promotion, post-promotion verification, and
+rollback are tracked in `docs/PRODUCTION_RUNBOOK.md`. A reviewer-facing live
+demo track is tracked in `docs/DEMO_SCRIPT.md`.
 
 ## Demo Path
 
