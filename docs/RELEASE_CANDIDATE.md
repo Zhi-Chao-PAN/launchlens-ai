@@ -14,12 +14,6 @@ and handoff-ready operation.
   https://vercel.com/krogerhoxit-7182s-projects/launchlens-ai/9cZdNrft7sjtNek8sqzMcNzArUDM
 - Verified production demo URL:
   https://launchlens-ai-two.vercel.app
-- Verified production deployment URL:
-  https://launchlens-81kh3sk57-krogerhoxit-7182s-projects.vercel.app
-- Verified production deployment id:
-  `dpl_SPNDnKoJQaPD5SMRR27HwtMGq9os`
-- Verified production git SHA:
-  `a8982b4893a49bd40ed8b8322f09aab2dd5eb42e`
 
 The preview deployment built successfully on Vercel with Next.js 16.2.9.
 This team's preview deployment currently requires Vercel authentication,
@@ -142,14 +136,13 @@ Observed result:
 The RC has been promoted to production and verified with:
 
 ```bash
-LAUNCHLENS_BASE_URL=https://launchlens-ai-two.vercel.app LAUNCHLENS_EXPECTED_GIT_SHA=a8982b4 npm run release:cloud
+LAUNCHLENS_BASE_URL=https://launchlens-ai-two.vercel.app LAUNCHLENS_EXPECTED_GIT_SHA=$(git rev-parse --short HEAD) npm run release:cloud
 ```
 
 Observed result:
 
 - `/api/status` returned LaunchLens JSON from the production URL.
-- The public deployment reported git SHA
-  `a8982b4893a49bd40ed8b8322f09aab2dd5eb42e`.
+- The public deployment reported the expected current HEAD git SHA.
 - `npm run db:migrate` completed idempotently.
 - `npm run verify:cloud-db` passed with 5 tables, 29 columns, and 10 indexes.
 - `npm run smoke:cloud` passed workspace create, restore, recovery,

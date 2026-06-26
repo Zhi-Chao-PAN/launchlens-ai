@@ -10,10 +10,10 @@ should travel with the reviewer-facing handoff.
 
 - Local RC status: promoted and verified.
 - Public production URL: `https://launchlens-ai-two.vercel.app`
-- Production deployment URL:
-  `https://launchlens-81kh3sk57-krogerhoxit-7182s-projects.vercel.app`
-- Production deployment id: `dpl_SPNDnKoJQaPD5SMRR27HwtMGq9os`
-- Promoted git SHA: `a8982b4893a49bd40ed8b8322f09aab2dd5eb42e`
+- Production deployment URL: recorded by `vercel inspect` after each
+  promotion.
+- Production deployment id: recorded by `vercel inspect` after each promotion.
+- Promoted git SHA: recorded by `npm run evidence:release`.
 - Evidence state before promotion: `promotion_pending`.
 - Evidence state after promotion: `production_verified`.
 - Production deploy status: completed through the `main` branch push.
@@ -103,18 +103,16 @@ npx vercel deploy . --prod -y
 
 Recorded production details:
 
-- Promoted git SHA: `a8982b4893a49bd40ed8b8322f09aab2dd5eb42e`
+- Promoted git SHA: recorded by `npm run evidence:release`
 - Production URL: `https://launchlens-ai-two.vercel.app`
-- Deployment URL:
-  `https://launchlens-81kh3sk57-krogerhoxit-7182s-projects.vercel.app`
-- Deployment id: `dpl_SPNDnKoJQaPD5SMRR27HwtMGq9os`
+- Deployment URL and id: recorded by `vercel inspect`
 
 ## Post-Promotion Execution
 
 Run:
 
 ```bash
-LAUNCHLENS_BASE_URL=https://launchlens-ai-two.vercel.app LAUNCHLENS_EXPECTED_GIT_SHA=a8982b4 npm run release:cloud
+LAUNCHLENS_BASE_URL=https://launchlens-ai-two.vercel.app LAUNCHLENS_EXPECTED_GIT_SHA=$(git rev-parse --short HEAD) npm run release:cloud
 npm run evidence:release
 ```
 
@@ -157,5 +155,5 @@ Attach these to the release note:
   workflow was run.
 - `launchlens-release-evidence` artifact from GitHub, if the hosted
   post-promotion workflow was run.
-- Vercel production deployment id: `dpl_SPNDnKoJQaPD5SMRR27HwtMGq9os`
+- Vercel production deployment id from `vercel inspect`.
 - Final public demo URL: `https://launchlens-ai-two.vercel.app`
