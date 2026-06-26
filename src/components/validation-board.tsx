@@ -29,6 +29,7 @@ import { memo, useCallback, useEffect, useDeferredValue, useMemo, useRef, useSta
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
 import { parseInlineMarkdown } from "@/lib/launchlens/inline-markdown";
 import { decisionSourceFromExperiment, normalizeDecisionBrief } from "@/lib/launchlens/decision";
+import { extractSourceUrl } from "@/lib/launchlens/source-url";
 import { useToast } from "@/components/toast";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
@@ -473,10 +474,7 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
   );
 }
 function sourceUrl(source: string): string | null {
-  const trimmed = source.trim();
-  if (/^https?:\/\/\S+/i.test(trimmed)) return trimmed;
-  const m = trimmed.match(/https?:\/\/\S+/i);
-  return m ? m[0] : null;
+  return extractSourceUrl(source);
 }
 
   const experimentMatchesSearch = useCallback((exp: ValidationExperiment, raw: string): boolean => {
