@@ -27,6 +27,7 @@ import { ChevronDown } from "lucide-react";
 import type { SharedCloudWorkspaceRecord } from "@/lib/launchlens/cloud-workspace";
 import { formatGeneratedTime, formatRelativeTime } from "@/lib/launchlens/generated-time";
 import { formatExpiryBadge } from "@/lib/launchlens/expiry-format";
+import { formatProviderLabel } from "@/lib/launchlens/provider-label";
 import { taskIdentity } from "@/lib/launchlens/execution";
 
 type ReadOnlySectionProps = {
@@ -256,7 +257,7 @@ export function SharedWorkspaceView({
         <section className="mb-6 rounded-lg border border-card bg-card p-6 shadow-sm">
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
             <span className="rounded-md bg-signal-supports px-2 py-1 font-medium text-signal-supports">
-              {workspace.provider} provider
+              {formatProviderLabel(workspace.provider)}
             </span>
             <span title={`Generated at ${workspace.generatedAt}`}>
               Generated {formatGeneratedTime(workspace.generatedAt)}

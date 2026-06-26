@@ -57,6 +57,7 @@ import {
 } from "@/lib/launchlens/execution";
 import type { ExampleWorkspace } from "@/lib/launchlens/example-workspaces";
 import { formatGeneratedTime } from "@/lib/launchlens/generated-time";
+import { formatProviderLabel } from "@/lib/launchlens/provider-label";
 import { formatSaveLabel } from "@/lib/launchlens/save-label";
 import { evaluateWorkspaceQuality } from "@/lib/launchlens/workspace-quality";
 import { friendlyApiMessage } from "@/lib/launchlens/api-errors";
@@ -547,17 +548,10 @@ export function LaunchWorkspace({
     usedFallback: false,
   });
 
-  const providerLabel = useMemo(() => {
-    if (workspace.provider === "minimax") {
-      return "MiniMax provider";
-    }
-
-    if (workspace.provider === "openai") {
-      return "OpenAI-compatible provider";
-    }
-
-    return "Demo mock provider";
-  }, [workspace.provider]);
+  const providerLabel = useMemo(
+    () => formatProviderLabel(workspace.provider),
+    [workspace.provider],
+  );
 
   const [saveFlash, setSaveFlash] = useState(false);
   const { announce: srSave } = useSrAnnounce();
