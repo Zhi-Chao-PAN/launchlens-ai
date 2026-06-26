@@ -183,25 +183,30 @@ export async function createTenant(
       "Tenant name is required.",
     );
   }
-  const [, countRows, rows] = await sql.transaction((transaction) => [
-    transaction`
-      SELECT COUNT(*)::int AS count
-      FROM launchlens_tenants
-      WHERE owner_hash = ${ownerHash}
-    `,
-    transaction`
-      SELECT COUNT(*)::int AS count
-      FROM launchlens_tenants
-      WHERE owner_hash = ${ownerHash}
-    `,
+  // Quota enforcement must happen in a single atomic transaction so a
+  // concurrent over-cap insert is rolled back rather than committed.
+  // The check + insert are encoded as one SQL statement: an INSERT
+  // guarded by a NOT EXISTS clause that bails out (RETURNING nothing)
+  // when the existing count is already at the cap. After the
+  // transaction resolves, we verify the row landed; if it didn't,
+  // the cap was hit and we raise the quota error in user code (the
+  // transaction is already committed with zero rows changed).
+  const [rows] = await sql.transaction((transaction) => [
     transaction`
       INSERT INTO launchlens_tenants (id, name, owner_hash)
-      VALUES (${randomUUID()}, ${trimmed}, ${ownerHash})
+      SELECT ${randomUUID()}, ${trimmed}, ${ownerHash}
+      WHERE NOT EXISTS (
+        SELECT 1 FROM launchlens_tenants
+        WHERE owner_hash = ${ownerHash}
+        LIMIT ${MAX_TENANTS_PER_OWNER}
+      ) AND (
+        SELECT COUNT(*) FROM launchlens_tenants
+        WHERE owner_hash = ${ownerHash}
+      ) < ${MAX_TENANTS_PER_OWNER}
       RETURNING id, name, owner_hash, created_at
     `,
   ]);
-  const counts = firstRow<{ count: number }>(countRows);
-  if (counts && Number(counts.count) >= MAX_TENANTS_PER_OWNER) {
+  if (!rows || (Array.isArray(rows) && rows.length === 0)) {
     throw new TenantStoreError(
       "tenant_limit_reached",
       409,

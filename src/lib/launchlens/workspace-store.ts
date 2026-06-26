@@ -745,13 +745,17 @@ export type SharedStatusInput = {
 export function sharedWorkspaceStatus(
   row: SharedStatusInput | null | undefined,
   now: Date | number = new Date(),
-): { status: "not_found" } | { status: "revoked" } | { status: "ok" } {
+):
+  | { status: "not_found" }
+  | { status: "revoked" }
+  | { status: "expired" }
+  | { status: "ok" } {
   if (!row) return { status: "not_found" };
   if (!row.is_public) return { status: "revoked" };
   const nowMs = typeof now === "number" ? now : now.getTime();
   if (row.share_expires_at) {
     const expiresMs = new Date(row.share_expires_at).getTime();
-    if (!Number.isNaN(expiresMs) && expiresMs <= nowMs) return { status: "revoked" };
+    if (!Number.isNaN(expiresMs) && expiresMs <= nowMs) return { status: "expired" };
   }
   return { status: "ok" };
 }

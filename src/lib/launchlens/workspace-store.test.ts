@@ -86,24 +86,24 @@ describe("sharedWorkspaceStatus", () => {
     ).toBe("ok");
   });
 
-  it("returns revoked when share_expires_at is exactly now (boundary)", () => {
+  it("returns expired when share_expires_at is exactly now (boundary)", () => {
     const iso = new Date(NOW).toISOString();
     expect(
       sharedWorkspaceStatus(
         { is_public: true, share_expires_at: iso },
         NOW,
       ).status,
-    ).toBe("revoked");
+    ).toBe("expired");
   });
 
-  it("returns revoked when share_expires_at is in the past", () => {
+  it("returns expired when share_expires_at is in the past", () => {
     const past = new Date(NOW - 60_000).toISOString();
     expect(
       sharedWorkspaceStatus(
         { is_public: true, share_expires_at: past },
         NOW,
       ).status,
-    ).toBe("revoked");
+    ).toBe("expired");
   });
 
   it("accepts a Date object for share_expires_at", () => {
@@ -113,7 +113,7 @@ describe("sharedWorkspaceStatus", () => {
         { is_public: true, share_expires_at: past },
         NOW,
       ).status,
-    ).toBe("revoked");
+    ).toBe("expired");
   });
 
   it("accepts a Date object for now", () => {
@@ -123,7 +123,7 @@ describe("sharedWorkspaceStatus", () => {
         { is_public: true, share_expires_at: past },
         new Date(NOW),
       ).status,
-    ).toBe("revoked");
+    ).toBe("expired");
   });
 
   it("returns ok when share_expires_at is a malformed string (defensive)", () => {
@@ -147,5 +147,17 @@ describe("sharedWorkspaceStatus", () => {
         NOW,
       ).status,
     ).toBe("revoked");
+  });
+
+  it("returns the distinct 'expired' status (not 'revoked') for past expiries", () => {
+    // The page at /share/[id] has separate UI branches for revoked
+    // vs expired, so the helper must surface both distinct statuses.
+    const past = new Date(NOW - 60_000).toISOString();
+    const result = sharedWorkspaceStatus(
+      { is_public: true, share_expires_at: past },
+      NOW,
+    );
+    expect(result.status).toBe("expired");
+    expect(result.status).not.toBe("revoked");
   });
 });

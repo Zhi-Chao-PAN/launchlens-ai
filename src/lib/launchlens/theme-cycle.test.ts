@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { nextTheme, THEME_CYCLE } from "./theme-cycle";
-import type { Theme } from "./theme-cycle";
 
 describe("THEME_CYCLE", () => {
   it("is the documented cycle: light -> dark -> system -> light", () => {

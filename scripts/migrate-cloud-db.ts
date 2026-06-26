@@ -30,6 +30,7 @@ async function main() {
       workspace JSONB NOT NULL,
       execution JSONB NOT NULL DEFAULT '{"experiments":[],"updatedAt":"1970-01-01T00:00:00.000Z"}'::jsonb,
       is_public BOOLEAN NOT NULL DEFAULT FALSE,
+      share_expires_at TIMESTAMPTZ,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
@@ -39,6 +40,11 @@ async function main() {
     ALTER TABLE launchlens_workspaces
     ADD COLUMN IF NOT EXISTS execution JSONB NOT NULL
     DEFAULT '{"experiments":[],"updatedAt":"1970-01-01T00:00:00.000Z"}'::jsonb
+  `;
+
+  await sql`
+    ALTER TABLE launchlens_workspaces
+    ADD COLUMN IF NOT EXISTS share_expires_at TIMESTAMPTZ
   `;
 
   await sql`

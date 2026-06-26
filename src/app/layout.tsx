@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/toast";
@@ -14,13 +14,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#138a72",
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata: Metadata = {
   title: "LaunchLens AI",
   description:
     "AI-powered go-to-market workspace for indie founders and small teams.",
   applicationName: "LaunchLens AI",
   manifest: "/manifest.webmanifest",
-  themeColor: "#138a72",
   appleWebApp: {
     capable: true,
     title: "LaunchLens",

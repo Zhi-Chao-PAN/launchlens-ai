@@ -17,6 +17,12 @@
   --destructive-bg: #fee2e2;
   --warning: #b45309;
   --warning-bg: #fef3c7;
+  --ai-purple: #554a8b;
+  --ai-purple-bg: #e9e7f7;
+  --ai-purple-muted: #8378aa;
+  --info-blue: #4f7fb8;
+  --skeleton-from: #e2e8df;
+  --skeleton-to: #d8ded4;
 }
 
 [data-theme="dark"] {
@@ -39,6 +45,12 @@
   --destructive-bg: #450a0a;
   --warning: #fcd34d;
   --warning-bg: #422006;
+  --ai-purple: #a78bfa;
+  --ai-purple-bg: #2e2240;
+  --ai-purple-muted: #7c6ba8;
+  --info-blue: #60a5fa;
+  --skeleton-from: #1f2925;
+  --skeleton-to: #2a3530;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -236,27 +248,9 @@ html {
     transition: none !important;
   }
 }
-  --ai-purple: #554a8b;
-  --ai-purple-bg: #e9e7f7;
-  --ai-purple-muted: #8378aa;
-  --info-blue: #4f7fb8;
-  --skeleton-from: #e2e8df;
-  --skeleton-to: #d8ded4;
 
-  --ai-purple: #a78bfa;
-  --ai-purple-bg: #2e2240;
-  --ai-purple-muted: #7c6ba8;
-  --info-blue: #60a5fa;
-  --skeleton-from: #1f2925;
-  --skeleton-to: #2a3530;
-
-    --ai-purple: #a78bfa;
-    --ai-purple-bg: #2e2240;
-    --ai-purple-muted: #7c6ba8;
-    --info-blue: #60a5fa;
-    --skeleton-from: #1f2925;
-    --skeleton-to: #2a3530;
-
+/* Theme-agnostic utility classes that pull from the CSS variables
+   defined on :root and [data-theme="dark"]. */
 .bg-ai { background-color: var(--ai-purple-bg, #e9e7f7); }
 .text-ai { color: var(--ai-purple, #554a8b); }
 .text-ai-muted { color: var(--ai-purple-muted, #8378aa); }
