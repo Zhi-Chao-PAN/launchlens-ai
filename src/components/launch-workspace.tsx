@@ -35,6 +35,7 @@ import { useSrAnnounce } from "@/hooks/use-sr-announce";
 
 import { ThemeToggle } from "./theme-toggle";
 import { EditableText } from "./editable-text";
+import { EditableLines } from "./editable-lines";
 import { CloudWorkspaces } from "@/components/cloud-workspaces";
 import { SystemStatus } from "@/components/system-status";
 import { ReplayTourButton } from "@/components/onboarding-wizard";
@@ -62,8 +63,6 @@ import { formatGenerationModeLabel } from "@/lib/launchlens/generation-mode-labe
 import { formatProviderLabel } from "@/lib/launchlens/provider-label";
 import { formatSaveLabel } from "@/lib/launchlens/save-label";
 import { Bullets } from "@/components/bullets";
-import { splitLines } from "@/lib/launchlens/split-lines";
-import { joinLines } from "@/lib/launchlens/join-lines";
 import { clearIfStill, FLASH_STATE_DURATION_MS } from "@/lib/launchlens/flash-state";
 import { evaluateWorkspaceQuality } from "@/lib/launchlens/workspace-quality";
 import { friendlyApiMessage } from "@/lib/launchlens/api-errors";
@@ -95,13 +94,6 @@ type SectionProps = {
   onToggle?: () => void;
 };
 
-
-type EditableLinesProps = {
-  label: string;
-  items: string[];
-  rows?: number;
-  onCommit: (items: string[]) => void;
-};
 
 type WorkspaceListKey =
   | "targetUsers"
@@ -245,21 +237,6 @@ function Section({ title, icon: Icon, children, collapsible = false, sectionId, 
   );
 }
 
-function EditableLines({
-  label,
-  items,
-  rows = 5,
-  onCommit,
-}: EditableLinesProps) {
-  return (
-    <EditableText
-      label={label}
-      value={joinLines(items)}
-      rows={rows}
-      onCommit={(value) => onCommit(splitLines(value))}
-    />
-  );
-}
 
 function BulletList({ items }: { items: string[] }) {
   return <Bullets items={items} />;
