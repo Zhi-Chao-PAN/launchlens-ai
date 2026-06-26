@@ -32,6 +32,7 @@ import type {
 import { MAX_CLOUD_WORKSPACES } from "@/lib/launchlens/cloud-workspace";
 import { formatSnapshotTime } from "@/lib/launchlens/snapshot-time";
 import { shareExpirySuffix } from "@/lib/launchlens/share-expiry-suffix";
+import { cloudRowExpiry } from "@/lib/launchlens/cloud-row-expiry";
 import { futureIso } from "@/lib/launchlens/future-iso";
 import { createOwnerToken } from "@/lib/launchlens/owner-token";
 import type { WorkspaceExecutionState } from "@/lib/launchlens/execution";
@@ -751,11 +752,15 @@ export function CloudWorkspaces({
                       Shared
                     </span>
                   )}
-                  {item.isPublic && item.expiresAt && (() => {
-                    const days = Math.max(1, Math.ceil((new Date(item.expiresAt).getTime() - Date.now()) / 86400000));
+                  {item.isPublic && (() => {
+                    const row = cloudRowExpiry(item.expiresAt);
+                    if (!row) return null;
                     return (
-                      <span className="shrink-0 rounded-md bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800" title={"Expires " + new Date(item.expiresAt).toLocaleString()}>
-                        {new Date(item.expiresAt).getTime() <= Date.now() ? "Expired" : "Expires in " + days + "d"}
+                      <span
+                        className="shrink-0 rounded-md bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800"
+                        title={row.title}
+                      >
+                        {row.label}
                       </span>
                     );
                   })()}
