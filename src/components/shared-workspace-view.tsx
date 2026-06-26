@@ -137,16 +137,20 @@ export function SharedWorkspaceView({
   // Avoid hydration mismatch: `formatRelativeTime` uses Date.now(), which
   // differs between server and client. Render an absolute UTC string until
   // the component has mounted on the client, then swap in the relative form.
+  // `nowTick` is bumped every 30s so the relative timestamps and the
+  // 'Expires in X' badge stay fresh while the tab is open.
   const [mounted, setMounted] = useState(false);
+  const [nowTick, setNowTick] = useState(0);
   useEffect(() => {
     setMounted(true);
-    // Re-render every 30s so "3m ago" stays fresh while the tab is open.
-    const id = window.setInterval(() => setMounted((m) => m), 30_000);
+    const id = window.setInterval(() => setNowTick((n) => n + 1), 30_000);
     return () => window.clearInterval(id);
   }, []);
   const activeExperiments = experiments.filter((e) => !e.archived);
   const archivedExperiments = experiments.filter((e) => e.archived);
   const visibleExperiments = showArchived ? experiments : activeExperiments;
+  // formatRelativeTime uses Date.now() internally and re-runs on every
+  // render, so the 30s refresh interval (via nowTick) keeps it fresh.
   const sharedAtLabel = mounted
     ? formatRelativeTime(record.updatedAt)
     : formatGeneratedTime(record.updatedAt);
@@ -203,8 +207,11 @@ export function SharedWorkspaceView({
             {(() => {
               // Compute expiry only after mount to avoid hydration mismatch
               // (Date.now() differs between server-render and client-hydrate).
+              // nowTick is referenced to subscribe this IIFE to the
+              // 30s refresh interval; otherwise the badge would never
+              // re-render to update 'Expires in 5 days' -> 'Expires in 4 days'.
               if (!mounted) return null;
-              const badge = formatExpiryBadge(record.expiresAt);
+              const badge = formatExpiryBadge(record.expiresAt, Date.now() + nowTick);
               if (!badge) return null;
               const className =
                 badge.variant === "neutral"
