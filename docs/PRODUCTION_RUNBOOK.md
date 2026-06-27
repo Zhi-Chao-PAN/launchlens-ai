@@ -44,6 +44,8 @@ Expected meaning:
   output are wired together.
 - `verify:public-demo` proves the currently public URL is healthy and connected
   to cloud storage.
+- `verify:production-demo` proves the public URL reports the expected SHA and
+  passes the browser e2e suite without starting a local server.
 - If production is still on an older commit, `verify:public-demo` can pass
   without `LAUNCHLENS_EXPECTED_GIT_SHA`; that only proves the old public demo is
   alive. It does not prove the RC has been promoted.
@@ -108,6 +110,12 @@ This gate checks:
 - The production database schema matches the expected contract.
 - Workspace save, restore, recovery migration, public share, private-data
   boundary, share revocation, tenant isolation, and RBAC smoke paths pass.
+
+Then run the browser demo gate:
+
+```bash
+LAUNCHLENS_BASE_URL=https://launchlens-ai-two.vercel.app LAUNCHLENS_EXPECTED_GIT_SHA=$(git rev-parse --short HEAD) npm run verify:production-demo
+```
 
 For a GitHub-hosted audit trail, run the manual workflow:
 

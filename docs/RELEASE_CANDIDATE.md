@@ -151,6 +151,8 @@ Observed result:
 - `npm run smoke:tenant` passed per-tenant isolation and cross-owner denial.
 - `npm run smoke:rbac` passed invite, accept, viewer read, viewer share denial,
   and owner cleanup.
+- `npm run verify:production-demo` passed the browser e2e suite against the
+  production URL.
 - `npm run evidence:release` reported `production_verified`.
 
 Operational details for future promotion, post-promotion verification, and

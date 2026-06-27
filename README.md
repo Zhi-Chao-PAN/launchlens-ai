@@ -288,6 +288,7 @@ For a hosted pre-promotion audit, run the GitHub Actions workflow
 npm run lint
 npm run test
 npm run verify:release-readiness
+npm run verify:production-demo # checks production status and browser e2e
 npm run release:local
 npm run evidence:release # writes ignored Markdown/JSON release evidence
 npm run eval:provider

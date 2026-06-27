@@ -13,6 +13,7 @@ function snapshot(): ReleaseReadinessSnapshot {
         "release:cloud": "npm run verify:public-demo && npm run db:migrate",
         "evidence:release": "tsx scripts/collect-release-evidence.ts",
         "verify:public-demo": "tsx scripts/verify-public-demo.ts",
+        "verify:production-demo": "tsx scripts/verify-production-demo.ts",
         "verify:cloud-db": "tsx scripts/verify-cloud-db.ts",
         "verify:release-readiness":
           "tsx scripts/verify-release-readiness.ts",
@@ -30,17 +31,17 @@ function snapshot(): ReleaseReadinessSnapshot {
       {
         path: ".github/workflows/post-promotion-verify.yml",
         content:
-          "workflow_dispatch LAUNCHLENS_SMOKE_DATABASE_URL npm run verify:release-readiness npm run release:cloud npm run evidence:release upload-artifact launchlens-release-evidence",
+          "workflow_dispatch LAUNCHLENS_SMOKE_DATABASE_URL npm run verify:release-readiness npm run release:cloud npm run verify:production-demo npm run evidence:release upload-artifact launchlens-release-evidence",
       },
       {
         path: "docs/PRODUCTION_RUNBOOK.md",
         content:
-          "Release candidate verification Post-promotion verification npm run release:local npm run release:cloud npm run evidence:release Rollback",
+          "Release candidate verification Post-promotion verification npm run release:local npm run release:cloud npm run verify:production-demo npm run evidence:release Rollback",
       },
       {
         path: "docs/PRODUCTION_RELEASE_PACKET.md",
         content:
-          "Go / No-Go Explicit Production Approval npm run release:cloud production_verified",
+          "Go / No-Go Explicit Production Approval npm run release:cloud npm run verify:production-demo production_verified",
       },
       {
         path: "docs/RELEASE_CANDIDATE.md",

@@ -46,6 +46,7 @@ No-go when any of these are true:
 - The public `/api/status` response is missing, protected by auth, or reports an
   unhealthy database.
 - `release:local` or `verify:release-readiness` fails.
+- `verify:production-demo` fails after production promotion.
 - The production database secret is missing and no local cloud-smoke substitute
   has been agreed.
 - There is no explicit production approval.
@@ -113,6 +114,7 @@ Run:
 
 ```bash
 LAUNCHLENS_BASE_URL=https://launchlens-ai-two.vercel.app LAUNCHLENS_EXPECTED_GIT_SHA=$(git rev-parse --short HEAD) npm run release:cloud
+LAUNCHLENS_BASE_URL=https://launchlens-ai-two.vercel.app LAUNCHLENS_EXPECTED_GIT_SHA=$(git rev-parse --short HEAD) npm run verify:production-demo
 npm run evidence:release
 ```
 
@@ -126,6 +128,7 @@ Observed success:
 
 - `release:cloud` passed.
 - `/api/status` reported the expected git SHA.
+- `verify:production-demo` passed the production browser e2e suite.
 - `evidence:release` reported `production_verified`.
 - Local evidence was written under `output/release-evidence/`.
 
@@ -151,6 +154,7 @@ Attach these to the release note:
 - Local `release:local` result.
 - `verify:release-readiness` result.
 - `release:cloud` result.
+- `verify:production-demo` result.
 - `launchlens-rc-evidence` artifact from GitHub, if the hosted pre-promotion
   workflow was run.
 - `launchlens-release-evidence` artifact from GitHub, if the hosted
