@@ -1,6 +1,6 @@
 {
   "name": "launchlens-ai",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -15,6 +15,7 @@
     "verify:public-demo": "tsx scripts/verify-public-demo.ts",
     "verify:production-demo": "tsx scripts/verify-production-demo.ts",
     "verify:release-readiness": "tsx scripts/verify-release-readiness.ts",
+    "verify:portfolio": "tsx scripts/verify-portfolio-package.ts",
     "evidence:release": "tsx scripts/collect-release-evidence.ts",
     "smoke:cloud": "tsx scripts/smoke-cloud-workspace.ts",
     "smoke:rbac": "tsx scripts/smoke-rbac.ts",

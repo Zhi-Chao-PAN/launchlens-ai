@@ -30,6 +30,7 @@ Run this before any production action:
 ```bash
 git status --short --branch
 npm run verify:release-readiness
+npm run verify:portfolio
 npm run release:local
 npm run verify:public-demo
 npm run evidence:release
@@ -42,6 +43,9 @@ Expected meaning:
 - `verify:release-readiness` proves the release packet, required scripts,
   pre-promotion workflow, post-promotion workflow, docs, and ignored evidence
   output are wired together.
+- `verify:portfolio` proves the reviewer case study, demo script, production
+  packet, README, and live-demo references still form a coherent portfolio
+  handoff.
 - `verify:public-demo` proves the currently public URL is healthy and connected
   to cloud storage.
 - `verify:production-demo` proves the public URL reports the expected SHA and

@@ -1,20 +1,16 @@
 import { readFileSync } from "node:fs";
 
 import {
-  evaluateReleaseReadiness,
-  type ReleaseReadinessFile,
-} from "../src/lib/launchlens/release-readiness";
+  evaluatePortfolioPackage,
+  type PortfolioPackageFile,
+} from "../src/lib/launchlens/portfolio-package";
 
 const requiredPaths = [
-  ".github/workflows/release-candidate-verify.yml",
-  ".github/workflows/post-promotion-verify.yml",
-  "docs/PRODUCTION_RUNBOOK.md",
-  "docs/PRODUCTION_RELEASE_PACKET.md",
+  "README.md",
   "docs/PORTFOLIO_CASE_STUDY.md",
   "docs/DEMO_SCRIPT.md",
-  "docs/RELEASE_CANDIDATE.md",
-  "README.md",
-  ".gitignore",
+  "docs/PRODUCTION_RELEASE_PACKET.md",
+  "docs/PRODUCTION_RUNBOOK.md",
 ];
 
 function readJson(path: string) {
@@ -23,14 +19,14 @@ function readJson(path: string) {
   };
 }
 
-function readFiles(paths: string[]): ReleaseReadinessFile[] {
+function readFiles(paths: string[]): PortfolioPackageFile[] {
   return paths.map((path) => ({
     path,
     content: readFileSync(path, "utf8"),
   }));
 }
 
-const issues = evaluateReleaseReadiness({
+const issues = evaluatePortfolioPackage({
   packageJson: readJson("package.json"),
   files: readFiles(requiredPaths),
 });
@@ -50,3 +46,4 @@ console.log(
 if (issues.length > 0) {
   process.exitCode = 1;
 }
+

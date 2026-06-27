@@ -34,6 +34,7 @@ Go only when all of these are true:
 - `git status --short --branch` shows no uncommitted source changes.
 - `npm run release:local` passes.
 - `npm run verify:release-readiness` passes.
+- `npm run verify:portfolio` passes.
 - `npm run evidence:release` returns either `promotion_pending` before
   promotion or `production_verified` after promotion.
 - The operator has explicit production approval.
@@ -76,6 +77,7 @@ Run locally:
 
 ```bash
 npm run verify:release-readiness
+npm run verify:portfolio
 npm run release:local
 npm run evidence:release
 ```
@@ -135,7 +137,8 @@ Observed success:
 ## Demo Handoff
 
 After production verification, use `docs/DEMO_SCRIPT.md` for the portfolio
-walkthrough. The minimum manual pass is:
+walkthrough and `docs/PORTFOLIO_CASE_STUDY.md` for the reviewer-facing written
+case study. The minimum manual pass is:
 
 1. Open the production URL.
 2. Generate the B2B SaaS activation workspace.

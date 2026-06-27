@@ -50,6 +50,9 @@ jobs:
       - name: Verify release readiness packet
         run: npm run verify:release-readiness
 
+      - name: Verify portfolio package
+        run: npm run verify:portfolio
+
       - name: Verify production release candidate
         run: npm run release:cloud
 

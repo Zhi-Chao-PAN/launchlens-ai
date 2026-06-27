@@ -4,11 +4,13 @@ import {
   pingCloudStorage,
 } from "@/lib/launchlens/workspace-store";
 import { noStoreJson, startTimer } from "@/lib/launchlens/workspace-api";
+import packageJson from "../../../../package.json";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const startTime = Date.now();
+const appVersion = packageJson.version;
 
 export async function GET() {
   const totalTimer = startTimer();
@@ -31,7 +33,7 @@ export async function GET() {
 
   const body = {
     status: "ok",
-    version: process.env.NEXT_PUBLIC_APP_VERSION ?? "0.1.0",
+    version: process.env.NEXT_PUBLIC_APP_VERSION ?? appVersion,
     provider: provider ?? "mock",
     providerConfigured: provider !== null,
     dbConfigured,

@@ -103,7 +103,7 @@ Service health and configuration status.
 ```json
 {
   "status": "ok",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "provider": "mock",
   "providerConfigured": false,
   "dbConfigured": false,

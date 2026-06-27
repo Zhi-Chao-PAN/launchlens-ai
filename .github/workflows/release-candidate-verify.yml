@@ -41,6 +41,9 @@ jobs:
       - name: Verify release readiness packet
         run: npm run verify:release-readiness
 
+      - name: Verify portfolio package
+        run: npm run verify:portfolio
+
       - name: Run local release gate
         run: npm run release:local
 

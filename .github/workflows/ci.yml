@@ -31,6 +31,9 @@ jobs:
       - name: Type check
         run: npx tsc --noEmit
 
+      - name: Verify portfolio package
+        run: npm run verify:portfolio
+
   test:
     name: Unit tests
     runs-on: ubuntu-latest

@@ -24,6 +24,10 @@ Use the production URL once the RC is promoted:
 https://launchlens-ai-two.vercel.app
 ```
 
+Use `docs/PORTFOLIO_CASE_STUDY.md` as the written companion for reviewers who
+want the problem, architecture, verification, and next-stage tradeoffs before
+or after the live walkthrough.
+
 Until production promotion is complete, use a local production build or an
 authenticated Vercel preview for private rehearsal. Do not present the protected
 preview URL as the public demo.

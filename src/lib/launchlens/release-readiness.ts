@@ -26,6 +26,7 @@ const requiredPackageScripts: RequiredText[] = [
   { value: "evidence:release", label: "release evidence collector" },
   { value: "verify:public-demo", label: "public demo verifier" },
   { value: "verify:production-demo", label: "production demo verifier" },
+  { value: "verify:portfolio", label: "portfolio package verifier" },
   { value: "verify:cloud-db", label: "cloud database verifier" },
   { value: "smoke:cloud", label: "cloud workspace smoke" },
   { value: "smoke:tenant", label: "tenant isolation smoke" },
@@ -36,6 +37,7 @@ const requiredFiles: Record<string, RequiredText[]> = {
   ".github/workflows/release-candidate-verify.yml": [
     { value: "workflow_dispatch", label: "manual trigger" },
     { value: "npm run verify:release-readiness", label: "readiness check" },
+    { value: "npm run verify:portfolio", label: "portfolio package check" },
     { value: "npm run release:local", label: "local release gate" },
     { value: "npm run evidence:release", label: "release evidence step" },
     { value: "upload-artifact", label: "artifact upload" },
@@ -45,6 +47,7 @@ const requiredFiles: Record<string, RequiredText[]> = {
     { value: "workflow_dispatch", label: "manual trigger" },
     { value: "LAUNCHLENS_SMOKE_DATABASE_URL", label: "cloud smoke secret" },
     { value: "npm run verify:release-readiness", label: "readiness check" },
+    { value: "npm run verify:portfolio", label: "portfolio package check" },
     { value: "npm run release:cloud", label: "cloud release gate" },
     { value: "npm run verify:production-demo", label: "production demo gate" },
     { value: "npm run evidence:release", label: "release evidence step" },
@@ -66,6 +69,18 @@ const requiredFiles: Record<string, RequiredText[]> = {
     { value: "npm run release:cloud", label: "cloud release gate" },
     { value: "npm run verify:production-demo", label: "production demo gate" },
     { value: "production_verified", label: "target evidence state" },
+    { value: "docs/PORTFOLIO_CASE_STUDY.md", label: "case study handoff" },
+  ],
+  "docs/PORTFOLIO_CASE_STUDY.md": [
+    { value: "Reviewer Quick Path", label: "reviewer quick path" },
+    { value: "Evidence Map", label: "evidence map" },
+    { value: "npm run verify:portfolio", label: "portfolio verifier" },
+    { value: "npm run release:cloud", label: "cloud release gate" },
+    { value: "docs/PRODUCTION_RUNBOOK.md", label: "runbook reference" },
+  ],
+  "docs/DEMO_SCRIPT.md": [
+    { value: "docs/PORTFOLIO_CASE_STUDY.md", label: "case study reference" },
+    { value: "release gates", label: "release gate narrative" },
   ],
   "docs/RELEASE_CANDIDATE.md": [
     { value: "promotion_pending", label: "pre-promotion evidence state" },
@@ -73,9 +88,11 @@ const requiredFiles: Record<string, RequiredText[]> = {
     { value: "Release candidate verification", label: "pre-promotion workflow" },
   ],
   "README.md": [
+    { value: "docs/PORTFOLIO_CASE_STUDY.md", label: "case study link" },
     { value: "docs/PRODUCTION_RUNBOOK.md", label: "production runbook link" },
     { value: "docs/DEMO_SCRIPT.md", label: "demo script link" },
     { value: "Release candidate verification", label: "hosted RC audit" },
+    { value: "verify:portfolio", label: "portfolio verifier command" },
   ],
   ".gitignore": [{ value: "/output/", label: "ignored evidence output" }],
 };

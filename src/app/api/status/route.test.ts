@@ -32,7 +32,7 @@ describe("/api/status", () => {
     expect(body.dbConfigured).toBe(false);
     expect(body.dbHealthy).toBe(false);
     expect(body.dbLatencyMs).toBeNull();
-    expect(body.version).toBe("0.1.0");
+    expect(body.version).toBe("1.0.0");
     expect(typeof body.uptimeSec).toBe("number");
     expect(body.vercelEnv).toBe("development");
   });

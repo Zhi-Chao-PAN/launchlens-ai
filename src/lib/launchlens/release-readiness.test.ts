@@ -14,6 +14,7 @@ function snapshot(): ReleaseReadinessSnapshot {
         "evidence:release": "tsx scripts/collect-release-evidence.ts",
         "verify:public-demo": "tsx scripts/verify-public-demo.ts",
         "verify:production-demo": "tsx scripts/verify-production-demo.ts",
+        "verify:portfolio": "tsx scripts/verify-portfolio-package.ts",
         "verify:cloud-db": "tsx scripts/verify-cloud-db.ts",
         "verify:release-readiness":
           "tsx scripts/verify-release-readiness.ts",
@@ -26,12 +27,12 @@ function snapshot(): ReleaseReadinessSnapshot {
       {
         path: ".github/workflows/release-candidate-verify.yml",
         content:
-          "workflow_dispatch npm run verify:release-readiness npm run release:local npm run evidence:release upload-artifact launchlens-rc-evidence",
+          "workflow_dispatch npm run verify:release-readiness npm run verify:portfolio npm run release:local npm run evidence:release upload-artifact launchlens-rc-evidence",
       },
       {
         path: ".github/workflows/post-promotion-verify.yml",
         content:
-          "workflow_dispatch LAUNCHLENS_SMOKE_DATABASE_URL npm run verify:release-readiness npm run release:cloud npm run verify:production-demo npm run evidence:release upload-artifact launchlens-release-evidence",
+          "workflow_dispatch LAUNCHLENS_SMOKE_DATABASE_URL npm run verify:release-readiness npm run verify:portfolio npm run release:cloud npm run verify:production-demo npm run evidence:release upload-artifact launchlens-release-evidence",
       },
       {
         path: "docs/PRODUCTION_RUNBOOK.md",
@@ -41,7 +42,17 @@ function snapshot(): ReleaseReadinessSnapshot {
       {
         path: "docs/PRODUCTION_RELEASE_PACKET.md",
         content:
-          "Go / No-Go Explicit Production Approval npm run release:cloud npm run verify:production-demo production_verified",
+          "Go / No-Go Explicit Production Approval npm run release:cloud npm run verify:production-demo production_verified docs/PORTFOLIO_CASE_STUDY.md",
+      },
+      {
+        path: "docs/PORTFOLIO_CASE_STUDY.md",
+        content:
+          "Reviewer Quick Path Evidence Map npm run verify:portfolio npm run release:cloud docs/PRODUCTION_RUNBOOK.md",
+      },
+      {
+        path: "docs/DEMO_SCRIPT.md",
+        content:
+          "docs/PORTFOLIO_CASE_STUDY.md release gates",
       },
       {
         path: "docs/RELEASE_CANDIDATE.md",
@@ -51,7 +62,7 @@ function snapshot(): ReleaseReadinessSnapshot {
       {
         path: "README.md",
         content:
-          "docs/PRODUCTION_RUNBOOK.md docs/DEMO_SCRIPT.md Release candidate verification",
+          "docs/PORTFOLIO_CASE_STUDY.md docs/PRODUCTION_RUNBOOK.md docs/DEMO_SCRIPT.md Release candidate verification verify:portfolio",
       },
       {
         path: ".gitignore",
