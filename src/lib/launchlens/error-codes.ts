@@ -75,6 +75,10 @@ export const ERROR_GENERATION_FAILED = "generation_failed";
 export const ERROR_IDEA_TOO_SHORT = "idea_too_short";
 export const ERROR_FIELD_TOO_LONG = "field_too_long";
 
+// --- Brief import (from Research Studio) ---
+export const ERROR_BRIEF_INVALID = "brief_invalid";
+export const ERROR_BRIEF_MISSING_INPUT = "brief_missing_input";
+
 // --- Decision ---
 export const ERROR_DECISION_NO_EVIDENCE = "decision_no_evidence";
 

@@ -17,6 +17,7 @@ import {
   Braces,
   Eye,
   FileText,
+  FlaskConical,
   Gauge,
   History,
   LayoutDashboard,
@@ -56,6 +57,7 @@ import { ValidationBoard } from "@/components/validation-board";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
 import { safeMarkdownFilename, workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
 import { workspaceFromJson, workspaceToJson, type WorkspaceImportResult } from "@/lib/launchlens/json-export";
+import { briefFromFile, type BriefImportResult } from "@/lib/launchlens/brief-from-json";
 import { decryptToJson, encryptJson, isEncryptedPayload, randomPassword } from "@/lib/launchlens/encrypt-export";
 import type { CloudWorkspaceRecord } from "@/lib/launchlens/cloud-workspace";
 import {
@@ -505,6 +507,8 @@ export function LaunchWorkspace({
   const [decryptError, setDecryptError] = useState<string | null>(null);
   const [decrypting, setDecrypting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [briefImportPreview, setBriefImportPreview] = useState<BriefImportResult | null>(null);
+  const briefFileInputRef = useRef<HTMLInputElement>(null);
   const [isStorageReady, setIsStorageReady] = useState(false);
   const [isBriefOpen, setIsBriefOpen] = useState(false);
   const [isSwitching, setIsSwitching] = useState(false);
@@ -1185,6 +1189,52 @@ export function LaunchWorkspace({
     fileInputRef.current?.click();
   }
 
+  // --- Import a Research Studio brief (sets `input`, leaves workspace alone so
+  //     the user reviews and clicks Generate). Mirrors the workspace import
+  //     flow but targets the brief fields instead of the generated workspace. ---
+  async function handleBriefImportFile(file: File) {
+    try {
+      const result = await briefFromFile(file);
+      setBriefImportPreview(result);
+      showToast("Brief parsed - review and confirm", "info");
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Unknown import error";
+      showToast(`Brief import failed: ${msg}`, "error");
+    } finally {
+      if (briefFileInputRef.current) briefFileInputRef.current.value = "";
+    }
+  }
+
+  function applyBriefImport() {
+    if (!briefImportPreview) return;
+    const { input, warnings, source } = briefImportPreview;
+    setInput(input);
+    setError("");
+    setFallbackNotice("");
+    setBriefImportPreview(null);
+    const label = source === "research-studio" ? "Research Studio brief" : "brief";
+    if (warnings.length > 0) {
+      showToast(
+        `${label} loaded (${warnings.length} warning${warnings.length === 1 ? "" : "s"}) - review and Generate`,
+        "info",
+      );
+    } else {
+      showToast(`${label} loaded - review and Generate`, "success");
+    }
+    // Move focus to the Generate button area.
+    const ideaField = document.getElementById("founder-brief-idea");
+    if (ideaField) ideaField.focus();
+  }
+
+  function cancelBriefImport() {
+    setBriefImportPreview(null);
+    if (briefFileInputRef.current) briefFileInputRef.current.value = "";
+  }
+
+  function triggerBriefImport() {
+    briefFileInputRef.current?.click();
+  }
+
   async function retryCopyFromTextarea() {
     if (!exportText) return;
     try {
@@ -1732,6 +1782,15 @@ export function LaunchWorkspace({
                       <Upload className="size-4" aria-hidden="true" />
                       Import
                     </button>
+                    <button
+                      type="button"
+                      onClick={triggerBriefImport}
+                      title="Import a Research Studio brief"
+                      className="flex h-9 items-center gap-1.5 rounded-md border border-input bg-input px-3 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                    >
+                      <FlaskConical className="size-4" aria-hidden="true" />
+                      Research Studio
+                    </button>
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -1742,6 +1801,18 @@ export function LaunchWorkspace({
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) void handleImportFile(file);
+                      }}
+                    />
+                    <input
+                      ref={briefFileInputRef}
+                      type="file"
+                      accept=".json,application/json,text/plain"
+                      className="hidden"
+                      aria-hidden="true"
+                      tabIndex={-1}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) void handleBriefImportFile(file);
                       }}
                     />
                   </div>
@@ -2604,6 +2675,104 @@ export function LaunchWorkspace({
                 >
                   <Upload className="size-3.5" aria-hidden="true" />
                   Import
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {briefImportPreview && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="brief-import-dialog-title"
+            className="fixed inset-0 z-50 flex items-center justify-center px-4 py-12"
+          >
+            <button
+              type="button"
+              aria-label="Cancel brief import"
+              onClick={cancelBriefImport}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            />
+            <div
+              className="relative w-full max-w-lg overflow-hidden rounded-md border border-card bg-card shadow-2xl"
+              style={{ animation: "fadeInDown 200ms ease-out both" }}
+            >
+              <div className="border-b border-input px-6 py-4">
+                <h3 id="brief-import-dialog-title" className="text-lg font-semibold text-foreground">
+                  Import brief from{" "}
+                  {briefImportPreview.source === "research-studio"
+                    ? "Research Studio"
+                    : "file"}
+                </h3>
+              </div>
+              <div className="space-y-4 px-6 py-4">
+                <p className="text-sm text-foreground/80">
+                  This loads the five brief fields below. Your current workspace
+                  stays as-is - click Generate after confirming to build a fresh
+                  GTM plan from this brief.
+                </p>
+                <dl className="space-y-2 rounded-md bg-muted p-3 text-xs">
+                  <div>
+                    <dt className="font-medium text-foreground/70">Idea</dt>
+                    <dd className="mt-0.5 line-clamp-2 text-foreground/80">
+                      {briefImportPreview.input.idea || "(empty)"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-foreground/70">Audience</dt>
+                    <dd className="mt-0.5 line-clamp-2 text-foreground/80">
+                      {briefImportPreview.input.audience || "(empty)"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-foreground/70">Market</dt>
+                    <dd className="mt-0.5 line-clamp-2 text-foreground/80">
+                      {briefImportPreview.input.market || "(empty)"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-foreground/70">Tone</dt>
+                    <dd className="mt-0.5 text-foreground/80">
+                      {briefImportPreview.input.tone || "(empty)"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-foreground/70">Constraints</dt>
+                    <dd className="mt-0.5 line-clamp-2 text-foreground/80">
+                      {briefImportPreview.input.constraints || "(empty)"}
+                    </dd>
+                  </div>
+                </dl>
+                {briefImportPreview.warnings.length > 0 && (
+                  <div className="rounded-md border border-signal-challenges bg-signal-challenges/5 p-3 text-xs text-signal-challenges">
+                    <p className="font-semibold">
+                      {briefImportPreview.warnings.length} warning
+                      {briefImportPreview.warnings.length === 1 ? "" : "s"}:
+                    </p>
+                    <ul className="mt-1 list-disc space-y-0.5 pl-4">
+                      {briefImportPreview.warnings.map((w, i) => (
+                        <li key={i}>{w}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2 border-t border-input px-6 py-4 sm:justify-end">
+                <button
+                  type="button"
+                  onClick={cancelBriefImport}
+                  className="flex h-9 items-center gap-1.5 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={applyBriefImport}
+                  className="flex h-9 items-center gap-1.5 rounded-md bg-accent px-3 text-sm font-semibold text-primary-text transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                >
+                  <FlaskConical className="size-3.5" aria-hidden="true" />
+                  Load brief
                 </button>
               </div>
             </div>

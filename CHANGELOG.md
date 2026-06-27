@@ -7,6 +7,15 @@ tags are cut for milestone demos.
 ## [Unreleased]
 
 ### Added
+- Import a Research Studio brief — a "Research Studio" button in the export
+  toolbar loads a structured five-field brief (`launchlens-brief-*.json`)
+  exported from launchlens-research-studio, fills the brief builder, and leaves
+  the current workspace untouched so the user clicks Generate. Accepts the
+  Research Studio envelope, a bare `LaunchLensInput`, or a legacy free-text
+  `launchlensBrief`; fields over 1200 chars are truncated with a warning.
+  `src/lib/launchlens/brief-from-json.ts` (+ tests) powers the parse; new error
+  codes `brief_invalid` / `brief_missing_input` in `error-codes.ts` with friendly
+  messages in `api-errors.ts`
 - Frontend productization pass — calmer neutral product surface replacing the
   pastel card-heavy look, with a dark compact app header and more credible
   metric cards; rebuilt Billing as a real B2B account/billing console;

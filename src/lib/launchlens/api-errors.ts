@@ -87,6 +87,9 @@ export const API_ERROR_MESSAGES: Record<string, string> = {
   idea_too_short: "Please provide a product idea with at least 12 characters.",
   field_too_long: "One of your inputs exceeds the maximum length.",
 
+  brief_invalid: "That brief file could not be read. Check it is a valid LaunchLens or Research Studio export.",
+  brief_missing_input: "The brief does not contain a complete five-field input (idea, audience, market, tone, constraints).",
+
   decision_no_evidence:
     "Add at least one evidence note before generating a decision brief.",
 
