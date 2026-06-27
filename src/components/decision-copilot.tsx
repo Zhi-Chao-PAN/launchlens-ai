@@ -541,10 +541,10 @@ export function DecisionCopilot({
   }, [isGenerating, isBatchGenerating, experiment, generateBrief]);
 
   return (
-    <section className="rounded-lg border border-card bg-card shadow-sm">
+    <section className="overflow-hidden rounded-md border border-card bg-card shadow-[0_24px_80px_-68px_rgba(17,19,18,0.55)]">
       <div className="flex flex-col gap-4 border-b border-card p-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-start gap-3">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-ai text-ai">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-foreground text-background">
             <BrainCircuit className="size-4" aria-hidden="true" />
           </span>
           <div>
@@ -558,10 +558,10 @@ export function DecisionCopilot({
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="rounded-md bg-muted px-3 py-2 text-foreground/80">
+          <span className="rounded-md border border-input bg-card px-3 py-2 text-foreground/80">
             {briefCount}/{execution.experiments.length} current briefs
           </span>
-          <span className="flex items-center gap-1 rounded-md bg-signal-supports px-3 py-2 font-semibold text-signal-supports">
+          <span className="flex items-center gap-1 rounded-md border border-input bg-card px-3 py-2 font-semibold text-signal-supports">
             <ShieldCheck className="size-3.5" aria-hidden="true" />
             Evidence-bound
           </span>
@@ -658,7 +658,7 @@ export function DecisionCopilot({
             </select>
           </label>
 
-          <div className="mt-4 rounded-md bg-muted p-4">
+          <div className="mt-4 rounded-md border border-input bg-input p-4">
             <p className="text-sm font-semibold leading-6 text-foreground">
               {experiment?.assumption ?? "No hypothesis available"}
             </p>
@@ -717,8 +717,8 @@ export function DecisionCopilot({
             disabled={!!generateDisabledReason}
             aria-busy={isGenerating}
             aria-describedby={"decision-generation-status" + (generateDisabledReason ? " decision-generate-reason" : "")}
-            title="Generate decision brief (Ctrl+Shift+B / Cmd+Shift+B)"
-            className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-text shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            title="Generate decision brief"
+            className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-text transition hover:bg-primary-hover active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isGenerating ? (
               <span className="flex items-center gap-1" aria-hidden="true">
@@ -798,12 +798,7 @@ export function DecisionCopilot({
           {!experiment?.evidence.length && (
             <p className="mt-3 text-xs leading-5 text-muted">
               Record evidence in the validation loop before asking AI for a
-              recommendation. Shortcut:{" "}
-              <kbd className="rounded border border-muted/30 bg-muted px-1 font-mono text-[10px]">Ctrl</kbd>{" "}
-              +{" "}
-              <kbd className="rounded border border-muted/30 bg-muted px-1 font-mono text-[10px]">Shift</kbd>{" "}
-              +{" "}
-              <kbd className="rounded border border-muted/30 bg-muted px-1 font-mono text-[10px]">B</kbd>
+              recommendation.
             </p>
           )}
           {experiment?.decisionBrief && !currentBrief && (
@@ -821,7 +816,7 @@ export function DecisionCopilot({
               className={`mt-3 rounded-md border px-3 py-2 text-xs leading-5 ${
                 error
                   ? "border-signal-challenges bg-signal-challenges text-signal-challenges"
-                  : "border border-signal-supports bg-signal-supports text-signal-supports"
+                  : "border-signal-supports bg-card text-signal-supports"
               }`}
             >
               {error || notice}
@@ -846,78 +841,83 @@ export function DecisionCopilot({
             </div>
             <p className="mt-5 flex items-center gap-2 text-xs text-muted">
               <BrainCircuit className="size-4 animate-pulse text-ai-muted" aria-hidden="true" />
-              Weighing signals against counter-signals…
+              Weighing signals against counter-signals...
             </p>
           </div>
         ) : currentBrief && experiment ? (
           <article className="min-w-0 motion-safe:animate-[launchlens-fade-in-up_260ms_ease-out_both]">
             <div
-              className={`flex flex-wrap items-center gap-2 transition-opacity duration-300 ${
+              className={`space-y-4 transition-opacity duration-300 ${
                 revealStep >= 1 ? "opacity-100" : "opacity-0"
               }`}
             >
-              <span
-                className={`rounded-md px-2 py-1 text-xs font-semibold ${recommendationClass(currentBrief.recommendation)}`}
-              >
-                {decisionLabel(currentBrief.recommendation)}
-              </span>
-              {currentBrief.usedFallback ? (
+              <div className="flex flex-wrap items-center gap-2">
                 <span
-                  className="inline-flex items-center gap-1 rounded-md border border-dashed border-signal-challenges/40 px-2 py-1 text-[10px] font-semibold uppercase text-signal-challenges"
-                  title="Real AI provider failed; this is a deterministic fallback brief."
+                  className={`rounded-md px-2 py-1 text-xs font-semibold ${recommendationClass(currentBrief.recommendation)}`}
                 >
-                  <span className="size-1.5 rounded-full bg-signal-challenges" />
-                  Fallback
+                  {decisionLabel(currentBrief.recommendation)}
                 </span>
-              ) : currentBrief.mode === "real" ? (
-                <span
-                  className="inline-flex items-center gap-1 rounded-md bg-signal-supports/15 px-2 py-1 text-[10px] font-semibold uppercase text-signal-supports"
-                  title="Generated by real AI provider."
-                >
-                  <span className="size-1.5 rounded-full bg-signal-supports" />
-                  AI
-                </span>
-              ) : (
-                <span
-                  className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-[10px] font-semibold uppercase text-muted"
-                  title="Demo mode - deterministic brief, no AI used."
-                >
-                  <span className="size-1.5 rounded-full bg-muted-foreground/40" />
-                  Demo
-                </span>
-              )}
-              <span className="text-xs capitalize text-muted">
-                
-                <div className="w-full">
-                  <div className="mb-1 flex items-center justify-between text-xs">
-                    <span className="font-medium text-foreground">
-                      Evidence strength
-                    </span>
-                    <span className={`font-semibold ${evidenceStrengthMeta[currentBrief.evidenceStrength].color}`}>
-                      {evidenceStrengthMeta[currentBrief.evidenceStrength].label}
-                    </span>
-                  </div>
-                  <div
-                    role="progressbar"
-                    aria-valuenow={evidenceStrengthMeta[currentBrief.evidenceStrength].pct}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-label="Evidence strength"
-                    className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
+                {currentBrief.usedFallback ? (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-md border border-dashed border-signal-challenges/40 px-2 py-1 text-[10px] font-semibold uppercase text-signal-challenges"
+                    title="Real AI provider failed; this is a deterministic fallback brief."
                   >
-                    <div
-                      className={`h-full rounded-full ${evidenceStrengthMeta[currentBrief.evidenceStrength].bg} transition-all duration-500 ease-out`}
-                      style={{ width: `${evidenceStrengthMeta[currentBrief.evidenceStrength].pct}%` }}
-                    />
-                  </div>
+                    <span className="size-1.5 rounded-full bg-signal-challenges" />
+                    Fallback
+                  </span>
+                ) : currentBrief.mode === "real" ? (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-md bg-signal-supports/15 px-2 py-1 text-[10px] font-semibold uppercase text-signal-supports"
+                    title="Generated by real AI provider."
+                  >
+                    <span className="size-1.5 rounded-full bg-signal-supports" />
+                    AI
+                  </span>
+                ) : (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-[10px] font-semibold uppercase text-muted"
+                    title="Demo mode - deterministic brief, no AI used."
+                  >
+                    <span className="size-1.5 rounded-full bg-muted-foreground/40" />
+                    Demo
+                  </span>
+                )}
+                <span className="text-xs capitalize text-muted">
+                  {currentBrief.provider} | {citationCount} cited
+                </span>
+              </div>
+              <div className="rounded-md border border-input bg-input p-3">
+                <div className="mb-2 flex items-center justify-between gap-3 text-xs">
+                  <span className="font-medium text-foreground">
+                    Evidence strength
+                  </span>
+                  <span
+                    className={`font-semibold ${evidenceStrengthMeta[currentBrief.evidenceStrength].color}`}
+                  >
+                    {evidenceStrengthMeta[currentBrief.evidenceStrength].label}
+                  </span>
                 </div>
-              </span>
-              <span className="text-xs text-muted">
-                {currentBrief.provider} | {citationCount} cited
-              </span>
+                <div
+                  role="progressbar"
+                  aria-valuenow={
+                    evidenceStrengthMeta[currentBrief.evidenceStrength].pct
+                  }
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label="Evidence strength"
+                  className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
+                >
+                  <div
+                    className={`h-full rounded-full ${evidenceStrengthMeta[currentBrief.evidenceStrength].bg} transition-all duration-500 ease-out`}
+                    style={{
+                      width: `${evidenceStrengthMeta[currentBrief.evidenceStrength].pct}%`,
+                    }}
+                  />
+                </div>
+              </div>
             </div>
             <h3
-              className={`mt-3 text-xl font-semibold leading-8 text-foreground transition-opacity duration-300 ${
+              className={`mt-4 text-xl font-semibold leading-8 text-foreground transition-opacity duration-300 ${
                 revealStep >= 2 ? "opacity-100" : "opacity-0"
               }`}
             >

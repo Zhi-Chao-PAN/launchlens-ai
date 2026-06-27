@@ -136,7 +136,7 @@ export default function CaseStudyPage() {
       <section className="border-b border-card bg-muted">
         <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:px-8 lg:py-14">
           <div className="flex flex-col justify-center gap-5">
-            <span className="inline-flex w-fit items-center gap-2 rounded-md bg-signal-supports px-3 py-1 text-xs font-semibold uppercase text-signal-supports">
+            <span className="inline-flex w-fit items-center gap-2 rounded-md border border-input bg-card px-3 py-1 text-xs font-semibold uppercase text-signal-supports">
               <BadgeCheck className="size-3.5" aria-hidden="true" />
               Portfolio case study
             </span>
@@ -154,7 +154,7 @@ export default function CaseStudyPage() {
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/"
-                className="inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
+                className="inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-primary-text transition hover:bg-primary-hover active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
               >
                 Open product
                 <ArrowRight className="size-4" aria-hidden="true" />
@@ -180,7 +180,7 @@ export default function CaseStudyPage() {
               width={1440}
               height={900}
               priority
-              className="h-auto w-full rounded-lg border border-card bg-card shadow-sm"
+              className="h-auto w-full rounded-md border border-card bg-card shadow-[0_24px_80px_-68px_rgba(17,19,18,0.55)]"
               sizes="(min-width: 1024px) 58vw, 100vw"
             />
           </div>
@@ -201,7 +201,7 @@ export default function CaseStudyPage() {
             {workflowStages.map((stage, index) => (
               <li
                 key={stage.title}
-                className="rounded-lg border border-card bg-card p-4"
+                className="rounded-md border border-card bg-card p-4 shadow-[0_24px_80px_-72px_rgba(17,19,18,0.45)]"
               >
                 <span className="text-xs font-semibold text-accent">
                   0{index + 1}
@@ -231,7 +231,7 @@ export default function CaseStudyPage() {
                 return (
                   <article
                     key={item.title}
-                    className="rounded-lg border border-card bg-card p-5"
+                    className="rounded-md border border-card bg-card p-5 shadow-[0_24px_80px_-72px_rgba(17,19,18,0.45)]"
                   >
                     <Icon className="size-5 text-accent" aria-hidden="true" />
                     <h3 className="mt-4 text-base font-semibold">
@@ -245,14 +245,14 @@ export default function CaseStudyPage() {
               })}
             </div>
           </div>
-          <aside className="flex flex-col justify-between gap-5 rounded-lg border border-card bg-card p-5">
+          <aside className="flex flex-col justify-between gap-5 rounded-md border border-card bg-card p-5 shadow-[0_24px_80px_-72px_rgba(17,19,18,0.45)]">
             <div>
               <Image
                 src="/screenshots/launchlens-mobile.png"
                 alt="LaunchLens AI mobile workspace"
                 width={390}
                 height={844}
-                className="mx-auto h-auto max-h-[560px] w-auto rounded-lg border border-card"
+                className="mx-auto h-auto max-h-[560px] w-auto rounded-md border border-card"
                 sizes="390px"
               />
             </div>
@@ -280,7 +280,7 @@ export default function CaseStudyPage() {
               together.
             </p>
           </div>
-          <div className="overflow-hidden rounded-lg border border-card bg-card">
+          <div className="overflow-hidden rounded-md border border-card bg-card">
             <div className="grid grid-cols-[1fr_1fr_1.2fr] border-b border-card bg-muted px-4 py-3 text-xs font-semibold uppercase text-muted">
               <span>Gate</span>
               <span>Command</span>
@@ -306,7 +306,7 @@ export default function CaseStudyPage() {
 
       <section className="border-b border-card bg-muted">
         <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-3 lg:px-8">
-          <article className="rounded-lg border border-card bg-card p-5">
+          <article className="rounded-md border border-card bg-card p-5 shadow-[0_24px_80px_-72px_rgba(17,19,18,0.45)]">
             <Target className="size-5 text-accent" aria-hidden="true" />
             <h2 className="mt-4 text-lg font-semibold">Problem</h2>
             <p className="mt-2 text-sm leading-6 text-foreground/75">
@@ -315,7 +315,7 @@ export default function CaseStudyPage() {
               loop that survives handoff.
             </p>
           </article>
-          <article className="rounded-lg border border-card bg-card p-5">
+          <article className="rounded-md border border-card bg-card p-5 shadow-[0_24px_80px_-72px_rgba(17,19,18,0.45)]">
             <Rocket className="size-5 text-accent" aria-hidden="true" />
             <h2 className="mt-4 text-lg font-semibold">Product answer</h2>
             <p className="mt-2 text-sm leading-6 text-foreground/75">
@@ -324,7 +324,7 @@ export default function CaseStudyPage() {
               recommendations.
             </p>
           </article>
-          <article className="rounded-lg border border-card bg-card p-5">
+          <article className="rounded-md border border-card bg-card p-5 shadow-[0_24px_80px_-72px_rgba(17,19,18,0.45)]">
             <GitBranch className="size-5 text-accent" aria-hidden="true" />
             <h2 className="mt-4 text-lg font-semibold">Next stage</h2>
             <p className="mt-2 text-sm leading-6 text-foreground/75">
@@ -350,7 +350,7 @@ export default function CaseStudyPage() {
             {nextMilestones.map((milestone) => (
               <li
                 key={milestone}
-                className="flex gap-3 rounded-lg border border-card bg-card p-4 text-sm leading-6 text-foreground/80"
+                className="flex gap-3 rounded-md border border-card bg-card p-4 text-sm leading-6 text-foreground/80 shadow-[0_24px_80px_-72px_rgba(17,19,18,0.45)]"
               >
                 <CheckCircle2
                   className="mt-0.5 size-4 shrink-0 text-accent"

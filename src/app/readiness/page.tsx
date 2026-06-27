@@ -154,7 +154,7 @@ export default function ReadinessPage() {
     <main id="main-content" className="min-h-screen bg-background text-foreground">
       <section className="border-b border-card bg-muted">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-          <span className="inline-flex w-fit items-center gap-2 rounded-md bg-signal-supports px-3 py-1 text-xs font-semibold uppercase text-signal-supports">
+          <span className="inline-flex w-fit items-center gap-2 rounded-md border border-input bg-card px-3 py-1 text-xs font-semibold uppercase text-signal-supports">
             <BadgeCheck className="size-3.5" aria-hidden="true" />
             Commercial readiness
           </span>
@@ -174,7 +174,7 @@ export default function ReadinessPage() {
             <div className="flex flex-wrap gap-3 lg:justify-end">
               <a
                 href="https://github.com/Zhi-Chao-PAN/launchlens-ai/blob/main/docs/COMMERCIAL_READINESS.md"
-                className="inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
+                className="inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-primary-text transition hover:bg-primary-hover active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
               >
                 Read detailed plan
                 <FileText className="size-4" aria-hidden="true" />
@@ -207,11 +207,11 @@ export default function ReadinessPage() {
               return (
                 <article
                   key={track.title}
-                  className="rounded-lg border border-card bg-card p-5"
+                  className="rounded-md border border-card bg-card p-5 shadow-[0_24px_80px_-72px_rgba(17,19,18,0.45)]"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <Icon className="size-5 text-accent" aria-hidden="true" />
-                    <span className="rounded-md bg-signal-neutral px-2 py-1 text-xs font-semibold text-signal-neutral">
+                    <span className="rounded-md border border-input bg-card px-2 py-1 text-xs font-semibold text-muted">
                       {track.status}
                     </span>
                   </div>
@@ -264,7 +264,7 @@ export default function ReadinessPage() {
               </a>
             </div>
           </div>
-          <div className="overflow-hidden rounded-lg border border-card bg-card">
+          <div className="overflow-hidden rounded-md border border-card bg-card">
             <div className="hidden grid-cols-[1fr_0.8fr_0.8fr_0.9fr] border-b border-card bg-muted px-4 py-3 text-xs font-semibold uppercase text-muted md:grid">
               <span>Plan</span>
               <span>Snapshots</span>
@@ -314,7 +314,7 @@ export default function ReadinessPage() {
               and production verification run.
             </p>
           </div>
-          <div className="overflow-hidden rounded-lg border border-card bg-card">
+          <div className="overflow-hidden rounded-md border border-card bg-card">
             <div className="grid grid-cols-[1fr_1.1fr_1.3fr] border-b border-card bg-muted px-4 py-3 text-xs font-semibold uppercase text-muted">
               <span>Gate</span>
               <span>Command</span>
@@ -352,7 +352,7 @@ export default function ReadinessPage() {
             {currentVsNext.map((item) => (
               <article
                 key={item.area}
-                className="grid gap-3 rounded-lg border border-card bg-card p-4 md:grid-cols-[180px_1fr_1fr]"
+                className="grid gap-3 rounded-md border border-card bg-card p-4 md:grid-cols-[180px_1fr_1fr]"
               >
                 <h3 className="text-sm font-semibold">{item.area}</h3>
                 <p className="text-sm leading-6 text-foreground/75">
@@ -369,7 +369,7 @@ export default function ReadinessPage() {
 
       <section>
         <div className="mx-auto grid w-full max-w-7xl gap-4 px-4 py-10 sm:px-6 lg:grid-cols-3 lg:px-8">
-          <article className="rounded-lg border border-card bg-card p-5">
+          <article className="rounded-md border border-card bg-card p-5 shadow-[0_24px_80px_-72px_rgba(17,19,18,0.45)]">
             <Gauge className="size-5 text-accent" aria-hidden="true" />
             <h2 className="mt-4 text-lg font-semibold">Acceptance gate</h2>
             <p className="mt-2 text-sm leading-6 text-foreground/75">
@@ -378,7 +378,7 @@ export default function ReadinessPage() {
               gate all pass after deployment.
             </p>
           </article>
-          <article className="rounded-lg border border-card bg-card p-5">
+          <article className="rounded-md border border-card bg-card p-5 shadow-[0_24px_80px_-72px_rgba(17,19,18,0.45)]">
             <UsersRound className="size-5 text-accent" aria-hidden="true" />
             <h2 className="mt-4 text-lg font-semibold">Non-goal</h2>
             <p className="mt-2 text-sm leading-6 text-foreground/75">
@@ -388,7 +388,7 @@ export default function ReadinessPage() {
               activation remains a separate acceptance step.
             </p>
           </article>
-          <article className="rounded-lg border border-card bg-card p-5">
+          <article className="rounded-md border border-card bg-card p-5 shadow-[0_24px_80px_-72px_rgba(17,19,18,0.45)]">
             <CheckCircle2 className="size-5 text-accent" aria-hidden="true" />
             <h2 className="mt-4 text-lg font-semibold">Next implementation</h2>
             <p className="mt-2 text-sm leading-6 text-foreground/75">

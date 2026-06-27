@@ -138,9 +138,9 @@ export default async function SharedWorkspacePage({
   if (storageUnavailable) {
     return (
       <main id="main-content" className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
-        <section className="w-full max-w-md rounded-xl border border-card bg-card p-8 shadow-sm transition-colors">
+        <section className="w-full max-w-md rounded-md border border-card bg-card p-8 shadow-[0_24px_80px_-68px_rgba(17,19,18,0.55)] transition-colors">
           <div className="flex items-center gap-3">
-            <span className="inline-flex size-12 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+            <span className="inline-flex size-12 items-center justify-center rounded-md bg-destructive/10 text-destructive">
               <CloudOff className="size-6" aria-hidden="true" />
             </span>
             <div>
@@ -158,7 +158,7 @@ export default async function SharedWorkspacePage({
           <div className="mt-6 flex flex-wrap gap-2">
             <Link
               href="/"
-              className="inline-flex h-10 items-center gap-1.5 rounded-md bg-accent px-4 text-sm font-semibold text-white transition hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="inline-flex h-10 items-center gap-1.5 rounded-md bg-accent px-4 text-sm font-semibold text-primary-text transition hover:bg-accent-hover active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               Try the demo
               <ArrowRight className="size-4" aria-hidden="true" />
@@ -172,9 +172,9 @@ export default async function SharedWorkspacePage({
   if (shareExpired) {
     return (
       <main id="main-content" className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
-        <section className="w-full max-w-md rounded-xl border border-card bg-card p-8 shadow-sm transition-colors">
+        <section className="w-full max-w-md rounded-md border border-card bg-card p-8 shadow-[0_24px_80px_-68px_rgba(17,19,18,0.55)] transition-colors">
           <div className="flex items-center gap-3">
-            <span className="inline-flex size-12 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+            <span className="inline-flex size-12 items-center justify-center rounded-md bg-amber-100 text-amber-700">
               <Link2Off className="size-6" aria-hidden="true" />
             </span>
             <div>
@@ -186,7 +186,7 @@ export default async function SharedWorkspacePage({
             The owner set an expiration window on this shared link and it has now passed. The workspace still exists, but this public link is no longer accessible.
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
-            <Link href="/" className="inline-flex h-10 items-center gap-1.5 rounded-md bg-accent px-4 text-sm font-semibold text-white transition hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+            <Link href="/" className="inline-flex h-10 items-center gap-1.5 rounded-md bg-accent px-4 text-sm font-semibold text-primary-text transition hover:bg-accent-hover active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background">
               Try the demo
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
@@ -199,9 +199,9 @@ export default async function SharedWorkspacePage({
   if (shareRevoked) {
     return (
       <main id="main-content" className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
-        <section className="w-full max-w-md rounded-xl border border-card bg-card p-8 shadow-sm transition-colors">
+        <section className="w-full max-w-md rounded-md border border-card bg-card p-8 shadow-[0_24px_80px_-68px_rgba(17,19,18,0.55)] transition-colors">
           <div className="flex items-center gap-3">
-            <span className="inline-flex size-12 items-center justify-center rounded-xl bg-accent/10 text-accent">
+            <span className="inline-flex size-12 items-center justify-center rounded-md bg-accent/10 text-accent">
               <Link2Off className="size-6" aria-hidden="true" />
             </span>
             <div>
@@ -219,7 +219,7 @@ export default async function SharedWorkspacePage({
           <div className="mt-6 flex flex-wrap gap-2">
             <Link
               href="/"
-              className="inline-flex h-10 items-center gap-1.5 rounded-md bg-accent px-4 text-sm font-semibold text-white transition hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="inline-flex h-10 items-center gap-1.5 rounded-md bg-accent px-4 text-sm font-semibold text-primary-text transition hover:bg-accent-hover active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               Try the demo
               <ArrowRight className="size-4" aria-hidden="true" />

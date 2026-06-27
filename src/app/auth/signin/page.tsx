@@ -23,7 +23,7 @@ export default async function SignInPage({
             // redirect is expected, no-op here
           }
         }}
-        className="flex w-full max-w-sm flex-col gap-4 rounded-lg border border-card bg-card p-6 shadow-sm"
+        className="flex w-full max-w-sm flex-col gap-4 rounded-md border border-card bg-card p-6 shadow-[0_24px_80px_-68px_rgba(17,19,18,0.55)]"
       >
         <h1 className="text-lg font-semibold text-foreground">
           Sign in with your recovery key
@@ -48,7 +48,7 @@ export default async function SignInPage({
             autoComplete="username"
             required
             minLength={2}
-            className="rounded-md border border-card px-3 py-2 text-sm text-foreground placeholder-[#8e9c93] transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-[var(--ring-color)]"
+            className="rounded-md border border-input bg-input px-3 py-2 text-sm text-foreground placeholder-[#8e9c93] transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-[var(--ring-color)]"
             placeholder="Your handle"
           />
         </label>
@@ -61,14 +61,14 @@ export default async function SignInPage({
             autoComplete="current-password"
             required
             minLength={32}
-            className="rounded-md border border-card px-3 py-2 text-sm text-foreground placeholder-[#8e9c93] transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-[var(--ring-color)]"
+            className="rounded-md border border-input bg-input px-3 py-2 text-sm text-foreground placeholder-[#8e9c93] transition focus:border-accent focus:outline-none focus:ring-2 focus:ring-[var(--ring-color)]"
             placeholder="Paste your recovery key"
           />
         </label>
 
         <button
           type="submit"
-          className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
+          className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-5 text-sm font-semibold text-primary-text transition hover:bg-primary-hover active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
         >
           Sign in
         </button>

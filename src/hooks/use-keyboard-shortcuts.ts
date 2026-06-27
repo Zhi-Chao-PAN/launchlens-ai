@@ -229,10 +229,10 @@ export function formatShortcut(config: ShortcutConfig) {
   const parts: string[] = [];
   // The binding responds to Cmd (meta) on Mac OR Ctrl on Windows/Linux.
   // Display the platform-appropriate primary modifier instead of both.
-  const primary = isMac ? "⌘" : "Ctrl";
+  const primary = isMac ? "Cmd" : "Ctrl";
   if (config.meta || config.ctrl) parts.push(primary);
   if (config.shift) parts.push("Shift");
-  if (config.alt) parts.push(isMac ? "⌥" : "Alt");
+  if (config.alt) parts.push(isMac ? "Option" : "Alt");
   parts.push(config.key.length === 1 ? config.key.toUpperCase() : config.key);
   return parts.join(" + ");
 }
@@ -247,7 +247,8 @@ function initGlobalListener() {
   if (typeof window === "undefined") return;
 
   window.addEventListener("keydown", (event) => {
-    // Skip if typing in an input, textarea, or contenteditable
+    // Skip plain action shortcuts while typing, but keep the global command
+    // palette reachable from search/input fields.
     const target = event.target as HTMLElement | null;
     if (target) {
       const tag = target.tagName?.toLowerCase();
@@ -256,8 +257,11 @@ function initGlobalListener() {
         tag === "textarea" ||
         target.isContentEditable
       ) {
-        // Still allow Escape shortcut from inputs
-        if (event.key !== "Escape") {
+        const commandPalette = registry.get("commandPalette");
+        const isCommandPaletteShortcut =
+          commandPalette && matchesConfig(event, commandPalette);
+        // Still allow Escape and the command palette shortcut from inputs.
+        if (event.key !== "Escape" && !isCommandPaletteShortcut) {
           return;
         }
       }

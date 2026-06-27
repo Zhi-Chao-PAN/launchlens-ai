@@ -1799,13 +1799,13 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
   }
 
   return (
-    <section id="validation-board" aria-label="Validation loop" className="rounded-lg border border-card bg-card shadow-sm">
+    <section id="validation-board" aria-label="Validation loop" className="overflow-hidden rounded-md border border-card bg-card shadow-[0_24px_80px_-68px_rgba(17,19,18,0.55)]">
       <span role="status" aria-live="polite" className="sr-only">
         {srEvidenceAnnouncement}
       </span>
       <div className="flex flex-col gap-3 border-b border-card p-4 sm:gap-4 sm:p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-signal-challenges text-signal-challenges sm:size-9">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-foreground text-background sm:size-9">
             <FlaskConical className="size-4" aria-hidden="true" />
           </span>
           <div>
@@ -1820,19 +1820,19 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
 
         <div className="flex w-full flex-col gap-2 sm:min-w-[310px] sm:max-w-sm">
           <div className="grid grid-cols-3 gap-1.5 text-center text-xs sm:gap-2">
-            <div className="rounded-md bg-muted px-2 py-1.5 sm:px-3 sm:py-2">
+            <div className="rounded-md border border-input bg-card px-2 py-1.5 sm:px-3 sm:py-2">
               <strong className="block text-sm font-semibold text-foreground">
                 {progress.score}%
               </strong>
               progress
             </div>
-            <div className="rounded-md bg-signal-supports px-3 py-2">
+            <div className="rounded-md border border-input bg-card px-3 py-2">
               <strong className="block text-sm text-signal-supports">
                 {progress.withEvidence}/{progress.total}
               </strong>
               evidenced
             </div>
-            <div className="rounded-md bg-signal-neutral px-3 py-2">
+            <div className="rounded-md border border-input bg-card px-3 py-2">
               <strong className="block text-sm text-signal-neutral">
                 {progress.decided}/{progress.total}
               </strong>
@@ -1907,7 +1907,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2 border-b border-card px-3 py-2 sm:px-5">
+      <div className="grid gap-2 border-b border-card px-3 py-2 sm:px-5 xl:flex xl:items-center xl:justify-between">
         <ValidationBoardFilterBar
           experimentCount={execution.experiments.length}
           activeCount={
@@ -1935,59 +1935,61 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
           onSearchQueryChange={setSearchQuery}
           onSortByChange={setSortBy}
         />
-        {selectMode && batchCount > 0 && (
-          <ValidationBulkActionsToolbar
-            batchCount={batchCount}
-            batchTagInput={batchTagInput}
-            batchTagMode={batchTagMode}
-            allWorkspaceTags={allWorkspaceTags}
-            selectedTags={selectedTagsUnion}
-            isBatchBriefing={isBatchBriefing}
-            batchBriefProgress={batchBriefProgress}
-            onSelectAll={toggleSelectAllExperiments}
-            onSetStatus={setSelectedStatus}
-            onBatchTagModeChange={setBatchTagMode}
-            onBatchTagInputChange={setBatchTagInput}
-            onApplyBatchTagInput={applyBatchTagFromInput}
-            onBatchAddTag={batchAddTag}
-            onBatchRemoveTag={batchRemoveTag}
-            onGenerateBriefs={batchGenerateBriefs}
-            onArchive={() => batchArchive(true)}
-            onDelete={batchDeleteExperiments}
-            onClear={() => setSelectedExperimentIds(new Set())}
-          />
-        )}
-        <button
+        <div className="flex min-w-0 flex-wrap items-center gap-2 sm:justify-end">
+          {selectMode && batchCount > 0 && (
+            <ValidationBulkActionsToolbar
+              batchCount={batchCount}
+              batchTagInput={batchTagInput}
+              batchTagMode={batchTagMode}
+              allWorkspaceTags={allWorkspaceTags}
+              selectedTags={selectedTagsUnion}
+              isBatchBriefing={isBatchBriefing}
+              batchBriefProgress={batchBriefProgress}
+              onSelectAll={toggleSelectAllExperiments}
+              onSetStatus={setSelectedStatus}
+              onBatchTagModeChange={setBatchTagMode}
+              onBatchTagInputChange={setBatchTagInput}
+              onApplyBatchTagInput={applyBatchTagFromInput}
+              onBatchAddTag={batchAddTag}
+              onBatchRemoveTag={batchRemoveTag}
+              onGenerateBriefs={batchGenerateBriefs}
+              onArchive={() => batchArchive(true)}
+              onDelete={batchDeleteExperiments}
+              onClear={() => setSelectedExperimentIds(new Set())}
+            />
+          )}
+          <button
             type="button"
             onClick={() => { setSelectMode((v) => { if (v) setSelectedExperimentIds(new Set()); return !v; }); }}
             aria-pressed={selectMode}
-            className={"flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 " + (selectMode ? "border-accent bg-accent text-white" : "border-input bg-card text-foreground/80 hover:border-accent hover:text-foreground")}
+            className={"flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 " + (selectMode ? "border-accent bg-accent text-primary-text" : "border-input bg-card text-foreground/80 hover:border-accent hover:text-foreground")}
             title="Select multiple hypotheses"
           >
             <CheckSquare className="size-3.5" aria-hidden="true" />
             <span className="hidden sm:inline">Select</span>
           </button>
-        <ValidationBoardExportMenu
-          open={boardExportOpen}
-          onToggle={() => setBoardExportOpen((open) => !open)}
-          onClose={() => setBoardExportOpen(false)}
-          onCopyMarkdown={copyBoardMarkdown}
-          onDownloadMarkdown={downloadBoardMarkdown}
-          onDownloadJson={downloadBoardJson}
-        />
-        <button
-          type="button"
-          onClick={() => { const opening = !isAddingExperiment; setIsAddingExperiment(opening); if (opening) window.setTimeout(() => newExperimentInputRef.current?.focus(), 50); }}
-          aria-expanded={isAddingExperiment}
-          className="flex items-center gap-1 rounded-md bg-accent px-2.5 py-1 text-xs font-medium text-white transition hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
-        >
-          <Plus className="size-3.5" aria-hidden="true" />
-          <span className="hidden sm:inline">New hypothesis</span>
-          <span className="sm:hidden">New</span>
-        </button>
+          <ValidationBoardExportMenu
+            open={boardExportOpen}
+            onToggle={() => setBoardExportOpen((open) => !open)}
+            onClose={() => setBoardExportOpen(false)}
+            onCopyMarkdown={copyBoardMarkdown}
+            onDownloadMarkdown={downloadBoardMarkdown}
+            onDownloadJson={downloadBoardJson}
+          />
+          <button
+            type="button"
+            onClick={() => { const opening = !isAddingExperiment; setIsAddingExperiment(opening); if (opening) window.setTimeout(() => newExperimentInputRef.current?.focus(), 50); }}
+            aria-expanded={isAddingExperiment}
+            className="flex items-center gap-1 rounded-md bg-accent px-2.5 py-1 text-xs font-medium text-primary-text transition hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+          >
+            <Plus className="size-3.5" aria-hidden="true" />
+            <span className="hidden sm:inline">New hypothesis</span>
+            <span className="sm:hidden">New</span>
+          </button>
+        </div>
       </div>
       {isAddingExperiment && (
-        <div className="border-b border-card bg-input/50 p-3 sm:p-5">
+        <div className="border-b border-card bg-input p-3 sm:p-5">
           <label className="block">
             <span className="mb-1.5 block text-xs font-semibold uppercase text-muted">
               New hypothesis
@@ -2067,7 +2069,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
               type="button"
               onClick={submitNewExperiment}
               disabled={isInvalidNewExperimentDraft()}
-              className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-primary-text transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Add hypothesis
             </button>
@@ -2124,7 +2126,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
               onKeyDown={(e) => handleExperimentKeyDown(e, experiment.id)}
               aria-label={`Hypothesis ${index + 1}: ${experiment.assumption}. Status: ${EXPERIMENT_STATUS_LABELS[experiment.status]}. ${experiment.evidence.length} evidence items.}`}
               className={
-                "relative flex flex-col rounded-xl border bg-card p-5 outline-none transition focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset " +
+                "relative flex flex-col rounded-md border bg-card p-5 outline-none transition focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset " +
                 (draggedExperimentId === experiment.id ? "opacity-40 " : "") +
                 (dragOverExperimentId === experiment.id && draggedExperimentId !== experiment.id ? "border-t-2 border-accent " : "") +
                 (timelinePulseKey === experiment.id ? " ring-2 ring-accent/60 shadow-[0_0_0_4px_rgba(120,120,255,0.12)] " : "")
@@ -2209,7 +2211,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           ? "bg-signal-challenges/15 text-signal-challenges"
                           : experiment.confidence === "medium"
                           ? "bg-signal-supports/30 text-signal-supports"
-                          : "bg-signal-supports text-white")
+                          : "bg-signal-supports/15 text-signal-supports")
                       }
                     >
                       <span
@@ -2219,7 +2221,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                             ? "bg-signal-challenges"
                             : experiment.confidence === "medium"
                             ? "bg-signal-supports/70"
-                            : "bg-white")
+                            : "bg-signal-supports")
                         }
                       />
                       {titleCase(experiment.confidence)}
@@ -2535,7 +2537,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                     })()}
                   <div className="mt-1 flex flex-wrap items-center gap-1.5">
                     {(ef.signal !== "all" || ef.weight !== "all") && (<button type="button" onClick={() => setEvidenceFilters((prev) => patchEvidenceFilter(prev, experiment.id, { signal: "all", weight: "all" }, { signal: "all" as const, weight: "all" as const }))} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-muted underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Reset filters</button>)}
-                    {experiment.evidence.length > 1 && (<button type="button" onClick={(e) => { e.stopPropagation(); const on = !evidenceSelectMode[experiment.id]; setEvidenceSelectMode((prev) => ({ ...prev, [experiment.id]: on })); if (on) setSelectedEvidenceIds((prev) => ({ ...prev, [experiment.id]: new Set() })); else setSelectedEvidenceIds((prev) => ({ ...prev, [experiment.id]: new Set() })); }} className={"rounded-full px-2 py-0.5 text-[10px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + (evidenceSelectMode[experiment.id] ? "bg-accent text-white" : "text-muted hover:text-foreground hover:underline")} title={evidenceSelectMode[experiment.id] ? "Exit evidence select mode" : "Select multiple evidence items"} aria-pressed={Boolean(evidenceSelectMode[experiment.id])} data-evidence-select-pill data-experiment-id={experiment.id}>{evidenceSelectMode[experiment.id] ? "Exit select" : "Select"}</button>)}
+                    {experiment.evidence.length > 1 && (<button type="button" onClick={(e) => { e.stopPropagation(); const on = !evidenceSelectMode[experiment.id]; setEvidenceSelectMode((prev) => ({ ...prev, [experiment.id]: on })); if (on) setSelectedEvidenceIds((prev) => ({ ...prev, [experiment.id]: new Set() })); else setSelectedEvidenceIds((prev) => ({ ...prev, [experiment.id]: new Set() })); }} className={"rounded-full px-2 py-0.5 text-[10px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + (evidenceSelectMode[experiment.id] ? "bg-accent text-primary-text" : "text-muted hover:text-foreground hover:underline")} title={evidenceSelectMode[experiment.id] ? "Exit evidence select mode" : "Select multiple evidence items"} aria-pressed={Boolean(evidenceSelectMode[experiment.id])} data-evidence-select-pill data-experiment-id={experiment.id}>{evidenceSelectMode[experiment.id] ? "Exit select" : "Select"}</button>)}
                     {evidenceSelectMode[experiment.id] && (() => {
                       const sel = selectedEvidenceIds[experiment.id] || new Set();
                       const visible = experiment.evidence.filter((it) => (ef.signal === "all" || it.signal === ef.signal) && (ef.weight === "all" || it.weight === ef.weight));
@@ -2751,7 +2753,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                             data-delete-confirm
                             title="Confirm delete"
                             aria-label={`Confirm delete evidence from ${item.source}`}
-                            className="flex size-11 shrink-0 items-center justify-center rounded-md bg-signal-challenges text-white transition hover:bg-[color-mix(in_srgb,var(--signal-challenges-bg)_85%,black)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1 sm:size-8"
+                            className="flex size-11 shrink-0 items-center justify-center rounded-md border border-signal-challenges/30 bg-signal-challenges/15 text-signal-challenges transition hover:bg-signal-challenges/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1 sm:size-8"
                           >
                             <Check className="size-4" aria-hidden="true" />
                           </button>
@@ -2818,7 +2820,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                         className={
                           "rounded px-2 py-0.5 transition " +
                           (!isBatchMode
-                            ? "bg-accent text-white"
+                            ? "bg-accent text-primary-text"
                             : "text-muted hover:text-foreground")
                         }
                         aria-pressed={!isBatchMode}
@@ -2831,7 +2833,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                         className={
                           "rounded px-2 py-0.5 transition " +
                           (isBatchMode
-                            ? "bg-accent text-white"
+                            ? "bg-accent text-primary-text"
                             : "text-muted hover:text-foreground")
                         }
                         aria-pressed={isBatchMode}
@@ -2919,7 +2921,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                             batchText.trim().length === 0 ||
                             batchText.split("\n").filter((l) => l.trim()).length === 0
                           }
-                          className="flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-text transition hover:bg-primary-hover active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <Plus className="size-4" aria-hidden="true" />
                           Add all
@@ -3125,7 +3127,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       type="submit"
                       disabled={formInvalid}
                       aria-disabled={formInvalid}
-                      className="flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary"
+                      className="flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-text transition hover:bg-primary-hover active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary"
                     >
                       <Plus className="size-4" aria-hidden="true" />
                       {editingEvidenceId ? "Save" : "Record"}

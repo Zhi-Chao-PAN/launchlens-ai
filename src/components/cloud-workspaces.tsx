@@ -469,10 +469,10 @@ export function CloudWorkspaces({
 
 
   return (
-    <section className="rounded-lg border border-card bg-card p-5 shadow-sm">
+    <section className="rounded-md border border-card bg-card p-5 shadow-[0_24px_80px_-68px_rgba(17,19,18,0.55)]">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <span className="flex size-9 items-center justify-center rounded-md bg-signal-supports text-signal-supports">
+          <span className="flex size-9 items-center justify-center rounded-md bg-foreground text-background">
             {cloudState === "unavailable" ? (
               <CloudOff className="size-4" aria-hidden="true" />
             ) : (
@@ -480,7 +480,7 @@ export function CloudWorkspaces({
             )}
           </span>
           <div>
-            <h2 className="text-base font-semibold text-foreground">
+            <h2 className="text-base font-semibold tracking-[-0.01em] text-foreground">
               Cloud history
             </h2>
             <p className="mt-0.5 text-sm text-muted">
@@ -502,7 +502,7 @@ export function CloudWorkspaces({
             disabled={!ownerToken || isBusy}
             title="Refresh cloud history"
             aria-label="Refresh cloud history"
-            className="flex size-10 items-center justify-center rounded-md border border-input bg-input text-foreground/80 transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex size-10 items-center justify-center rounded-md border border-input bg-card text-foreground/80 transition hover:border-accent hover:bg-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <RefreshCw
               className={`size-4 ${busyAction === "refresh" ? "animate-spin" : ""}`}
@@ -513,7 +513,7 @@ export function CloudWorkspaces({
             type="button"
             onClick={saveSnapshot}
             disabled={cloudState !== "ready" || isBusy}
-            className="flex h-10 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-muted"
+            className="flex h-10 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-primary-text transition hover:bg-primary-hover active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted"
           >
             {busyAction === "save" ? (
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
@@ -586,7 +586,7 @@ export function CloudWorkspaces({
       )}
 
       {cloudState === "ready" && (
-        <div className="mt-4 rounded-md border border-card bg-input p-4">
+        <div className="mt-4 rounded-md border border-input bg-input p-4">
           <div className="flex items-start gap-3">
             <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md bg-card text-foreground/80">
               <KeyRound className="size-4" aria-hidden="true" />
@@ -697,7 +697,7 @@ export function CloudWorkspaces({
                   onClick={linkRecoveryOwner}
                   disabled={isBusy || (recoveryTouched ? !recoveryReady : (!recoveryLabel || !recoveryKey))}
                   aria-disabled={isBusy || (recoveryTouched ? !recoveryReady : (!recoveryLabel || !recoveryKey))}
-                  className="h-9 rounded-md bg-primary px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-muted"
+                  className="h-9 rounded-md bg-primary px-3 text-sm font-semibold text-primary-text transition hover:bg-primary-hover active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted"
                 >
                   Link history
                 </button>
@@ -722,7 +722,7 @@ export function CloudWorkspaces({
             <article
               key={`${listRenderKey}-${item.id}`}
               style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
-              className="flex flex-col gap-3 rounded-md border border-card bg-input p-3 opacity-0 motion-safe:animate-[launchlens-fade-in-up_260ms_ease-out_both] sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 rounded-md border border-input bg-card p-3 opacity-0 motion-safe:animate-[launchlens-fade-in-up_260ms_ease-out_both] sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">

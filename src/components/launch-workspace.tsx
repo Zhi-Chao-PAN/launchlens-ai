@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   Upload,
   ArrowRight,
+  BarChart3,
   X,
   CalendarDays,
   CheckCircle2,
@@ -16,6 +17,10 @@ import {
   Braces,
   Eye,
   FileText,
+  Gauge,
+  History,
+  LayoutDashboard,
+  ListChecks,
   Loader2,
   Megaphone,
   PencilLine,
@@ -24,9 +29,11 @@ import {
   Rocket,
   ChevronDown,
   Save,
+  ShieldCheck,
   Sparkles,
   Target,
   UsersRound,
+  Workflow,
   type LucideIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
@@ -196,7 +203,7 @@ function Section({ title, icon: Icon, children, collapsible = false, sectionId, 
   };
 
   return (
-    <section className="rounded-lg border border-card bg-card shadow-sm overflow-hidden">
+    <section className="overflow-hidden rounded-md border border-card bg-card shadow-[0_18px_70px_-62px_rgba(17,19,18,0.45)]">
       {collapsible ? (
         <button
           type="button"
@@ -204,12 +211,12 @@ function Section({ title, icon: Icon, children, collapsible = false, sectionId, 
           onKeyDown={handleKeyDown}
           aria-expanded={isOpen}
           aria-controls={contentId}
-          className="w-full flex items-center gap-2 p-5 text-left transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
+          className="flex w-full items-center gap-2 p-5 text-left transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
         >
-          <span className="flex size-8 items-center justify-center rounded-md bg-signal-supports text-signal-supports">
+          <span className="flex size-8 items-center justify-center rounded-md border border-input bg-input text-foreground/75">
             <Icon className="size-4" aria-hidden="true" />
           </span>
-          <h2 className="flex-1 text-base font-semibold text-foreground">{title}</h2>
+          <h2 className="flex-1 text-base font-semibold tracking-[-0.01em] text-foreground">{title}</h2>
           <ChevronDown
             className={`size-4 text-muted transition-transform ${isOpen ? "rotate-180" : ""}`}
             aria-hidden="true"
@@ -217,10 +224,10 @@ function Section({ title, icon: Icon, children, collapsible = false, sectionId, 
         </button>
       ) : (
         <div className="flex items-center gap-2 p-5 pb-0">
-          <span className="flex size-8 items-center justify-center rounded-md bg-signal-supports text-signal-supports">
+          <span className="flex size-8 items-center justify-center rounded-md border border-input bg-input text-foreground/75">
             <Icon className="size-4" aria-hidden="true" />
           </span>
-          <h2 className="text-base font-semibold text-foreground">{title}</h2>
+          <h2 className="text-base font-semibold tracking-[-0.01em] text-foreground">{title}</h2>
         </div>
       )}
       <div
@@ -240,6 +247,72 @@ function Section({ title, icon: Icon, children, collapsible = false, sectionId, 
 
 function BulletList({ items }: { items: string[] }) {
   return <Bullets items={items} />;
+}
+
+type WorkspaceMetricTone = "primary" | "support" | "neutral" | "risk" | "plain";
+
+const metricToneClass: Record<WorkspaceMetricTone, string> = {
+  primary: "border-card bg-card text-accent before:bg-accent",
+  support: "border-card bg-card text-signal-supports before:bg-signal-supports",
+  neutral: "border-card bg-card text-signal-neutral before:bg-signal-neutral",
+  risk: "border-card bg-card text-signal-challenges before:bg-signal-challenges",
+  plain: "border-card bg-card text-foreground before:bg-input",
+};
+
+function WorkspaceMetric({
+  label,
+  value,
+  detail,
+  icon: Icon,
+  tone = "plain",
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  icon: LucideIcon;
+  tone?: WorkspaceMetricTone;
+}) {
+  return (
+    <article
+      className={[
+        "relative min-h-[118px] overflow-hidden rounded-md border p-4 shadow-[0_24px_80px_-64px_rgba(17,19,18,0.5)] before:absolute before:inset-x-0 before:top-0 before:h-0.5",
+        metricToneClass[tone],
+      ].join(" ")}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-foreground/55">
+          {label}
+        </p>
+        <span className="flex size-7 items-center justify-center rounded-md border border-input bg-input/60">
+          <Icon className="size-3.5 text-current" aria-hidden="true" />
+        </span>
+      </div>
+      <p className="mt-3 break-words font-mono text-xl font-semibold leading-7 tabular-nums text-foreground">
+        {value}
+      </p>
+      <p className="mt-1 text-xs leading-5 text-muted">{detail}</p>
+    </article>
+  );
+}
+
+function WorkspaceNavLink({
+  href,
+  label,
+  icon: Icon,
+}: {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+}) {
+  return (
+    <a
+      href={href}
+      className="inline-flex h-9 shrink-0 items-center gap-2 rounded-md border border-transparent px-3 text-sm font-medium text-white/68 transition hover:border-white/12 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+    >
+      <Icon className="size-4" aria-hidden="true" />
+      {label}
+    </a>
+  );
 }
 
 function EncryptedImportDialog({
@@ -315,7 +388,7 @@ function EncryptedImportDialog({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={bodyId}
-        className="w-full max-w-md rounded-lg bg-card p-5 shadow-xl ring-1 ring-black/5"
+        className="w-full max-w-md rounded-md bg-card p-5 shadow-xl ring-1 ring-black/5"
       >
         <h3 id={titleId} className="text-base font-semibold text-foreground">
           Enter passphrase
@@ -348,7 +421,7 @@ function EncryptedImportDialog({
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-1 top-1/2 inline-flex h-8 -translate-y-1/2 items-center rounded px-2 text-[10px] font-semibold uppercase tracking-wide text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="absolute right-1 top-1/2 inline-flex h-8 -translate-y-1/2 items-center rounded px-2 text-[10px] font-semibold uppercase text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 aria-label={showPassword ? "Hide passphrase" : "Show passphrase"}
                 aria-pressed={showPassword}
               >
@@ -375,13 +448,13 @@ function EncryptedImportDialog({
               ref={submitRef}
               type="submit"
               disabled={busy || !password}
-              className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-white transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-1 disabled:opacity-60"
+              className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-primary-text transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-1 disabled:opacity-60"
             >
-              {busy ? "Decrypting…" : "Decrypt & preview"}
+              {busy ? "Decrypting..." : "Decrypt & preview"}
             </button>
           </div>
-          <p className="mt-2 text-right text-[10px] uppercase tracking-wide text-muted">
-            ⌘ / Ctrl + ↵ to submit
+          <p className="sr-only">
+            Press Control or Command Enter to submit.
           </p>
         </form>
       </div>
@@ -1123,6 +1196,13 @@ export function LaunchWorkspace({
     }
   }
 
+  const qualityPassed = qualityResult.checks.filter((check) => check.passed).length;
+  const completedTasks = workspace.tasks.filter((task) => task.completed).length;
+  const qualityTone: WorkspaceMetricTone =
+    qualityResult.score >= 90 ? "support" : qualityResult.score >= 70 ? "neutral" : "risk";
+  const validationTone: WorkspaceMetricTone =
+    executionProgress.score >= 70 ? "support" : executionProgress.score >= 30 ? "neutral" : "risk";
+
   return (
     <>
     <div
@@ -1134,77 +1214,124 @@ export function LaunchWorkspace({
     >
       {srAnnouncement}
     </div>
-    <main id="main-content"
+    <main
+      id="main-content"
       aria-busy={isGenerating || isSwitching}
       className={[
-        "min-h-screen bg-muted text-foreground",
+        "min-h-screen bg-background text-foreground",
         "animate-[fadeInDown_280ms_ease-out_both] motion-reduce:animate-none",
         isSwitching ? "opacity-40 pointer-events-none transition-opacity duration-150 ease-out motion-reduce:transition-none" : "transition-opacity duration-200 ease-out motion-reduce:transition-none",
       ].join(" ")}
     >
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 pb-20 sm:gap-6 sm:px-6 sm:py-6 sm:pb-6 lg:px-8">
-        <header className="flex flex-col gap-3 border-b border-card pb-4 sm:gap-4 sm:pb-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-3">
-            <span className="flex size-9 items-center justify-center rounded-lg bg-foreground text-white sm:size-11">
-              <Compass className="size-4 sm:size-5" aria-hidden="true" />
-            </span>
-            <div>
-              <p className="text-xs font-medium text-signal-challenges sm:text-sm">LaunchLens AI</p>
-              <h1 className="text-lg font-semibold text-foreground sm:text-2xl">
-                Go-to-market workspace
-              </h1>
+      <div className="mx-auto flex w-full max-w-[1480px] flex-col gap-5 px-4 py-4 pb-20 sm:px-6 sm:py-5 sm:pb-8 lg:px-8">
+        <header className="sticky top-0 z-30 -mx-4 border-b border-white/10 bg-[#111312] px-4 py-3 text-white shadow-[0_18px_70px_-44px_rgba(17,19,18,0.88)] backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+          <div className="mx-auto flex max-w-[1480px] flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-white text-[#111312]">
+                <Compass className="size-5" aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-white/55">
+                  LaunchLens AI
+                </p>
+                <h1 className="truncate text-xl font-semibold tracking-[-0.02em] text-white sm:text-2xl">
+                  Go-to-market workspace
+                </h1>
+              </div>
+              <span className="hidden rounded-md border border-white/10 bg-white/[0.08] px-2.5 py-1 text-xs font-semibold text-white/70 md:inline-flex">
+                Productized build
+              </span>
             </div>
-          </div>
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 text-sm sm:flex-wrap sm:overflow-visible sm:pb-0">
-            <span className={`hidden items-center gap-2 rounded-md border border-card bg-card px-3 py-2 text-foreground/80 transition-colors sm:flex ${saveFlash ? "bg-signal-supports text-signal-supports border-accent" : ""}`}>
-              <Save className="size-4 text-accent" aria-hidden="true" />
-              {saveLabel}
-            </span>
-            <button
-              type="button"
-              onClick={resetLocalWorkspace}
-              title="Reset local draft"
-              aria-label="Reset local draft"
-              className="flex size-9 items-center justify-center rounded-md border border-card bg-card text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:size-10"
+
+            <nav
+              aria-label="Workspace navigation"
+              className="grid grid-cols-3 gap-1 rounded-md border border-white/10 bg-white/[0.06] p-1 sm:flex sm:overflow-x-auto"
             >
-              <RotateCcw className="size-4" aria-hidden="true" />
-            </button>
-            <ThemeToggle />
-            <SystemStatus />
-            <span className="hidden rounded-md border border-card bg-card px-3 py-2 text-foreground/80 md:inline">
-              {providerLabel}
-            </span>
-            <ReplayTourButton />
-            <span className="hidden rounded-md bg-signal-neutral px-3 py-2 font-medium text-signal-neutral md:inline-flex">
-              Portfolio-ready build
-            </span>
-            <a
-              href="/case-study"
-              className="rounded-md border border-input bg-card px-3 py-2 text-foreground transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
-            >
-              Case study
-            </a>
-            <a
-              href="/readiness"
-              className="rounded-md border border-input bg-card px-3 py-2 text-foreground transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
-            >
-              Readiness
-            </a>
-            <a
-              href="/pricing"
-              className="rounded-md border border-input bg-card px-3 py-2 text-foreground transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
-            >
-              Pricing
-            </a>
+              <WorkspaceNavLink href="#founder-brief" label="Brief" icon={Sparkles} />
+              <WorkspaceNavLink href="#cloud-workspaces-section" label="History" icon={History} />
+              <WorkspaceNavLink href="#workspace-main" label="Evidence" icon={BarChart3} />
+              <WorkspaceNavLink href="#decision-copilot-section" label="Decisions" icon={Workflow} />
+              <WorkspaceNavLink href="/billing" label="Account" icon={CircleDollarSign} />
+              <WorkspaceNavLink href="/readiness" label="Readiness" icon={ShieldCheck} />
+            </nav>
+
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 text-sm sm:pb-0 xl:justify-end">
+              <span className={`hidden items-center gap-2 rounded-md border border-white/10 bg-white/[0.08] px-3 py-2 text-white/70 transition-colors sm:flex ${saveFlash ? "border-accent bg-accent/20 text-white" : ""}`}>
+                <Save className="size-4 text-accent" aria-hidden="true" />
+                {saveLabel}
+              </span>
+              <button
+                type="button"
+                onClick={resetLocalWorkspace}
+                title="Reset local draft"
+                aria-label="Reset local draft"
+                className="flex size-9 shrink-0 items-center justify-center rounded-md border border-white/10 bg-white/[0.08] text-white/72 transition hover:border-accent hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+              >
+                <RotateCcw className="size-4" aria-hidden="true" />
+              </button>
+              <ThemeToggle />
+              <SystemStatus />
+              <ReplayTourButton />
+            </div>
           </div>
         </header>
 
-        <div className="grid gap-6 lg:grid-cols-[370px_1fr]">
-          <aside id="founder-brief" aria-label="Founder brief" className="min-w-0 rounded-lg border border-card bg-card p-5 shadow-sm lg:sticky lg:top-6 lg:self-start">
+        <section
+          aria-label="Workspace operating status"
+          className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5"
+        >
+          <WorkspaceMetric
+            label="Quality"
+            value={`${qualityResult.score}%`}
+            detail={`${qualityPassed}/${qualityResult.checks.length} generated checks`}
+            icon={Gauge}
+            tone={qualityTone}
+          />
+          <WorkspaceMetric
+            label="Validation"
+            value={`${executionProgress.score}%`}
+            detail={`${executionProgress.withEvidence}/${executionProgress.total} with evidence`}
+            icon={BarChart3}
+            tone={validationTone}
+          />
+          <WorkspaceMetric
+            label="Execution"
+            value={`${completedTasks}/${workspace.tasks.length}`}
+            detail="launch tasks completed"
+            icon={ListChecks}
+            tone={completedTasks === workspace.tasks.length ? "support" : "plain"}
+          />
+          <WorkspaceMetric
+            label="Backlog"
+            value={`${workspace.backlog.length}`}
+            detail={`${workspace.assumptions.length} assumptions linked`}
+            icon={ClipboardCheck}
+            tone="plain"
+          />
+          <WorkspaceMetric
+            label="AI mode"
+            value={generationModeLabel}
+            detail={providerLabel}
+            icon={LayoutDashboard}
+            tone={generationMeta.usedFallback ? "risk" : "primary"}
+          />
+        </section>
+
+        <div className="grid gap-5 lg:grid-cols-[372px_minmax(0,1fr)]">
+          <aside id="founder-brief" aria-label="Founder brief" className="min-w-0 rounded-md border border-card bg-card p-4 shadow-[0_30px_90px_-72px_rgba(17,19,18,0.62)] lg:sticky lg:top-24 lg:self-start">
             <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <Sparkles className="size-5 text-signal-challenges" aria-hidden="true" />
-                <h2 className="text-lg font-semibold">Founder brief</h2>
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-foreground text-background">
+                  <Sparkles className="size-4" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
+                    Input
+                  </p>
+                  <h2 className="text-base font-semibold tracking-[-0.01em] text-foreground">
+                    Brief builder
+                  </h2>
+                </div>
               </div>
               <button
                 type="button"
@@ -1228,6 +1355,9 @@ export function LaunchWorkspace({
               id="founder-brief-controls"
               className={`${isBriefOpen ? "mt-5 block" : "hidden"} lg:mt-5 lg:block`}
             >
+              <p className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+                Example workspaces
+              </p>
               <div className="mb-5 grid gap-2" role="group" aria-label="Sample briefs">
                 {exampleWorkspaces.map((example) => {
                   const isSelected = workspace.generatedAt === example.workspace.generatedAt
@@ -1242,8 +1372,8 @@ export function LaunchWorkspace({
                       className={[
                         "flex items-center justify-between rounded-md border px-3 py-2 text-left text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60",
                         isSelected
-                          ? "border-accent bg-signal-supports text-signal-supports"
-                          : "border-card bg-input text-foreground/80 hover:border-accent hover:text-foreground",
+                          ? "border-foreground bg-foreground text-background"
+                          : "border-input bg-card text-foreground/78 hover:border-accent hover:bg-input hover:text-foreground",
                       ].join(" ")}
                     >
                       {example.label}
@@ -1282,7 +1412,7 @@ export function LaunchWorkspace({
                     className="w-full field-sizing-content resize-y min-h-[96px] max-h-[400px] rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
                   <p id="founder-brief-idea-count" className="mt-1 flex items-center justify-between text-xs text-muted">
-                    <span id="founder-brief-idea-hint">Tip: press{" "}<kbd className="rounded border border-input bg-muted px-1 font-mono">
+                    <span id="founder-brief-idea-hint" className="sr-only">Use{" "}<kbd className="rounded border border-input bg-muted px-1 font-mono">
                         {formatShortcut({ key: "Enter", meta: true, ctrl: true, description: "", category: "" })}
                       </kbd>{" "}
                       to generate.
@@ -1326,7 +1456,7 @@ export function LaunchWorkspace({
                   <span className="mb-2 block text-sm font-medium text-foreground/80">
                     Market context
                   </span>
-                  <input
+                  <textarea
                     onKeyDown={(event) => {
                       if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && !isGenerating) {
                         event.preventDefault();
@@ -1347,7 +1477,8 @@ export function LaunchWorkspace({
                       const v = event.target.value.trim();
                       if (v !== event.target.value) setInput((current) => ({ ...current, market: v }));
                     }}
-                    className="w-full rounded-md border border-input bg-input px-3 py-3 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
+                    rows={2}
+                    className="w-full field-sizing-content min-h-[64px] max-h-[180px] resize-y rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
                   <p id="founder-brief-market-count" className={"mt-1 text-right text-[11px] " + (input.market.length > 200 ? "text-signal-challenges" : input.market.length > 120 ? "text-amber-500" : "text-muted/70")} title={"Recommended under 120 chars" + (input.market.length > 200 ? " - please shorten" : "")}>{input.market.length} chars{input.market.length > 200 ? <span className="ml-1 font-semibold">Too long - aim under 120.</span> : null}</p>
                 </label>
@@ -1411,7 +1542,7 @@ export function LaunchWorkspace({
                   disabled={!canGenerate}
                   aria-describedby={(!canGenerate ? "founder-generate-blocked " : "") + (isGenerating ? "founder-generate-status founder-generate-reason" : "founder-generate-status")}
                   aria-busy={isGenerating}
-                  className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-muted"
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-text transition hover:bg-primary-hover active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted"
                 >
                   {isGenerating ? (
                     <span className="flex items-center gap-1" aria-hidden="true">
@@ -1427,23 +1558,10 @@ export function LaunchWorkspace({
                 {isGenerating && <p id="founder-generate-reason" className="sr-only">Workspace is being generated; please wait or cancel.</p>}
                 {!canGenerate && generateBlockedReason && (<p id="founder-generate-blocked" role="alert" className="mt-2 text-center text-[11px] text-signal-challenges">{generateBlockedReason}</p>)}
                                 {isGenerating && (
-                  <button type="button" onClick={() => generateAbortRef.current?.abort()} className="mt-2 block w-full text-center text-xs font-medium text-muted underline-offset-2 transition hover:text-challenges hover:underline">
+                  <button type="button" onClick={() => generateAbortRef.current?.abort()} className="mt-2 block w-full text-center text-xs font-medium text-muted underline-offset-2 transition hover:text-signal-challenges hover:underline">
                     Cancel generation
                   </button>
                 )}
-                <p className="mt-2 text-center text-xs text-muted">
-                  Tip: press{" "}
-                  <kbd className="rounded border border-input bg-card px-1.5 py-0.5 font-mono text-[11px] text-foreground">
-                    Ctrl
-                  </kbd>
-                  {" "}+{" "}
-                  <kbd className="rounded border border-input bg-card px-1.5 py-0.5 font-mono text-[11px] text-foreground">
-                    Enter
-                  </kbd>{" "}
-                  to generate; press{" "}
-                  <kbd className="rounded border border-input bg-card px-1.5 py-0.5 font-mono text-[11px] text-foreground">?</kbd>{" "}
-                  for all shortcuts.
-                </p>
               </div>
 
               {isGenerating && (
@@ -1483,7 +1601,7 @@ export function LaunchWorkspace({
                     <button
                       type="button"
                       onClick={() => generate()}
-                      className="shrink-0 rounded-md border border-signal-challenges px-3 py-1 text-xs font-semibold text-signal-challenges transition hover:bg-signal-challenges hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--signal-challenges)]"
+                      className="shrink-0 rounded-md border border-signal-challenges px-3 py-1 text-xs font-semibold text-signal-challenges transition hover:bg-signal-challenges hover:text-primary-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--signal-challenges)]"
                     >
                       Try again
                     </button>
@@ -1495,47 +1613,141 @@ export function LaunchWorkspace({
             </div>
           </aside>
 
-          <div className="min-w-0 space-y-6">
-            <div id="cloud-workspaces-section">
-            <CloudWorkspaces
-              input={input}
-              workspace={workspace}
-              execution={execution}
-              onRestore={restoreCloudWorkspace}
-            />
+          <div className="min-w-0 space-y-5">
+            <div id="cloud-workspaces-section" className="scroll-mt-28">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase text-accent">
+                    Account workspace
+                  </p>
+                  <h2 className="text-base font-semibold text-foreground">
+                    Snapshot history and private sharing
+                  </h2>
+                </div>
+                <span className="hidden rounded-md border border-card bg-card px-3 py-2 text-xs font-semibold text-foreground/70 sm:inline-flex">
+                  {saveLabel}
+                </span>
+              </div>
+              <CloudWorkspaces
+                input={input}
+                workspace={workspace}
+                execution={execution}
+                onRestore={restoreCloudWorkspace}
+              />
             </div>
 
-            <section className="rounded-lg border border-card bg-card p-5 shadow-sm">
-              <div className="mb-5 flex flex-col gap-3 border-b border-card pb-4 xl:flex-row xl:items-center xl:justify-between">
-                <div className="flex flex-wrap items-center gap-3 text-sm text-foreground/80">
-                  <span className="rounded-md bg-signal-supports px-3 py-2 font-medium text-signal-supports">
-                    {workspace.backlog.length} backlog items
-                  </span>
-                  <span className="rounded-md bg-muted px-3 py-2">
-                    {workspace.tasks.length} launch tasks
-                  </span>
-                  <span className="rounded-md bg-muted px-3 py-2">
-                    {workspace.assumptions.length} assumptions
-                  </span>
-                  <span className="rounded-md bg-muted px-3 py-2">
-                    {generationModeLabel}
-                  </span>
-                  <span className="rounded-md bg-muted px-3 py-2">
-                    Generated {formatGeneratedTime(generationMeta.generatedAt)}
-                  </span>
-                  <span className="rounded-md bg-muted px-3 py-2">
-                    Quality {qualityResult.score}%
-                  </span>
-                  <span className="rounded-md bg-signal-challenges px-3 py-2 text-signal-challenges">
-                    Validation {executionProgress.score}%
-                  </span>
-                  {generationMeta.usedFallback && generationMeta.fallbackReason && (
-                    <span className="rounded-md bg-signal-challenges px-3 py-2 font-medium text-signal-challenges">
-                      Fallback: {generationMeta.fallbackReason}
-                    </span>
-                  )}
+            <section className="overflow-hidden rounded-md border border-card bg-card shadow-[0_30px_90px_-72px_rgba(17,19,18,0.62)]">
+              <div className="border-b border-card bg-card p-4">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                  <div>
+                    <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-accent">
+                      Strategy snapshot
+                    </p>
+                    <h2 className="mt-1 text-lg font-semibold tracking-[-0.01em] text-foreground">
+                      Workspace summary
+                    </h2>
+                    <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-foreground/75">
+                      <span className="rounded-md border border-input bg-input px-2.5 py-1">
+                        Generated {formatGeneratedTime(generationMeta.generatedAt)}
+                      </span>
+                      <span className="rounded-md border border-input bg-input px-2.5 py-1">
+                        {generationModeLabel}
+                      </span>
+                      <span className="rounded-md border border-input bg-input px-2.5 py-1">
+                        {providerLabel}
+                      </span>
+                      {generationMeta.usedFallback && generationMeta.fallbackReason && (
+                        <span className="rounded-md bg-signal-challenges px-2.5 py-1 text-signal-challenges">
+                          Fallback: {generationMeta.fallbackReason}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditing((current) => !current)}
+                      className="flex h-9 items-center gap-2 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                    >
+                      {isEditing ? (
+                        <Eye className="size-4" aria-hidden="true" />
+                      ) : (
+                        <PencilLine className="size-4" aria-hidden="true" />
+                      )}
+                      {isEditing ? "Preview" : "Edit"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={copyMarkdown}
+                      aria-label={copyJustSucceeded === "markdown" ? "Copied Markdown" : "Copy Markdown"}
+                      aria-live="polite"
+                      className="flex h-9 items-center gap-2 rounded-md bg-foreground px-3 text-sm font-semibold text-background transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                    >
+                      {copyJustSucceeded === "markdown" ? (
+                        <CheckCircle2 className="size-4 text-signal-supports" aria-hidden="true" />
+                      ) : (
+                        <Copy className="size-4" aria-hidden="true" />
+                      )}
+                      {copyJustSucceeded === "markdown" ? "Copied" : "Markdown"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={copyJson}
+                      aria-label={copyJustSucceeded === "json" ? "Copied JSON" : "Copy JSON"}
+                      aria-live="polite"
+                      className="flex h-9 items-center gap-2 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                    >
+                      {copyJustSucceeded === "json" ? (
+                        <CheckCircle2 className="size-4 text-accent" aria-hidden="true" />
+                      ) : (
+                        <Braces className="size-4" aria-hidden="true" />
+                      )}
+                      {copyJustSucceeded === "json" ? "Copied" : "JSON"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={downloadMarkdownFile}
+                      title="Download Markdown file"
+                      className="flex h-9 items-center gap-1.5 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground/80 transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                    >
+                      <Download className="size-4" aria-hidden="true" />
+                      .md
+                    </button>
+                    <button
+                      type="button"
+                      onClick={downloadJsonFile}
+                      title="Download JSON file"
+                      className="flex h-9 items-center gap-1.5 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground/80 transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                    >
+                      <Download className="size-4" aria-hidden="true" />
+                      .json
+                    </button>
+                    <button
+                      type="button"
+                      onClick={triggerImport}
+                      title="Import JSON workspace"
+                      className="flex h-9 items-center gap-1.5 rounded-md border border-input bg-input px-3 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                    >
+                      <Upload className="size-4" aria-hidden="true" />
+                      Import
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".json,.launchlens.enc,.launchlens.enc.md,.md,application/json,text/plain,text/markdown"
+                      className="hidden"
+                      aria-hidden="true"
+                      tabIndex={-1}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) void handleImportFile(file);
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
+
+                <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-card pt-3 text-xs">
                   <label className="flex items-center gap-1.5 text-muted">
                     <input type="checkbox" checked={exportEncrypted} onChange={(e) => { setExportEncrypted(e.target.checked); if (e.target.checked && !exportPassword) setExportPassword(randomPassword()); }} className="h-3.5 w-3.5 rounded border-input" />
                     Password-protect JSON export
@@ -1547,91 +1759,12 @@ export function LaunchWorkspace({
                     </>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsEditing((current) => !current)}
-                    className="flex h-9 items-center gap-2 rounded-md border border-input bg-input px-2 text-sm font-semibold text-foreground transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:h-10 sm:px-3"
-                  >
-                    {isEditing ? (
-                      <Eye className="size-4" aria-hidden="true" />
-                    ) : (
-                      <PencilLine className="size-4" aria-hidden="true" />
-                    )}
-                    <span className="hidden sm:inline">{isEditing ? "Preview" : "Edit"}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={copyMarkdown}
-                    aria-live="polite"
-                    className="flex h-9 items-center gap-2 rounded-md bg-foreground px-2 text-sm font-semibold text-background transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 sm:h-10 sm:px-3"
-                  >
-                    {copyJustSucceeded === "markdown" ? (
-                      <CheckCircle2 className="size-4 text-signal-supports" aria-hidden="true" />
-                    ) : (
-                      <Copy className="size-4" aria-hidden="true" />
-                    )}
-                    <span className="hidden sm:inline">{copyJustSucceeded === "markdown" ? "Copied!" : "Copy Markdown"}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={copyJson}
-                    aria-live="polite"
-                    className="flex h-9 items-center gap-2 rounded-md border border-input bg-input px-2 text-sm font-semibold text-foreground transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:h-10 sm:px-3"
-                  >
-                    {copyJustSucceeded === "json" ? (
-                      <CheckCircle2 className="size-4 text-accent" aria-hidden="true" />
-                    ) : (
-                      <Braces className="size-4" aria-hidden="true" />
-                    )}
-                    <span className="hidden sm:inline">{copyJustSucceeded === "json" ? "Copied!" : "Copy JSON"}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={downloadMarkdownFile}
-                    title="Download Markdown file"
-                    className="flex h-9 items-center gap-1 rounded-md border border-input bg-card px-2 text-sm font-semibold text-foreground/80 transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:h-10 sm:gap-2 sm:px-3"
-                  >
-                    <Download className="size-4" aria-hidden="true" />
-                    .md
-                  </button>
-                  <button
-                    type="button"
-                    onClick={downloadJsonFile}
-                    title="Download JSON file"
-                    className="flex h-9 items-center gap-1 rounded-md border border-input bg-card px-2 text-sm font-semibold text-foreground/80 transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:h-10 sm:gap-2 sm:px-3"
-                  >
-                    <Download className="size-4" aria-hidden="true" />
-                    .json
-                  </button>
-                  <button
-                    type="button"
-                    onClick={triggerImport}
-                    title="Import JSON workspace"
-                    className="flex h-9 items-center gap-1 rounded-md border border-accent/40 bg-accent/10 px-2 text-sm font-semibold text-accent transition hover:border-accent hover:bg-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:h-10 sm:gap-2 sm:px-3"
-                  >
-                    <Upload className="size-4" aria-hidden="true" />
-                    <span className="hidden sm:inline">Import</span>
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".json,.launchlens.enc,.launchlens.enc.md,.md,application/json,text/plain,text/markdown"
-                    className="hidden"
-                    aria-hidden="true"
-                    tabIndex={-1}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) void handleImportFile(file);
-                    }}
-                  />
-                </div>
               </div>
 
-              <div className="grid gap-4 lg:grid-cols-[1fr_220px]">
+              <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_250px]">
                 <div>
-                  <p className="mb-2 text-sm font-medium text-signal-challenges">
-                    Workspace summary
+                  <p className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+                    Generated positioning
                   </p>
                   {isEditing ? (
                     <div className="space-y-3">
@@ -1663,7 +1796,7 @@ export function LaunchWorkspace({
                     </div>
                   ) : (
                     <>
-                      <h2 className="text-2xl font-semibold leading-8 text-foreground">
+                      <h2 className="max-w-4xl text-2xl font-semibold leading-8 tracking-[-0.025em] text-foreground">
                         {workspace.landingPage.headline}
                       </h2>
                       <p className="mt-3 max-w-3xl text-sm leading-6 text-foreground/80">
@@ -1672,8 +1805,8 @@ export function LaunchWorkspace({
                     </>
                   )}
                 </div>
-                <div className="rounded-lg bg-signal-supports p-4">
-                  <p className="text-sm font-medium text-signal-supports">
+                <aside className="border-t border-card pt-4 lg:border-l lg:border-t-0 lg:pl-4 lg:pt-0">
+                  <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
                     Launch CTA
                   </p>
                   {isEditing ? (
@@ -1696,23 +1829,23 @@ export function LaunchWorkspace({
                       {workspace.landingPage.cta}
                     </p>
                   )}
-                  <div className="mt-4 flex items-center text-sm font-medium text-signal-supports">
+                  <div className="mt-4 flex items-center text-sm font-medium text-accent">
                     Next action
                     <ArrowRight className="ml-2 size-4" aria-hidden="true" />
                   </div>
-                </div>
+                </aside>
               </div>
 
               {exportText && (
                 <div
                   role="status"
-                  className="mt-5 rounded-lg border border-card bg-input p-4"
+                  className="mx-5 mb-5 rounded-md border border-card bg-input p-4"
                 >
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm font-semibold text-foreground">
                     <span className="flex items-center gap-2">
                       <FileText className="size-4" aria-hidden="true" />
                       Workspace export
-                      <span className="rounded bg-signal-supports px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-signal-supports">
+                      <span className="rounded bg-signal-supports px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase text-signal-supports">
                         {exportFormat === "json" ? "JSON" : "Markdown"}
                       </span>
                     </span>
@@ -1752,16 +1885,31 @@ export function LaunchWorkspace({
                       <Download className="size-3.5" aria-hidden="true" />
                       Download file
                     </button>
-                    <p className="self-center text-[11px] leading-4 text-muted">
-                      Focus the textarea to auto-select all text.
-                    </p>
                   </div>
                 </div>
               )}
             </section>
 
             <ErrorBoundary label="Validation board">
-              <section id="workspace-main" tabIndex={-1} aria-label="Generated workspace" className="outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-md">
+              <section
+                id="workspace-main"
+                tabIndex={-1}
+                aria-label="Generated workspace"
+                className="scroll-mt-28 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase text-accent">
+                      Evidence loop
+                    </p>
+                    <h2 className="text-base font-semibold text-foreground">
+                      Validate assumptions before committing the launch plan
+                    </h2>
+                  </div>
+                  <p className="font-mono text-xs font-semibold tabular-nums text-muted">
+                    {executionProgress.evidenceCount} evidence items / {executionProgress.decided} decisions
+                  </p>
+                </div>
                 <ValidationBoard
                   execution={execution}
                   tasks={workspace.tasks}
@@ -1770,12 +1918,27 @@ export function LaunchWorkspace({
               </section>
             </ErrorBoundary>
 
-            <ErrorBoundary label="Decision copilot">
-              <DecisionCopilot
-                execution={execution}
-                onChange={setExecution}
-              />
-            </ErrorBoundary>
+            <div id="decision-copilot-section" className="scroll-mt-28">
+              <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase text-accent">
+                    Decision layer
+                  </p>
+                  <h2 className="text-base font-semibold text-foreground">
+                    Evidence-grounded AI briefs
+                  </h2>
+                </div>
+                <p className="text-xs font-semibold text-muted">
+                  Cites only recorded validation evidence
+                </p>
+              </div>
+              <ErrorBoundary label="Decision copilot">
+                <DecisionCopilot
+                  execution={execution}
+                  onChange={setExecution}
+                />
+              </ErrorBoundary>
+            </div>
 
             <div className="grid gap-6 xl:grid-cols-2">
               <Section title="Target users" icon={UsersRound} collapsible sectionId="target-users" collapsed={collapsedSections.has("target-users")} onToggle={() => toggleSection("target-users")}>
@@ -2220,7 +2383,7 @@ export function LaunchWorkspace({
                             }
                             className={`flex size-6 shrink-0 items-center justify-center rounded transition ${
                               task.completed
-                                ? "bg-accent text-white"
+                                ? "bg-accent text-primary-text"
                                 : "border-2 border-muted text-transparent hover:border-accent"
                             }`}
                             aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
@@ -2340,7 +2503,7 @@ export function LaunchWorkspace({
                             }
                             className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded transition ${
                               task.completed
-                                ? "bg-accent text-white"
+                                ? "bg-accent text-primary-text"
                                 : "border-2 border-muted text-transparent hover:border-accent"
                             }`}
                             aria-label={task.completed ? "Mark task incomplete" : "Mark task complete"}
@@ -2387,7 +2550,7 @@ export function LaunchWorkspace({
               className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             />
             <div
-              className="relative w-full max-w-md overflow-hidden rounded-xl border border-card bg-card shadow-2xl"
+              className="relative w-full max-w-md overflow-hidden rounded-md border border-card bg-card shadow-2xl"
               style={{ animation: "fadeInDown 200ms ease-out both" }}
             >
               <div className="border-b border-input px-6 py-4">
@@ -2437,7 +2600,7 @@ export function LaunchWorkspace({
                 <button
                   type="button"
                   onClick={applyImport}
-                  className="flex h-9 items-center gap-1.5 rounded-md bg-accent px-3 text-sm font-semibold text-white transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                  className="flex h-9 items-center gap-1.5 rounded-md bg-accent px-3 text-sm font-semibold text-primary-text transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                 >
                   <Upload className="size-3.5" aria-hidden="true" />
                   Import

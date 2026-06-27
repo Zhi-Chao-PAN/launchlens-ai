@@ -54,13 +54,13 @@ export function ValidationBoardFilterBar({
   const counts = { experimentCount, activeCount, decidedCount };
 
   return (
-    <>
-      <div className="flex items-center gap-1">
+    <div className="flex min-w-0 flex-1 flex-col gap-2 xl:flex-row xl:items-center">
+      <div className="flex min-w-0 flex-wrap items-center gap-1">
         <Filter className="size-3.5 text-muted" aria-hidden="true" />
         <div
           role="tablist"
           aria-label="Filter experiments by status"
-          className="flex gap-0.5"
+          className="flex flex-wrap gap-0.5"
         >
           {statusTabs.map((tab) => (
             <button
@@ -70,7 +70,7 @@ export function ValidationBoardFilterBar({
               onClick={() => onStatusFilterChange(tab.id)}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${
                 statusFilter === tab.id
-                  ? "bg-accent text-white"
+                  ? "bg-accent text-primary-text"
                   : "text-muted hover:bg-muted hover:text-foreground"
               }`}
             >
@@ -98,7 +98,7 @@ export function ValidationBoardFilterBar({
               title="Show hypotheses with any tag"
               className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition ${
                 tagFilter === null
-                  ? "bg-accent text-white"
+                  ? "bg-accent text-primary-text"
                   : "bg-muted text-muted hover:text-foreground"
               }`}
             >
@@ -119,7 +119,7 @@ export function ValidationBoardFilterBar({
                 aria-label={`Filter by tag ${tag}`}
                 className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition ${
                   tagFilter === tag
-                    ? "bg-accent text-white"
+                    ? "bg-accent text-primary-text"
                     : "bg-muted text-muted hover:text-foreground"
                 }`}
               >
@@ -130,46 +130,48 @@ export function ValidationBoardFilterBar({
         )}
       </div>
 
-      <div className="relative">
-        <Search
-          className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted"
-          aria-hidden="true"
-        />
-        <input
-          ref={searchInputRef}
-          type="search"
-          value={searchQuery}
-          onChange={(event) => onSearchQueryChange(event.target.value)}
-          placeholder="Search..."
-          aria-label="Search hypotheses, evidence, tags"
-          className="h-7 w-40 rounded-md border border-input bg-card pl-7 pr-6 text-xs text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            onClick={() => onSearchQueryChange("")}
-            aria-label="Clear search"
-            className="absolute right-1 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          >
-            <X className="size-3" aria-hidden="true" />
-          </button>
-        )}
-      </div>
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
+        <div className="relative min-w-[11rem] flex-1 sm:flex-none">
+          <Search
+            className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted"
+            aria-hidden="true"
+          />
+          <input
+            ref={searchInputRef}
+            type="search"
+            value={searchQuery}
+            onChange={(event) => onSearchQueryChange(event.target.value)}
+            placeholder="Search..."
+            aria-label="Search hypotheses, evidence, tags"
+            className="h-7 w-full rounded-md border border-input bg-card pl-7 pr-6 text-xs text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)] sm:w-40"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => onSearchQueryChange("")}
+              aria-label="Clear search"
+              className="absolute right-1 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              <X className="size-3" aria-hidden="true" />
+            </button>
+          )}
+        </div>
 
-      <select
-        value={sortBy}
-        onChange={(event) =>
-          onSortByChange(event.target.value as ValidationBoardSortMode)
-        }
-        title="Default: manual order. Highest confidence: high to low. By status: supported/testing/untested/refuted. Most evidence: evidence count descending."
-        className="rounded-md border border-input bg-card px-2 py-1 text-xs font-semibold text-foreground/70 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
-        aria-label="Sort hypotheses"
-      >
-        <option value="default">Default order</option>
-        <option value="confidence">Highest confidence</option>
-        <option value="status">By status</option>
-        <option value="progress">Most evidence</option>
-      </select>
-    </>
+        <select
+          value={sortBy}
+          onChange={(event) =>
+            onSortByChange(event.target.value as ValidationBoardSortMode)
+          }
+          title="Default: manual order. Highest confidence: high to low. By status: supported/testing/untested/refuted. Most evidence: evidence count descending."
+          className="h-7 max-w-full rounded-md border border-input bg-card px-2 py-1 text-xs font-semibold text-foreground/70 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+          aria-label="Sort hypotheses"
+        >
+          <option value="default">Default order</option>
+          <option value="confidence">Highest confidence</option>
+          <option value="status">By status</option>
+          <option value="progress">Most evidence</option>
+        </select>
+      </div>
+    </div>
   );
 }

@@ -109,7 +109,7 @@ export function ValidationTimeline({
               }}
               className={`rounded px-1.5 py-0.5 text-[10px] font-medium transition ${
                 selectedKind === filter.id
-                  ? "bg-accent text-white"
+                  ? "bg-accent text-primary-text"
                   : "text-muted hover:bg-muted hover:text-foreground"
               }`}
               title={`Filter timeline to ${filter.label.toLowerCase()} events`}

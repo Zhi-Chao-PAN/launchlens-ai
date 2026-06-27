@@ -97,7 +97,7 @@ export default function PricingPage() {
     <main id="main-content" className="min-h-screen animate-[fadeInDown_280ms_ease-out_both] bg-background text-foreground motion-reduce:animate-none">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-4 py-12 pb-24 sm:px-6 sm:pb-12 lg:px-8">
         <header className="flex flex-col gap-3">
-          <span className="inline-flex w-fit items-center gap-2 rounded-md bg-signal-neutral px-3 py-1 text-xs font-semibold uppercase tracking-wide text-signal-neutral">
+          <span className="inline-flex w-fit items-center gap-2 rounded-md border border-input bg-card px-3 py-1 text-xs font-semibold uppercase tracking-wide text-muted">
             <Sparkles className="size-3" aria-hidden="true" />
             Portfolio pricing page
           </span>
@@ -149,8 +149,8 @@ export default function PricingPage() {
               key={tier.name}
               className={
                 tier.highlight
-                  ? "flex flex-col gap-4 rounded-lg border-2 border-accent bg-card p-6 shadow-sm"
-                  : "flex flex-col gap-4 rounded-lg border border-card bg-card p-6 shadow-sm"
+                  ? "flex flex-col gap-4 rounded-md border border-accent bg-card p-6 shadow-[0_24px_80px_-68px_rgba(17,19,18,0.55)]"
+                  : "flex flex-col gap-4 rounded-md border border-card bg-card p-6 shadow-[0_24px_80px_-72px_rgba(17,19,18,0.45)]"
               }
             >
               <header className="flex flex-col gap-1">
@@ -180,7 +180,7 @@ export default function PricingPage() {
                 href={tier.href}
                 className={
                   tier.highlight
-                    ? "mt-auto inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
+                    ? "mt-auto inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-text transition hover:bg-primary-hover active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
                     : "mt-auto inline-flex h-10 items-center justify-center rounded-md border border-input bg-card px-4 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
                 }
               >
@@ -209,7 +209,7 @@ export default function PricingPage() {
               isolation and RBAC without billing.
             </p>
           </div>
-          <div className="overflow-hidden rounded-lg border border-card bg-card">
+          <div className="overflow-hidden rounded-md border border-card bg-card">
             <div className="hidden grid-cols-[1fr_0.7fr_0.7fr_0.9fr] border-b border-card bg-muted px-4 py-3 text-xs font-semibold uppercase text-muted md:grid">
               <span>Plan</span>
               <span>Snapshots</span>
@@ -248,16 +248,6 @@ export default function PricingPage() {
           <h2 className="text-lg font-semibold text-foreground">
             Pricing questions, answered honestly
           </h2>
-          <p className="text-xs text-muted">
-            Tip: use{" "}
-            <kbd className="rounded border border-card bg-card px-1 py-0.5 font-mono text-[11px]">
-              Up
-            </kbd>{" "}
-            <kbd className="rounded border border-card bg-card px-1 py-0.5 font-mono text-[11px]">
-              Down
-            </kbd>{" "}
-            to move between questions.
-          </p>
           <DisclosureGroup className="grid gap-3">
             {frequentlyAsked.map((item) => (
               <Disclosure key={item.question} title={item.question}>

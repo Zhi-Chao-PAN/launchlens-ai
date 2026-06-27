@@ -63,7 +63,7 @@ export function ReadOnlySection({
   };
 
   return (
-    <section id={sectionId} aria-labelledby={sectionId ? `${sectionId}-heading` : undefined} tabIndex={sectionId === "validation-decisions" ? -1 : undefined} className="rounded-lg border border-card bg-card shadow-sm overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset">
+    <section id={sectionId} aria-labelledby={sectionId ? `${sectionId}-heading` : undefined} tabIndex={sectionId === "validation-decisions" ? -1 : undefined} className="overflow-hidden rounded-md border border-card bg-card shadow-[0_24px_80px_-72px_rgba(17,19,18,0.45)] outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset">
       {collapsible ? (
         <button
           type="button"
@@ -73,7 +73,7 @@ export function ReadOnlySection({
           aria-controls={contentId}
           className="w-full flex items-center gap-2 p-4 sm:p-5 text-left transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset"
         >
-          <span className="flex size-7 items-center justify-center rounded-md bg-signal-supports text-signal-supports sm:size-8">
+          <span className="flex size-7 items-center justify-center rounded-md bg-foreground text-background sm:size-8">
             <Icon className="size-3.5 sm:size-4" aria-hidden="true" />
           </span>
           <h2 id={sectionId ? `${sectionId}-heading` : undefined} className="flex-1 text-sm sm:text-base font-semibold text-foreground">{title}</h2>
@@ -84,7 +84,7 @@ export function ReadOnlySection({
         </button>
       ) : (
         <div className="flex items-center gap-2 p-4 pb-0 sm:p-5 sm:pb-0">
-          <span className="flex size-7 items-center justify-center rounded-md bg-signal-supports text-signal-supports sm:size-8">
+          <span className="flex size-7 items-center justify-center rounded-md bg-foreground text-background sm:size-8">
             <Icon className="size-3.5 sm:size-4" aria-hidden="true" />
           </span>
           <h2 id={sectionId ? `${sectionId}-heading` : undefined} className="text-sm sm:text-base font-semibold text-foreground">{title}</h2>
@@ -223,7 +223,7 @@ export function SharedWorkspaceView({
       <div className="mx-auto w-full max-w-6xl">
         <header className="mb-4 flex flex-col gap-3 border-b border-card pb-4 sm:mb-6 sm:gap-4 sm:pb-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <span className="flex size-9 items-center justify-center rounded-lg bg-foreground text-white sm:size-11">
+            <span className="flex size-9 items-center justify-center rounded-md bg-foreground text-background sm:size-11">
               <Compass className="size-4 sm:size-5" aria-hidden="true" />
             </span>
             <div>
@@ -263,7 +263,7 @@ export function SharedWorkspaceView({
             <Link
               href="/"
               aria-label="Open the LaunchLens AI demo (leaves this read-only snapshot and opens the editor at the home page)"
-              className="inline-flex h-10 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-semibold text-white transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
+              className="inline-flex h-10 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-semibold text-primary-text transition hover:bg-primary-hover active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
             >
               Open the demo
               <ArrowRight className="size-4" aria-hidden="true" />
@@ -271,7 +271,7 @@ export function SharedWorkspaceView({
           </div>
         </header>
 
-        <section className="mb-6 rounded-lg border border-card bg-card p-6 shadow-sm">
+        <section className="mb-6 rounded-md border border-card bg-card p-6 shadow-[0_24px_80px_-72px_rgba(17,19,18,0.45)]">
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
             <span className="rounded-md bg-signal-supports px-2 py-1 font-medium text-signal-supports">
               {formatProviderLabel(workspace.provider)}
@@ -482,4 +482,3 @@ export function SharedWorkspaceView({
     </main>
   );
 }
-

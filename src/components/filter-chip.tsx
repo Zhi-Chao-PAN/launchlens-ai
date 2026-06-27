@@ -36,7 +36,7 @@ const BASE_CLASS =
 
 const VARIANT_CLASSES: Record<FilterChipVariant, { active: string; idle: string }> = {
   filled: {
-    active: "bg-accent text-white",
+    active: "bg-accent text-primary-text",
     idle: "bg-card text-muted hover:text-foreground",
   },
   ringed: {

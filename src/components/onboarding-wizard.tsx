@@ -154,7 +154,7 @@ export function OnboardingWizard() {
       <div
         onClick={(e) => e.stopPropagation()}
         className={[
-          "relative flex w-full max-w-lg flex-col gap-6 rounded-xl border border-card bg-card p-6 shadow-xl",
+          "relative flex w-full max-w-lg flex-col gap-6 rounded-md border border-card bg-card p-6 shadow-2xl",
           mounted ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-2",
           "motion-safe:transition-all motion-safe:duration-200 motion-safe:ease-out",
         ].join(" ")}
@@ -177,7 +177,7 @@ export function OnboardingWizard() {
             const Icon = step.icon;
             return (
               <li key={step.title} className="flex items-start gap-3">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-signal-supports text-sm font-bold text-accent">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-input text-sm font-bold text-accent">
                   {idx + 1}
                 </span>
                 <div className="flex flex-col gap-0.5">
@@ -199,14 +199,14 @@ export function OnboardingWizard() {
           className="flex flex-col gap-3 border-t border-card pt-4 sm:flex-row sm:items-center sm:justify-between"
         >
           <p className="text-xs leading-5 text-muted">
-            Press <kbd className="rounded border border-input bg-muted px-1 font-mono">Esc</kbd> or <kbd className="rounded border border-input bg-muted px-1 font-mono">Enter</kbd> to dismiss. Press{" "}
-            <kbd className="rounded border border-input bg-muted px-1 font-mono">?</kbd> any time for all shortcuts.
+            Your workspace stays local by default, with cloud history available
+            when you choose to save a snapshot.
           </p>
           <button
             type="button"
             onClick={dismiss}
             autoFocus
-            className="inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-primary px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
+            className="inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-primary px-5 text-sm font-semibold text-primary-text transition hover:bg-primary-hover active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
           >
             Get started
           </button>

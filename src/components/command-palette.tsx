@@ -183,7 +183,7 @@ export function CommandPalette({
       {/* Panel */}
       <div
         ref={trapRef}
-        className={`relative w-full max-w-lg max-h-[calc(100vh-2rem)] overflow-hidden rounded-xl border border-card bg-card shadow-2xl transition-all duration-200 ease-out motion-reduce:transition-none sm:max-h-none ${
+        className={`relative w-full max-w-lg max-h-[calc(100vh-2rem)] overflow-hidden rounded-md border border-card bg-card shadow-2xl transition-all duration-200 ease-out motion-reduce:transition-none sm:max-h-none ${
           mounted ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
         }`}
       >

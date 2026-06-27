@@ -25,7 +25,7 @@ export function ValidationEmptyStates({
 
   if (hasActiveFilters) {
     return (
-      <div className="mt-10 flex flex-col items-center gap-2 rounded-lg border border-dashed border-input bg-muted/30 py-12 text-center">
+      <div className="mt-10 flex flex-col items-center gap-2 rounded-md border border-dashed border-input bg-muted/30 py-12 text-center">
         <Search className="size-6 text-muted/50" aria-hidden="true" />
         <p className="text-sm font-medium text-foreground/70">
           No hypotheses match your current filters
@@ -46,7 +46,7 @@ export function ValidationEmptyStates({
 
   if (archivedCount > 0) {
     return (
-      <div className="mt-10 flex flex-col items-center gap-2 rounded-lg border border-dashed border-input bg-muted/30 py-10 text-center">
+      <div className="mt-10 flex flex-col items-center gap-2 rounded-md border border-dashed border-input bg-muted/30 py-10 text-center">
         <Archive className="size-6 text-muted/60" aria-hidden="true" />
         <p className="text-sm font-medium text-foreground/70">
           All your hypotheses are archived
@@ -76,7 +76,7 @@ export function ValidationEmptyStates({
   }
 
   return (
-    <div className="mt-10 flex flex-col items-center gap-3 rounded-lg border border-dashed border-input bg-muted/30 py-14 text-center">
+    <div className="mt-10 flex flex-col items-center gap-3 rounded-md border border-dashed border-input bg-muted/30 py-14 text-center">
       <Target className="size-8 text-accent/60" aria-hidden="true" />
       <p className="text-base font-semibold text-foreground">
         Map out your first validation hypotheses
@@ -88,7 +88,7 @@ export function ValidationEmptyStates({
       <button
         type="button"
         onClick={onAddHypothesis}
-        className="mt-1 flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-text shadow-sm transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        className="mt-1 flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-text transition hover:bg-primary-hover active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         <Plus className="size-4" aria-hidden="true" /> Add your first hypothesis
       </button>

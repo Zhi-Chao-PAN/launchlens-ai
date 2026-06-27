@@ -310,6 +310,8 @@
       flow, then provision and verify the intended production project.
 - [x] Add durable live-provider usage metering before treating monthly
       allowances as billable enforcement.
+- [x] Add `docs/BACKEND_COMMERCIAL_PROGRESS.md` as the backend/commercial
+      handoff record before the frontend productization stage continues.
 - [ ] Specify onboarding and activation events with privacy constraints.
 - [ ] Decide how eval drift, latency risk, and release evidence become
       operator-visible without leaking private workspace content.

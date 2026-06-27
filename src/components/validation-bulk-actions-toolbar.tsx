@@ -76,10 +76,7 @@ export function ValidationBulkActionsToolbar({
       <span className="px-1 font-semibold text-foreground">
         {batchCount} selected
       </span>
-      <span
-        className="ml-1 text-[10px] uppercase tracking-wide text-muted"
-        aria-hidden="true"
-      >
+      <span className="sr-only">
         Shift+click range
       </span>
       <button type="button" onClick={onSelectAll} className={actionClass}>
@@ -125,7 +122,7 @@ export function ValidationBulkActionsToolbar({
           aria-expanded={batchTagMode === "add"}
           className={
             "rounded px-2 py-1 " +
-            (batchTagMode === "add" ? "bg-accent text-white" : "hover:bg-muted")
+            (batchTagMode === "add" ? "bg-accent text-primary-text" : "hover:bg-muted")
           }
         >
           + Tag
@@ -138,7 +135,7 @@ export function ValidationBulkActionsToolbar({
                   key={tag.tag}
                   type="button"
                   onClick={() => onBatchAddTag(tag.tag)}
-                  className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted hover:bg-accent hover:text-white"
+                  className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted hover:bg-accent hover:text-primary-text"
                   title={`Add "${tag.tag}" (used ${tag.count}x)`}
                 >
                   {tag.tag}
@@ -169,7 +166,7 @@ export function ValidationBulkActionsToolbar({
               <button
                 type="button"
                 onClick={() => onApplyBatchTagInput("add")}
-                className="rounded bg-accent px-2 py-1 text-xs text-white"
+                className="rounded bg-accent px-2 py-1 text-xs text-primary-text"
               >
                 Add
               </button>
@@ -188,7 +185,7 @@ export function ValidationBulkActionsToolbar({
           className={
             "rounded px-2 py-1 " +
             (batchTagMode === "remove"
-              ? "bg-signal-challenges text-white"
+              ? "bg-signal-challenges text-primary-text"
               : "hover:bg-muted")
           }
         >
@@ -202,7 +199,7 @@ export function ValidationBulkActionsToolbar({
                   key={tag}
                   type="button"
                   onClick={() => onBatchRemoveTag(tag)}
-                  className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted hover:bg-signal-challenges hover:text-white"
+                  className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted hover:bg-signal-challenges hover:text-primary-text"
                   title={`Remove "${tag}"`}
                 >
                   {tag}
@@ -233,7 +230,7 @@ export function ValidationBulkActionsToolbar({
               <button
                 type="button"
                 onClick={() => onApplyBatchTagInput("remove")}
-                className="rounded bg-signal-challenges px-2 py-1 text-xs text-white"
+                className="rounded bg-signal-challenges px-2 py-1 text-xs text-primary-text"
               >
                 Remove
               </button>

@@ -7,6 +7,17 @@ tags are cut for milestone demos.
 ## [Unreleased]
 
 ### Added
+- Frontend productization pass — calmer neutral product surface replacing the
+  pastel card-heavy look, with a dark compact app header and more credible
+  metric cards; rebuilt Billing as a real B2B account/billing console;
+  reworked mobile navigation to avoid clipped half-visible labels; stable
+  English-locale month formatting in Billing to stop Chinese system-locale
+  leakage; mojibake cleanup across error/404 surfaces; high-density workflows
+  kept usable on mobile with horizontal-overflow checks
+- `PRODUCT.md` — product/design direction (precise, credible, product-minded;
+  calm SaaS workspace; workflow before decoration; evidence earns trust)
+- `docs/BACKEND_COMMERCIAL_PROGRESS.md` — historical backend/commercial
+  acceptance ledger, kept separate from frontend polish records
 - Shared read-only workspace views with Copy Markdown, Copy Link, and explicit
   .md / .json download buttons
 - `src/lib/launchlens/clipboard.ts` — shared `copyTextToClipboard` and

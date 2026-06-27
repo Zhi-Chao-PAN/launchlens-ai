@@ -57,10 +57,10 @@ describe("<FilterChip>", () => {
     expect(idle).not.toContain("(currently active)");
   });
 
-  it("uses the filled variant active class by default (bg-accent text-white)", () => {
+  it("uses the filled variant active class by default (bg-accent text-primary-text)", () => {
     const html = renderToStaticMarkup(<FilterChip {...BASE} active={true} />);
     expect(html).toContain("bg-accent");
-    expect(html).toContain("text-white");
+    expect(html).toContain("text-primary-text");
   });
 
   it("uses the ringed variant active class (ring-1 ring-accent) when variant='ringed'", () => {
@@ -68,7 +68,7 @@ describe("<FilterChip>", () => {
     expect(html).toContain("ring-1");
     expect(html).toContain("ring-accent");
     // Filled variant should not appear.
-    expect(html).not.toContain("text-white");
+    expect(html).not.toContain("text-primary-text");
   });
 
   it("uses the filled idle class (bg-card text-muted) by default", () => {

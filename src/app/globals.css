@@ -1,40 +1,57 @@
 ﻿@import "tailwindcss";
 
 :root {
-  --background: #f6f8f4;
-  --foreground: #171c1a;
+  --background: #f3f5f4;
+  --foreground: #111312;
+  --card-bg: #ffffff;
+  --card-border: #d7dcd7;
+  --input-bg: #edf0ed;
+  --input-border: #c5cdc6;
+  --muted-bg: #e8ece8;
+  --muted-text: #5f6a63;
+  --accent: #087a70;
+  --accent-hover: #06645d;
+  --primary: #111312;
+  --primary-hover: #252a27;
+  --primary-text: #ffffff;
+  --ring-color: rgba(8, 122, 112, 0.28);
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --signal-supports: #16654f;
-  --signal-supports-bg: #dcfce7;
+  --signal-supports-bg: #e1f4ec;
   --signal-challenges: #b91c1c;
-  --signal-challenges-bg: #fee2e2;
+  --signal-challenges-bg: #fde8e6;
   --signal-neutral: #92400e;
-  --signal-neutral-bg: #fef3c7;
+  --signal-neutral-bg: #fff1cf;
   --destructive: #b91c1c;
   --destructive-bg: #fee2e2;
   --warning: #b45309;
   --warning-bg: #fef3c7;
-  --ai-purple: #554a8b;
-  --ai-purple-bg: #e9e7f7;
-  --ai-purple-muted: #8378aa;
-  --info-blue: #4f7fb8;
-  --skeleton-from: #e2e8df;
-  --skeleton-to: #d8ded4;
+  --ai-purple: #4f4b7d;
+  --ai-purple-bg: #eceaf7;
+  --ai-purple-muted: #77719b;
+  --info-blue: #2f6f9f;
+  --skeleton-from: #e6e9e3;
+  --skeleton-to: #daddd6;
 }
 
 [data-theme="dark"] {
-  --background: #0f1412;
-  --foreground: #e8efe9;
-  --card-bg: #151c19;
-  --card-border: #24302a;
-  --muted-bg: #1a221e;
-  --muted-text: #8e9c93;
-  --accent: #10b981;
-  --accent-hover: #34d399;
-  --ring-color: rgba(16, 185, 129, 0.4);
+  --background: #0f1110;
+  --foreground: #eef2ed;
+  --card-bg: #171a18;
+  --card-border: #2c322d;
+  --input-bg: #121512;
+  --input-border: #343b35;
+  --muted-bg: #1e231f;
+  --muted-text: #9aa59d;
+  --accent: #2dd4bf;
+  --accent-hover: #5eead4;
+  --primary: #eef2ed;
+  --primary-hover: #ffffff;
+  --primary-text: #0f1110;
+  --ring-color: rgba(45, 212, 191, 0.34);
   --signal-supports: #6ee7b7;
   --signal-supports-bg: #064e3b;
   --signal-challenges: #fca5a5;
@@ -55,15 +72,20 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --background: #0f1412;
-    --foreground: #e8efe9;
-    --card-bg: #151c19;
-    --card-border: #24302a;
-    --muted-bg: #1a221e;
-    --muted-text: #8e9c93;
-    --accent: #10b981;
-    --accent-hover: #34d399;
-    --ring-color: rgba(16, 185, 129, 0.4);
+    --background: #0f1110;
+    --foreground: #eef2ed;
+    --card-bg: #171a18;
+    --card-border: #2c322d;
+    --input-bg: #121512;
+    --input-border: #343b35;
+    --muted-bg: #1e231f;
+    --muted-text: #9aa59d;
+    --accent: #2dd4bf;
+    --accent-hover: #5eead4;
+    --primary: #eef2ed;
+    --primary-hover: #ffffff;
+    --primary-text: #0f1110;
+    --ring-color: rgba(45, 212, 191, 0.34);
     --signal-supports: #6ee7b7;
     --signal-supports-bg: #064e3b;
     --signal-challenges: #fca5a5;
@@ -80,8 +102,10 @@
 /* Theme-aware utility classes */
 .bg-card { background-color: var(--card-bg, white); }
 .bg-muted { background-color: var(--muted-bg, #f6f8f4); }
+.bg-input { background-color: var(--input-bg, #edf3ef); }
 .text-muted { color: var(--muted-text, #607069); }
 .border-card { border-color: var(--card-border, #d8ded4); }
+.border-input { border-color: var(--input-border, #cdd8d2); }
 
 /* Signal / status colors (light and dark mode via CSS variables) */
 .bg-signal-supports { background-color: var(--signal-supports-bg, #dcfce7); }
@@ -116,6 +140,17 @@
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card-bg);
+  --color-input: var(--input-bg);
+  --color-muted: var(--muted-bg);
+  --color-muted-foreground: var(--muted-text);
+  --color-border: var(--card-border);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-text: var(--primary-text);
+  --color-ring: var(--ring-color);
   --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
   /* Soft entrance for list items and result panels. */
   --animate-fadeInUp: launchlens-fade-in-up 260ms ease-out both;
@@ -139,9 +174,12 @@ html {
 }
 
 body {
-  background: var(--background);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72) 0%, rgba(243, 245, 244, 0) 38%),
+    var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  text-rendering: geometricPrecision;
 }
 
 button,
@@ -153,8 +191,19 @@ textarea {
 
 /* Accessible keyboard focus ring ? only shown on keyboard navigation */
 :focus-visible {
-  outline: 2px solid #138a72;
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p,
+li {
+  text-wrap: pretty;
 }
 
 /* Remove default focus ring for mouse users where we show custom ring styles */

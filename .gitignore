@@ -46,6 +46,9 @@ next-env.d.ts
 .visual-regression/
 job.log
 
+# Local review artifacts (screenshots/reports are regenerable, kept out of git)
+/artifacts/
+
 
 # playwright e2e
 test-results/
