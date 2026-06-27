@@ -41,6 +41,8 @@ Use this path when you have 10 to 15 minutes:
 
 For a spoken walkthrough, use `docs/DEMO_SCRIPT.md`.
 For the next productization stage, use `docs/COMMERCIAL_READINESS.md`.
+For the first executable commercial limit contract, use
+`docs/COMMERCIAL_ENTITLEMENTS.md` and `/api/commercial/entitlements`.
 
 ## Problem
 

@@ -1,6 +1,7 @@
 import "server-only";
 
 import {
+  ERROR_COMMERCIAL_PLAN_LIMIT,
   ERROR_CLOUD_UNAVAILABLE,
 } from "./error-codes";
 
@@ -9,12 +10,17 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { neon } from "@neondatabase/serverless";
 
 import {
-  MAX_CLOUD_WORKSPACES,
   MAX_TOTAL_CLOUD_WORKSPACES,
   type CloudWorkspaceRecord,
   type CloudWorkspaceSummary,
   type SharedCloudWorkspaceRecord,
 } from "./cloud-workspace";
+import {
+  commercialPlanIdFromEnv,
+  evaluateCommercialLimit,
+  getCommercialPlan,
+  type CommercialPlanLimits,
+} from "./commercial-entitlements";
 import type { WorkspaceSnapshotPayload } from "./workspace-validation";
 import {
   normalizeExecutionState,
@@ -34,7 +40,6 @@ const OWNER_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43,128}$/;
 const INVITE_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const GLOBAL_QUOTA_LOCK = 4_912_826_168;
 const INVITE_LOCK = 1_847_392_164;
-const MAX_MEMBERS_PER_WORKSPACE = 10;
 
 type WorkspaceRow = {
   id: string;
@@ -98,6 +103,35 @@ function getSql() {
 
   sqlClient ??= neon(url);
   return sqlClient;
+}
+
+function currentCommercialPlan() {
+  return getCommercialPlan(commercialPlanIdFromEnv(process.env));
+}
+
+function currentCommercialLimit(limitName: keyof CommercialPlanLimits) {
+  return currentCommercialPlan().limits[limitName];
+}
+
+function assertCommercialLimit(
+  limitName: keyof CommercialPlanLimits,
+  current: number,
+  increment = 1,
+) {
+  const check = evaluateCommercialLimit(
+    currentCommercialPlan(),
+    limitName,
+    current,
+    increment,
+  );
+
+  if (!check.allowed) {
+    throw new WorkspaceStoreError(
+      ERROR_COMMERCIAL_PLAN_LIMIT,
+      409,
+      check.message ?? "The current commercial plan limit has been reached.",
+    );
+  }
 }
 
 export function validateOwnerToken(token: string) {
@@ -208,7 +242,7 @@ export async function listWorkspacesForMember(ownerToken: string) {
       SELECT workspace_id FROM launchlens_workspace_members WHERE member_hash = ${memberHash}
     )
     ORDER BY updated_at DESC
-    LIMIT ${MAX_CLOUD_WORKSPACES}
+    LIMIT ${currentCommercialLimit("cloudSnapshots")}
   `) as unknown as WorkspaceRow[];
 
   return rows.map(toSummary);
@@ -256,6 +290,8 @@ export async function createWorkspace(
   const sql = getSql();
   const id = randomUUID();
   const title = payload.title.slice(0, 120);
+  const workspaceLimit = currentCommercialLimit("cloudSnapshots");
+  assertCommercialLimit("cloudSnapshots", 0);
   const results = await sql.transaction((transaction) => [
     transaction`
       SELECT pg_advisory_xact_lock(${GLOBAL_QUOTA_LOCK}),
@@ -287,12 +323,13 @@ export async function createWorkspace(
           SELECT COUNT(*)
           FROM launchlens_workspaces
           WHERE owner_hash = ${ownerHash}
-        ) < ${MAX_CLOUD_WORKSPACES}
+        ) < ${workspaceLimit}
       RETURNING id, title, input, workspace, execution, is_public, share_expires_at, created_at, updated_at
     `,
     transaction`
       INSERT INTO launchlens_workspace_members (workspace_id, member_hash, role)
-      VALUES (${id}, ${ownerHash}, 'owner')
+      SELECT ${id}, ${ownerHash}, 'owner'
+      WHERE EXISTS (SELECT 1 FROM launchlens_workspaces WHERE id = ${id})
       ON CONFLICT (workspace_id, member_hash) DO NOTHING
     `,
   ]);
@@ -381,6 +418,7 @@ export async function migrateWorkspaceOwner(
 
   const sql = getSql();
   const [firstHash, secondHash] = [currentOwnerHash, recoveryOwnerHash].sort();
+  const workspaceLimit = currentCommercialLimit("cloudSnapshots");
   const [, countRows, migratedRows] = await sql.transaction((transaction) => [
     transaction`
       SELECT pg_advisory_xact_lock(hashtextextended(${firstHash}, 0)),
@@ -399,7 +437,7 @@ export async function migrateWorkspaceOwner(
           SELECT COUNT(*)
           FROM launchlens_workspaces
           WHERE owner_hash IN (${currentOwnerHash}, ${recoveryOwnerHash})
-        ) <= ${MAX_CLOUD_WORKSPACES}
+        ) <= ${workspaceLimit}
       RETURNING id
     `,
     transaction`
@@ -432,7 +470,7 @@ export async function migrateWorkspaceOwner(
   if (
     counts &&
     Number(counts.current_count) + Number(counts.recovery_count) >
-      MAX_CLOUD_WORKSPACES
+      workspaceLimit
   ) {
     throw new WorkspaceStoreError(
       "workspace_limit_reached",
@@ -563,13 +601,10 @@ export async function createWorkspaceInvite(
     WHERE workspace_id = ${id}
   `) as unknown as Array<{ count: number }>;
 
-  if (Number(memberCountRows[0]?.count ?? 0) >= MAX_MEMBERS_PER_WORKSPACE) {
-    throw new WorkspaceStoreError(
-      "member_limit_reached",
-      409,
-      "The workspace is full. Remove an existing member before inviting more.",
-    );
-  }
+  assertCommercialLimit(
+    "membersPerWorkspace",
+    Number(memberCountRows[0]?.count ?? 0),
+  );
 
   const token = randomBytes(32).toString("base64url");
   const tokenHash = hashInviteToken(token);

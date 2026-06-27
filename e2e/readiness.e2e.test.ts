@@ -18,6 +18,13 @@ test.describe("LaunchLens AI commercial readiness", () => {
     ).toBeVisible();
     await expect(page.getByText("Identity and tenant model")).toBeVisible();
     await expect(page.getByText("Billing and plan limits")).toBeVisible();
+    await expect(
+      page.getByText("Entitlement Contract", { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByText("Team preview").first()).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "/api/commercial/entitlements" }),
+    ).toHaveAttribute("href", "/api/commercial/entitlements");
     await expect(page.getByText("Onboarding and activation")).toBeVisible();
     await expect(page.getByText("Eval and ops visibility")).toBeVisible();
     await expect(
@@ -33,5 +40,33 @@ test.describe("LaunchLens AI commercial readiness", () => {
     await expect(
       page.getByRole("link", { name: /view case study/i }),
     ).toHaveAttribute("href", "/case-study");
+  });
+
+  test("exposes reviewer-safe commercial entitlement data", async ({
+    request,
+  }) => {
+    const response = await request.get("/api/commercial/entitlements");
+    expect(response.status()).toBe(200);
+    expect(response.headers()["cache-control"]).toMatch(/no-store/i);
+
+    const body = (await response.json()) as {
+      entitlement?: {
+        activePlanId?: string;
+        limits?: {
+          cloudSnapshots?: number;
+          tenantsPerOwner?: number;
+          membersPerWorkspace?: number;
+        };
+      };
+    };
+
+    expect(body.entitlement).toMatchObject({
+      activePlanId: "team",
+      limits: {
+        cloudSnapshots: 20,
+        tenantsPerOwner: 5,
+        membersPerWorkspace: 10,
+      },
+    });
   });
 });

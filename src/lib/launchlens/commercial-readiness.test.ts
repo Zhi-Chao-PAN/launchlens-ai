@@ -23,17 +23,37 @@ function snapshot(): CommercialReadinessSnapshot {
       {
         path: "docs/COMMERCIAL_READINESS.md",
         content:
-          "Current Boundary Commercial Readiness Tracks Reviewer Evidence Index Identity And Tenant Model Billing And Plan Limits Onboarding And Activation Eval And Ops Visibility Security And Compliance Re-entry Acceptance Gate Non-goals https://launchlens-ai-two.vercel.app/readiness npm run verify:commercial-readiness npm run verify:production-demo npm run release:cloud npm run decision:history -- --window PROJECT_MATURITY.md docs/PORTFOLIO_CASE_STUDY.md docs/PRODUCTION_RUNBOOK.md",
+          "Current Boundary Commercial Readiness Tracks Reviewer Evidence Index Identity And Tenant Model Billing And Plan Limits docs/COMMERCIAL_ENTITLEMENTS.md src/lib/launchlens/commercial-entitlements.ts /api/commercial/entitlements Onboarding And Activation Eval And Ops Visibility Security And Compliance Re-entry Acceptance Gate Non-goals https://launchlens-ai-two.vercel.app/readiness npm run verify:commercial-readiness npm run verify:production-demo npm run release:cloud npm run decision:history -- --window PROJECT_MATURITY.md docs/PORTFOLIO_CASE_STUDY.md docs/PRODUCTION_RUNBOOK.md",
+      },
+      {
+        path: "docs/COMMERCIAL_ENTITLEMENTS.md",
+        content:
+          "LaunchLens AI Commercial Entitlements Active Preview Plan Plan Matrix Enforced Today Still Pending src/lib/launchlens/commercial-entitlements.ts src/app/api/commercial/entitlements/route.ts /api/commercial/entitlements LAUNCHLENS_COMMERCIAL_PLAN=free|solo|team npm run verify:commercial-readiness",
       },
       {
         path: "src/app/readiness/page.tsx",
         content:
-          "Commercial/Productization readiness Reviewer Evidence Index Identity and tenant model Billing and plan limits Onboarding and activation Eval and ops visibility npm run verify:commercial-readiness docs/COMMERCIAL_READINESS.md",
+          "Commercial/Productization readiness Reviewer Evidence Index Identity and tenant model Billing and plan limits Entitlement Contract /api/commercial/entitlements Onboarding and activation Eval and ops visibility npm run verify:commercial-readiness docs/COMMERCIAL_READINESS.md",
+      },
+      {
+        path: "src/app/api/commercial/entitlements/route.ts",
+        content:
+          "summarizeCommercialEntitlement commercialPlanRows noStoreJson",
+      },
+      {
+        path: "src/lib/launchlens/commercial-entitlements.ts",
+        content:
+          "DEFAULT_COMMERCIAL_PLAN_ID commercialPlanCatalog evaluateCommercialLimit commercial_plan_limit_reached",
+      },
+      {
+        path: "src/lib/launchlens/commercial-entitlements.test.ts",
+        content:
+          "keeps the public preview on the Team entitlement by default returns a stable code when a plan limit would be exceeded",
       },
       {
         path: "README.md",
         content:
-          "docs/COMMERCIAL_READINESS.md https://launchlens-ai-two.vercel.app/readiness verify:commercial-readiness",
+          "docs/COMMERCIAL_READINESS.md docs/COMMERCIAL_ENTITLEMENTS.md /api/commercial/entitlements https://launchlens-ai-two.vercel.app/readiness verify:commercial-readiness",
       },
       {
         path: "docs/PORTFOLIO_CASE_STUDY.md",

@@ -288,12 +288,18 @@
       verification, and post-promotion verification.
 - [x] Link the readiness plan from README, case study, demo script, maturity
       notes, roadmap, and task list.
+- [x] Add `docs/COMMERCIAL_ENTITLEMENTS.md`,
+      `src/lib/launchlens/commercial-entitlements.ts`, and
+      `/api/commercial/entitlements` so Free, Solo, and Team-preview limits are
+      executable before checkout exists.
+- [x] Route cloud workspace, tenant, and member invite capacity checks through
+      the entitlement contract.
 - [ ] Turn the reviewer evidence index into a live-ish status surface with
       current CI, deployment, release evidence, and workflow links.
 - [ ] Draft the identity and tenant migration design before adding OAuth,
       passkeys, or checkout.
-- [ ] Define billing plan limits, subscription states, webhook idempotency, and
-      quota precedence.
+- [ ] Define subscription states, webhook idempotency, cancellation, grace
+      periods, and quota-source precedence on top of the entitlement contract.
 - [ ] Specify onboarding and activation events with privacy constraints.
 - [ ] Decide how eval drift, latency risk, and release evidence become
       operator-visible without leaking private workspace content.

@@ -12,6 +12,9 @@ Future commercial features still exist, but none are required to demonstrate the
 The post-portfolio phase has started. The detailed plan now lives in
 `docs/COMMERCIAL_READINESS.md`, with a public stage page at
 `https://launchlens-ai-two.vercel.app/readiness`.
+The first executable commercial slice is now tracked in
+`docs/COMMERCIAL_ENTITLEMENTS.md` and exposed through
+`/api/commercial/entitlements`.
 
 This readiness phase does not claim that LaunchLens AI is already a paid SaaS.
 It converts the commercial gap into explicit, verifiable tracks:

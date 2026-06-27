@@ -7,7 +7,11 @@ import {
 
 const requiredPaths = [
   "docs/COMMERCIAL_READINESS.md",
+  "docs/COMMERCIAL_ENTITLEMENTS.md",
   "src/app/readiness/page.tsx",
+  "src/app/api/commercial/entitlements/route.ts",
+  "src/lib/launchlens/commercial-entitlements.ts",
+  "src/lib/launchlens/commercial-entitlements.test.ts",
   "README.md",
   "docs/PORTFOLIO_CASE_STUDY.md",
   "docs/DEMO_SCRIPT.md",

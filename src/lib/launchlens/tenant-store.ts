@@ -5,14 +5,22 @@ import { createHash, randomUUID } from "node:crypto";
 import { neon } from "@neondatabase/serverless";
 
 import { hashOwnerToken } from "./workspace-store";
-import { MAX_CLOUD_WORKSPACES } from "./cloud-workspace";
+import {
+  commercialPlanIdFromEnv,
+  evaluateCommercialLimit,
+  getCommercialPlan,
+  getDefaultCommercialPlan,
+  type CommercialPlanLimits,
+} from "./commercial-entitlements";
+import { ERROR_COMMERCIAL_PLAN_LIMIT } from "./error-codes";
 import type { WorkspaceSnapshotPayload } from "./workspace-validation";
 import { isLaunchLensInput, isLaunchLensWorkspace } from "./workspace-validation";
 import { normalizeExecutionState } from "./execution";
 import type { CloudWorkspaceRecord, CloudWorkspaceSummary } from "./cloud-workspace";
 import { pickEnvConnection } from "./env-clean";
 
-const MAX_TENANTS_PER_OWNER = 5;
+const MAX_TENANTS_PER_OWNER =
+  getDefaultCommercialPlan().limits.tenantsPerOwner;
 
 type WorkspaceRow = {
   id: string;
@@ -40,6 +48,35 @@ function getSql() {
     throw new Error("cloud_unavailable");
   }
   return neon(url);
+}
+
+function currentCommercialPlan() {
+  return getCommercialPlan(commercialPlanIdFromEnv(process.env));
+}
+
+function currentCommercialLimit(limitName: keyof CommercialPlanLimits) {
+  return currentCommercialPlan().limits[limitName];
+}
+
+function assertCommercialLimit(
+  limitName: keyof CommercialPlanLimits,
+  current: number,
+  increment = 1,
+) {
+  const check = evaluateCommercialLimit(
+    currentCommercialPlan(),
+    limitName,
+    current,
+    increment,
+  );
+
+  if (!check.allowed) {
+    throw new TenantStoreError(
+      ERROR_COMMERCIAL_PLAN_LIMIT,
+      409,
+      check.message ?? "The current commercial plan limit has been reached.",
+    );
+  }
 }
 
 function firstRow<T>(rows: unknown) {
@@ -183,6 +220,8 @@ export async function createTenant(
       "Tenant name is required.",
     );
   }
+  const tenantLimit = currentCommercialLimit("tenantsPerOwner");
+  assertCommercialLimit("tenantsPerOwner", 0);
   // Keep the per-owner tenant cap race-free across serverless instances.
   // The advisory lock scopes the count + insert to this owner without
   // blocking unrelated capability accounts.
@@ -196,15 +235,16 @@ export async function createTenant(
       WHERE (
         SELECT COUNT(*) FROM launchlens_tenants
         WHERE owner_hash = ${ownerHash}
-      ) < ${MAX_TENANTS_PER_OWNER}
+      ) < ${tenantLimit}
       RETURNING id, name, owner_hash, created_at
     `,
   ]);
   if (!rows || (Array.isArray(rows) && rows.length === 0)) {
+    assertCommercialLimit("tenantsPerOwner", tenantLimit);
     throw new TenantStoreError(
-      "tenant_limit_reached",
+      ERROR_COMMERCIAL_PLAN_LIMIT,
       409,
-      `Each capability account can own up to ${MAX_TENANTS_PER_OWNER} tenants.`,
+      "The current commercial plan tenant limit has been reached.",
     );
   }
   const row = firstRow<TenantRow>(rows);
@@ -241,7 +281,7 @@ export async function listWorkspacesInTenant(
     FROM launchlens_workspaces
     WHERE tenant_id = ${tenantId}
     ORDER BY updated_at DESC
-    LIMIT ${MAX_CLOUD_WORKSPACES}
+    LIMIT ${currentCommercialLimit("cloudSnapshots")}
   `) as unknown as WorkspaceRow[];
   return rows.map(toSummary);
 }
@@ -281,11 +321,14 @@ export async function createWorkspaceInTenant(
   const sql = getSql();
   const id = randomUUID();
   const title = payload.title.slice(0, 120);
+  const workspaceLimit = currentCommercialLimit("cloudSnapshots");
+  assertCommercialLimit("cloudSnapshots", 0);
   const [countRows, rows] = await sql.transaction((transaction) => [
     transaction`
       SELECT COUNT(*)::int AS count
-      FROM launchlens_workspaces
-      WHERE tenant_id = ${tenantId}
+      FROM launchlens_workspaces ws
+      INNER JOIN launchlens_tenants t ON t.id = ws.tenant_id
+      WHERE ws.tenant_id = ${tenantId} AND t.owner_hash = ${ownerHash}
     `,
     transaction`
       INSERT INTO launchlens_workspaces (id, owner_hash, title, input, workspace, execution, tenant_id)
@@ -295,18 +338,22 @@ export async function createWorkspaceInTenant(
              ${JSON.stringify(payload.execution)}::jsonb,
              ${tenantId}
       WHERE EXISTS (SELECT 1 FROM launchlens_tenants WHERE id = ${tenantId} AND owner_hash = ${ownerHash})
-        AND (SELECT COUNT(*) FROM launchlens_workspaces WHERE tenant_id = ${tenantId}) < ${MAX_CLOUD_WORKSPACES}
+        AND (SELECT COUNT(*) FROM launchlens_workspaces WHERE tenant_id = ${tenantId}) < ${workspaceLimit}
       RETURNING id, title, input, workspace, execution, is_public, share_expires_at, created_at, updated_at, tenant_id
     `,
     transaction`
       INSERT INTO launchlens_workspace_members (workspace_id, member_hash, role)
-      VALUES (${id}, ${ownerHash}, 'owner')
+      SELECT ${id}, ${ownerHash}, 'owner'
+      WHERE EXISTS (SELECT 1 FROM launchlens_workspaces WHERE id = ${id})
       ON CONFLICT (workspace_id, member_hash) DO NOTHING
     `,
   ]);
-  void countRows;
   const row = firstRow<WorkspaceRow>(rows);
   if (!row) {
+    const count = Number(firstRow<{ count: number }>(countRows)?.count ?? 0);
+    if (count >= workspaceLimit) {
+      assertCommercialLimit("cloudSnapshots", count);
+    }
     return { kind: "tenant_missing" };
   }
   return toRecord(row);

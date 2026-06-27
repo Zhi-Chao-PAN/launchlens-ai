@@ -30,6 +30,8 @@ export const API_ERROR_MESSAGES: Record<string, string> = {
   already_shared: "This workspace already has a share link.",
 
   quota_exceeded: "Storage quota exceeded. Delete an older snapshot first.",
+  commercial_plan_limit_reached:
+    "This action is outside the current plan limit. Remove usage or move to the next plan.",
 
   cloud_unavailable: "Cloud storage is not configured on this deployment.",
   cloud_request_failed: "Cloud storage could not be reached. Please retry.",

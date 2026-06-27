@@ -32,6 +32,7 @@ export const ERROR_ALREADY_SHARED = "already_shared";
 
 // --- Quota ---
 export const ERROR_QUOTA_EXCEEDED = "quota_exceeded";
+export const ERROR_COMMERCIAL_PLAN_LIMIT = "commercial_plan_limit_reached";
 
 // --- Cloud / infrastructure ---
 export const ERROR_CLOUD_UNAVAILABLE = "cloud_unavailable";

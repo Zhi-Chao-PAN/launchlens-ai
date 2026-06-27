@@ -41,7 +41,9 @@ https://launchlens-ai-two.vercel.app/readiness
 Use `docs/PORTFOLIO_CASE_STUDY.md` as the written companion for reviewers who
 want the problem, architecture, verification, and next-stage tradeoffs before
 or after the live walkthrough. Use `docs/COMMERCIAL_READINESS.md` for the
-identity, billing, onboarding, eval-ops, and security re-entry plan.
+identity, billing, onboarding, eval-ops, and security re-entry plan. Use
+`docs/COMMERCIAL_ENTITLEMENTS.md` and `/api/commercial/entitlements` when you
+want to show that plan limits are already executable.
 
 Until production promotion is complete, use a local production build or an
 authenticated Vercel preview for private rehearsal. Do not present the protected

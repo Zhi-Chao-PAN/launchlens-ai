@@ -2,6 +2,10 @@ import { Check, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Disclosure, DisclosureGroup } from "@/components/disclosure";
+import {
+  commercialPlanRows,
+  getDefaultCommercialPlan,
+} from "@/lib/launchlens/commercial-entitlements";
 
 export const metadata: Metadata = {
   title: "Pricing - LaunchLens AI",
@@ -59,6 +63,9 @@ const tiers = [
   },
 ];
 
+const entitlementRows = commercialPlanRows();
+const defaultEntitlement = getDefaultCommercialPlan();
+
 const frequentlyAsked = [
   {
     question: "Is the hosted demo actually free?",
@@ -98,9 +105,11 @@ export default function PricingPage() {
             This page documents the pricing tiers that the public demo, the
             Solo plan, and the Team plan would offer. The portfolio release
             ships the Free demo, the Solo capability account, and the
-            privacy-safe share path. Stripe checkout is not wired up in the
-            public deployment; the Solo and Team buttons open a mailto so a
-            real billing flow is never pretended to be live.
+            Team-preview tenant/RBAC path. Stripe checkout is not wired up in
+            the public deployment; the Solo and Team buttons open a mailto so a
+            real billing flow is never pretended to be live. The executable
+            entitlement contract lives in{" "}
+            <code>src/lib/launchlens/commercial-entitlements.ts</code>.
           </p>
           <Link
             href="/"
@@ -114,6 +123,12 @@ export default function PricingPage() {
           >
             Read the commercial readiness plan
           </Link>
+          <a
+            href="/api/commercial/entitlements"
+            className="w-fit rounded text-sm font-semibold text-accent underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+          >
+            View the entitlement API
+          </a>
         </header>
 
         <section
@@ -164,6 +179,59 @@ export default function PricingPage() {
               </a>
             </article>
           ))}
+        </section>
+
+        <section
+          aria-label="Executable entitlement contract"
+          className="grid gap-4"
+        >
+          <div className="grid gap-2">
+            <p className="text-xs font-semibold uppercase text-accent">
+              Executable entitlement contract
+            </p>
+            <h2 className="text-lg font-semibold text-foreground">
+              Current public deployment resolves to {defaultEntitlement.name}.
+            </h2>
+            <p className="max-w-3xl text-sm leading-6 text-foreground/75">
+              These limits are consumed by the workspace, tenant, and member
+              flows before checkout is added. The public preview keeps Team
+              behavior enabled so reviewer smoke tests can exercise tenant
+              isolation and RBAC without billing.
+            </p>
+          </div>
+          <div className="overflow-hidden rounded-lg border border-card bg-card">
+            <div className="hidden grid-cols-[1fr_0.7fr_0.7fr_0.9fr] border-b border-card bg-muted px-4 py-3 text-xs font-semibold uppercase text-muted md:grid">
+              <span>Plan</span>
+              <span>Snapshots</span>
+              <span>Tenants</span>
+              <span>Members</span>
+            </div>
+            {entitlementRows.map((plan) => (
+              <div
+                key={plan.id}
+                className="grid gap-3 border-b border-card px-4 py-4 text-sm last:border-b-0 md:grid-cols-[1fr_0.7fr_0.7fr_0.9fr]"
+              >
+                <div>
+                  <p className="font-semibold text-foreground">{plan.name}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted">
+                    {plan.checkoutStatus}
+                  </p>
+                </div>
+                <span>
+                  <span className="font-semibold md:hidden">Snapshots: </span>
+                  {plan.limits.cloudSnapshots}
+                </span>
+                <span>
+                  <span className="font-semibold md:hidden">Tenants: </span>
+                  {plan.limits.tenantsPerOwner}
+                </span>
+                <span>
+                  <span className="font-semibold md:hidden">Members: </span>
+                  {plan.limits.membersPerWorkspace}
+                </span>
+              </div>
+            ))}
+          </div>
         </section>
 
         <section aria-label="Frequently asked questions" className="grid gap-3">

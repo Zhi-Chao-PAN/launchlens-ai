@@ -141,6 +141,9 @@ The portfolio release is complete. Phase 7 turns the next commercial questions
 into scoped, verifiable productization work rather than adding random features.
 The source of truth is `docs/COMMERCIAL_READINESS.md`, with a hosted public
 page at `https://launchlens-ai-two.vercel.app/readiness`.
+The first executable commercial slice is `docs/COMMERCIAL_ENTITLEMENTS.md`,
+`src/lib/launchlens/commercial-entitlements.ts`, and
+`/api/commercial/entitlements`.
 
 ### Phase 7 Acceptance
 
@@ -150,10 +153,12 @@ page at `https://launchlens-ai-two.vercel.app/readiness`.
 - [x] Add a public readiness page for reviewers and maintainers.
 - [x] Add `npm run verify:commercial-readiness`.
 - [x] Wire commercial readiness verification into CI and release workflows.
+- [x] Define Free, Solo, and Team-preview entitlement limits in code and expose
+      them through `/api/commercial/entitlements`.
 - [ ] Design the identity and tenant migration plan before implementing
       checkout or account login.
-- [ ] Define billing states, plan quotas, webhook idempotency, and quota
-      precedence.
+- [ ] Define subscription states, webhook idempotency, cancellation, grace
+      periods, and quota-source precedence on top of the entitlement contract.
 - [ ] Specify first-session activation events without logging private founder
       input, evidence notes, provider payloads, or recovery credentials.
 - [ ] Decide how decision eval quality, latency risk, release evidence, and

@@ -45,6 +45,18 @@ const requiredFiles: Record<string, RequiredText[]> = {
     { value: "Reviewer Evidence Index", label: "reviewer evidence index" },
     { value: "Identity And Tenant Model", label: "identity track" },
     { value: "Billing And Plan Limits", label: "billing track" },
+    {
+      value: "docs/COMMERCIAL_ENTITLEMENTS.md",
+      label: "commercial entitlements reference",
+    },
+    {
+      value: "src/lib/launchlens/commercial-entitlements.ts",
+      label: "entitlement source reference",
+    },
+    {
+      value: "/api/commercial/entitlements",
+      label: "entitlement API reference",
+    },
     { value: "Onboarding And Activation", label: "onboarding track" },
     { value: "Eval And Ops Visibility", label: "eval and ops track" },
     { value: "Security And Compliance Re-entry", label: "security track" },
@@ -77,6 +89,36 @@ const requiredFiles: Record<string, RequiredText[]> = {
       label: "runbook reference",
     },
   ],
+  "docs/COMMERCIAL_ENTITLEMENTS.md": [
+    {
+      value: "LaunchLens AI Commercial Entitlements",
+      label: "entitlements document heading",
+    },
+    { value: "Active Preview Plan", label: "active preview plan section" },
+    { value: "Plan Matrix", label: "plan matrix section" },
+    { value: "Enforced Today", label: "enforcement section" },
+    { value: "Still Pending", label: "pending billing section" },
+    {
+      value: "src/lib/launchlens/commercial-entitlements.ts",
+      label: "entitlement source reference",
+    },
+    {
+      value: "src/app/api/commercial/entitlements/route.ts",
+      label: "entitlement API source reference",
+    },
+    {
+      value: "/api/commercial/entitlements",
+      label: "entitlement API path",
+    },
+    {
+      value: "LAUNCHLENS_COMMERCIAL_PLAN=free|solo|team",
+      label: "plan override env",
+    },
+    {
+      value: "npm run verify:commercial-readiness",
+      label: "commercial verifier command",
+    },
+  ],
   "src/app/readiness/page.tsx": [
     {
       value: "Commercial/Productization readiness",
@@ -85,6 +127,14 @@ const requiredFiles: Record<string, RequiredText[]> = {
     { value: "Reviewer Evidence Index", label: "evidence index section" },
     { value: "Identity and tenant model", label: "identity track" },
     { value: "Billing and plan limits", label: "billing track" },
+    {
+      value: "Entitlement Contract",
+      label: "entitlement contract section",
+    },
+    {
+      value: "/api/commercial/entitlements",
+      label: "entitlement API link",
+    },
     { value: "Onboarding and activation", label: "onboarding track" },
     { value: "Eval and ops visibility", label: "eval track" },
     {
@@ -95,9 +145,56 @@ const requiredFiles: Record<string, RequiredText[]> = {
       value: "docs/COMMERCIAL_READINESS.md",
       label: "commercial readiness doc link",
     },
+    ],
+  "src/app/api/commercial/entitlements/route.ts": [
+    {
+      value: "summarizeCommercialEntitlement",
+      label: "entitlement summary helper",
+    },
+    {
+      value: "commercialPlanRows",
+      label: "commercial plan catalog output",
+    },
+    { value: "noStoreJson", label: "no-store response" },
+  ],
+  "src/lib/launchlens/commercial-entitlements.ts": [
+    {
+      value: "DEFAULT_COMMERCIAL_PLAN_ID",
+      label: "default commercial plan",
+    },
+    {
+      value: "commercialPlanCatalog",
+      label: "commercial plan catalog",
+    },
+    {
+      value: "evaluateCommercialLimit",
+      label: "plan limit evaluator",
+    },
+    {
+      value: "commercial_plan_limit_reached",
+      label: "stable plan-limit code",
+    },
+  ],
+  "src/lib/launchlens/commercial-entitlements.test.ts": [
+    {
+      value: "keeps the public preview on the Team entitlement by default",
+      label: "default plan test",
+    },
+    {
+      value: "returns a stable code when a plan limit would be exceeded",
+      label: "plan-limit code test",
+    },
   ],
   "README.md": [
     { value: "docs/COMMERCIAL_READINESS.md", label: "readiness doc link" },
+    {
+      value: "docs/COMMERCIAL_ENTITLEMENTS.md",
+      label: "entitlements doc link",
+    },
+    {
+      value: "/api/commercial/entitlements",
+      label: "entitlement API path",
+    },
     {
       value: "https://launchlens-ai-two.vercel.app/readiness",
       label: "hosted readiness URL",

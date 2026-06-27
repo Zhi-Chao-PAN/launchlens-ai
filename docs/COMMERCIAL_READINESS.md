@@ -41,6 +41,12 @@ It does not yet prove a paid commercial product:
 - No long-term operational dashboard beyond committed eval artifacts and CI
   artifacts.
 
+The first true commercial substage is now executable plan entitlements:
+`docs/COMMERCIAL_ENTITLEMENTS.md`,
+`src/lib/launchlens/commercial-entitlements.ts`, and
+`/api/commercial/entitlements` define Free, Solo, and Team-preview limits
+before checkout exists.
+
 The next phase should reduce this gap deliberately. The goal is not to ship
 billing first. The goal is to make the re-entry path explicit enough that a
 future implementation can be judged, estimated, and verified.
@@ -54,7 +60,7 @@ gate that can be checked before implementation expands.
 | --- | --- | --- | --- |
 | Reviewer Evidence Index | Public `/readiness` page and links to current verification commands | Lets a reviewer or future maintainer see the production proof path quickly | `npm run verify:commercial-readiness` |
 | Identity And Tenant Model | Written migration plan from capability account to conventional account | Prevents billing work from colliding with owner-hash assumptions | Identity decisions documented before schema changes |
-| Billing And Plan Limits | Plan matrix tied to quotas, tenant roles, and checkout events | Keeps pricing honest and connects UI claims to enforceable limits | Plan limits have code owners and migration notes |
+| Billing And Plan Limits | Executable entitlement contract tied to quotas, tenant roles, and checkout events | Keeps pricing honest and connects UI claims to enforceable limits | `src/lib/launchlens/commercial-entitlements.ts` and `/api/commercial/entitlements` are tested |
 | Onboarding And Activation | First-session path and activation event model | Turns the demo into a product funnel instead of a static workspace | Activation events and empty states are specified |
 | Eval And Ops Visibility | Public-facing summary of eval history and release evidence | Shows AI quality is operated, not hand-waved | Eval and release evidence are linked from docs/pages |
 
@@ -121,8 +127,18 @@ Required before implementation:
 Current state:
 
 - `/pricing` is a portfolio pricing page with mailto links.
-- Cloud snapshots currently use account-level and global quotas.
+- Cloud snapshots, tenants, and workspace members now read from the commercial
+  entitlement contract.
+- The public deployment defaults to Team preview so tenant/RBAC smoke tests
+  remain exercisable without live billing.
 - The public deployment does not collect payment details.
+
+Executable artifact:
+
+- `docs/COMMERCIAL_ENTITLEMENTS.md`
+- `src/lib/launchlens/commercial-entitlements.ts`
+- `src/app/api/commercial/entitlements/route.ts`
+- `/api/commercial/entitlements`
 
 Commercial re-entry target:
 
@@ -146,6 +162,15 @@ Required before implementation:
 - Webhook idempotency plan.
 - Quota-source precedence when billing data is delayed or unavailable.
 - Failure copy for expired, unpaid, or quota-exceeded accounts.
+
+Completed in this substage:
+
+- Free, Solo, and Team preview limits have a single source of truth.
+- Workspace snapshot, tenant, and member invite limits consume that source.
+- The reviewer-safe entitlement API exposes limits without credentials or
+  billing data.
+- Focused Vitest coverage proves default plan resolution, env override,
+  stable `commercial_plan_limit_reached` behavior, and API output.
 
 ## Onboarding And Activation
 
@@ -224,6 +249,8 @@ sources, owner credentials, and private decision briefs.
 This phase is accepted only when all of the following are true:
 
 - `npm run verify:commercial-readiness` passes.
+- The entitlement contract tests pass:
+  `npx vitest run src/lib/launchlens/commercial-entitlements.test.ts src/app/api/commercial/entitlements/route.test.ts`.
 - `npm run verify:portfolio` passes.
 - `npm run verify:release-readiness` passes.
 - `npm run verify:production-demo` passes after the public deployment updates.

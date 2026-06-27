@@ -14,6 +14,10 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import {
+  commercialPlanRows,
+  getDefaultCommercialPlan,
+} from "@/lib/launchlens/commercial-entitlements";
 
 export const metadata: Metadata = {
   title: "Commercial Readiness - LaunchLens AI",
@@ -50,8 +54,8 @@ const readinessTracks = [
   {
     icon: Landmark,
     title: "Billing and plan limits",
-    status: "Design next",
-    body: "Map Free, Solo, and Team claims to enforceable quotas, checkout state, webhook idempotency, cancellation, and grace-period behavior.",
+    status: "In code",
+    body: "Free, Solo, and Team limits now live in an executable entitlement contract consumed by workspace, tenant, and member flows before Stripe is wired.",
   },
   {
     icon: Rocket,
@@ -73,11 +77,19 @@ const readinessTracks = [
   },
 ];
 
+const entitlementRows = commercialPlanRows();
+const defaultEntitlement = getDefaultCommercialPlan();
+
 const verificationRows = [
   {
     label: "Commercial readiness package",
     command: "npm run verify:commercial-readiness",
     proof: "Checks this public stage, the detailed plan, README, case study, maturity note, roadmap, and task list stay linked.",
+  },
+  {
+    label: "Entitlement contract",
+    command: "npx vitest run src/lib/launchlens/commercial-entitlements.test.ts src/app/api/commercial/entitlements/route.test.ts",
+    proof: "Proves Free, Solo, and Team plan limits resolve to reviewer-safe API output and stable plan-limit codes.",
   },
   {
     label: "Portfolio package",
@@ -109,8 +121,8 @@ const currentVsNext = [
   },
   {
     area: "Pricing",
-    current: "Portfolio pricing page with honest mailto placeholders.",
-    next: "Define real checkout, subscription state, plan limits, webhook handling, and quota precedence.",
+    current: "Portfolio pricing page with honest mailto placeholders and executable plan limits.",
+    next: "Wire checkout, subscription state, webhook idempotency, cancellation, grace periods, and quota-source precedence.",
   },
   {
     area: "Activation",
@@ -198,6 +210,63 @@ export default function ReadinessPage() {
                 </article>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-card bg-muted">
+        <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-10 sm:px-6 lg:grid-cols-[320px_1fr] lg:px-8">
+          <div>
+            <p className="text-xs font-semibold uppercase text-accent">
+              Entitlement Contract
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold">
+              Plan limits are now executable, not only written down.
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-foreground/75">
+              The public deployment defaults to {defaultEntitlement.name} so
+              tenant and RBAC smoke tests stay exercisable. Future billing can
+              switch the resolved plan without rewriting workspace code.
+            </p>
+            <a
+              href="/api/commercial/entitlements"
+              className="mt-4 inline-flex rounded text-sm font-semibold text-accent underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+            >
+              /api/commercial/entitlements
+            </a>
+          </div>
+          <div className="overflow-hidden rounded-lg border border-card bg-card">
+            <div className="hidden grid-cols-[1fr_0.8fr_0.8fr_0.9fr] border-b border-card bg-muted px-4 py-3 text-xs font-semibold uppercase text-muted md:grid">
+              <span>Plan</span>
+              <span>Snapshots</span>
+              <span>Tenants</span>
+              <span>Members</span>
+            </div>
+            {entitlementRows.map((plan) => (
+              <div
+                key={plan.id}
+                className="grid gap-3 border-b border-card px-4 py-4 text-sm last:border-b-0 md:grid-cols-[1fr_0.8fr_0.8fr_0.9fr]"
+              >
+                <div>
+                  <p className="font-semibold">{plan.name}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted">
+                    {plan.checkoutStatus}
+                  </p>
+                </div>
+                <span>
+                  <span className="font-semibold md:hidden">Snapshots: </span>
+                  {plan.limits.cloudSnapshots}
+                </span>
+                <span>
+                  <span className="font-semibold md:hidden">Tenants: </span>
+                  {plan.limits.tenantsPerOwner}
+                </span>
+                <span>
+                  <span className="font-semibold md:hidden">Members: </span>
+                  {plan.limits.membersPerWorkspace}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
