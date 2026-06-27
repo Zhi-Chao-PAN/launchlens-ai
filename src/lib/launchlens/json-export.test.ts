@@ -56,6 +56,23 @@ describe("workspaceToJson", () => {
     expect(parsed.generatedAt).toBeDefined();
     expect(new Date(parsed.generatedAt).toString()).not.toBe("Invalid Date");
   });
+
+  it("round-trips Research Studio sourceBrief provenance", () => {
+    const workspace = {
+      ...buildMockWorkspace(input),
+      sourceBrief: {
+        source: "launchlens-research-studio" as const,
+        sessionId: "rs-session-42",
+        reportUrl: "https://research.launchlens.ai/research/rs-session-42",
+        exportedAt: "2026-06-28T00:00:00.000Z",
+        opportunityScore: 82,
+        riskScore: 31,
+      },
+    };
+    const result = workspaceFromJson(workspaceToJson(workspace));
+
+    expect(result.workspace.sourceBrief).toEqual(workspace.sourceBrief);
+  });
 });
 
 describe("workspaceToJson edge cases", () => {
@@ -227,7 +244,7 @@ describe("schema migration", () => {
     expect(result.workspace.tasks[0].completed).toBe(false);
   });
 
-  it("leaves v1 workspaces unchanged (no migration warning)", () => {
+  it("migrates v1 workspaces to v2 without requiring sourceBrief", () => {
     const v1 = JSON.stringify({
       schemaVersion: 1,
       workspace: {
@@ -241,6 +258,26 @@ describe("schema migration", () => {
       },
     });
     const result = workspaceFromJson(v1);
+    const hasUpgradeWarning = result.warnings.some((w) => w.includes("Upgraded"));
+    expect(hasUpgradeWarning).toBe(true);
+    expect(result.workspace.sourceBrief).toBeUndefined();
+    expect(result.workspace.tasks[0].completed).toBe(true);
+  });
+
+  it("leaves v2 workspaces unchanged (no migration warning)", () => {
+    const v2 = JSON.stringify({
+      schemaVersion: 2,
+      workspace: {
+        summary: "Test",
+        targetUsers: ["a"],
+        pains: ["b"],
+        backlog: [],
+        landingPage: { headline: "h", subheadline: "s", cta: "c", proofBullets: [] },
+        assumptions: ["x"],
+        tasks: [{ title: "T1", owner: "O", due: "W1", outcome: "O", completed: true }],
+      },
+    });
+    const result = workspaceFromJson(v2);
     const hasUpgradeWarning = result.warnings.some((w) => w.includes("Upgraded"));
     expect(hasUpgradeWarning).toBe(false);
     expect(result.workspace.tasks[0].completed).toBe(true);

@@ -7,6 +7,11 @@ tags are cut for milestone demos.
 ## [Unreleased]
 
 ### Added
+- Research Studio URL handoff support: `#brief=<base64url-json>` now auto-fills
+  the brief builder, preserves Research Studio provenance through generation,
+  and stores optional `sourceBrief` metadata in schema v2 workspaces with a
+  visible workspace backlink strip. `reportUrl` is accepted when available and
+  remains optional until the Research Studio public report route is live.
 - Import a Research Studio brief — a "Research Studio" button in the export
   toolbar loads a structured five-field brief (`launchlens-brief-*.json`)
   exported from launchlens-research-studio, fills the brief builder, and leaves

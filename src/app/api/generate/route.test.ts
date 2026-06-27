@@ -90,4 +90,54 @@ describe("/api/generate", () => {
     expect(body.mode).toBe("demo");
     expect(body.usedFallback).toBe(false);
   });
+
+  it("accepts wrapped input and attaches Research Studio provenance", async () => {
+    const sourceBrief = {
+      source: "launchlens-research-studio",
+      sessionId: "rs-session-42",
+      exportedAt: "2026-06-28T00:00:00.000Z",
+      opportunityScore: 82,
+      riskScore: 31,
+    };
+    const response = await postJson({
+      input: {
+        idea: "A weekly activation-fix digest for solo founders.",
+        audience: "indie founders",
+        market: "B2B SaaS",
+        tone: "calm",
+        constraints: "no marketing budget",
+      },
+      sourceBrief,
+    });
+
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as {
+      workspace?: { sourceBrief?: typeof sourceBrief };
+    };
+    expect(body.workspace?.sourceBrief).toEqual(sourceBrief);
+  });
+
+  it("rejects malformed sourceBrief provenance", async () => {
+    const response = await postJson({
+      input: {
+        idea: "A weekly activation-fix digest for solo founders.",
+        audience: "indie founders",
+        market: "B2B SaaS",
+        tone: "calm",
+        constraints: "no marketing budget",
+      },
+      sourceBrief: {
+        source: "launchlens-research-studio",
+        sessionId: "",
+        exportedAt: "not-a-date",
+        opportunityScore: 82,
+        riskScore: 31,
+      },
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "brief_invalid",
+    });
+  });
 });

@@ -1,4 +1,8 @@
-import type { LaunchLensInput } from "./types";
+import {
+  RESEARCH_STUDIO_SOURCE,
+  sourceBriefFromResearchStudioEnvelope,
+} from "./source-brief";
+import type { LaunchLensInput, LaunchLensWorkspaceSourceBrief } from "./types";
 import { isRecord } from "./workspace-validation";
 
 export type BriefImportSource =
@@ -8,6 +12,7 @@ export type BriefImportSource =
 
 export type BriefImportResult = {
   input: LaunchLensInput;
+  sourceBrief?: LaunchLensWorkspaceSourceBrief;
   warnings: string[];
   source: BriefImportSource;
 };
@@ -81,13 +86,22 @@ export function briefFromJson(json: string): BriefImportResult {
       throw missingInputError(parsed.source === "launchlens-research-studio");
     }
     const source: BriefImportSource =
-      parsed.source === "launchlens-research-studio"
-        ? "research-studio"
-        : "launchlens";
+      parsed.source === RESEARCH_STUDIO_SOURCE ? "research-studio" : "launchlens";
+    const sourceBrief =
+      source === "research-studio"
+        ? sourceBriefFromResearchStudioEnvelope(parsed)
+        : null;
+    if (source === "research-studio" && !sourceBrief) {
+      warnings.push(
+        "Research Studio provenance was incomplete; the workspace backlink will be omitted.",
+      );
+    }
     if (typeof parsed.schemaVersion === "string") {
       // Informational only for now; no migrations needed at v1.0.0.
     }
-    return { input, warnings, source };
+    return sourceBrief
+      ? { input, warnings, source, sourceBrief }
+      : { input, warnings, source };
   }
 
   // Shape 2: bare LaunchLensInput

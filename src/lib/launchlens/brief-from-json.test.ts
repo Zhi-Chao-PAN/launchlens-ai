@@ -16,7 +16,10 @@ const validInput: LaunchLensInput = {
 };
 
 // A Research Studio envelope, matching what brief-mapper.ts exports.
-function researchStudioEnvelope(input: Partial<LaunchLensInput> = {}) {
+function researchStudioEnvelope(
+  input: Partial<LaunchLensInput> = {},
+  envelope: Record<string, unknown> = {},
+) {
   return JSON.stringify({
     schemaVersion: "1.0.0",
     source: "launchlens-research-studio",
@@ -25,6 +28,7 @@ function researchStudioEnvelope(input: Partial<LaunchLensInput> = {}) {
     query: "AI onboarding analyst",
     input: { ...validInput, ...input },
     meta: { opportunityScore: 78, riskScore: 42, completedAgents: [], truncated: [] },
+    ...envelope,
   });
 }
 
@@ -35,12 +39,43 @@ describe("briefFromJson — Research Studio envelope", () => {
     expect(result.input.idea).toBe(validInput.idea);
     expect(result.input.audience).toBe(validInput.audience);
     expect(result.input.tone).toBe(validInput.tone);
+    expect(result.sourceBrief).toEqual({
+      source: "launchlens-research-studio",
+      sessionId: "sess-abc123",
+      exportedAt: "2026-06-28T00:00:00.000Z",
+      opportunityScore: 78,
+      riskScore: 42,
+    });
     expect(result.warnings).toEqual([]);
   });
 
-  it("keeps provenance source as research-studio even with extra envelope fields", () => {
-    const result = briefFromJson(researchStudioEnvelope());
+  it("keeps provenance and optional report URL when extra envelope fields exist", () => {
+    const result = briefFromJson(
+      researchStudioEnvelope(
+        {},
+        { reportUrl: " https://research.launchlens.ai/research/sess-abc123 " },
+      ),
+    );
     expect(result.source).toBe("research-studio");
+    expect(result.sourceBrief?.reportUrl).toBe(
+      "https://research.launchlens.ai/research/sess-abc123",
+    );
+  });
+
+  it("loads the brief even when provenance is incomplete", () => {
+    const result = briefFromJson(
+      JSON.stringify({
+        schemaVersion: "1.0.0",
+        source: "launchlens-research-studio",
+        input: validInput,
+        meta: { opportunityScore: 78, riskScore: 42 },
+      }),
+    );
+    expect(result.input.idea).toBe(validInput.idea);
+    expect(result.sourceBrief).toBeUndefined();
+    expect(
+      result.warnings.some((warning) => warning.includes("provenance")),
+    ).toBe(true);
   });
 });
 

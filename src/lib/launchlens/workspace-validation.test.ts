@@ -70,6 +70,43 @@ describe("workspace validation", () => {
     expect(payload?.workspace.landingPage).not.toHaveProperty("ignored");
   });
 
+  it("preserves valid sourceBrief provenance on snapshots", () => {
+    const sourceBrief = {
+      source: "launchlens-research-studio" as const,
+      sessionId: "rs-session-42",
+      exportedAt: "2026-06-28T00:00:00.000Z",
+      opportunityScore: 82,
+      riskScore: 31,
+    };
+    const payload = parseWorkspaceSnapshot({
+      input: example.input,
+      workspace: {
+        ...example.workspace,
+        sourceBrief,
+      },
+    });
+
+    expect(payload?.workspace.sourceBrief).toEqual(sourceBrief);
+  });
+
+  it("rejects invalid sourceBrief provenance on snapshots", () => {
+    expect(
+      parseWorkspaceSnapshot({
+        input: example.input,
+        workspace: {
+          ...example.workspace,
+          sourceBrief: {
+            source: "launchlens-research-studio",
+            sessionId: "",
+            exportedAt: "not-a-date",
+            opportunityScore: 82,
+            riskScore: 31,
+          },
+        },
+      }),
+    ).toBeNull();
+  });
+
   it("rejects pathological array counts and invalid timestamps", () => {
     expect(
       parseWorkspaceSnapshot({

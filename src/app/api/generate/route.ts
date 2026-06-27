@@ -3,7 +3,11 @@ import {
   launchWorkspaceLiveProviderEnabled,
 } from "@/lib/launchlens/provider";
 import { configuredRealProvider } from "@/lib/launchlens/provider-runtime";
-import type { LaunchLensInput } from "@/lib/launchlens/types";
+import { normalizeWorkspaceSourceBrief } from "@/lib/launchlens/source-brief";
+import type {
+  LaunchLensInput,
+  LaunchLensWorkspaceSourceBrief,
+} from "@/lib/launchlens/types";
 import {
   generateRequestId,
   noStoreJson,
@@ -19,6 +23,7 @@ import {
   ERROR_INVALID_JSON,
   ERROR_IDEA_TOO_SHORT,
   ERROR_FIELD_TOO_LONG,
+  ERROR_BRIEF_INVALID,
 } from "@/lib/launchlens/error-codes";
 
 export const runtime = "nodejs";
@@ -35,9 +40,19 @@ function field(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function normalize(body: unknown): LaunchLensInput {
+type GenerateRequestPayload = {
+  input: LaunchLensInput;
+  sourceBrief?: LaunchLensWorkspaceSourceBrief;
+  sourceBriefInvalid: boolean;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function normalizeInput(value: unknown): LaunchLensInput {
   const record =
-    body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+    value && typeof value === "object" ? (value as Record<string, unknown>) : {};
 
   return {
     idea: field(record.idea),
@@ -45,6 +60,25 @@ function normalize(body: unknown): LaunchLensInput {
     market: field(record.market),
     tone: field(record.tone),
     constraints: field(record.constraints),
+  };
+}
+
+function normalize(body: unknown): GenerateRequestPayload {
+  const record = isRecord(body) ? body : {};
+  const inputRaw = isRecord(record.input) ? record.input : record;
+  const sourceBriefRaw = record.sourceBrief;
+  const sourceBrief =
+    sourceBriefRaw === undefined || sourceBriefRaw === null
+      ? undefined
+      : normalizeWorkspaceSourceBrief(sourceBriefRaw);
+
+  return {
+    input: normalizeInput(inputRaw),
+    ...(sourceBrief ? { sourceBrief } : {}),
+    sourceBriefInvalid:
+      sourceBriefRaw !== undefined &&
+      sourceBriefRaw !== null &&
+      sourceBrief === null,
   };
 }
 
@@ -136,12 +170,25 @@ export async function POST(request: Request) {
     return noStoreJson({ code: ERROR_INVALID_JSON, error: "Invalid JSON payload." }, { status: 400 }, requestId, timer());
   }
 
-  const input = normalize(body);
+  const payload = normalize(body);
+  const { input, sourceBrief } = payload;
   const validation = validateInput(input);
 
   if (!validation.ok) {
     return noStoreJson(
       { code: validation.code, error: validation.error },
+      { status: 400 },
+      requestId,
+      timer(),
+    );
+  }
+
+  if (payload.sourceBriefInvalid) {
+    return noStoreJson(
+      {
+        code: ERROR_BRIEF_INVALID,
+        error: "sourceBrief must contain valid Research Studio provenance.",
+      },
       { status: 400 },
       requestId,
       timer(),
@@ -157,9 +204,18 @@ export async function POST(request: Request) {
         })
       : null;
     const result = await generateLaunchWorkspace(input);
+    const responseBody = sourceBrief
+      ? {
+          ...result,
+          workspace: {
+            ...result.workspace,
+            sourceBrief,
+          },
+        }
+      : result;
 
     return noStoreJson(
-      usage ? { ...result, usage } : result,
+      usage ? { ...responseBody, usage } : responseBody,
       {},
       requestId,
       timer(),

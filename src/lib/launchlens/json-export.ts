@@ -1,5 +1,6 @@
 import type { LaunchLensWorkspace } from "./types";
 import type { WorkspaceExecutionState } from "./execution";
+import { normalizeWorkspaceSourceBrief } from "./source-brief";
 
 export type WorkspaceImportResult = {
   workspace: LaunchLensWorkspace;
@@ -13,7 +14,7 @@ export type ImportError = {
 };
 
 const MAX_IMPORT_SIZE = 512 * 1024; // 512 KB
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 const REQUIRED_WORKSPACE_FIELDS = [
   "summary",
   "targetUsers",
@@ -38,6 +39,11 @@ const migrations: Record<number, MigrationFn> = {
         ...(t as object),
       }));
     }
+    return data;
+  },
+  2: (data) => {
+    // v2 introduces optional sourceBrief provenance. Older workspaces simply
+    // omit it, so the migration is intentionally structural/no-op.
     return data;
   },
 };
@@ -123,6 +129,17 @@ export function workspaceFromJson(json: string): WorkspaceImportResult {
 
   // Type coercion for array fields
   const workspace = workspaceRaw as unknown as LaunchLensWorkspace;
+  if ("sourceBrief" in workspaceRaw && workspaceRaw.sourceBrief !== undefined) {
+    const sourceBrief = normalizeWorkspaceSourceBrief(workspaceRaw.sourceBrief);
+    if (!sourceBrief) {
+      const err: ImportError = {
+        code: "schema_mismatch",
+        message: "Invalid workspace sourceBrief provenance.",
+      };
+      throw err satisfies ImportError;
+    }
+    workspace.sourceBrief = sourceBrief;
+  }
 
   // Warn about non-fatal missing optional fields
   if (!workspace.generatedAt) {

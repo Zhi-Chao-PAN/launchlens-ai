@@ -28,9 +28,19 @@ export type ContentItem = {
   cadence: string;
 };
 
+export type LaunchLensWorkspaceSourceBrief = {
+  source: "launchlens-research-studio";
+  sessionId: string;
+  reportUrl?: string;
+  exportedAt: string;
+  opportunityScore: number | null;
+  riskScore: number | null;
+};
+
 export type LaunchLensWorkspace = {
   provider: ProviderName;
   generatedAt: string;
+  sourceBrief?: LaunchLensWorkspaceSourceBrief;
   summary: string;
   targetUsers: string[];
   pains: string[];

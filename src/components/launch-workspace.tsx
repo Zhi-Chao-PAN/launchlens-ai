@@ -16,6 +16,7 @@ import {
   Download,
   Braces,
   Eye,
+  ExternalLink,
   FileText,
   FlaskConical,
   Gauge,
@@ -56,8 +57,9 @@ import { useWorkspaceCommands } from "@/hooks/use-workspace-commands";
 import { ValidationBoard } from "@/components/validation-board";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
 import { safeMarkdownFilename, workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
-import { workspaceFromJson, workspaceToJson, type WorkspaceImportResult } from "@/lib/launchlens/json-export";
+import { SCHEMA_VERSION, workspaceFromJson, workspaceToJson, type WorkspaceImportResult } from "@/lib/launchlens/json-export";
 import { briefFromFile, type BriefImportResult } from "@/lib/launchlens/brief-from-json";
+import { briefFromHashFragment } from "@/lib/launchlens/brief-fragment";
 import { decryptToJson, encryptJson, isEncryptedPayload, randomPassword } from "@/lib/launchlens/encrypt-export";
 import type { CloudWorkspaceRecord } from "@/lib/launchlens/cloud-workspace";
 import {
@@ -79,6 +81,7 @@ import type {
   GenerationResult,
   LaunchLensInput,
   LaunchLensWorkspace,
+  LaunchLensWorkspaceSourceBrief,
 } from "@/lib/launchlens/types";
 import {
   isLaunchLensInput,
@@ -133,6 +136,10 @@ const loadingSteps = [
   "Structuring GTM workspace",
   "Checking launch tasks",
 ];
+
+function formatSourceScore(label: string, value: number | null) {
+  return `${label} ${typeof value === "number" ? Math.round(value) : "n/a"}`;
+}
 
 type LocalWorkspaceSnapshot = {
   input: LaunchLensInput;
@@ -473,8 +480,13 @@ export function LaunchWorkspace({
   const [input, setInput] = useState(initialInput);
   const [workspace, setWorkspace] = useState(initialWorkspace);
   const [execution, setExecution] = useState(initialExecution);
+  const [briefSource, setBriefSource] =
+    useState<LaunchLensWorkspaceSourceBrief | null>(
+      initialWorkspace.sourceBrief ?? null,
+    );
   const [isGenerating, setIsGenerating] = useState(false);
   const generateAbortRef = useRef<AbortController | null>(null);
+  const briefHashProcessedRef = useRef(false);
   const [isEditing, setIsEditing] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
 
@@ -515,6 +527,73 @@ export function LaunchWorkspace({
   const [srAnnouncement, setSrAnnouncement] = useState("");
   const switchTimerRef = useRef<number | null>(null);
   const { showToast } = useToast();
+
+  const applyBriefImportResult = useCallback(
+    (
+      result: BriefImportResult,
+      options: { successMessage?: string; focus?: boolean } = {},
+    ) => {
+      const { input: nextInput, warnings, source } = result;
+      setInput(nextInput);
+      setBriefSource(result.sourceBrief ?? null);
+      setError("");
+      setFallbackNotice("");
+      const label =
+        source === "research-studio" ? "Research Studio brief" : "brief";
+      if (warnings.length > 0) {
+        showToast(
+          `${label} loaded (${warnings.length} warning${warnings.length === 1 ? "" : "s"}) - review and Generate`,
+          "info",
+        );
+      } else {
+        showToast(
+          options.successMessage ?? `${label} loaded - review and Generate`,
+          "success",
+        );
+      }
+
+      if (options.focus !== false) {
+        const ideaField = document.getElementById("founder-brief-idea");
+        if (ideaField) ideaField.focus();
+      }
+    },
+    [showToast],
+  );
+
+  useEffect(() => {
+    if (briefHashProcessedRef.current || typeof window === "undefined") {
+      return;
+    }
+
+    const hash = window.location.hash;
+    if (!hash.startsWith("#brief=")) {
+      return;
+    }
+
+    briefHashProcessedRef.current = true;
+    try {
+      const result = briefFromHashFragment(hash);
+      if (!result) {
+        throw new Error("Missing brief payload.");
+      }
+      window.setTimeout(() => {
+        applyBriefImportResult(result, {
+          successMessage: "Brief loaded from Research Studio - click Generate",
+        });
+      }, 0);
+    } catch {
+      showToast(
+        "Research Studio brief link could not be read. Import the JSON file instead.",
+        "error",
+      );
+    } finally {
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}${window.location.search}`,
+      );
+    }
+  }, [applyBriefImportResult, showToast]);
 
   /**
    * Brief opacity crossfade when switching examples or restoring snapshots:
@@ -697,6 +776,7 @@ export function LaunchWorkspace({
             setInput(snapshot.input);
             setWorkspace(snapshot.workspace);
             setExecution(snapshot.execution);
+            setBriefSource(snapshot.workspace.sourceBrief ?? null);
             setGenerationMeta({
               mode: snapshot.workspace.provider === "mock" ? "demo" : "real",
               provider: snapshot.workspace.provider,
@@ -730,7 +810,7 @@ export function LaunchWorkspace({
         workspace,
         execution,
         savedAt: nextSavedAt,
-        schemaVersion: 1,
+        schemaVersion: SCHEMA_VERSION,
       };
 
       localStorage.setItem(LOCAL_WORKSPACE_KEY, JSON.stringify(snapshot));
@@ -770,6 +850,7 @@ export function LaunchWorkspace({
       setInput(example.input);
       setWorkspace(example.workspace);
       setExecution(example.execution);
+      setBriefSource(null);
       setGenerationMeta({
         mode: "demo",
         provider: example.workspace.provider,
@@ -811,6 +892,7 @@ export function LaunchWorkspace({
       setInput(initialInput);
       setWorkspace(initialWorkspace);
       setExecution(initialExecution);
+      setBriefSource(initialWorkspace.sourceBrief ?? null);
       setGenerationMeta({
         mode: "demo",
         provider: initialWorkspace.provider,
@@ -845,6 +927,7 @@ export function LaunchWorkspace({
       setInput(record.input);
       setWorkspace(record.workspace);
       setExecution(record.execution);
+      setBriefSource(record.workspace.sourceBrief ?? null);
       setGenerationMeta({
         mode: record.workspace.provider === "mock" ? "demo" : "real",
         provider: record.workspace.provider,
@@ -894,7 +977,9 @@ export function LaunchWorkspace({
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
+        body: JSON.stringify(
+          briefSource ? { input, sourceBrief: briefSource } : input,
+        ),
         signal: abort.signal,
       });
       const data = (await response.json()) as Partial<GenerationResult> & {
@@ -914,6 +999,7 @@ export function LaunchWorkspace({
       }
 
       setWorkspace(data.workspace);
+      setBriefSource(data.workspace.sourceBrief ?? briefSource ?? null);
       const freshExecution = createExecutionState(data.workspace);
       setExecution(freshExecution);
       setSrAnnouncement(
@@ -1160,6 +1246,7 @@ export function LaunchWorkspace({
   function applyImport() {
     if (!importPreview) return;
     setWorkspace(importPreview.workspace);
+    setBriefSource(importPreview.workspace.sourceBrief ?? null);
     if (importPreview.execution) {
       setExecution(importPreview.execution);
     } else {
@@ -1207,23 +1294,8 @@ export function LaunchWorkspace({
 
   function applyBriefImport() {
     if (!briefImportPreview) return;
-    const { input, warnings, source } = briefImportPreview;
-    setInput(input);
-    setError("");
-    setFallbackNotice("");
+    applyBriefImportResult(briefImportPreview);
     setBriefImportPreview(null);
-    const label = source === "research-studio" ? "Research Studio brief" : "brief";
-    if (warnings.length > 0) {
-      showToast(
-        `${label} loaded (${warnings.length} warning${warnings.length === 1 ? "" : "s"}) - review and Generate`,
-        "info",
-      );
-    } else {
-      showToast(`${label} loaded - review and Generate`, "success");
-    }
-    // Move focus to the Generate button area.
-    const ideaField = document.getElementById("founder-brief-idea");
-    if (ideaField) ideaField.focus();
   }
 
   function cancelBriefImport() {
@@ -1712,6 +1784,44 @@ export function LaunchWorkspace({
                         </span>
                       )}
                     </div>
+                    {workspace.sourceBrief && (
+                      <div className="mt-3 flex flex-col gap-3 rounded-md border border-accent/30 bg-accent/10 px-3 py-3 text-sm text-foreground/85 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex min-w-0 items-start gap-2">
+                          <FlaskConical
+                            className="mt-0.5 size-4 shrink-0 text-accent"
+                            aria-hidden="true"
+                          />
+                          <div className="min-w-0">
+                            <p className="font-semibold text-foreground">
+                              Generated from Research Studio intelligence report
+                            </p>
+                            <p className="mt-1 text-xs leading-5 text-muted">
+                              Session{" "}
+                              <span className="break-all font-mono">
+                                {workspace.sourceBrief.sessionId}
+                              </span>{" "}
+                              / {formatSourceScore("Opportunity", workspace.sourceBrief.opportunityScore)} /{" "}
+                              {formatSourceScore("Risk", workspace.sourceBrief.riskScore)}
+                            </p>
+                          </div>
+                        </div>
+                        {workspace.sourceBrief.reportUrl ? (
+                          <a
+                            href={workspace.sourceBrief.reportUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-md border border-accent/40 bg-card px-2.5 text-xs font-semibold text-accent transition hover:bg-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                          >
+                            View full report
+                            <ExternalLink className="size-3.5" aria-hidden="true" />
+                          </a>
+                        ) : (
+                          <span className="inline-flex h-8 shrink-0 items-center rounded-md border border-input bg-input px-2.5 text-xs font-semibold text-muted">
+                            Report link pending
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-wrap gap-2">

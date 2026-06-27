@@ -1,4 +1,5 @@
 import type { LaunchLensInput, LaunchLensWorkspace } from "./types";
+import { normalizeWorkspaceSourceBrief } from "./source-brief";
 import {
   normalizeExecutionState,
   type WorkspaceExecutionState,
@@ -82,9 +83,14 @@ function normalizeWorkspace(value: unknown): LaunchLensWorkspace | null {
   const mvpScope = normalizedStringArray(value.mvpScope);
   const launchPlan = normalizedStringArray(value.launchPlan);
   const assumptions = normalizedStringArray(value.assumptions);
+  const sourceBrief =
+    value.sourceBrief === undefined
+      ? undefined
+      : normalizeWorkspaceSourceBrief(value.sourceBrief);
 
   if (
     !generatedAt ||
+    sourceBrief === null ||
     summary === null ||
     !targetUsers ||
     !pains ||
@@ -192,6 +198,7 @@ function normalizeWorkspace(value: unknown): LaunchLensWorkspace | null {
     contentCalendar: contentCalendar as LaunchLensWorkspace["contentCalendar"],
     tasks: tasks as LaunchLensWorkspace["tasks"],
     assumptions,
+    ...(sourceBrief ? { sourceBrief } : {}),
   };
 }
 
