@@ -1,4 +1,5 @@
 import { configuredRealProvider } from "@/lib/launchlens/provider-runtime";
+import { launchWorkspaceLiveProviderEnabled } from "@/lib/launchlens/provider";
 import {
   cloudStorageConfigured,
   pingCloudStorage,
@@ -15,6 +16,9 @@ const appVersion = packageJson.version;
 export async function GET() {
   const totalTimer = startTimer();
   const provider = configuredRealProvider();
+  const workspaceProviderLiveEnabled = launchWorkspaceLiveProviderEnabled();
+  const workspaceProviderActive =
+    workspaceProviderLiveEnabled && provider !== null;
   const dbConfigured = cloudStorageConfigured();
 
   let dbHealthy = false;
@@ -34,8 +38,10 @@ export async function GET() {
   const body = {
     status: "ok",
     version: process.env.NEXT_PUBLIC_APP_VERSION ?? appVersion,
-    provider: provider ?? "mock",
+    provider: workspaceProviderActive ? provider : "mock",
     providerConfigured: provider !== null,
+    workspaceProviderLiveEnabled,
+    workspaceProviderActive,
     dbConfigured,
     dbHealthy,
     dbLatencyMs,

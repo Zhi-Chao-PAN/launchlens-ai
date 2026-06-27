@@ -1,12 +1,17 @@
 import { generateDecisionBrief } from "@/lib/launchlens/decision-provider";
 import { normalizeDecisionSource } from "@/lib/launchlens/decision";
+import { configuredRealProvider } from "@/lib/launchlens/provider-runtime";
 import {
   generateRequestId,
   noStoreJson,
+  ownerTokenFromRequest,
   readLimitedJson,
   startTimer,
   WorkspaceRequestError,
+  workspaceApiError,
 } from "@/lib/launchlens/workspace-api";
+import { consumeLiveProviderUsageSlot } from "@/lib/launchlens/live-provider-usage";
+import { hashOwnerToken } from "@/lib/launchlens/workspace-store";
 import {
   ERROR_BODY_TOO_LARGE,
   ERROR_DECISION_NO_EVIDENCE,
@@ -104,7 +109,26 @@ export async function POST(request: Request) {
     );
   }
 
-  return noStoreJson(await generateDecisionBrief(source), {}, requestId, timer());
+  try {
+    const usage =
+      process.env.DECISION_COPILOT_LIVE_ENABLED === "true" &&
+      configuredRealProvider()
+        ? await consumeLiveProviderUsageSlot({
+            ownerHash: hashOwnerToken(ownerTokenFromRequest(request)),
+            feature: "decision_brief",
+          })
+        : null;
+    const result = await generateDecisionBrief(source);
+
+    return noStoreJson(
+      usage ? { ...result, usage } : result,
+      {},
+      requestId,
+      timer(),
+    );
+  } catch (error) {
+    return workspaceApiError(error, requestId);
+  }
 }
 
 export function resetDecisionRateLimitsForTests() {

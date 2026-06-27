@@ -56,7 +56,7 @@ const readinessTracks = [
     icon: Landmark,
     title: "Billing and plan limits",
     status: "Implemented",
-    body: "Plan limits, subscription precedence, hosted Checkout, Portal, signed webhooks, event idempotency, and fixed grace periods now live in code.",
+    body: "Plan limits, subscription precedence, hosted Checkout, Portal, signed webhooks, event idempotency, fixed grace periods, and live AI usage metering now live in code.",
   },
   {
     icon: Rocket,
@@ -100,6 +100,11 @@ const verificationRows = [
     proof: "Proves billing-state precedence, fixed grace periods, signed event projection, and duplicate delivery handling.",
   },
   {
+    label: "Live-provider metering",
+    command: "npx vitest run src/lib/launchlens/live-provider-usage.test.ts src/app/api/generate/route.live-usage.test.ts src/app/api/decision/route.live-usage.test.ts",
+    proof: "Proves monthly live AI allowance is consumed before real provider calls and skipped for demo mode.",
+  },
+  {
     label: "Portfolio package",
     command: "npm run verify:portfolio",
     proof: "Keeps the reviewer-facing story, public pages, demo script, and release handoff connected.",
@@ -129,7 +134,7 @@ const currentVsNext = [
   },
   {
     area: "Pricing",
-    current: "Operational Billing page with Stripe-ready Checkout, Portal, subscription state, idempotent webhooks, and quota precedence.",
+    current: "Operational Billing page with Stripe-ready Checkout, Portal, subscription state, idempotent webhooks, quota precedence, and live AI usage metering.",
     next: "Run an account-owned Stripe sandbox acceptance flow, provision production prices, and archive activation evidence.",
   },
   {

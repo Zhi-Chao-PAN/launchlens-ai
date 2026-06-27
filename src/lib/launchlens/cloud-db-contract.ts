@@ -88,6 +88,12 @@ export const cloudDbColumnRequirements: CloudDbColumnRequirement[] = [
   { tableName: "launchlens_billing_events", columnName: "owner_hash", nullable: true, dataTypes: ["character"] },
   { tableName: "launchlens_billing_events", columnName: "received_at", nullable: false, dataTypes: ["timestamp with time zone"] },
   { tableName: "launchlens_billing_events", columnName: "processed_at", nullable: true, dataTypes: ["timestamp with time zone"] },
+  { tableName: "launchlens_live_provider_usage", columnName: "owner_hash", nullable: false, dataTypes: ["character"] },
+  { tableName: "launchlens_live_provider_usage", columnName: "period_start", nullable: false, dataTypes: ["date"] },
+  { tableName: "launchlens_live_provider_usage", columnName: "feature", nullable: false, dataTypes: ["text"] },
+  { tableName: "launchlens_live_provider_usage", columnName: "request_count", nullable: false, dataTypes: ["integer"] },
+  { tableName: "launchlens_live_provider_usage", columnName: "created_at", nullable: false, dataTypes: ["timestamp with time zone"] },
+  { tableName: "launchlens_live_provider_usage", columnName: "updated_at", nullable: false, dataTypes: ["timestamp with time zone"] },
 ];
 
 export const cloudDbIndexRequirements: CloudDbIndexRequirement[] = [
@@ -98,6 +104,7 @@ export const cloudDbIndexRequirements: CloudDbIndexRequirement[] = [
   { tableName: "launchlens_workspace_invites", indexName: "launchlens_workspace_invites_workspace_idx" },
   { tableName: "launchlens_commercial_subscriptions", indexName: "launchlens_commercial_subscriptions_tenant_idx" },
   { tableName: "launchlens_billing_events", indexName: "launchlens_billing_events_received_idx" },
+  { tableName: "launchlens_live_provider_usage", indexName: "launchlens_live_provider_usage_owner_period_idx" },
 ];
 
 export function requiredCloudDbTableNames() {

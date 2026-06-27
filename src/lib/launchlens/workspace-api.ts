@@ -14,6 +14,7 @@ import {
   consumeWorkspaceMutationSlot,
   WorkspaceStoreError,
 } from "./workspace-store";
+import { LiveProviderUsageError } from "./live-provider-usage";
 
 export const OWNER_HEADER = "x-launchlens-owner";
 export const MAX_WORKSPACE_BODY_BYTES = 160_000;
@@ -182,6 +183,14 @@ export function workspaceApiError(error: unknown, requestId?: string) {
   }
 
   if (error instanceof WorkspaceStoreError) {
+    return noStoreJson(
+      { code: error.code, error: error.message },
+      { status: error.status },
+      requestId,
+    );
+  }
+
+  if (error instanceof LiveProviderUsageError) {
     return noStoreJson(
       { code: error.code, error: error.message },
       { status: error.status },

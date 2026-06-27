@@ -4,6 +4,7 @@ import {
   resolveCommercialEntitlementForOwnerHash,
   resolvePreviewCommercialEntitlement,
 } from "@/lib/launchlens/commercial-subscription-store";
+import { getLiveProviderUsageSummaryForOwnerHash } from "@/lib/launchlens/live-provider-usage";
 import { stripeBillingReadiness } from "@/lib/launchlens/stripe-billing";
 import {
   cloudStorageConfigured,
@@ -67,13 +68,15 @@ export async function GET(request: Request) {
           cancelAtPeriodEnd: resolved.cancelAtPeriodEnd,
         },
         subscription: null,
+        usage: null,
       });
     }
 
     const ownerHash = hashOwnerToken(ownerTokenFromRequest(request));
-    const [resolved, subscription] = await Promise.all([
+    const [resolved, subscription, usage] = await Promise.all([
       resolveCommercialEntitlementForOwnerHash(ownerHash),
       getCommercialSubscriptionByOwnerHash(ownerHash),
+      getLiveProviderUsageSummaryForOwnerHash(ownerHash),
     ]);
 
     return noStoreJson({
@@ -88,6 +91,7 @@ export async function GET(request: Request) {
         cancelAtPeriodEnd: resolved.cancelAtPeriodEnd,
       },
       subscription: safeSubscription(subscription),
+      usage,
     });
   } catch (error) {
     return commercialBillingApiError(error, requestId);

@@ -110,10 +110,11 @@ These are commercial expansion paths, not missing evidence for the current portf
 ### P3 - Multi-tenant workspaces, billing, and hosted pricing as a real product
 - **Status: core infrastructure implemented, external activation and identity
   remain.** Tenant isolation, RBAC, plan quotas, subscription persistence,
-  webhook idempotency, Checkout, Portal, and hosted billing UI now exist.
+  webhook idempotency, Checkout, Portal, hosted billing UI, and live-provider
+  usage metering now exist.
 - Still required: conventional identity, billing-admin/support roles,
-  live-provider usage metering, account-owned Stripe sandbox evidence, and
-  production merchant activation.
+  account-owned Stripe sandbox evidence, production merchant activation, and
+  retained decision-history enforcement for billable retention windows.
 
 ## Re-entry cost to convert this into a real commercial SaaS
 
@@ -128,9 +129,9 @@ Honest scope estimate from a code review in mid-2026:
   2 to 4 weeks.
 - Account-owned Stripe sandbox, production activation, billing-admin/support
   policy, audit evidence, and incident runbook: 1 to 2 weeks.
-- Live-provider usage metering and quota reconciliation: 3 to 5 days.
+- Retained decision-history enforcement and quota reconciliation: 2 to 4 days.
 - Tenant isolation, billing state, hosted pricing, and team roles: implemented.
-- Eval retention and drift alerts: 1 to 2 days.
+- Live-provider usage metering and eval retention/drift alerts: implemented.
 
 Remaining re-entry estimate: roughly 3 to 6 weeks for a small team to move from
 the current Stripe-ready core to a supportable paid SaaS. The bar for

@@ -127,8 +127,12 @@ The app includes deterministic example workspaces for B2B SaaS activation, clini
 LaunchLens AI always runs without secrets.
 
 - `mock` mode returns deterministic demo output so reviewers can run the project immediately.
-- `minimax` mode is enabled only when `MINIMAX_API_KEY` exists on the server.
-- `openai` mode is enabled only when `OPENAI_API_KEY` exists and MiniMax is not configured.
+- Workspace generation uses real providers only when
+  `LAUNCHLENS_PROVIDER_LIVE_ENABLED=true` and a provider key exists.
+- `minimax` mode is selected when live workspace generation is enabled and
+  `MINIMAX_API_KEY` exists on the server.
+- `openai` mode is selected when live workspace generation is enabled,
+  `OPENAI_API_KEY` exists, and MiniMax is not configured.
 - Real provider failures return a safe fallback code and mock output, not upstream response details.
 - Provider calls use HTTPS base URL validation, host allowlists, request timeouts, field caps, body caps, and a lightweight demo rate limit.
 - Provider parsing accepts fenced JSON, strips reasoning tags, repairs minor JSON formatting issues, and falls back safely when core structure is missing.
@@ -213,6 +217,7 @@ MINIMAX_API_KEY=
 MINIMAX_MODEL=MiniMax-M3
 MINIMAX_BASE_URL=https://api.minimaxi.com/v1
 
+LAUNCHLENS_PROVIDER_LIVE_ENABLED=true
 DECISION_COPILOT_LIVE_ENABLED=true
 
 OPENAI_API_KEY=
@@ -339,10 +344,10 @@ npm audit --audit-level=moderate
 flowchart LR
   A["Founder brief"] --> B["Next.js client workspace"]
   B --> C["/api/generate route"]
-  C --> D{"Provider env?"}
-  D -->|"none"| E["Mock provider"]
-  D -->|"MINIMAX_API_KEY"| F["MiniMax Responses API"]
-  D -->|"OPENAI_API_KEY"| G["OpenAI-compatible chat completions"]
+  C --> D{"Live workspace provider enabled?"}
+  D -->|"false or no key"| E["Mock provider"]
+  D -->|"true + MINIMAX_API_KEY"| F["MiniMax Responses API"]
+  D -->|"true + OPENAI_API_KEY"| G["OpenAI-compatible chat completions"]
   F --> H["Safe parser and schema checks"]
   G --> H
   H --> I["Editable GTM workspace"]

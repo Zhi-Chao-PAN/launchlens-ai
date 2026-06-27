@@ -56,6 +56,11 @@ The second commercial substage is executable subscription billing:
 Checkout, Portal, subscription-state, grace-period, and webhook-idempotency
 path while remaining disabled without Stripe configuration.
 
+The third commercial substage is live-provider usage metering:
+`src/lib/launchlens/live-provider-usage.ts`, `/api/generate`, `/api/decision`,
+and `/billing` enforce the plan's monthly live-provider allowance before real
+provider calls are made.
+
 The next phase should reduce this gap deliberately. The goal is not to ship
 billing first. The goal is to make the re-entry path explicit enough that a
 future implementation can be judged, estimated, and verified.
@@ -145,6 +150,8 @@ Current state:
   disabled unless the deployment has complete Stripe configuration.
 - Signed subscription events are idempotent, reject stale updates, and persist
   cancellation, unpaid, trial, current-period, and grace-period state.
+- Live-provider usage is metered by owner and UTC month for workspace
+  generation and decision briefs.
 
 Executable artifact:
 
@@ -155,8 +162,11 @@ Executable artifact:
 - `docs/COMMERCIAL_BILLING.md`
 - `src/lib/launchlens/commercial-subscription.ts`
 - `src/lib/launchlens/commercial-subscription-store.ts`
+- `src/lib/launchlens/live-provider-usage.ts`
 - `src/lib/launchlens/stripe-server.ts`
 - `/billing`
+- `/api/generate`
+- `/api/decision`
 - `/api/commercial/subscription`
 - `/api/commercial/checkout`
 - `/api/commercial/portal`
@@ -197,6 +207,11 @@ Completed in this substage:
   Free restrictions.
 - Billing UI and API error copy expose configuration and state without exposing
   customer IDs, subscription IDs, owner hashes, or secrets.
+- `/api/generate` and live `/api/decision` consume
+  `launchlens_live_provider_usage` slots before provider calls, with an
+  advisory lock protecting monthly quota concurrency.
+- `/api/commercial/subscription` returns a credential-safe monthly usage
+  summary for `/billing`.
 
 Still required before accepting real payments:
 
@@ -204,7 +219,8 @@ Still required before accepting real payments:
 - Provision recurring prices and secrets in the intended production project.
 - Register and verify the production webhook destination.
 - Complete the identity and tenant-ownership migration plan.
-- Add live-provider usage metering before its monthly allowance is billable.
+- Add retained decision-history enforcement before its retention window is
+  billable.
 
 ## Onboarding And Activation
 
@@ -287,6 +303,8 @@ This phase is accepted only when all of the following are true:
   `npx vitest run src/lib/launchlens/commercial-entitlements.test.ts src/app/api/commercial/entitlements/route.test.ts`.
 - The billing lifecycle tests pass:
   `npx vitest run src/lib/launchlens/commercial-subscription.test.ts src/lib/launchlens/stripe-billing.test.ts src/lib/launchlens/stripe-server.test.ts src/app/api/commercial/subscription/route.test.ts src/app/api/commercial/checkout/route.test.ts src/app/api/commercial/portal/route.test.ts src/app/api/webhooks/stripe/route.test.ts`.
+- The live-provider metering tests pass:
+  `npx vitest run src/lib/launchlens/live-provider-usage.test.ts src/app/api/generate/route.live-usage.test.ts src/app/api/decision/route.live-usage.test.ts`.
 - `npm run verify:portfolio` passes.
 - `npm run verify:release-readiness` passes.
 - `npm run verify:production-demo` passes after the public deployment updates.

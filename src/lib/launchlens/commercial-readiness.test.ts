@@ -23,17 +23,17 @@ function snapshot(): CommercialReadinessSnapshot {
       {
         path: "docs/COMMERCIAL_READINESS.md",
         content:
-          "Current Boundary Commercial Readiness Tracks Reviewer Evidence Index Identity And Tenant Model Billing And Plan Limits docs/COMMERCIAL_ENTITLEMENTS.md docs/COMMERCIAL_BILLING.md src/lib/launchlens/commercial-entitlements.ts /api/commercial/entitlements /api/commercial/subscription /api/webhooks/stripe Onboarding And Activation Eval And Ops Visibility Security And Compliance Re-entry Acceptance Gate Non-goals https://launchlens-ai-two.vercel.app/readiness npm run verify:commercial-readiness npm run verify:production-demo npm run release:cloud npm run decision:history -- --window PROJECT_MATURITY.md docs/PORTFOLIO_CASE_STUDY.md docs/PRODUCTION_RUNBOOK.md",
+          "Current Boundary Commercial Readiness Tracks Reviewer Evidence Index Identity And Tenant Model Billing And Plan Limits docs/COMMERCIAL_ENTITLEMENTS.md docs/COMMERCIAL_BILLING.md src/lib/launchlens/commercial-entitlements.ts src/lib/launchlens/live-provider-usage.ts /api/commercial/entitlements /api/commercial/subscription /api/webhooks/stripe Onboarding And Activation Eval And Ops Visibility Security And Compliance Re-entry Acceptance Gate Non-goals https://launchlens-ai-two.vercel.app/readiness npm run verify:commercial-readiness npm run verify:production-demo npm run release:cloud npm run decision:history -- --window PROJECT_MATURITY.md docs/PORTFOLIO_CASE_STUDY.md docs/PRODUCTION_RUNBOOK.md",
       },
       {
         path: "docs/COMMERCIAL_ENTITLEMENTS.md",
         content:
-          "LaunchLens AI Commercial Entitlements Active Preview Plan Plan Matrix Enforced Today Still Pending docs/COMMERCIAL_BILLING.md src/lib/launchlens/commercial-entitlements.ts src/lib/launchlens/commercial-subscription.ts src/app/api/commercial/entitlements/route.ts /api/commercial/entitlements LAUNCHLENS_COMMERCIAL_PLAN=free|solo|team npm run verify:commercial-readiness",
+          "LaunchLens AI Commercial Entitlements Active Preview Plan Plan Matrix Enforced Today Still Pending docs/COMMERCIAL_BILLING.md src/lib/launchlens/commercial-entitlements.ts src/lib/launchlens/commercial-subscription.ts src/lib/launchlens/live-provider-usage.ts src/app/api/commercial/entitlements/route.ts /api/commercial/entitlements LAUNCHLENS_COMMERCIAL_PLAN=free|solo|team npm run verify:commercial-readiness",
       },
       {
         path: "docs/COMMERCIAL_BILLING.md",
         content:
-          "LaunchLens AI Commercial Billing Implemented Surface State And Entitlement Precedence Webhook Safety launchlens_commercial_subscriptions launchlens_billing_events /api/commercial/checkout /api/commercial/portal /api/webhooks/stripe STRIPE_WEBHOOK_SECRET npm run verify:commercial-readiness",
+          "LaunchLens AI Commercial Billing Implemented Surface State And Entitlement Precedence Webhook Safety launchlens_commercial_subscriptions launchlens_billing_events launchlens_live_provider_usage /api/commercial/checkout /api/commercial/portal /api/webhooks/stripe STRIPE_WEBHOOK_SECRET npm run verify:commercial-readiness",
       },
       {
         path: "src/app/readiness/page.tsx",
@@ -47,7 +47,27 @@ function snapshot(): CommercialReadinessSnapshot {
       {
         path: "src/components/commercial-billing.tsx",
         content:
-          "Subscription and plan access /api/commercial/subscription /api/commercial/checkout /api/commercial/portal",
+          "Subscription and plan access /api/commercial/subscription /api/commercial/checkout /api/commercial/portal Live AI usage",
+      },
+      {
+        path: "src/app/api/generate/route.ts",
+        content:
+          "consumeLiveProviderUsageSlot workspace_generation",
+      },
+      {
+        path: "src/app/api/generate/route.live-usage.test.ts",
+        content:
+          "consumes a monthly live-provider slot before generation invalid_owner_token",
+      },
+      {
+        path: "src/app/api/decision/route.ts",
+        content:
+          "consumeLiveProviderUsageSlot DECISION_COPILOT_LIVE_ENABLED decision_brief",
+      },
+      {
+        path: "src/app/api/decision/route.live-usage.test.ts",
+        content:
+          "consumes a monthly live-provider slot before a real decision brief does not consume usage when decision live mode is disabled",
       },
       {
         path: "src/app/api/commercial/entitlements/route.ts",
@@ -57,7 +77,7 @@ function snapshot(): CommercialReadinessSnapshot {
       {
         path: "src/app/api/commercial/subscription/route.ts",
         content:
-          "resolveCommercialEntitlementForOwnerHash safeSubscription noStoreJson",
+          "resolveCommercialEntitlementForOwnerHash getLiveProviderUsageSummaryForOwnerHash safeSubscription noStoreJson",
       },
       {
         path: "src/app/api/commercial/checkout/route.ts",
@@ -72,7 +92,7 @@ function snapshot(): CommercialReadinessSnapshot {
       {
         path: "src/lib/launchlens/error-codes.ts",
         content:
-          "billing_subscription_exists billing_subscription_missing",
+          "billing_subscription_exists billing_subscription_missing usage_meter_unavailable",
       },
       {
         path: "src/app/api/webhooks/stripe/route.ts",
@@ -100,18 +120,28 @@ function snapshot(): CommercialReadinessSnapshot {
           "applyCommercialSubscriptionEvent latest_event_created_at processing_status",
       },
       {
+        path: "src/lib/launchlens/live-provider-usage.ts",
+        content:
+          "consumeLiveProviderUsageSlot launchlens_live_provider_usage liveProviderRunsPerMonth pg_advisory_xact_lock",
+      },
+      {
+        path: "src/lib/launchlens/live-provider-usage.test.ts",
+        content:
+          "atomically consumes a monthly slot before a live provider request rejects a full monthly bucket without consuming another slot",
+      },
+      {
         path: "src/lib/launchlens/stripe-server.ts",
         content: "constructEvent subscription_data idempotencyKey",
       },
       {
         path: "scripts/migrate-cloud-db.ts",
         content:
-          "launchlens_commercial_subscriptions launchlens_billing_events",
+          "launchlens_commercial_subscriptions launchlens_billing_events launchlens_live_provider_usage",
       },
       {
         path: "src/lib/launchlens/cloud-db-contract.ts",
         content:
-          "launchlens_commercial_subscriptions launchlens_billing_events",
+          "launchlens_commercial_subscriptions launchlens_billing_events launchlens_live_provider_usage",
       },
       {
         path: "README.md",

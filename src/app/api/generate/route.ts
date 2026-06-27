@@ -1,6 +1,18 @@
-import { generateLaunchWorkspace } from "@/lib/launchlens/provider";
+import {
+  generateLaunchWorkspace,
+  launchWorkspaceLiveProviderEnabled,
+} from "@/lib/launchlens/provider";
+import { configuredRealProvider } from "@/lib/launchlens/provider-runtime";
 import type { LaunchLensInput } from "@/lib/launchlens/types";
-import { generateRequestId, noStoreJson, startTimer } from "@/lib/launchlens/workspace-api";
+import {
+  generateRequestId,
+  noStoreJson,
+  ownerTokenFromRequest,
+  startTimer,
+  workspaceApiError,
+} from "@/lib/launchlens/workspace-api";
+import { consumeLiveProviderUsageSlot } from "@/lib/launchlens/live-provider-usage";
+import { hashOwnerToken } from "@/lib/launchlens/workspace-store";
 import {
   ERROR_BODY_TOO_LARGE,
   ERROR_RATE_LIMITED,
@@ -136,8 +148,25 @@ export async function POST(request: Request) {
     );
   }
 
-  const result = await generateLaunchWorkspace(input);
-  return noStoreJson(result, {}, requestId, timer());
+  try {
+    const usage =
+      launchWorkspaceLiveProviderEnabled() && configuredRealProvider()
+      ? await consumeLiveProviderUsageSlot({
+          ownerHash: hashOwnerToken(ownerTokenFromRequest(request)),
+          feature: "workspace_generation",
+        })
+      : null;
+    const result = await generateLaunchWorkspace(input);
+
+    return noStoreJson(
+      usage ? { ...result, usage } : result,
+      {},
+      requestId,
+      timer(),
+    );
+  } catch (error) {
+    return workspaceApiError(error, requestId);
+  }
 }
 
 

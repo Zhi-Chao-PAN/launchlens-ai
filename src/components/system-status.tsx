@@ -10,6 +10,8 @@ type Status = {
   version: string;
   provider: string;
   providerConfigured: boolean;
+  workspaceProviderLiveEnabled?: boolean;
+  workspaceProviderActive?: boolean;
   dbConfigured: boolean;
   dbHealthy: boolean;
   dbLatencyMs: number | null;
@@ -123,7 +125,7 @@ export function SystemStatus() {
   }, [isOpen]);
 
   const dbOk = systemStatus?.dbConfigured ? systemStatus.dbHealthy : null;
-  const providerOk = systemStatus?.providerConfigured ?? false;
+  const providerOk = systemStatus?.workspaceProviderActive ?? false;
   const allOk = fetchState === "ok" && (dbOk === true || dbOk === null) && systemStatus?.status === "ok";
 
   const buttonIcon = () => {

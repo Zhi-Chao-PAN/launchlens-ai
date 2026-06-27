@@ -9,11 +9,13 @@ Authoritative code:
 - `src/lib/launchlens/commercial-entitlements.ts`
 - `src/lib/launchlens/commercial-subscription.ts`
 - `src/lib/launchlens/commercial-subscription-store.ts`
+- `src/lib/launchlens/live-provider-usage.ts`
 - `src/lib/launchlens/stripe-server.ts`
 - `src/app/api/commercial/entitlements/route.ts`
 - `src/app/api/commercial/subscription/route.ts`
 - `src/app/api/webhooks/stripe/route.ts`
 - `src/lib/launchlens/commercial-entitlements.test.ts`
+- `src/lib/launchlens/live-provider-usage.test.ts`
 - `src/app/api/commercial/entitlements/route.test.ts`
 
 Billing operations and deployment configuration are documented in
@@ -60,6 +62,7 @@ The entitlement contract is already consumed by:
 - tenant-scoped workspace create limits;
 - workspace member invite capacity;
 - public share-link capacity;
+- live-provider monthly usage capacity;
 - persisted subscription precedence and cancellation restrictions;
 - pricing and readiness public pages;
 - reviewer-safe entitlement API output.
@@ -74,7 +77,7 @@ Real commercialization still needs:
 
 - account-owned Stripe sandbox and production activation evidence;
 - account identity, passkeys or OAuth, and tenant ownership migration;
-- live-provider usage metering and retained decision-history enforcement;
+- retained decision-history enforcement;
 - billing-admin, support, refund, dispute, and audit workflows.
 
 These remain tracked in `docs/COMMERCIAL_READINESS.md`.
@@ -85,6 +88,7 @@ Run:
 
 ```bash
 npx vitest run src/lib/launchlens/commercial-entitlements.test.ts src/app/api/commercial/entitlements/route.test.ts
+npx vitest run src/lib/launchlens/live-provider-usage.test.ts src/app/api/generate/route.live-usage.test.ts src/app/api/decision/route.live-usage.test.ts
 npm run verify:commercial-readiness
 ```
 

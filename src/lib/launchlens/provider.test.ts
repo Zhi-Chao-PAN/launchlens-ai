@@ -19,6 +19,7 @@ describe("generateLaunchWorkspace", () => {
     delete process.env.MINIMAX_API_KEY;
     delete process.env.MINIMAX_BASE_URL;
     delete process.env.MINIMAX_MODEL;
+    delete process.env.LAUNCHLENS_PROVIDER_LIVE_ENABLED;
   });
 
   afterEach(() => {
@@ -29,6 +30,7 @@ describe("generateLaunchWorkspace", () => {
     delete process.env.MINIMAX_API_KEY;
     delete process.env.MINIMAX_BASE_URL;
     delete process.env.MINIMAX_MODEL;
+    delete process.env.LAUNCHLENS_PROVIDER_LIVE_ENABLED;
   });
 
   it("uses demo mode when no provider key exists", async () => {
@@ -41,8 +43,19 @@ describe("generateLaunchWorkspace", () => {
     expect(result.workspace.provider).toBe("mock");
   });
 
+  it("keeps workspace generation in demo mode until live provider mode is explicit", async () => {
+    process.env.MINIMAX_API_KEY = "test-key";
+
+    const result = await generateLaunchWorkspace(input);
+
+    expect(result.mode).toBe("demo");
+    expect(result.usedFallback).toBe(false);
+    expect(result.workspace.provider).toBe("mock");
+  });
+
   it("falls back to mock mode when a configured provider fails", async () => {
     process.env.OPENAI_API_KEY = "test-key";
+    process.env.LAUNCHLENS_PROVIDER_LIVE_ENABLED = "true";
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => new Response("rate limited", { status: 429 })),
@@ -70,6 +83,7 @@ describe("generateLaunchWorkspace", () => {
     );
 
     process.env.MINIMAX_API_KEY = "test-key";
+    process.env.LAUNCHLENS_PROVIDER_LIVE_ENABLED = "true";
     vi.stubGlobal(
       "fetch",
       vi.fn(
@@ -95,6 +109,7 @@ describe("generateLaunchWorkspace", () => {
 
   it("rejects incomplete live output instead of scoring mock-filled sections", async () => {
     process.env.MINIMAX_API_KEY = "test-key";
+    process.env.LAUNCHLENS_PROVIDER_LIVE_ENABLED = "true";
     vi.stubGlobal(
       "fetch",
       vi.fn(
@@ -125,6 +140,7 @@ describe("generateLaunchWorkspace", () => {
   it("does not expose invalid provider response text in fallback logs", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     process.env.MINIMAX_API_KEY = "test-key";
+    process.env.LAUNCHLENS_PROVIDER_LIVE_ENABLED = "true";
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => new Response("upstream-secret-body", { status: 200 })),

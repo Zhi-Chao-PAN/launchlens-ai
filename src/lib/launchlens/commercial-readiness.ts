@@ -65,6 +65,10 @@ const requiredFiles: Record<string, RequiredText[]> = {
       value: "/api/commercial/subscription",
       label: "subscription API reference",
     },
+    {
+      value: "src/lib/launchlens/live-provider-usage.ts",
+      label: "live-provider usage source reference",
+    },
     { value: "/api/webhooks/stripe", label: "Stripe webhook reference" },
     { value: "Onboarding And Activation", label: "onboarding track" },
     { value: "Eval And Ops Visibility", label: "eval and ops track" },
@@ -135,6 +139,10 @@ const requiredFiles: Record<string, RequiredText[]> = {
       value: "src/lib/launchlens/commercial-subscription.ts",
       label: "subscription domain reference",
     },
+    {
+      value: "src/lib/launchlens/live-provider-usage.ts",
+      label: "live-provider usage reference",
+    },
   ],
   "docs/COMMERCIAL_BILLING.md": [
     {
@@ -152,6 +160,10 @@ const requiredFiles: Record<string, RequiredText[]> = {
       label: "subscription table",
     },
     { value: "launchlens_billing_events", label: "billing event table" },
+    {
+      value: "launchlens_live_provider_usage",
+      label: "live-provider usage table",
+    },
     { value: "/api/commercial/checkout", label: "checkout route" },
     { value: "/api/commercial/portal", label: "portal route" },
     { value: "/api/webhooks/stripe", label: "webhook route" },
@@ -248,11 +260,57 @@ const requiredFiles: Record<string, RequiredText[]> = {
     },
     { value: "/api/commercial/checkout", label: "checkout request" },
     { value: "/api/commercial/portal", label: "portal request" },
+    { value: "Live AI usage", label: "live usage summary" },
+  ],
+  "src/app/api/generate/route.ts": [
+    {
+      value: "consumeLiveProviderUsageSlot",
+      label: "generation live-provider meter",
+    },
+    {
+      value: "workspace_generation",
+      label: "generation usage feature",
+    },
+  ],
+  "src/app/api/generate/route.live-usage.test.ts": [
+    {
+      value: "consumes a monthly live-provider slot before generation",
+      label: "generation usage gate test",
+    },
+    {
+      value: "invalid_owner_token",
+      label: "generation owner-token guard test",
+    },
+  ],
+  "src/app/api/decision/route.ts": [
+    {
+      value: "consumeLiveProviderUsageSlot",
+      label: "decision live-provider meter",
+    },
+    {
+      value: "DECISION_COPILOT_LIVE_ENABLED",
+      label: "decision live-mode flag",
+    },
+    { value: "decision_brief", label: "decision usage feature" },
+  ],
+  "src/app/api/decision/route.live-usage.test.ts": [
+    {
+      value: "consumes a monthly live-provider slot before a real decision brief",
+      label: "decision usage gate test",
+    },
+    {
+      value: "does not consume usage when decision live mode is disabled",
+      label: "decision demo-mode non-metering test",
+    },
   ],
   "src/app/api/commercial/subscription/route.ts": [
     {
       value: "resolveCommercialEntitlementForOwnerHash",
       label: "persisted entitlement resolver",
+    },
+    {
+      value: "getLiveProviderUsageSummaryForOwnerHash",
+      label: "live-provider usage summary",
     },
     { value: "safeSubscription", label: "safe subscription projection" },
     { value: "noStoreJson", label: "no-store response" },
@@ -279,6 +337,10 @@ const requiredFiles: Record<string, RequiredText[]> = {
     {
       value: "billing_subscription_missing",
       label: "missing subscription error code",
+    },
+    {
+      value: "usage_meter_unavailable",
+      label: "usage meter unavailable error code",
     },
   ],
   "src/app/api/webhooks/stripe/route.ts": [
@@ -316,6 +378,34 @@ const requiredFiles: Record<string, RequiredText[]> = {
       label: "billing event disposition",
     },
   ],
+  "src/lib/launchlens/live-provider-usage.ts": [
+    {
+      value: "consumeLiveProviderUsageSlot",
+      label: "usage consume helper",
+    },
+    {
+      value: "launchlens_live_provider_usage",
+      label: "usage table reference",
+    },
+    {
+      value: "liveProviderRunsPerMonth",
+      label: "monthly plan limit",
+    },
+    {
+      value: "pg_advisory_xact_lock",
+      label: "usage concurrency guard",
+    },
+  ],
+  "src/lib/launchlens/live-provider-usage.test.ts": [
+    {
+      value: "atomically consumes a monthly slot before a live provider request",
+      label: "usage consume test",
+    },
+    {
+      value: "rejects a full monthly bucket without consuming another slot",
+      label: "usage limit test",
+    },
+  ],
   "src/lib/launchlens/stripe-server.ts": [
     { value: "constructEvent", label: "raw webhook signature verification" },
     {
@@ -330,6 +420,10 @@ const requiredFiles: Record<string, RequiredText[]> = {
       label: "subscription migration",
     },
     { value: "launchlens_billing_events", label: "billing event migration" },
+    {
+      value: "launchlens_live_provider_usage",
+      label: "live-provider usage migration",
+    },
   ],
   "src/lib/launchlens/cloud-db-contract.ts": [
     {
@@ -339,6 +433,10 @@ const requiredFiles: Record<string, RequiredText[]> = {
     {
       value: "launchlens_billing_events",
       label: "billing event schema contract",
+    },
+    {
+      value: "launchlens_live_provider_usage",
+      label: "live-provider usage schema contract",
     },
   ],
   "README.md": [

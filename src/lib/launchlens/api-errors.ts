@@ -32,6 +32,8 @@ export const API_ERROR_MESSAGES: Record<string, string> = {
   quota_exceeded: "Storage quota exceeded. Delete an older snapshot first.",
   commercial_plan_limit_reached:
     "This action is outside the current plan limit. Remove usage or move to the next plan.",
+  usage_meter_unavailable:
+    "Live AI usage needs cloud metering before it can run on this deployment.",
   billing_not_configured:
     "Stripe billing is not enabled on this deployment.",
   invalid_billing_plan:

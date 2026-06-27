@@ -17,6 +17,12 @@ import type {
 export const LAUNCHLENS_PROMPT_VERSION = "launchlens-workspace-v1";
 const MINIMAX_MAX_OUTPUT_TOKENS = 2_400;
 
+export function launchWorkspaceLiveProviderEnabled(
+  env: Record<string, string | undefined> = process.env,
+) {
+  return env.LAUNCHLENS_PROVIDER_LIVE_ENABLED === "true";
+}
+
 function list(value: unknown, fallback: string[]): string[] {
   if (!Array.isArray(value)) {
     return fallback;
@@ -302,7 +308,9 @@ async function generateWithRealProvider(
 export async function generateLaunchWorkspace(
   input: LaunchLensInput,
 ): Promise<GenerationResult> {
-  const provider = configuredRealProvider();
+  const provider = launchWorkspaceLiveProviderEnabled()
+    ? configuredRealProvider()
+    : null;
 
   if (!provider) {
     return {

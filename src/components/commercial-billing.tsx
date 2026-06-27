@@ -49,6 +49,14 @@ type BillingResponse = {
     graceUntil: string | null;
     updatedAt: string;
   } | null;
+  usage: {
+    periodStart: string;
+    planId: CommercialPlanId;
+    planName: string;
+    limit: number;
+    used: number;
+    remaining: number;
+  } | null;
 };
 
 type BillingError = {
@@ -79,6 +87,18 @@ function dateLabel(value: string | null) {
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
   }).format(new Date(value));
+}
+
+function monthLabel(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T00:00:00.000Z`));
 }
 
 export function CommercialBilling() {
@@ -182,6 +202,11 @@ export function CommercialBilling() {
 
   const periodEnd = dateLabel(billing?.entitlement.currentPeriodEnd ?? null);
   const graceUntil = dateLabel(billing?.entitlement.graceUntil ?? null);
+  const usageMonth = monthLabel(billing?.usage?.periodStart ?? null);
+  const usagePercent =
+    billing?.usage && billing.usage.limit > 0
+      ? Math.min(100, Math.round((billing.usage.used / billing.usage.limit) * 100))
+      : 0;
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10 pb-24 sm:px-6 lg:px-8">
@@ -271,6 +296,39 @@ export function CommercialBilling() {
                 <p className="mt-2 text-sm font-medium text-signal-challenges">
                   Payment grace period ends {graceUntil}.
                 </p>
+              ) : null}
+              {billing.usage ? (
+                <div className="mt-5 max-w-xl rounded-md bg-input p-4">
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <div>
+                      <p className="font-semibold text-foreground">
+                        Live AI usage
+                      </p>
+                      <p className="mt-1 text-xs text-muted">
+                        {usageMonth ?? "Current month"}
+                      </p>
+                    </div>
+                    <p className="shrink-0 text-sm font-semibold text-foreground">
+                      {billing.usage.used}/{billing.usage.limit}
+                    </p>
+                  </div>
+                  <div
+                    className="mt-3 h-2 overflow-hidden rounded-full bg-card"
+                    role="progressbar"
+                    aria-label="Live AI usage"
+                    aria-valuemin={0}
+                    aria-valuemax={billing.usage.limit}
+                    aria-valuenow={billing.usage.used}
+                  >
+                    <div
+                      className="h-full rounded-full bg-accent"
+                      style={{ width: `${usagePercent}%` }}
+                    />
+                  </div>
+                  <p className="mt-2 text-xs text-muted">
+                    {billing.usage.remaining} remaining
+                  </p>
+                </div>
               ) : null}
             </div>
 

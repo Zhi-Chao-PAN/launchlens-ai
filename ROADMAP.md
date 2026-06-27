@@ -147,6 +147,9 @@ The first executable commercial slice is `docs/COMMERCIAL_ENTITLEMENTS.md`,
 The second executable slice is `docs/COMMERCIAL_BILLING.md`, `/billing`,
 `/api/commercial/subscription`, hosted Checkout and Portal routes, signed Stripe
 webhooks, and durable subscription/event tables.
+The third executable slice is live-provider monthly usage metering through
+`src/lib/launchlens/live-provider-usage.ts`, `/api/generate`, `/api/decision`,
+and `/billing`.
 
 ### Phase 7 Acceptance
 
@@ -167,7 +170,7 @@ webhooks, and durable subscription/event tables.
       conventional account login, billing-admin roles, or support access.
 - [ ] Run and archive an account-owned Stripe sandbox acceptance flow before
       enabling a live merchant configuration.
-- [ ] Add live-provider usage metering before enforcing monthly paid allowance.
+- [x] Add live-provider usage metering before enforcing monthly paid allowance.
 - [ ] Specify first-session activation events without logging private founder
       input, evidence notes, provider payloads, or recovery credentials.
 - [ ] Decide how decision eval quality, latency risk, release evidence, and

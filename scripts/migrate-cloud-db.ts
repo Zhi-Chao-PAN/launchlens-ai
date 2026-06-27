@@ -212,6 +212,26 @@ async function main() {
     ON launchlens_billing_events (received_at DESC)
   `;
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS launchlens_live_provider_usage (
+      owner_hash CHAR(64) NOT NULL,
+      period_start DATE NOT NULL,
+      feature TEXT NOT NULL CHECK (
+        feature IN ('workspace_generation', 'decision_brief')
+      ),
+      request_count INTEGER NOT NULL DEFAULT 0
+        CHECK (request_count >= 0),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (owner_hash, period_start, feature)
+    )
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS launchlens_live_provider_usage_owner_period_idx
+    ON launchlens_live_provider_usage (owner_hash, period_start)
+  `;
+
   console.log("LaunchLens cloud database migration completed.");
 }
 

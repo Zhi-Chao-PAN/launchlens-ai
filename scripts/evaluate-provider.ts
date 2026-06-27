@@ -43,12 +43,17 @@ async function main() {
     delete process.env.OPENAI_API_KEY;
     delete process.env.OPENAI_BASE_URL;
     delete process.env.OPENAI_MODEL;
+    delete process.env.LAUNCHLENS_PROVIDER_LIVE_ENABLED;
   }
 
   if (isLive && !process.env.MINIMAX_API_KEY) {
     throw new Error(
       "MINIMAX_API_KEY is required for --live provider evaluation.",
     );
+  }
+
+  if (isLive) {
+    process.env.LAUNCHLENS_PROVIDER_LIVE_ENABLED = "true";
   }
 
   const publicSamples = PUBLIC_PROVIDER_EVAL_SCENARIO_IDS.map((id) => {

@@ -9,7 +9,8 @@ portfolio deployment has an activated merchant account.
 
 ## Implemented Surface
 
-- `/billing` shows the current entitlement and subscription state.
+- `/billing` shows the current entitlement, subscription state, and current
+  live-provider usage.
 - `GET /api/commercial/subscription` returns a credential-safe account summary.
 - `POST /api/commercial/checkout` creates hosted Stripe Checkout sessions.
 - `POST /api/commercial/portal` creates Stripe customer portal sessions.
@@ -17,6 +18,8 @@ portfolio deployment has an activated merchant account.
   processing subscription events.
 - `launchlens_commercial_subscriptions` stores the latest account subscription.
 - `launchlens_billing_events` provides durable event idempotency.
+- `launchlens_live_provider_usage` stores owner-scoped monthly live-provider
+  usage for workspace generation and decision briefs.
 
 Card details remain on Stripe-hosted pages. LaunchLens stores provider customer
 and subscription identifiers only on the server.
@@ -53,6 +56,21 @@ Each subscription row records `latest_event_created_at` and `latest_event_id`.
 Older events are retained as `stale` but cannot overwrite newer state. Duplicate
 deliveries return success without applying the event twice. Unknown tenants or
 invalid LaunchLens metadata are ignored without granting access.
+
+## Live Provider Usage Metering
+
+When `LAUNCHLENS_PROVIDER_LIVE_ENABLED=true` and a real provider is configured,
+`/api/generate` consumes one `workspace_generation` slot before calling the
+provider. `/api/decision` consumes one `decision_brief` slot only when
+`DECISION_COPILOT_LIVE_ENABLED` is `true` and a real provider is configured.
+Mock/demo requests do not consume monthly allowance.
+
+The meter resolves the caller's persisted subscription entitlement, locks the
+owner and UTC month with `pg_advisory_xact_lock`, and increments
+`launchlens_live_provider_usage` only when the plan still has remaining
+`liveProviderRunsPerMonth` capacity. If live provider mode is enabled without
+cloud metering, the API returns `usage_meter_unavailable` instead of allowing
+unbounded provider spend.
 
 The implementation follows Stripe guidance for [webhook signature
 verification](https://docs.stripe.com/webhooks) and [subscription webhook
@@ -97,6 +115,7 @@ when a customer changes plan in the portal.
 ```bash
 npx vitest run src/lib/launchlens/commercial-subscription.test.ts src/lib/launchlens/stripe-billing.test.ts src/lib/launchlens/stripe-server.test.ts
 npx vitest run src/app/api/commercial/subscription/route.test.ts src/app/api/commercial/checkout/route.test.ts src/app/api/commercial/portal/route.test.ts src/app/api/webhooks/stripe/route.test.ts
+npx vitest run src/lib/launchlens/live-provider-usage.test.ts src/app/api/generate/route.live-usage.test.ts src/app/api/decision/route.live-usage.test.ts
 npm run db:migrate
 npm run verify:cloud-db
 npm run verify:commercial-readiness
@@ -110,8 +129,8 @@ endpoint, and a successful signed event delivery.
 
 - Replace or wrap the capability account with conventional identity.
 - Define billing-admin and support roles independent of workspace roles.
-- Add live-provider usage metering before treating monthly allowances as
-  billable enforcement.
+- Add retained decision-history enforcement before treating retention windows
+  as billable enforcement.
 - Add audit and support workflows for refunds, disputes, ownership transfer,
   deletion, and account recovery.
 - Run and archive an account-owned Stripe sandbox and production activation

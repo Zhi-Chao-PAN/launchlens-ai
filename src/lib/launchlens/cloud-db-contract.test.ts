@@ -108,4 +108,32 @@ describe("cloud DB contract", () => {
       }),
     );
   });
+
+  it("requires the live provider usage ledger for monthly quota enforcement", () => {
+    const snapshot = completeSnapshot();
+    snapshot.columns = snapshot.columns.filter(
+      (column) =>
+        column.tableName !== "launchlens_live_provider_usage" ||
+        column.columnName !== "request_count",
+    );
+    snapshot.indexes = snapshot.indexes.filter(
+      (index) =>
+        index.indexName !== "launchlens_live_provider_usage_owner_period_idx",
+    );
+
+    expect(evaluateCloudDbSchema(snapshot)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "missing_column",
+          tableName: "launchlens_live_provider_usage",
+          columnName: "request_count",
+        }),
+        expect.objectContaining({
+          kind: "missing_index",
+          tableName: "launchlens_live_provider_usage",
+          indexName: "launchlens_live_provider_usage_owner_period_idx",
+        }),
+      ]),
+    );
+  });
 });

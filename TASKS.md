@@ -308,7 +308,7 @@
       passkeys, billing-admin roles, or support access.
 - [ ] Run an account-owned Stripe sandbox checkout and signed webhook acceptance
       flow, then provision and verify the intended production project.
-- [ ] Add durable live-provider usage metering before treating monthly
+- [x] Add durable live-provider usage metering before treating monthly
       allowances as billable enforcement.
 - [ ] Specify onboarding and activation events with privacy constraints.
 - [ ] Decide how eval drift, latency risk, and release evidence become

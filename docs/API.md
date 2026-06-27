@@ -36,6 +36,8 @@ Error codes are stable — rely on `code` for programmatic handling, not the mes
 | `invalid_input` | 400 | Input validation failed. |
 | `rate_limited` | 429 | Too many requests. Retry after the rate limit window. |
 | `cloud_rate_limited` | 429 | Cloud workspace mutation rate limit exceeded. |
+| `commercial_plan_limit_reached` | 409 | Current commercial plan limit would be exceeded. |
+| `usage_meter_unavailable` | 503 | Live AI provider is configured but cloud usage metering is unavailable. |
 | `cloud_unavailable` | 503 | Cloud storage is not configured or temporarily unavailable. |
 | `cloud_request_failed` | 503 | Cloud storage operation failed. |
 | `not_found` | 404 | The requested resource does not exist. |
@@ -68,11 +70,13 @@ Generate a full go-to-market workspace from a founder brief.
 }
 ```
 
-**Response (200 OK):** `GenerationResult` — includes the full workspace, provider used, and whether a fallback was triggered.
+**Response (200 OK):** `GenerationResult` — includes the full workspace, provider used, and whether a fallback was triggered. When a real provider is configured, the response also includes `usage` with the current monthly live-provider allowance state.
 
 **Rate limit:** 12 requests / minute per IP.
 
-**Error codes:** `invalid_json`, `body_too_large` (10KB), `idea_too_short`, `field_too_long`, `rate_limited`, `generation_failed`
+**Live-provider metering:** If `LAUNCHLENS_PROVIDER_LIVE_ENABLED=true` and `MINIMAX_API_KEY` or `OPENAI_API_KEY` is configured, requests must include `x-launchlens-owner`. A monthly `workspace_generation` slot is consumed before the provider call.
+
+**Error codes:** `invalid_json`, `body_too_large` (10KB), `idea_too_short`, `field_too_long`, `rate_limited`, `invalid_owner_token`, `commercial_plan_limit_reached`, `usage_meter_unavailable`, `generation_failed`
 
 ---
 
@@ -88,7 +92,9 @@ Generate an evidence-grounded decision brief from experiment data.
 
 **Rate limit:** 16 requests / minute per IP.
 
-**Error codes:** `invalid_json`, `body_too_large` (40KB), `decision_no_evidence`, `rate_limited`
+**Live-provider metering:** If `DECISION_COPILOT_LIVE_ENABLED=true` and a real provider key is configured, requests must include `x-launchlens-owner`. A monthly `decision_brief` slot is consumed before the provider call.
+
+**Error codes:** `invalid_json`, `body_too_large` (40KB), `decision_no_evidence`, `rate_limited`, `invalid_owner_token`, `commercial_plan_limit_reached`, `usage_meter_unavailable`
 
 ---
 
@@ -106,6 +112,8 @@ Service health and configuration status.
   "version": "1.0.0",
   "provider": "mock",
   "providerConfigured": false,
+  "workspaceProviderLiveEnabled": false,
+  "workspaceProviderActive": false,
   "dbConfigured": false,
   "dbHealthy": false,
   "dbLatencyMs": null,
