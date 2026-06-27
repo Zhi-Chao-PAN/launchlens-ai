@@ -122,7 +122,7 @@ const engineeringSignals = [
 
 const nextMilestones = [
   "Shorten the reviewer path with a one-click evidence index and current workflow-run links.",
-  "Add a commercial-readiness slice for onboarding, plan limits, and billing re-entry design.",
+  "Use the Commercial readiness plan for onboarding, plan limits, and billing re-entry design.",
   "Extend eval history with latency and quality drift signals that are visible from the public case study.",
   "Turn the case-study page into a durable release-note surface once product analytics exist.",
 ];
@@ -165,6 +165,12 @@ export default function CaseStudyPage() {
               >
                 Read written case study
               </a>
+              <Link
+                href="/readiness"
+                className="inline-flex h-11 items-center gap-2 rounded-md border border-input bg-card px-5 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
+              >
+                Commercial readiness
+              </Link>
             </div>
           </div>
           <div className="min-w-0">
@@ -381,10 +387,15 @@ export default function CaseStudyPage() {
               View verification
               <FileCheck2 className="size-4" aria-hidden="true" />
             </a>
+            <Link
+              href="/readiness"
+              className="inline-flex h-10 items-center gap-2 rounded-md border border-white/30 px-4 text-sm font-semibold text-white transition hover:border-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-foreground"
+            >
+              Commercial readiness
+            </Link>
           </div>
         </div>
       </footer>
     </main>
   );
 }
-

@@ -1185,6 +1185,12 @@ export function LaunchWorkspace({
               Case study
             </a>
             <a
+              href="/readiness"
+              className="rounded-md border border-input bg-card px-3 py-2 text-foreground transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+            >
+              Readiness
+            </a>
+            <a
               href="/pricing"
               className="rounded-md border border-input bg-card px-3 py-2 text-foreground transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
             >

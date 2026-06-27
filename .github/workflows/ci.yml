@@ -34,6 +34,9 @@ jobs:
       - name: Verify portfolio package
         run: npm run verify:portfolio
 
+      - name: Verify commercial readiness package
+        run: npm run verify:commercial-readiness
+
   test:
     name: Unit tests
     runs-on: ubuntu-latest

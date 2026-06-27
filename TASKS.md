@@ -278,6 +278,26 @@
 - [ ] Add longitudinal provider/decision eval dashboards and latency drift thresholds.
 - [ ] Add automated deployed visual-regression snapshots.
 
+## Commercial/Productization Readiness
+
+- [x] Add `docs/COMMERCIAL_READINESS.md` as the source of truth for the next
+      commercial-readiness phase.
+- [x] Add hosted `/readiness` page for reviewer and maintainer navigation.
+- [x] Add `npm run verify:commercial-readiness`.
+- [x] Wire the commercial readiness verifier into CI, release candidate
+      verification, and post-promotion verification.
+- [x] Link the readiness plan from README, case study, demo script, maturity
+      notes, roadmap, and task list.
+- [ ] Turn the reviewer evidence index into a live-ish status surface with
+      current CI, deployment, release evidence, and workflow links.
+- [ ] Draft the identity and tenant migration design before adding OAuth,
+      passkeys, or checkout.
+- [ ] Define billing plan limits, subscription states, webhook idempotency, and
+      quota precedence.
+- [ ] Specify onboarding and activation events with privacy constraints.
+- [ ] Decide how eval drift, latency risk, and release evidence become
+      operator-visible without leaking private workspace content.
+
 
 ## P3 — Multi-Tenant Workspace Isolation (2026-06-14)
 

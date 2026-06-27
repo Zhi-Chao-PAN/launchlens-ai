@@ -53,6 +53,9 @@ jobs:
       - name: Verify portfolio package
         run: npm run verify:portfolio
 
+      - name: Verify commercial readiness package
+        run: npm run verify:commercial-readiness
+
       - name: Verify production release candidate
         run: npm run release:cloud
 

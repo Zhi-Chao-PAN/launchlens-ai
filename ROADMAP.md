@@ -135,3 +135,27 @@ LaunchLens AI should become a credible AI SaaS portfolio project that shows prod
 - [x] CI runs the decision trend comparison and a hosted visual regression build, uploading the visual regression report as an artifact.
 - [x] Production deployment and visual regression both pass with zero pixel diff and zero decision quality drift.
 
+## Phase 7: Commercial/Productization Readiness
+
+The portfolio release is complete. Phase 7 turns the next commercial questions
+into scoped, verifiable productization work rather than adding random features.
+The source of truth is `docs/COMMERCIAL_READINESS.md`, with a hosted public
+page at `https://launchlens-ai-two.vercel.app/readiness`.
+
+### Phase 7 Acceptance
+
+- [x] Add a detailed commercial readiness plan covering reviewer evidence,
+      identity, billing limits, onboarding, eval/ops visibility, and security
+      re-entry.
+- [x] Add a public readiness page for reviewers and maintainers.
+- [x] Add `npm run verify:commercial-readiness`.
+- [x] Wire commercial readiness verification into CI and release workflows.
+- [ ] Design the identity and tenant migration plan before implementing
+      checkout or account login.
+- [ ] Define billing states, plan quotas, webhook idempotency, and quota
+      precedence.
+- [ ] Specify first-session activation events without logging private founder
+      input, evidence notes, provider payloads, or recovery credentials.
+- [ ] Decide how decision eval quality, latency risk, release evidence, and
+      incident ownership should be surfaced for operators.
+

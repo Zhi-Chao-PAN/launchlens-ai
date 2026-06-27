@@ -35,6 +35,7 @@ Go only when all of these are true:
 - `npm run release:local` passes.
 - `npm run verify:release-readiness` passes.
 - `npm run verify:portfolio` passes.
+- `npm run verify:commercial-readiness` passes.
 - `npm run evidence:release` returns either `promotion_pending` before
   promotion or `production_verified` after promotion.
 - The operator has explicit production approval.
@@ -46,7 +47,8 @@ No-go when any of these are true:
 - The pre-promotion workflow contains a production deploy command.
 - The public `/api/status` response is missing, protected by auth, or reports an
   unhealthy database.
-- `release:local` or `verify:release-readiness` fails.
+- `release:local`, `verify:release-readiness`, or
+  `verify:commercial-readiness` fails.
 - `verify:production-demo` fails after production promotion.
 - The production database secret is missing and no local cloud-smoke substitute
   has been agreed.
@@ -78,6 +80,7 @@ Run locally:
 ```bash
 npm run verify:release-readiness
 npm run verify:portfolio
+npm run verify:commercial-readiness
 npm run release:local
 npm run evidence:release
 ```

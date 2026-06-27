@@ -1,23 +1,19 @@
 import { readFileSync } from "node:fs";
 
 import {
-  evaluateReleaseReadiness,
-  type ReleaseReadinessFile,
-} from "../src/lib/launchlens/release-readiness";
+  evaluateCommercialReadiness,
+  type CommercialReadinessFile,
+} from "../src/lib/launchlens/commercial-readiness";
 
 const requiredPaths = [
-  ".github/workflows/release-candidate-verify.yml",
-  ".github/workflows/post-promotion-verify.yml",
-  "docs/PRODUCTION_RUNBOOK.md",
-  "docs/PRODUCTION_RELEASE_PACKET.md",
+  "docs/COMMERCIAL_READINESS.md",
+  "src/app/readiness/page.tsx",
+  "README.md",
   "docs/PORTFOLIO_CASE_STUDY.md",
   "docs/DEMO_SCRIPT.md",
-  "docs/COMMERCIAL_READINESS.md",
-  "src/app/case-study/page.tsx",
-  "src/app/readiness/page.tsx",
-  "docs/RELEASE_CANDIDATE.md",
-  "README.md",
-  ".gitignore",
+  "PROJECT_MATURITY.md",
+  "ROADMAP.md",
+  "TASKS.md",
 ];
 
 function readJson(path: string) {
@@ -26,14 +22,14 @@ function readJson(path: string) {
   };
 }
 
-function readFiles(paths: string[]): ReleaseReadinessFile[] {
+function readFiles(paths: string[]): CommercialReadinessFile[] {
   return paths.map((path) => ({
     path,
     content: readFileSync(path, "utf8"),
   }));
 }
 
-const issues = evaluateReleaseReadiness({
+const issues = evaluateCommercialReadiness({
   packageJson: readJson("package.json"),
   files: readFiles(requiredPaths),
 });

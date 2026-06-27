@@ -75,12 +75,15 @@ Release evidence snapshot:
 
 ```bash
 npm run verify:release-readiness
+npm run verify:commercial-readiness
 npm run evidence:release
 ```
 
 The readiness verifier checks the production-stage handoff packet, workflow
-guards, required scripts, docs, and ignored evidence output. The evidence
-collector writes Markdown and JSON evidence under `output/release-evidence/`.
+guards, required scripts, docs, and ignored evidence output. The commercial
+readiness verifier checks the productization plan, hosted readiness page,
+maturity notes, roadmap, and task list. The evidence collector writes Markdown
+and JSON evidence under `output/release-evidence/`.
 Before production promotion, a healthy public URL serving an older SHA is
 classified as `promotion_pending`; after promotion, the same command should
 classify the public URL as `production_verified`.

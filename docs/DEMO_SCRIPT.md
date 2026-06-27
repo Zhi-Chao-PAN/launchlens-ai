@@ -31,9 +31,17 @@ overview before entering the product:
 https://launchlens-ai-two.vercel.app/case-study
 ```
 
+Use the hosted commercial readiness page when the conversation shifts from
+portfolio evidence to real productization:
+
+```text
+https://launchlens-ai-two.vercel.app/readiness
+```
+
 Use `docs/PORTFOLIO_CASE_STUDY.md` as the written companion for reviewers who
 want the problem, architecture, verification, and next-stage tradeoffs before
-or after the live walkthrough.
+or after the live walkthrough. Use `docs/COMMERCIAL_READINESS.md` for the
+identity, billing, onboarding, eval-ops, and security re-entry plan.
 
 Until production promotion is complete, use a local production build or an
 authenticated Vercel preview for private rehearsal. Do not present the protected
@@ -148,7 +156,9 @@ Mention:
 - `npm run release:local`
 - `npm run release:cloud`
 - `npm run verify:portfolio`
+- `npm run verify:commercial-readiness`
 - `https://launchlens-ai-two.vercel.app/case-study`
+- `https://launchlens-ai-two.vercel.app/readiness`
 - `docs/RELEASE_CANDIDATE.md`
 - `docs/PRODUCTION_RUNBOOK.md`
 
@@ -192,3 +202,6 @@ After production promotion, the next phase is a commercial-readiness slice:
 pricing/onboarding, stronger team roles, long-term eval retention, and a clearer
 tenant/billing model. That phase should start from the documented re-entry cost
 rather than adding features blindly.
+
+The detailed version now lives in `docs/COMMERCIAL_READINESS.md`, with the
+public stage page at `https://launchlens-ai-two.vercel.app/readiness`.

@@ -27,6 +27,10 @@ const requiredPackageScripts: RequiredText[] = [
   { value: "verify:public-demo", label: "public demo verifier" },
   { value: "verify:production-demo", label: "production demo verifier" },
   { value: "verify:portfolio", label: "portfolio package verifier" },
+  {
+    value: "verify:commercial-readiness",
+    label: "commercial readiness verifier",
+  },
   { value: "verify:cloud-db", label: "cloud database verifier" },
   { value: "smoke:cloud", label: "cloud workspace smoke" },
   { value: "smoke:tenant", label: "tenant isolation smoke" },
@@ -38,6 +42,10 @@ const requiredFiles: Record<string, RequiredText[]> = {
     { value: "workflow_dispatch", label: "manual trigger" },
     { value: "npm run verify:release-readiness", label: "readiness check" },
     { value: "npm run verify:portfolio", label: "portfolio package check" },
+    {
+      value: "npm run verify:commercial-readiness",
+      label: "commercial readiness check",
+    },
     { value: "npm run release:local", label: "local release gate" },
     { value: "npm run evidence:release", label: "release evidence step" },
     { value: "upload-artifact", label: "artifact upload" },
@@ -48,6 +56,10 @@ const requiredFiles: Record<string, RequiredText[]> = {
     { value: "LAUNCHLENS_SMOKE_DATABASE_URL", label: "cloud smoke secret" },
     { value: "npm run verify:release-readiness", label: "readiness check" },
     { value: "npm run verify:portfolio", label: "portfolio package check" },
+    {
+      value: "npm run verify:commercial-readiness",
+      label: "commercial readiness check",
+    },
     { value: "npm run release:cloud", label: "cloud release gate" },
     { value: "npm run verify:production-demo", label: "production demo gate" },
     { value: "npm run evidence:release", label: "release evidence step" },
@@ -60,12 +72,24 @@ const requiredFiles: Record<string, RequiredText[]> = {
     { value: "npm run release:local", label: "local release gate" },
     { value: "npm run release:cloud", label: "cloud release gate" },
     { value: "npm run verify:production-demo", label: "production demo gate" },
+    {
+      value: "npm run verify:commercial-readiness",
+      label: "commercial readiness gate",
+    },
+    {
+      value: "docs/COMMERCIAL_READINESS.md",
+      label: "commercial readiness plan",
+    },
     { value: "npm run evidence:release", label: "release evidence command" },
     { value: "Rollback", label: "rollback section" },
   ],
   "docs/PRODUCTION_RELEASE_PACKET.md": [
     { value: "Go / No-Go", label: "go/no-go decision section" },
     { value: "Explicit Production Approval", label: "approval boundary" },
+    {
+      value: "npm run verify:commercial-readiness",
+      label: "commercial readiness gate",
+    },
     { value: "npm run release:cloud", label: "cloud release gate" },
     { value: "npm run verify:production-demo", label: "production demo gate" },
     { value: "production_verified", label: "target evidence state" },
@@ -73,6 +97,10 @@ const requiredFiles: Record<string, RequiredText[]> = {
   ],
   "docs/PORTFOLIO_CASE_STUDY.md": [
     { value: "https://launchlens-ai-two.vercel.app/case-study", label: "hosted case study URL" },
+    {
+      value: "docs/COMMERCIAL_READINESS.md",
+      label: "commercial readiness reference",
+    },
     { value: "Reviewer Quick Path", label: "reviewer quick path" },
     { value: "Evidence Map", label: "evidence map" },
     { value: "npm run verify:portfolio", label: "portfolio verifier" },
@@ -81,8 +109,25 @@ const requiredFiles: Record<string, RequiredText[]> = {
   ],
   "docs/DEMO_SCRIPT.md": [
     { value: "https://launchlens-ai-two.vercel.app/case-study", label: "hosted case study URL" },
+    {
+      value: "docs/COMMERCIAL_READINESS.md",
+      label: "commercial readiness reference",
+    },
     { value: "docs/PORTFOLIO_CASE_STUDY.md", label: "case study reference" },
     { value: "release gates", label: "release gate narrative" },
+  ],
+  "docs/COMMERCIAL_READINESS.md": [
+    { value: "Commercial Readiness Tracks", label: "readiness tracks" },
+    { value: "Reviewer Evidence Index", label: "reviewer evidence index" },
+    {
+      value: "npm run verify:commercial-readiness",
+      label: "commercial readiness verifier",
+    },
+    {
+      value: "npm run verify:production-demo",
+      label: "production demo verifier",
+    },
+    { value: "npm run release:cloud", label: "cloud release gate" },
   ],
   "src/app/case-study/page.tsx": [
     { value: "LaunchLens AI case study", label: "case study metadata" },
@@ -90,19 +135,41 @@ const requiredFiles: Record<string, RequiredText[]> = {
     { value: "npm run verify:portfolio", label: "portfolio verifier command" },
     { value: "npm run verify:production-demo", label: "production demo command" },
   ],
+  "src/app/readiness/page.tsx": [
+    {
+      value: "Commercial/Productization readiness",
+      label: "readiness page heading",
+    },
+    {
+      value: "npm run verify:commercial-readiness",
+      label: "commercial readiness verifier",
+    },
+  ],
   "docs/RELEASE_CANDIDATE.md": [
     { value: "promotion_pending", label: "pre-promotion evidence state" },
     { value: "production_verified", label: "post-promotion evidence state" },
     { value: "Release candidate verification", label: "pre-promotion workflow" },
+    {
+      value: "npm run verify:commercial-readiness",
+      label: "commercial readiness gate",
+    },
   ],
   "README.md": [
     { value: "https://launchlens-ai-two.vercel.app/case-study", label: "hosted case study URL" },
     { value: "/case-study", label: "case study route" },
+    {
+      value: "docs/COMMERCIAL_READINESS.md",
+      label: "commercial readiness link",
+    },
     { value: "docs/PORTFOLIO_CASE_STUDY.md", label: "case study link" },
     { value: "docs/PRODUCTION_RUNBOOK.md", label: "production runbook link" },
     { value: "docs/DEMO_SCRIPT.md", label: "demo script link" },
     { value: "Release candidate verification", label: "hosted RC audit" },
     { value: "verify:portfolio", label: "portfolio verifier command" },
+    {
+      value: "verify:commercial-readiness",
+      label: "commercial readiness verifier command",
+    },
   ],
   ".gitignore": [{ value: "/output/", label: "ignored evidence output" }],
 };

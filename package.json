@@ -16,6 +16,7 @@
     "verify:production-demo": "tsx scripts/verify-production-demo.ts",
     "verify:release-readiness": "tsx scripts/verify-release-readiness.ts",
     "verify:portfolio": "tsx scripts/verify-portfolio-package.ts",
+    "verify:commercial-readiness": "tsx scripts/verify-commercial-readiness.ts",
     "evidence:release": "tsx scripts/collect-release-evidence.ts",
     "smoke:cloud": "tsx scripts/smoke-cloud-workspace.ts",
     "smoke:rbac": "tsx scripts/smoke-rbac.ts",
@@ -27,7 +28,7 @@
     "smoke:e2e": "playwright test e2e/happy-path.e2e.test.ts --retries=0",
     "release:local": "npm run quality && npm run test:e2e",
     "release:cloud": "npm run verify:public-demo && npm run db:migrate && npm run verify:cloud-db && npm run smoke:cloud && npm run smoke:tenant && npm run smoke:rbac",
-    "quality": "npm run lint -- --max-warnings=0 && npm run test && npm run typecheck && npm run eval:provider && npm run eval:decision && npm run build && npm audit --audit-level=moderate",
+    "quality": "npm run lint -- --max-warnings=0 && npm run verify:portfolio && npm run verify:commercial-readiness && npm run test && npm run typecheck && npm run eval:provider && npm run eval:decision && npm run build && npm audit --audit-level=moderate",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

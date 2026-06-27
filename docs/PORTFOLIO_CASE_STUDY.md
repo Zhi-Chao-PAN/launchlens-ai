@@ -16,6 +16,12 @@ Hosted reviewer page:
 https://launchlens-ai-two.vercel.app/case-study
 ```
 
+Hosted commercial readiness page:
+
+```text
+https://launchlens-ai-two.vercel.app/readiness
+```
+
 ## Reviewer Quick Path
 
 Use this path when you have 10 to 15 minutes:
@@ -30,8 +36,11 @@ Use this path when you have 10 to 15 minutes:
 7. Save a cloud snapshot, enable a public share, then verify that private
    evidence notes and founder input are excluded from the share page.
 8. Scan the release evidence map below to see how the project is verified.
+9. Open the commercial readiness page to see how identity, billing, onboarding,
+   eval operations, and security re-entry are scoped for the next phase.
 
 For a spoken walkthrough, use `docs/DEMO_SCRIPT.md`.
+For the next productization stage, use `docs/COMMERCIAL_READINESS.md`.
 
 ## Problem
 
@@ -131,6 +140,7 @@ Runtime routes use DML only; schema changes are isolated in
 | Operator process is documented | `docs/PRODUCTION_RUNBOOK.md` |
 | Demo narrative is documented | `docs/DEMO_SCRIPT.md` |
 | Production release packet is documented | `docs/PRODUCTION_RELEASE_PACKET.md` |
+| Commercial/productization readiness is documented | `docs/COMMERCIAL_READINESS.md` and `https://launchlens-ai-two.vercel.app/readiness` |
 
 ## Design Tradeoffs
 
@@ -174,3 +184,8 @@ It is not yet a paid commercial SaaS. The next commercial slice would need:
 The practical next stage for the portfolio is not more feature sprawl. It is to
 make the artifact easier to judge: sharper case study, stronger evidence links,
 repeatable hosted verification, and a cleaner reviewer handoff.
+
+That next stage is now tracked in `docs/COMMERCIAL_READINESS.md`. It turns the
+commercialization question into explicit tracks for the reviewer evidence
+index, identity and tenant model, billing and plan limits, onboarding and
+activation, eval and ops visibility, and security/compliance re-entry.

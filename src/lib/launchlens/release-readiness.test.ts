@@ -15,6 +15,8 @@ function snapshot(): ReleaseReadinessSnapshot {
         "verify:public-demo": "tsx scripts/verify-public-demo.ts",
         "verify:production-demo": "tsx scripts/verify-production-demo.ts",
         "verify:portfolio": "tsx scripts/verify-portfolio-package.ts",
+        "verify:commercial-readiness":
+          "tsx scripts/verify-commercial-readiness.ts",
         "verify:cloud-db": "tsx scripts/verify-cloud-db.ts",
         "verify:release-readiness":
           "tsx scripts/verify-release-readiness.ts",
@@ -27,32 +29,37 @@ function snapshot(): ReleaseReadinessSnapshot {
       {
         path: ".github/workflows/release-candidate-verify.yml",
         content:
-          "workflow_dispatch npm run verify:release-readiness npm run verify:portfolio npm run release:local npm run evidence:release upload-artifact launchlens-rc-evidence",
+          "workflow_dispatch npm run verify:release-readiness npm run verify:portfolio npm run verify:commercial-readiness npm run release:local npm run evidence:release upload-artifact launchlens-rc-evidence",
       },
       {
         path: ".github/workflows/post-promotion-verify.yml",
         content:
-          "workflow_dispatch LAUNCHLENS_SMOKE_DATABASE_URL npm run verify:release-readiness npm run verify:portfolio npm run release:cloud npm run verify:production-demo npm run evidence:release upload-artifact launchlens-release-evidence",
+          "workflow_dispatch LAUNCHLENS_SMOKE_DATABASE_URL npm run verify:release-readiness npm run verify:portfolio npm run verify:commercial-readiness npm run release:cloud npm run verify:production-demo npm run evidence:release upload-artifact launchlens-release-evidence",
       },
       {
         path: "docs/PRODUCTION_RUNBOOK.md",
         content:
-          "Release candidate verification Post-promotion verification npm run release:local npm run release:cloud npm run verify:production-demo npm run evidence:release Rollback",
+          "Release candidate verification Post-promotion verification npm run release:local npm run release:cloud npm run verify:production-demo npm run verify:commercial-readiness docs/COMMERCIAL_READINESS.md npm run evidence:release Rollback",
       },
       {
         path: "docs/PRODUCTION_RELEASE_PACKET.md",
         content:
-          "Go / No-Go Explicit Production Approval npm run release:cloud npm run verify:production-demo production_verified docs/PORTFOLIO_CASE_STUDY.md",
+          "Go / No-Go Explicit Production Approval npm run verify:commercial-readiness npm run release:cloud npm run verify:production-demo production_verified docs/PORTFOLIO_CASE_STUDY.md",
       },
       {
         path: "docs/PORTFOLIO_CASE_STUDY.md",
         content:
-          "https://launchlens-ai-two.vercel.app/case-study Reviewer Quick Path Evidence Map npm run verify:portfolio npm run release:cloud docs/PRODUCTION_RUNBOOK.md",
+          "https://launchlens-ai-two.vercel.app/case-study docs/COMMERCIAL_READINESS.md Reviewer Quick Path Evidence Map npm run verify:portfolio npm run release:cloud docs/PRODUCTION_RUNBOOK.md",
       },
       {
         path: "docs/DEMO_SCRIPT.md",
         content:
-          "https://launchlens-ai-two.vercel.app/case-study docs/PORTFOLIO_CASE_STUDY.md release gates",
+          "https://launchlens-ai-two.vercel.app/case-study docs/COMMERCIAL_READINESS.md docs/PORTFOLIO_CASE_STUDY.md release gates",
+      },
+      {
+        path: "docs/COMMERCIAL_READINESS.md",
+        content:
+          "Commercial Readiness Tracks Reviewer Evidence Index npm run verify:commercial-readiness npm run verify:production-demo npm run release:cloud",
       },
       {
         path: "src/app/case-study/page.tsx",
@@ -60,14 +67,19 @@ function snapshot(): ReleaseReadinessSnapshot {
           "LaunchLens AI case study Evidence map npm run verify:portfolio npm run verify:production-demo",
       },
       {
+        path: "src/app/readiness/page.tsx",
+        content:
+          "Commercial/Productization readiness npm run verify:commercial-readiness",
+      },
+      {
         path: "docs/RELEASE_CANDIDATE.md",
         content:
-          "promotion_pending production_verified Release candidate verification",
+          "promotion_pending production_verified Release candidate verification npm run verify:commercial-readiness",
       },
       {
         path: "README.md",
         content:
-          "https://launchlens-ai-two.vercel.app/case-study /case-study docs/PORTFOLIO_CASE_STUDY.md docs/PRODUCTION_RUNBOOK.md docs/DEMO_SCRIPT.md Release candidate verification verify:portfolio",
+          "https://launchlens-ai-two.vercel.app/case-study /case-study docs/COMMERCIAL_READINESS.md docs/PORTFOLIO_CASE_STUDY.md docs/PRODUCTION_RUNBOOK.md docs/DEMO_SCRIPT.md Release candidate verification verify:portfolio verify:commercial-readiness",
       },
       {
         path: ".gitignore",

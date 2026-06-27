@@ -44,6 +44,9 @@ jobs:
       - name: Verify portfolio package
         run: npm run verify:portfolio
 
+      - name: Verify commercial readiness package
+        run: npm run verify:commercial-readiness
+
       - name: Run local release gate
         run: npm run release:local
 

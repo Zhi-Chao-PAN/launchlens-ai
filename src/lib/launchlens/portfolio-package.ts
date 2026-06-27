@@ -22,6 +22,10 @@ type RequiredText = {
 
 const requiredScripts: RequiredText[] = [
   { value: "verify:portfolio", label: "portfolio package verifier" },
+  {
+    value: "verify:commercial-readiness",
+    label: "commercial readiness verifier",
+  },
   { value: "verify:release-readiness", label: "release readiness verifier" },
   { value: "verify:production-demo", label: "production demo verifier" },
   { value: "release:cloud", label: "cloud release gate" },
@@ -31,7 +35,16 @@ const requiredScripts: RequiredText[] = [
 const requiredFiles: Record<string, RequiredText[]> = {
   "README.md": [
     { value: "https://launchlens-ai-two.vercel.app/case-study", label: "hosted case study URL" },
+    {
+      value: "https://launchlens-ai-two.vercel.app/readiness",
+      label: "hosted readiness URL",
+    },
     { value: "/case-study", label: "case study route" },
+    { value: "/readiness", label: "readiness route" },
+    {
+      value: "docs/COMMERCIAL_READINESS.md",
+      label: "commercial readiness link",
+    },
     { value: "docs/PORTFOLIO_CASE_STUDY.md", label: "case study link" },
     { value: "docs/DEMO_SCRIPT.md", label: "demo script link" },
     { value: "https://launchlens-ai-two.vercel.app", label: "live demo URL" },
@@ -39,6 +52,14 @@ const requiredFiles: Record<string, RequiredText[]> = {
   ],
   "docs/PORTFOLIO_CASE_STUDY.md": [
     { value: "https://launchlens-ai-two.vercel.app/case-study", label: "hosted case study URL" },
+    {
+      value: "https://launchlens-ai-two.vercel.app/readiness",
+      label: "hosted readiness URL",
+    },
+    {
+      value: "docs/COMMERCIAL_READINESS.md",
+      label: "commercial readiness reference",
+    },
     { value: "https://launchlens-ai-two.vercel.app", label: "live demo URL" },
     { value: "Reviewer Quick Path", label: "reviewer quick path" },
     { value: "Product Answer", label: "product answer section" },
@@ -58,9 +79,30 @@ const requiredFiles: Record<string, RequiredText[]> = {
   ],
   "docs/DEMO_SCRIPT.md": [
     { value: "https://launchlens-ai-two.vercel.app/case-study", label: "hosted case study URL" },
+    {
+      value: "https://launchlens-ai-two.vercel.app/readiness",
+      label: "hosted readiness URL",
+    },
     { value: "/case-study", label: "case study route" },
+    { value: "/readiness", label: "readiness route" },
+    {
+      value: "docs/COMMERCIAL_READINESS.md",
+      label: "commercial readiness reference",
+    },
     { value: "docs/PORTFOLIO_CASE_STUDY.md", label: "case study reference" },
     { value: "https://launchlens-ai-two.vercel.app", label: "live demo URL" },
+  ],
+  "docs/COMMERCIAL_READINESS.md": [
+    { value: "Commercial Readiness Tracks", label: "readiness tracks" },
+    { value: "Reviewer Evidence Index", label: "reviewer evidence index" },
+    {
+      value: "npm run verify:commercial-readiness",
+      label: "commercial readiness verifier",
+    },
+    {
+      value: "https://launchlens-ai-two.vercel.app/readiness",
+      label: "hosted readiness URL",
+    },
   ],
   "src/app/case-study/page.tsx": [
     { value: "LaunchLens AI case study", label: "case study metadata" },
@@ -70,9 +112,24 @@ const requiredFiles: Record<string, RequiredText[]> = {
     { value: "/screenshots/launchlens-desktop.png", label: "desktop screenshot" },
     { value: "/screenshots/launchlens-mobile.png", label: "mobile screenshot" },
     { value: "Evidence map", label: "evidence map section" },
+    {
+      value: "Commercial readiness",
+      label: "commercial readiness link",
+    },
     { value: "npm run verify:portfolio", label: "portfolio verifier command" },
     { value: "npm run verify:production-demo", label: "production demo command" },
     { value: "View verification", label: "verification CTA" },
+  ],
+  "src/app/readiness/page.tsx": [
+    {
+      value: "Commercial/Productization readiness",
+      label: "readiness page heading",
+    },
+    { value: "Reviewer Evidence Index", label: "reviewer evidence index" },
+    {
+      value: "npm run verify:commercial-readiness",
+      label: "commercial readiness verifier",
+    },
   ],
   "docs/PRODUCTION_RELEASE_PACKET.md": [
     { value: "docs/PORTFOLIO_CASE_STUDY.md", label: "case study reference" },

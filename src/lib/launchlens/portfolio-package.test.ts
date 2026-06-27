@@ -10,6 +10,8 @@ function snapshot(): PortfolioPackageSnapshot {
     packageJson: {
       scripts: {
         "verify:portfolio": "tsx scripts/verify-portfolio-package.ts",
+        "verify:commercial-readiness":
+          "tsx scripts/verify-commercial-readiness.ts",
         "verify:release-readiness":
           "tsx scripts/verify-release-readiness.ts",
         "verify:production-demo": "tsx scripts/verify-production-demo.ts",
@@ -21,22 +23,32 @@ function snapshot(): PortfolioPackageSnapshot {
       {
         path: "README.md",
         content:
-          "https://launchlens-ai-two.vercel.app/case-study /case-study docs/PORTFOLIO_CASE_STUDY.md docs/DEMO_SCRIPT.md https://launchlens-ai-two.vercel.app verify:portfolio",
+          "https://launchlens-ai-two.vercel.app/case-study https://launchlens-ai-two.vercel.app/readiness /case-study /readiness docs/COMMERCIAL_READINESS.md docs/PORTFOLIO_CASE_STUDY.md docs/DEMO_SCRIPT.md https://launchlens-ai-two.vercel.app verify:portfolio",
       },
       {
         path: "src/app/case-study/page.tsx",
         content:
-          "LaunchLens AI case study Portfolio case study Open product Read written case study /screenshots/launchlens-desktop.png /screenshots/launchlens-mobile.png Evidence map npm run verify:portfolio npm run verify:production-demo View verification",
+          "LaunchLens AI case study Portfolio case study Open product Read written case study /screenshots/launchlens-desktop.png /screenshots/launchlens-mobile.png Evidence map Commercial readiness npm run verify:portfolio npm run verify:production-demo View verification",
+      },
+      {
+        path: "src/app/readiness/page.tsx",
+        content:
+          "Commercial/Productization readiness Reviewer Evidence Index npm run verify:commercial-readiness",
+      },
+      {
+        path: "docs/COMMERCIAL_READINESS.md",
+        content:
+          "Commercial Readiness Tracks Reviewer Evidence Index npm run verify:commercial-readiness https://launchlens-ai-two.vercel.app/readiness",
       },
       {
         path: "docs/PORTFOLIO_CASE_STUDY.md",
         content:
-          "https://launchlens-ai-two.vercel.app/case-study https://launchlens-ai-two.vercel.app Reviewer Quick Path Product Answer AI Product Engineering Full-Stack SaaS Shape Release And Operations Evidence Map docs/DEMO_SCRIPT.md docs/PRODUCTION_RUNBOOK.md docs/PRODUCTION_RELEASE_PACKET.md npm run verify:production-demo npm run release:cloud npm run verify:portfolio",
+          "https://launchlens-ai-two.vercel.app/case-study https://launchlens-ai-two.vercel.app/readiness docs/COMMERCIAL_READINESS.md https://launchlens-ai-two.vercel.app Reviewer Quick Path Product Answer AI Product Engineering Full-Stack SaaS Shape Release And Operations Evidence Map docs/DEMO_SCRIPT.md docs/PRODUCTION_RUNBOOK.md docs/PRODUCTION_RELEASE_PACKET.md npm run verify:production-demo npm run release:cloud npm run verify:portfolio",
       },
       {
         path: "docs/DEMO_SCRIPT.md",
         content:
-          "https://launchlens-ai-two.vercel.app/case-study /case-study docs/PORTFOLIO_CASE_STUDY.md https://launchlens-ai-two.vercel.app",
+          "https://launchlens-ai-two.vercel.app/case-study https://launchlens-ai-two.vercel.app/readiness /case-study /readiness docs/COMMERCIAL_READINESS.md docs/PORTFOLIO_CASE_STUDY.md https://launchlens-ai-two.vercel.app",
       },
       {
         path: "docs/PRODUCTION_RELEASE_PACKET.md",

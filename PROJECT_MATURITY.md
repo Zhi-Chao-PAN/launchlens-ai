@@ -7,6 +7,31 @@ LaunchLens AI has reached the portfolio release defined for this project. It is 
 
 Future commercial features still exist, but none are required to demonstrate the intended AI full-stack Solopreneur and TPM portfolio story.
 
+## Commercial/Productization Readiness
+
+The post-portfolio phase has started. The detailed plan now lives in
+`docs/COMMERCIAL_READINESS.md`, with a public stage page at
+`https://launchlens-ai-two.vercel.app/readiness`.
+
+This readiness phase does not claim that LaunchLens AI is already a paid SaaS.
+It converts the commercial gap into explicit, verifiable tracks:
+
+- Reviewer evidence index.
+- Identity and tenant model.
+- Billing and plan limits.
+- Onboarding and activation.
+- Eval and ops visibility.
+- Security and compliance re-entry.
+
+The verifier for this phase is:
+
+```bash
+npm run verify:commercial-readiness
+```
+
+The commercial readiness gate is intentionally connected to the existing
+portfolio and release gates instead of replacing them.
+
 ## Release Evidence
 
 1. Product depth: pass. The product connects idea intake, target users, pains, MVP scope, backlog, landing copy, pricing, launch/content plans, assumptions, evidence, decisions, cited AI briefs, and execution tasks.

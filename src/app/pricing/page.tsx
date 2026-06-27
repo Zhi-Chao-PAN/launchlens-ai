@@ -108,6 +108,12 @@ export default function PricingPage() {
           >
             Back to the product workspace
           </Link>
+          <Link
+            href="/readiness"
+            className="w-fit rounded text-sm font-semibold text-accent underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+          >
+            Read the commercial readiness plan
+          </Link>
         </header>
 
         <section
@@ -165,8 +171,13 @@ export default function PricingPage() {
             Pricing questions, answered honestly
           </h2>
           <p className="text-xs text-muted">
-            Tip: use <kbd className="rounded border border-card bg-card px-1 py-0.5 font-mono text-[11px]">↑</kbd>{" "}
-            <kbd className="rounded border border-card bg-card px-1 py-0.5 font-mono text-[11px]">↓</kbd>{" "}
+            Tip: use{" "}
+            <kbd className="rounded border border-card bg-card px-1 py-0.5 font-mono text-[11px]">
+              Up
+            </kbd>{" "}
+            <kbd className="rounded border border-card bg-card px-1 py-0.5 font-mono text-[11px]">
+              Down
+            </kbd>{" "}
             to move between questions.
           </p>
           <DisclosureGroup className="grid gap-3">
@@ -186,7 +197,8 @@ export default function PricingPage() {
             public deployment. Reviewers can read this page as evidence that
             the team is thinking about pricing honestly, not as evidence that
             a paid product exists. The re-entry cost to wire real billing is
-            documented in <code>PROJECT_MATURITY.md</code>.
+            documented in <code>PROJECT_MATURITY.md</code> and the commercial
+            readiness plan at <code>docs/COMMERCIAL_READINESS.md</code>.
           </p>
         </footer>
       </div>

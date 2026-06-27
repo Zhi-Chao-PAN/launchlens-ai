@@ -9,7 +9,7 @@
 
 LaunchLens AI is an AI-powered SaaS workspace that turns a raw product idea into an editable go-to-market plan for indie founders, solo builders, and small product teams.
 
-If you only have five minutes, open the hosted case study at `https://launchlens-ai-two.vercel.app/case-study`, then read `docs/PORTFOLIO_CASE_STUDY.md` and `ARCHITECTURE.md`. If you have twenty minutes, read `README.md` end-to-end. If you want the full design history, read `ROADMAP.md`, `TASKS.md`, `PROJECT_MATURITY.md`, and `NIGHTLY_LOG.md` in that order.
+If you only have five minutes, open the hosted case study at `https://launchlens-ai-two.vercel.app/case-study` and the commercial readiness page at `https://launchlens-ai-two.vercel.app/readiness`, then read `docs/PORTFOLIO_CASE_STUDY.md`, `docs/COMMERCIAL_READINESS.md`, and `ARCHITECTURE.md`. If you have twenty minutes, read `README.md` end-to-end. If you want the full design history, read `ROADMAP.md`, `TASKS.md`, `PROJECT_MATURITY.md`, and `NIGHTLY_LOG.md` in that order.
 
 
 The portfolio goal is to show full-stack AI product judgment: product strategy, UX workflow, provider abstraction, secure environment handling, tests, and a path from mock demo to real LLM-backed SaaS. It is not a pure algorithm or notebook project.
@@ -20,6 +20,11 @@ The reviewer-facing case study lives in two forms:
 
 - Hosted product page: [`/case-study`](https://launchlens-ai-two.vercel.app/case-study)
 - Written engineering case study: [`docs/PORTFOLIO_CASE_STUDY.md`](docs/PORTFOLIO_CASE_STUDY.md)
+
+The commercial/productization readiness package lives in two forms:
+
+- Hosted readiness page: [`/readiness`](https://launchlens-ai-two.vercel.app/readiness)
+- Detailed readiness plan: [`docs/COMMERCIAL_READINESS.md`](docs/COMMERCIAL_READINESS.md)
 
 Problem: early founders often have many product ideas but no coherent path from concept to target user, MVP scope, pricing, launch content, and execution tasks.
 
@@ -277,6 +282,10 @@ Hosted case study:
 
 [launchlens-ai-two.vercel.app/case-study](https://launchlens-ai-two.vercel.app/case-study)
 
+Hosted commercial readiness page:
+
+[launchlens-ai-two.vercel.app/readiness](https://launchlens-ai-two.vercel.app/readiness)
+
 ## Release Candidate
 
 Current RC evidence, promotion checklist, and demo flow are tracked in
@@ -292,6 +301,10 @@ The reviewer-facing case study is tracked in
 [`docs/PORTFOLIO_CASE_STUDY.md`](docs/PORTFOLIO_CASE_STUDY.md), with the
 public web version at
 [`/case-study`](https://launchlens-ai-two.vercel.app/case-study).
+The commercial/productization readiness plan is tracked in
+[`docs/COMMERCIAL_READINESS.md`](docs/COMMERCIAL_READINESS.md), with the
+public web version at
+[`/readiness`](https://launchlens-ai-two.vercel.app/readiness).
 For a hosted pre-promotion audit, run the GitHub Actions workflow
 `Release candidate verification`.
 
@@ -302,6 +315,7 @@ npm run lint
 npm run test
 npm run verify:release-readiness
 npm run verify:portfolio
+npm run verify:commercial-readiness
 npm run verify:production-demo # checks production status and browser e2e
 npm run release:local
 npm run evidence:release # writes ignored Markdown/JSON release evidence

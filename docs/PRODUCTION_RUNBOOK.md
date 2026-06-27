@@ -20,6 +20,7 @@ by Vercel authentication and cannot serve as the public demo gate.
 - Production demo URL: `https://launchlens-ai-two.vercel.app`
 - Current RC evidence: `docs/RELEASE_CANDIDATE.md`
 - Production handoff packet: `docs/PRODUCTION_RELEASE_PACKET.md`
+- Commercial readiness plan: `docs/COMMERCIAL_READINESS.md`
 - Pre-promotion workflow: `.github/workflows/release-candidate-verify.yml`
 - Post-promotion workflow: `.github/workflows/post-promotion-verify.yml`
 
@@ -31,6 +32,7 @@ Run this before any production action:
 git status --short --branch
 npm run verify:release-readiness
 npm run verify:portfolio
+npm run verify:commercial-readiness
 npm run release:local
 npm run verify:public-demo
 npm run evidence:release
@@ -46,6 +48,9 @@ Expected meaning:
 - `verify:portfolio` proves the reviewer case study, demo script, production
   packet, README, and live-demo references still form a coherent portfolio
   handoff.
+- `verify:commercial-readiness` proves the commercial/productization readiness
+  plan, hosted readiness page, maturity notes, roadmap, and task list are wired
+  into the release package.
 - `verify:public-demo` proves the currently public URL is healthy and connected
   to cloud storage.
 - `verify:production-demo` proves the public URL reports the expected SHA and

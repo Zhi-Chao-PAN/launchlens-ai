@@ -8,6 +8,8 @@ import {
 const requiredPaths = [
   "README.md",
   "src/app/case-study/page.tsx",
+  "src/app/readiness/page.tsx",
+  "docs/COMMERCIAL_READINESS.md",
   "docs/PORTFOLIO_CASE_STUDY.md",
   "docs/DEMO_SCRIPT.md",
   "docs/PRODUCTION_RELEASE_PACKET.md",
