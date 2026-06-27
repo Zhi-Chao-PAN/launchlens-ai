@@ -1,4 +1,13 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+async function dismissQuickStart(page: Page) {
+  const quickStart = page.getByRole("dialog", { name: /quick start guide/i });
+
+  if (await quickStart.isVisible({ timeout: 3_000 }).catch(() => false)) {
+    await page.getByRole("button", { name: /get started/i }).click();
+    await expect(quickStart).toBeHidden();
+  }
+}
 
 /**
  * End-to-end happy path for the LaunchLens AI portfolio.
@@ -30,6 +39,7 @@ test.describe("LaunchLens AI end-to-end", () => {
     ).toBeVisible();
     const ideaTextarea = page.locator("textarea").first();
     await expect(ideaTextarea).not.toHaveValue("");
+    await dismissQuickStart(page);
 
     // 2. Click the first sample brief so the workspace hydrates with
     //    the activation-analyst state.
