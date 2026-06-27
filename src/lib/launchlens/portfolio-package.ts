@@ -30,12 +30,15 @@ const requiredScripts: RequiredText[] = [
 
 const requiredFiles: Record<string, RequiredText[]> = {
   "README.md": [
+    { value: "https://launchlens-ai-two.vercel.app/case-study", label: "hosted case study URL" },
+    { value: "/case-study", label: "case study route" },
     { value: "docs/PORTFOLIO_CASE_STUDY.md", label: "case study link" },
     { value: "docs/DEMO_SCRIPT.md", label: "demo script link" },
     { value: "https://launchlens-ai-two.vercel.app", label: "live demo URL" },
     { value: "verify:portfolio", label: "portfolio verifier command" },
   ],
   "docs/PORTFOLIO_CASE_STUDY.md": [
+    { value: "https://launchlens-ai-two.vercel.app/case-study", label: "hosted case study URL" },
     { value: "https://launchlens-ai-two.vercel.app", label: "live demo URL" },
     { value: "Reviewer Quick Path", label: "reviewer quick path" },
     { value: "Product Answer", label: "product answer section" },
@@ -54,8 +57,22 @@ const requiredFiles: Record<string, RequiredText[]> = {
     { value: "npm run verify:portfolio", label: "portfolio verifier" },
   ],
   "docs/DEMO_SCRIPT.md": [
+    { value: "https://launchlens-ai-two.vercel.app/case-study", label: "hosted case study URL" },
+    { value: "/case-study", label: "case study route" },
     { value: "docs/PORTFOLIO_CASE_STUDY.md", label: "case study reference" },
     { value: "https://launchlens-ai-two.vercel.app", label: "live demo URL" },
+  ],
+  "src/app/case-study/page.tsx": [
+    { value: "LaunchLens AI case study", label: "case study metadata" },
+    { value: "Portfolio case study", label: "case study page badge" },
+    { value: "Open product", label: "product CTA" },
+    { value: "Read written case study", label: "written case study CTA" },
+    { value: "/screenshots/launchlens-desktop.png", label: "desktop screenshot" },
+    { value: "/screenshots/launchlens-mobile.png", label: "mobile screenshot" },
+    { value: "Evidence map", label: "evidence map section" },
+    { value: "npm run verify:portfolio", label: "portfolio verifier command" },
+    { value: "npm run verify:production-demo", label: "production demo command" },
+    { value: "View verification", label: "verification CTA" },
   ],
   "docs/PRODUCTION_RELEASE_PACKET.md": [
     { value: "docs/PORTFOLIO_CASE_STUDY.md", label: "case study reference" },
@@ -112,4 +129,3 @@ export function evaluatePortfolioPackage(
 
   return issues;
 }
-

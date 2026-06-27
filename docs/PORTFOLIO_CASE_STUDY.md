@@ -10,19 +10,26 @@ Live demo:
 https://launchlens-ai-two.vercel.app
 ```
 
+Hosted reviewer page:
+
+```text
+https://launchlens-ai-two.vercel.app/case-study
+```
+
 ## Reviewer Quick Path
 
 Use this path when you have 10 to 15 minutes:
 
-1. Open the live demo.
-2. Choose the `B2B SaaS activation` sample brief.
-3. Generate the workspace.
-4. Open the Validation Board and inspect a supported, testing, and refuted
+1. Open the hosted case-study page at `/case-study`.
+2. Open the live demo.
+3. Choose the `B2B SaaS activation` sample brief.
+4. Generate the workspace.
+5. Open the Validation Board and inspect a supported, testing, and refuted
    hypothesis.
-5. Inspect or regenerate the cited AI decision brief.
-6. Save a cloud snapshot, enable a public share, then verify that private
+6. Inspect or regenerate the cited AI decision brief.
+7. Save a cloud snapshot, enable a public share, then verify that private
    evidence notes and founder input are excluded from the share page.
-7. Scan the release evidence map below to see how the project is verified.
+8. Scan the release evidence map below to see how the project is verified.
 
 For a spoken walkthrough, use `docs/DEMO_SCRIPT.md`.
 
@@ -110,6 +117,7 @@ Runtime routes use DML only; schema changes are isolated in
 
 | Claim | Evidence |
 | --- | --- |
+| Public case-study page is live | `https://launchlens-ai-two.vercel.app/case-study` |
 | Public demo is live | `npm run verify:public-demo` |
 | Production browser demo works | `npm run verify:production-demo` |
 | Cloud database contract is intact | `npm run verify:cloud-db` |
@@ -118,7 +126,7 @@ Runtime routes use DML only; schema changes are isolated in
 | RBAC invite/read/mutation boundaries work | `npm run smoke:rbac` |
 | Cloud release gate is reproducible end to end | `npm run release:cloud` |
 | Local release gate is reproducible | `npm run release:local` |
-| Portfolio docs stay connected | `npm run verify:portfolio` |
+| Portfolio docs and public case-study page stay connected | `npm run verify:portfolio` |
 | Release handoff stays connected | `npm run verify:release-readiness` |
 | Operator process is documented | `docs/PRODUCTION_RUNBOOK.md` |
 | Demo narrative is documented | `docs/DEMO_SCRIPT.md` |

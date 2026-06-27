@@ -24,6 +24,13 @@ Use the production URL once the RC is promoted:
 https://launchlens-ai-two.vercel.app
 ```
 
+Use the hosted case-study page when a reviewer wants the shortest public
+overview before entering the product:
+
+```text
+https://launchlens-ai-two.vercel.app/case-study
+```
+
 Use `docs/PORTFOLIO_CASE_STUDY.md` as the written companion for reviewers who
 want the problem, architecture, verification, and next-stage tradeoffs before
 or after the live walkthrough.
@@ -59,6 +66,9 @@ and then keeps a validation loop attached to it.
 
 Open the app and use the `B2B SaaS activation` sample brief or paste a concise
 founder brief.
+
+If the conversation starts from the portfolio page, open `/case-study` first and
+then use its `Open product` action to enter the workspace.
 
 ### 2. Generate The Workspace
 
@@ -137,6 +147,8 @@ Mention:
 
 - `npm run release:local`
 - `npm run release:cloud`
+- `npm run verify:portfolio`
+- `https://launchlens-ai-two.vercel.app/case-study`
 - `docs/RELEASE_CANDIDATE.md`
 - `docs/PRODUCTION_RUNBOOK.md`
 

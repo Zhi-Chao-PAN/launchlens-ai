@@ -12,6 +12,7 @@ const requiredPaths = [
   "docs/PRODUCTION_RELEASE_PACKET.md",
   "docs/PORTFOLIO_CASE_STUDY.md",
   "docs/DEMO_SCRIPT.md",
+  "src/app/case-study/page.tsx",
   "docs/RELEASE_CANDIDATE.md",
   "README.md",
   ".gitignore",

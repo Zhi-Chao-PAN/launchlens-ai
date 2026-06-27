@@ -47,12 +47,17 @@ function snapshot(): ReleaseReadinessSnapshot {
       {
         path: "docs/PORTFOLIO_CASE_STUDY.md",
         content:
-          "Reviewer Quick Path Evidence Map npm run verify:portfolio npm run release:cloud docs/PRODUCTION_RUNBOOK.md",
+          "https://launchlens-ai-two.vercel.app/case-study Reviewer Quick Path Evidence Map npm run verify:portfolio npm run release:cloud docs/PRODUCTION_RUNBOOK.md",
       },
       {
         path: "docs/DEMO_SCRIPT.md",
         content:
-          "docs/PORTFOLIO_CASE_STUDY.md release gates",
+          "https://launchlens-ai-two.vercel.app/case-study docs/PORTFOLIO_CASE_STUDY.md release gates",
+      },
+      {
+        path: "src/app/case-study/page.tsx",
+        content:
+          "LaunchLens AI case study Evidence map npm run verify:portfolio npm run verify:production-demo",
       },
       {
         path: "docs/RELEASE_CANDIDATE.md",
@@ -62,7 +67,7 @@ function snapshot(): ReleaseReadinessSnapshot {
       {
         path: "README.md",
         content:
-          "docs/PORTFOLIO_CASE_STUDY.md docs/PRODUCTION_RUNBOOK.md docs/DEMO_SCRIPT.md Release candidate verification verify:portfolio",
+          "https://launchlens-ai-two.vercel.app/case-study /case-study docs/PORTFOLIO_CASE_STUDY.md docs/PRODUCTION_RUNBOOK.md docs/DEMO_SCRIPT.md Release candidate verification verify:portfolio",
       },
       {
         path: ".gitignore",

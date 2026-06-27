@@ -9,14 +9,17 @@
 
 LaunchLens AI is an AI-powered SaaS workspace that turns a raw product idea into an editable go-to-market plan for indie founders, solo builders, and small product teams.
 
-If you only have five minutes, read `docs/PORTFOLIO_CASE_STUDY.md` and `ARCHITECTURE.md`. If you have twenty minutes, read `README.md` end-to-end. If you want the full design history, read `ROADMAP.md`, `TASKS.md`, `PROJECT_MATURITY.md`, and `NIGHTLY_LOG.md` in that order.
+If you only have five minutes, open the hosted case study at `https://launchlens-ai-two.vercel.app/case-study`, then read `docs/PORTFOLIO_CASE_STUDY.md` and `ARCHITECTURE.md`. If you have twenty minutes, read `README.md` end-to-end. If you want the full design history, read `ROADMAP.md`, `TASKS.md`, `PROJECT_MATURITY.md`, and `NIGHTLY_LOG.md` in that order.
 
 
 The portfolio goal is to show full-stack AI product judgment: product strategy, UX workflow, provider abstraction, secure environment handling, tests, and a path from mock demo to real LLM-backed SaaS. It is not a pure algorithm or notebook project.
 
 ## Case Study Snapshot
 
-The reviewer-facing case study lives in [`docs/PORTFOLIO_CASE_STUDY.md`](docs/PORTFOLIO_CASE_STUDY.md).
+The reviewer-facing case study lives in two forms:
+
+- Hosted product page: [`/case-study`](https://launchlens-ai-two.vercel.app/case-study)
+- Written engineering case study: [`docs/PORTFOLIO_CASE_STUDY.md`](docs/PORTFOLIO_CASE_STUDY.md)
 
 Problem: early founders often have many product ideas but no coherent path from concept to target user, MVP scope, pricing, launch content, and execution tasks.
 
@@ -270,6 +273,10 @@ Open `http://localhost:3000`.
 
 [launchlens-ai-two.vercel.app](https://launchlens-ai-two.vercel.app)
 
+Hosted case study:
+
+[launchlens-ai-two.vercel.app/case-study](https://launchlens-ai-two.vercel.app/case-study)
+
 ## Release Candidate
 
 Current RC evidence, promotion checklist, and demo flow are tracked in
@@ -282,7 +289,9 @@ portfolio walkthrough is tracked in
 The production-stage handoff packet is tracked in
 [`docs/PRODUCTION_RELEASE_PACKET.md`](docs/PRODUCTION_RELEASE_PACKET.md).
 The reviewer-facing case study is tracked in
-[`docs/PORTFOLIO_CASE_STUDY.md`](docs/PORTFOLIO_CASE_STUDY.md).
+[`docs/PORTFOLIO_CASE_STUDY.md`](docs/PORTFOLIO_CASE_STUDY.md), with the
+public web version at
+[`/case-study`](https://launchlens-ai-two.vercel.app/case-study).
 For a hosted pre-promotion audit, run the GitHub Actions workflow
 `Release candidate verification`.
 

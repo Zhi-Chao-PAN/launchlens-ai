@@ -7,6 +7,7 @@ import {
 
 const requiredPaths = [
   "README.md",
+  "src/app/case-study/page.tsx",
   "docs/PORTFOLIO_CASE_STUDY.md",
   "docs/DEMO_SCRIPT.md",
   "docs/PRODUCTION_RELEASE_PACKET.md",
@@ -46,4 +47,3 @@ console.log(
 if (issues.length > 0) {
   process.exitCode = 1;
 }
-

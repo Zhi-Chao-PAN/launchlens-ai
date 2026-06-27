@@ -72,6 +72,7 @@ const requiredFiles: Record<string, RequiredText[]> = {
     { value: "docs/PORTFOLIO_CASE_STUDY.md", label: "case study handoff" },
   ],
   "docs/PORTFOLIO_CASE_STUDY.md": [
+    { value: "https://launchlens-ai-two.vercel.app/case-study", label: "hosted case study URL" },
     { value: "Reviewer Quick Path", label: "reviewer quick path" },
     { value: "Evidence Map", label: "evidence map" },
     { value: "npm run verify:portfolio", label: "portfolio verifier" },
@@ -79,8 +80,15 @@ const requiredFiles: Record<string, RequiredText[]> = {
     { value: "docs/PRODUCTION_RUNBOOK.md", label: "runbook reference" },
   ],
   "docs/DEMO_SCRIPT.md": [
+    { value: "https://launchlens-ai-two.vercel.app/case-study", label: "hosted case study URL" },
     { value: "docs/PORTFOLIO_CASE_STUDY.md", label: "case study reference" },
     { value: "release gates", label: "release gate narrative" },
+  ],
+  "src/app/case-study/page.tsx": [
+    { value: "LaunchLens AI case study", label: "case study metadata" },
+    { value: "Evidence map", label: "case study evidence map" },
+    { value: "npm run verify:portfolio", label: "portfolio verifier command" },
+    { value: "npm run verify:production-demo", label: "production demo command" },
   ],
   "docs/RELEASE_CANDIDATE.md": [
     { value: "promotion_pending", label: "pre-promotion evidence state" },
@@ -88,6 +96,8 @@ const requiredFiles: Record<string, RequiredText[]> = {
     { value: "Release candidate verification", label: "pre-promotion workflow" },
   ],
   "README.md": [
+    { value: "https://launchlens-ai-two.vercel.app/case-study", label: "hosted case study URL" },
+    { value: "/case-study", label: "case study route" },
     { value: "docs/PORTFOLIO_CASE_STUDY.md", label: "case study link" },
     { value: "docs/PRODUCTION_RUNBOOK.md", label: "production runbook link" },
     { value: "docs/DEMO_SCRIPT.md", label: "demo script link" },
