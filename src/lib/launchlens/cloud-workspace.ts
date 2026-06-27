@@ -1,10 +1,7 @@
 import type { LaunchLensInput, LaunchLensWorkspace } from "./types";
 import type { WorkspaceExecutionState } from "./execution";
 import type { SharedExecutionState } from "./execution";
-import { getDefaultCommercialPlan } from "./commercial-entitlements";
 
-export const MAX_CLOUD_WORKSPACES =
-  getDefaultCommercialPlan().limits.cloudSnapshots;
 export const MAX_TOTAL_CLOUD_WORKSPACES = 5_000;
 
 export type CloudWorkspaceSummary = {
@@ -30,6 +27,7 @@ export type SharedCloudWorkspaceRecord = CloudWorkspaceSummary & {
 export type CloudWorkspaceListResponse = {
   configured: boolean;
   workspaces: CloudWorkspaceSummary[];
+  cloudSnapshotLimit: number;
 };
 
 export type CloudWorkspaceResponse = {

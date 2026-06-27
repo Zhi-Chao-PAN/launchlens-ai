@@ -5,6 +5,7 @@ import { Disclosure, DisclosureGroup } from "@/components/disclosure";
 import {
   commercialPlanRows,
   getDefaultCommercialPlan,
+  summarizePreviewCommercialEntitlement,
 } from "@/lib/launchlens/commercial-entitlements";
 
 export const metadata: Metadata = {
@@ -42,8 +43,8 @@ const tiers = [
       "Optional MiniMax or OpenAI-compatible live provider",
       "Privacy-safe read-only share links with explicit consent",
     ],
-    cta: "Start Solo",
-    href: "mailto:zhi-chao.pan@example.com?subject=LaunchLens%20AI%20Solo%20plan",
+    cta: "Open billing",
+    href: "/billing",
   },
   {
     name: "Team",
@@ -58,13 +59,15 @@ const tiers = [
       "Priority access to new provider eval scenarios",
       "Onboarding help and a private Slack channel for the team",
     ],
-    cta: "Talk to us",
-    href: "mailto:zhi-chao.pan@example.com?subject=LaunchLens%20AI%20Team%20plan",
+    cta: "Open billing",
+    href: "/billing",
   },
 ];
 
 const entitlementRows = commercialPlanRows();
 const defaultEntitlement = getDefaultCommercialPlan();
+const defaultEntitlementSummary =
+  summarizePreviewCommercialEntitlement(defaultEntitlement);
 
 const frequentlyAsked = [
   {
@@ -85,7 +88,7 @@ const frequentlyAsked = [
   {
     question: "Can the hosted pricing page be exercised right now?",
     answer:
-      "This page is a portfolio artifact. The Solo and Team tiers use mailto links by design, so a real Stripe checkout is not wired up in the public deployment. The code path for billing lives in the deliberate-non-blocking roadmap and is documented in PROJECT_MATURITY.md.",
+      "Yes. The Billing page reads the current subscription contract and can start Stripe Checkout when the deployment has a complete Stripe configuration. The public portfolio deployment stays in preview mode until those server-side settings are present.",
   },
 ];
 
@@ -105,10 +108,10 @@ export default function PricingPage() {
             This page documents the pricing tiers that the public demo, the
             Solo plan, and the Team plan would offer. The portfolio release
             ships the Free demo, the Solo capability account, and the
-            Team-preview tenant/RBAC path. Stripe checkout is not wired up in
-            the public deployment; the Solo and Team buttons open a mailto so a
-            real billing flow is never pretended to be live. The executable
-            entitlement contract lives in{" "}
+            Team-preview tenant/RBAC path. The Solo and Team buttons now open
+            the billing surface; Stripe Checkout activates only when the
+            deployment has complete server-side billing configuration. The
+            executable entitlement contract lives in{" "}
             <code>src/lib/launchlens/commercial-entitlements.ts</code>.
           </p>
           <Link
@@ -129,6 +132,12 @@ export default function PricingPage() {
           >
             View the entitlement API
           </a>
+          <Link
+            href="/billing"
+            className="w-fit rounded text-sm font-semibold text-accent underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+          >
+            Open subscription billing
+          </Link>
         </header>
 
         <section
@@ -190,7 +199,8 @@ export default function PricingPage() {
               Executable entitlement contract
             </p>
             <h2 className="text-lg font-semibold text-foreground">
-              Current public deployment resolves to {defaultEntitlement.name}.
+              Current public deployment resolves to{" "}
+              {defaultEntitlementSummary.activePlanName}.
             </h2>
             <p className="max-w-3xl text-sm leading-6 text-foreground/75">
               These limits are consumed by the workspace, tenant, and member
@@ -259,14 +269,13 @@ export default function PricingPage() {
 
         <footer className="rounded-md border border-dashed border-input bg-input p-4 text-sm leading-6 text-foreground/80">
           <p>
-            The Solo and Team tiers on this page are placeholders. They use
-            mailto links because the portfolio release does not collect payment
-            data, and there is no production Stripe account wired into the
-            public deployment. Reviewers can read this page as evidence that
-            the team is thinking about pricing honestly, not as evidence that
-            a paid product exists. The re-entry cost to wire real billing is
-            documented in <code>PROJECT_MATURITY.md</code> and the commercial
-            readiness plan at <code>docs/COMMERCIAL_READINESS.md</code>.
+            The billing implementation uses hosted Stripe Checkout and the
+            Stripe customer portal, so LaunchLens never receives card details.
+            The public deployment remains a preview whenever Stripe settings
+            are absent; a visible Billing page is not presented as proof that a
+            live merchant account is enabled. Operational setup remains
+            documented in <code>PROJECT_MATURITY.md</code> and{" "}
+            <code>docs/COMMERCIAL_READINESS.md</code>.
           </p>
         </footer>
       </div>

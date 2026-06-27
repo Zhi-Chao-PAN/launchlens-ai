@@ -34,6 +34,26 @@ export const ERROR_ALREADY_SHARED = "already_shared";
 export const ERROR_QUOTA_EXCEEDED = "quota_exceeded";
 export const ERROR_COMMERCIAL_PLAN_LIMIT = "commercial_plan_limit_reached";
 
+// --- Commercial billing ---
+export const ERROR_BILLING_NOT_CONFIGURED = "billing_not_configured";
+export const ERROR_INVALID_BILLING_PLAN = "invalid_billing_plan";
+export const ERROR_BILLING_SUBSCRIPTION_EXISTS =
+  "billing_subscription_exists";
+export const ERROR_BILLING_SUBSCRIPTION_MISSING =
+  "billing_subscription_missing";
+export const ERROR_BILLING_SIGNATURE_INVALID = "billing_signature_invalid";
+export const ERROR_BILLING_RETURN_URL_INVALID =
+  "billing_return_url_invalid";
+export const ERROR_BILLING_CHECKOUT_FAILED = "billing_checkout_failed";
+export const ERROR_BILLING_REQUEST_FAILED = "billing_request_failed";
+export const ERROR_BILLING_STORAGE_UNAVAILABLE =
+  "billing_storage_unavailable";
+export const ERROR_BILLING_TENANT_UNAVAILABLE =
+  "billing_tenant_unavailable";
+export const ERROR_BILLING_OWNER_CONFLICT = "billing_owner_conflict";
+export const ERROR_BILLING_EVENT_CONFLICT = "billing_event_conflict";
+export const ERROR_INVALID_BILLING_RECORD = "invalid_billing_record";
+
 // --- Cloud / infrastructure ---
 export const ERROR_CLOUD_UNAVAILABLE = "cloud_unavailable";
 export const ERROR_CLOUD_REQUEST_FAILED = "cloud_request_failed";

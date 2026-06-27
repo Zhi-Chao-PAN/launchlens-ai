@@ -6,12 +6,12 @@ import { neon } from "@neondatabase/serverless";
 
 import { hashOwnerToken } from "./workspace-store";
 import {
-  commercialPlanIdFromEnv,
   evaluateCommercialLimit,
-  getCommercialPlan,
   getDefaultCommercialPlan,
+  type CommercialPlanDefinition,
   type CommercialPlanLimits,
 } from "./commercial-entitlements";
+import { resolveCommercialEntitlementForOwnerHash } from "./commercial-subscription-store";
 import { ERROR_COMMERCIAL_PLAN_LIMIT } from "./error-codes";
 import type { WorkspaceSnapshotPayload } from "./workspace-validation";
 import { isLaunchLensInput, isLaunchLensWorkspace } from "./workspace-validation";
@@ -50,21 +50,14 @@ function getSql() {
   return neon(url);
 }
 
-function currentCommercialPlan() {
-  return getCommercialPlan(commercialPlanIdFromEnv(process.env));
-}
-
-function currentCommercialLimit(limitName: keyof CommercialPlanLimits) {
-  return currentCommercialPlan().limits[limitName];
-}
-
 function assertCommercialLimit(
+  plan: CommercialPlanDefinition,
   limitName: keyof CommercialPlanLimits,
   current: number,
   increment = 1,
 ) {
   const check = evaluateCommercialLimit(
-    currentCommercialPlan(),
+    plan,
     limitName,
     current,
     increment,
@@ -220,8 +213,9 @@ export async function createTenant(
       "Tenant name is required.",
     );
   }
-  const tenantLimit = currentCommercialLimit("tenantsPerOwner");
-  assertCommercialLimit("tenantsPerOwner", 0);
+  const entitlement = await resolveCommercialEntitlementForOwnerHash(ownerHash);
+  const tenantLimit = entitlement.plan.limits.tenantsPerOwner;
+  assertCommercialLimit(entitlement.plan, "tenantsPerOwner", 0);
   // Keep the per-owner tenant cap race-free across serverless instances.
   // The advisory lock scopes the count + insert to this owner without
   // blocking unrelated capability accounts.
@@ -240,7 +234,11 @@ export async function createTenant(
     `,
   ]);
   if (!rows || (Array.isArray(rows) && rows.length === 0)) {
-    assertCommercialLimit("tenantsPerOwner", tenantLimit);
+    assertCommercialLimit(
+      entitlement.plan,
+      "tenantsPerOwner",
+      tenantLimit,
+    );
     throw new TenantStoreError(
       ERROR_COMMERCIAL_PLAN_LIMIT,
       409,
@@ -270,6 +268,7 @@ export async function listWorkspacesInTenant(
 ): Promise<CloudWorkspaceSummary[] | null> {
   const ownerHash = hashOwnerToken(ownerToken);
   const sql = getSql();
+  const entitlement = await resolveCommercialEntitlementForOwnerHash(ownerHash);
   const tenantRows = (await sql`
     SELECT id FROM launchlens_tenants WHERE id = ${tenantId} AND owner_hash = ${ownerHash}
   `) as unknown as Array<{ id: string }>;
@@ -281,7 +280,7 @@ export async function listWorkspacesInTenant(
     FROM launchlens_workspaces
     WHERE tenant_id = ${tenantId}
     ORDER BY updated_at DESC
-    LIMIT ${currentCommercialLimit("cloudSnapshots")}
+    LIMIT ${entitlement.plan.limits.cloudSnapshots}
   `) as unknown as WorkspaceRow[];
   return rows.map(toSummary);
 }
@@ -321,8 +320,9 @@ export async function createWorkspaceInTenant(
   const sql = getSql();
   const id = randomUUID();
   const title = payload.title.slice(0, 120);
-  const workspaceLimit = currentCommercialLimit("cloudSnapshots");
-  assertCommercialLimit("cloudSnapshots", 0);
+  const entitlement = await resolveCommercialEntitlementForOwnerHash(ownerHash);
+  const workspaceLimit = entitlement.plan.limits.cloudSnapshots;
+  assertCommercialLimit(entitlement.plan, "cloudSnapshots", 0);
   const [countRows, rows] = await sql.transaction((transaction) => [
     transaction`
       SELECT COUNT(*)::int AS count
@@ -352,7 +352,7 @@ export async function createWorkspaceInTenant(
   if (!row) {
     const count = Number(firstRow<{ count: number }>(countRows)?.count ?? 0);
     if (count >= workspaceLimit) {
-      assertCommercialLimit("cloudSnapshots", count);
+      assertCommercialLimit(entitlement.plan, "cloudSnapshots", count);
     }
     return { kind: "tenant_missing" };
   }

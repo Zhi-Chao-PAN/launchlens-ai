@@ -291,15 +291,25 @@
 - [x] Add `docs/COMMERCIAL_ENTITLEMENTS.md`,
       `src/lib/launchlens/commercial-entitlements.ts`, and
       `/api/commercial/entitlements` so Free, Solo, and Team-preview limits are
-      executable before checkout exists.
+      executable independently from the payment provider.
 - [x] Route cloud workspace, tenant, and member invite capacity checks through
       the entitlement contract.
+- [x] Add `docs/COMMERCIAL_BILLING.md`, `/billing`, hosted Stripe Checkout,
+      Billing Portal, subscription status API, and signed webhook route.
+- [x] Persist subscription state and idempotent billing events in Neon with
+      stale-event protection and fixed seven-day past-due grace behavior.
+- [x] Make persisted subscription state take precedence over the public preview
+      envelope for workspace, tenant, member, and public-share enforcement.
+- [x] Add safe disabled-state behavior when Stripe settings are absent, plus
+      focused domain, route, signature, and billing configuration tests.
 - [ ] Turn the reviewer evidence index into a live-ish status surface with
       current CI, deployment, release evidence, and workflow links.
 - [ ] Draft the identity and tenant migration design before adding OAuth,
-      passkeys, or checkout.
-- [ ] Define subscription states, webhook idempotency, cancellation, grace
-      periods, and quota-source precedence on top of the entitlement contract.
+      passkeys, billing-admin roles, or support access.
+- [ ] Run an account-owned Stripe sandbox checkout and signed webhook acceptance
+      flow, then provision and verify the intended production project.
+- [ ] Add durable live-provider usage metering before treating monthly
+      allowances as billable enforcement.
 - [ ] Specify onboarding and activation events with privacy constraints.
 - [ ] Decide how eval drift, latency risk, and release evidence become
       operator-visible without leaking private workspace content.

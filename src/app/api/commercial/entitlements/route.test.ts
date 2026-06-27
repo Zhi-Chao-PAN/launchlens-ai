@@ -34,7 +34,7 @@ describe("/api/commercial/entitlements", () => {
     await expect(response.json()).resolves.toMatchObject({
       entitlement: {
         activePlanId: "solo",
-        activePlanName: "Solo",
+        activePlanName: "Solo preview",
         limits: {
           tenantsPerOwner: 1,
           membersPerWorkspace: 1,

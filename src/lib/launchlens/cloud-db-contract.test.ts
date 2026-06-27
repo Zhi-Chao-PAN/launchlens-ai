@@ -76,4 +76,36 @@ describe("cloud DB contract", () => {
       }),
     );
   });
+
+  it("requires the durable subscription state used for entitlement precedence", () => {
+    const snapshot = completeSnapshot();
+    snapshot.columns = snapshot.columns.filter(
+      (column) =>
+        column.tableName !== "launchlens_commercial_subscriptions" ||
+        column.columnName !== "latest_event_created_at",
+    );
+
+    expect(evaluateCloudDbSchema(snapshot)).toContainEqual(
+      expect.objectContaining({
+        kind: "missing_column",
+        tableName: "launchlens_commercial_subscriptions",
+        columnName: "latest_event_created_at",
+      }),
+    );
+  });
+
+  it("requires the billing event receipt index for webhook operations", () => {
+    const snapshot = completeSnapshot();
+    snapshot.indexes = snapshot.indexes.filter(
+      (index) => index.indexName !== "launchlens_billing_events_received_idx",
+    );
+
+    expect(evaluateCloudDbSchema(snapshot)).toContainEqual(
+      expect.objectContaining({
+        kind: "missing_index",
+        tableName: "launchlens_billing_events",
+        indexName: "launchlens_billing_events_received_idx",
+      }),
+    );
+  });
 });

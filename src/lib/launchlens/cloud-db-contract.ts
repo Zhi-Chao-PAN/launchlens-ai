@@ -65,6 +65,29 @@ export const cloudDbColumnRequirements: CloudDbColumnRequirement[] = [
   { tableName: "launchlens_tenants", columnName: "name", nullable: false, dataTypes: ["character varying"] },
   { tableName: "launchlens_tenants", columnName: "owner_hash", nullable: false, dataTypes: ["character"] },
   { tableName: "launchlens_tenants", columnName: "created_at", nullable: false, dataTypes: ["timestamp with time zone"] },
+  { tableName: "launchlens_commercial_subscriptions", columnName: "owner_hash", nullable: false, dataTypes: ["character"] },
+  { tableName: "launchlens_commercial_subscriptions", columnName: "billing_tenant_id", nullable: false, dataTypes: ["uuid"] },
+  { tableName: "launchlens_commercial_subscriptions", columnName: "plan_id", nullable: false, dataTypes: ["text"] },
+  { tableName: "launchlens_commercial_subscriptions", columnName: "status", nullable: false, dataTypes: ["text"] },
+  { tableName: "launchlens_commercial_subscriptions", columnName: "provider", nullable: false, dataTypes: ["text"] },
+  { tableName: "launchlens_commercial_subscriptions", columnName: "provider_customer_id", nullable: false, dataTypes: ["text"] },
+  { tableName: "launchlens_commercial_subscriptions", columnName: "provider_subscription_id", nullable: false, dataTypes: ["text"] },
+  { tableName: "launchlens_commercial_subscriptions", columnName: "current_period_end", nullable: true, dataTypes: ["timestamp with time zone"] },
+  { tableName: "launchlens_commercial_subscriptions", columnName: "cancel_at_period_end", nullable: false, dataTypes: ["boolean"] },
+  { tableName: "launchlens_commercial_subscriptions", columnName: "grace_until", nullable: true, dataTypes: ["timestamp with time zone"] },
+  { tableName: "launchlens_commercial_subscriptions", columnName: "latest_event_id", nullable: false, dataTypes: ["text"] },
+  { tableName: "launchlens_commercial_subscriptions", columnName: "latest_event_created_at", nullable: false, dataTypes: ["bigint"] },
+  { tableName: "launchlens_commercial_subscriptions", columnName: "created_at", nullable: false, dataTypes: ["timestamp with time zone"] },
+  { tableName: "launchlens_commercial_subscriptions", columnName: "updated_at", nullable: false, dataTypes: ["timestamp with time zone"] },
+  { tableName: "launchlens_billing_events", columnName: "provider", nullable: false, dataTypes: ["text"] },
+  { tableName: "launchlens_billing_events", columnName: "event_id", nullable: false, dataTypes: ["text"] },
+  { tableName: "launchlens_billing_events", columnName: "event_type", nullable: false, dataTypes: ["text"] },
+  { tableName: "launchlens_billing_events", columnName: "event_created_at", nullable: false, dataTypes: ["bigint"] },
+  { tableName: "launchlens_billing_events", columnName: "payload_digest", nullable: false, dataTypes: ["character"] },
+  { tableName: "launchlens_billing_events", columnName: "processing_status", nullable: false, dataTypes: ["text"] },
+  { tableName: "launchlens_billing_events", columnName: "owner_hash", nullable: true, dataTypes: ["character"] },
+  { tableName: "launchlens_billing_events", columnName: "received_at", nullable: false, dataTypes: ["timestamp with time zone"] },
+  { tableName: "launchlens_billing_events", columnName: "processed_at", nullable: true, dataTypes: ["timestamp with time zone"] },
 ];
 
 export const cloudDbIndexRequirements: CloudDbIndexRequirement[] = [
@@ -73,6 +96,8 @@ export const cloudDbIndexRequirements: CloudDbIndexRequirement[] = [
   { tableName: "launchlens_rate_limits", indexName: "launchlens_rate_limits_window_idx" },
   { tableName: "launchlens_workspace_members", indexName: "launchlens_workspace_members_member_idx" },
   { tableName: "launchlens_workspace_invites", indexName: "launchlens_workspace_invites_workspace_idx" },
+  { tableName: "launchlens_commercial_subscriptions", indexName: "launchlens_commercial_subscriptions_tenant_idx" },
+  { tableName: "launchlens_billing_events", indexName: "launchlens_billing_events_received_idx" },
 ];
 
 export function requiredCloudDbTableNames() {

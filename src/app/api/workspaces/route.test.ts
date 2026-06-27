@@ -36,6 +36,7 @@ describe("/api/workspaces", () => {
     await expect(response.json()).resolves.toEqual({
       configured: false,
       workspaces: [],
+      cloudSnapshotLimit: 0,
     });
   });
 

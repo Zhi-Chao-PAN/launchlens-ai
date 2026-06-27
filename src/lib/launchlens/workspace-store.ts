@@ -3,6 +3,7 @@ import "server-only";
 import {
   ERROR_COMMERCIAL_PLAN_LIMIT,
   ERROR_CLOUD_UNAVAILABLE,
+  ERROR_BILLING_OWNER_CONFLICT,
 } from "./error-codes";
 
 import { createHash, randomBytes, randomUUID } from "node:crypto";
@@ -16,11 +17,14 @@ import {
   type SharedCloudWorkspaceRecord,
 } from "./cloud-workspace";
 import {
-  commercialPlanIdFromEnv,
   evaluateCommercialLimit,
-  getCommercialPlan,
+  type CommercialPlanDefinition,
   type CommercialPlanLimits,
 } from "./commercial-entitlements";
+import {
+  getCommercialSubscriptionByOwnerHash,
+  resolveCommercialEntitlementForOwnerHash,
+} from "./commercial-subscription-store";
 import type { WorkspaceSnapshotPayload } from "./workspace-validation";
 import {
   normalizeExecutionState,
@@ -105,21 +109,14 @@ function getSql() {
   return sqlClient;
 }
 
-function currentCommercialPlan() {
-  return getCommercialPlan(commercialPlanIdFromEnv(process.env));
-}
-
-function currentCommercialLimit(limitName: keyof CommercialPlanLimits) {
-  return currentCommercialPlan().limits[limitName];
-}
-
 function assertCommercialLimit(
+  plan: CommercialPlanDefinition,
   limitName: keyof CommercialPlanLimits,
   current: number,
   increment = 1,
 ) {
   const check = evaluateCommercialLimit(
-    currentCommercialPlan(),
+    plan,
     limitName,
     current,
     increment,
@@ -242,7 +239,6 @@ export async function listWorkspacesForMember(ownerToken: string) {
       SELECT workspace_id FROM launchlens_workspace_members WHERE member_hash = ${memberHash}
     )
     ORDER BY updated_at DESC
-    LIMIT ${currentCommercialLimit("cloudSnapshots")}
   `) as unknown as WorkspaceRow[];
 
   return rows.map(toSummary);
@@ -290,8 +286,9 @@ export async function createWorkspace(
   const sql = getSql();
   const id = randomUUID();
   const title = payload.title.slice(0, 120);
-  const workspaceLimit = currentCommercialLimit("cloudSnapshots");
-  assertCommercialLimit("cloudSnapshots", 0);
+  const entitlement = await resolveCommercialEntitlementForOwnerHash(ownerHash);
+  const workspaceLimit = entitlement.plan.limits.cloudSnapshots;
+  assertCommercialLimit(entitlement.plan, "cloudSnapshots", 0);
   const results = await sql.transaction((transaction) => [
     transaction`
       SELECT pg_advisory_xact_lock(${GLOBAL_QUOTA_LOCK}),
@@ -381,26 +378,61 @@ export async function setWorkspaceSharingForMember(
   const memberHash = hashOwnerToken(ownerToken);
   const sql = getSql();
   const roleRows = (await sql`
-    SELECT role
-    FROM launchlens_workspace_members
-    WHERE workspace_id = ${id} AND member_hash = ${memberHash}
+    SELECT member.role, workspace.owner_hash, workspace.is_public
+    FROM launchlens_workspace_members AS member
+    INNER JOIN launchlens_workspaces AS workspace
+      ON workspace.id = member.workspace_id
+    WHERE member.workspace_id = ${id} AND member.member_hash = ${memberHash}
     LIMIT 1
-  `) as unknown as Array<{ role: string }>;
+  `) as unknown as Array<{
+    role: string;
+    owner_hash: string;
+    is_public: boolean;
+  }>;
   const role = roleRows[0]?.role;
 
   if (role !== "owner" && role !== "editor") {
     return null;
   }
 
-  const rows = await sql`
-    UPDATE launchlens_workspaces
-    SET is_public = ${enabled},
-        share_expires_at = ${enabled && opts?.expiresInDays && Number.isFinite(opts.expiresInDays) && opts.expiresInDays > 0 ? new Date(Date.now() + opts.expiresInDays * 86400000) : null},
-        updated_at = NOW()
-    WHERE id = ${id}
-    RETURNING id, title, input, workspace, execution, is_public, share_expires_at, created_at, updated_at
-  `;
+  const ownerHash = roleRows[0].owner_hash;
+  const entitlement = await resolveCommercialEntitlementForOwnerHash(ownerHash);
+  const shareLimit = entitlement.plan.limits.publicShareLinks;
+  if (enabled && !roleRows[0].is_public) {
+    assertCommercialLimit(entitlement.plan, "publicShareLinks", 0);
+  }
+
+  const [, rows] = await sql.transaction((transaction) => [
+    transaction`
+      SELECT pg_advisory_xact_lock(hashtextextended(${ownerHash}, 13))
+    `,
+    transaction`
+      UPDATE launchlens_workspaces
+      SET is_public = ${enabled},
+          share_expires_at = ${enabled && opts?.expiresInDays && Number.isFinite(opts.expiresInDays) && opts.expiresInDays > 0 ? new Date(Date.now() + opts.expiresInDays * 86400000) : null},
+          updated_at = NOW()
+      WHERE id = ${id}
+        AND (
+          ${enabled} = FALSE
+          OR is_public = TRUE
+          OR (
+            SELECT COUNT(*)
+            FROM launchlens_workspaces
+            WHERE owner_hash = ${ownerHash} AND is_public = TRUE
+          ) < ${shareLimit}
+        )
+      RETURNING id, title, input, workspace, execution, is_public, share_expires_at, created_at, updated_at
+    `,
+  ]);
   const row = firstRow<WorkspaceRow>(rows);
+
+  if (!row && enabled) {
+    throw new WorkspaceStoreError(
+      ERROR_COMMERCIAL_PLAN_LIMIT,
+      409,
+      `${entitlement.plan.name} allows ${shareLimit} public share links. Upgrade or disable an existing link before continuing.`,
+    );
+  }
 
   return row ? toRecord(row) : null;
 }
@@ -418,7 +450,29 @@ export async function migrateWorkspaceOwner(
 
   const sql = getSql();
   const [firstHash, secondHash] = [currentOwnerHash, recoveryOwnerHash].sort();
-  const workspaceLimit = currentCommercialLimit("cloudSnapshots");
+  const [
+    currentSubscription,
+    recoverySubscription,
+    currentEntitlement,
+    recoveryEntitlement,
+  ] = await Promise.all([
+    getCommercialSubscriptionByOwnerHash(currentOwnerHash),
+    getCommercialSubscriptionByOwnerHash(recoveryOwnerHash),
+    resolveCommercialEntitlementForOwnerHash(currentOwnerHash),
+    resolveCommercialEntitlementForOwnerHash(recoveryOwnerHash),
+  ]);
+  if (currentSubscription && recoverySubscription) {
+    throw new WorkspaceStoreError(
+      ERROR_BILLING_OWNER_CONFLICT,
+      409,
+      "Both capability accounts have billing records. Manage the subscriptions before linking them.",
+    );
+  }
+  const entitlement = currentSubscription
+    ? currentEntitlement
+    : recoveryEntitlement;
+  const workspaceLimit = entitlement.plan.limits.cloudSnapshots;
+  assertCommercialLimit(entitlement.plan, "cloudSnapshots", 0);
   const [, countRows, migratedRows] = await sql.transaction((transaction) => [
     transaction`
       SELECT pg_advisory_xact_lock(hashtextextended(${firstHash}, 0)),
@@ -445,21 +499,56 @@ export async function migrateWorkspaceOwner(
       SELECT id, ${recoveryOwnerHash}, 'owner'
       FROM launchlens_workspaces
       WHERE owner_hash = ${recoveryOwnerHash}
+        AND (
+          SELECT COUNT(*)
+          FROM launchlens_workspaces
+          WHERE owner_hash IN (${currentOwnerHash}, ${recoveryOwnerHash})
+        ) <= ${workspaceLimit}
       ON CONFLICT (workspace_id, member_hash) DO NOTHING
     `,
     transaction`
       UPDATE launchlens_tenants
       SET owner_hash = ${recoveryOwnerHash}
       WHERE owner_hash = ${currentOwnerHash}
+        AND (
+          SELECT COUNT(*)
+          FROM launchlens_workspaces
+          WHERE owner_hash IN (${currentOwnerHash}, ${recoveryOwnerHash})
+        ) <= ${workspaceLimit}
     `,
     transaction`
       UPDATE launchlens_workspace_invites
       SET invited_by_hash = ${recoveryOwnerHash}
       WHERE invited_by_hash = ${currentOwnerHash}
+        AND (
+          SELECT COUNT(*)
+          FROM launchlens_workspaces
+          WHERE owner_hash IN (${currentOwnerHash}, ${recoveryOwnerHash})
+        ) <= ${workspaceLimit}
+    `,
+    transaction`
+      UPDATE launchlens_commercial_subscriptions
+      SET owner_hash = ${recoveryOwnerHash}, updated_at = NOW()
+      WHERE owner_hash = ${currentOwnerHash}
+        AND (
+          SELECT COUNT(*)
+          FROM launchlens_workspaces
+          WHERE owner_hash IN (${currentOwnerHash}, ${recoveryOwnerHash})
+        ) <= ${workspaceLimit}
+        AND NOT EXISTS (
+          SELECT 1
+          FROM launchlens_commercial_subscriptions
+          WHERE owner_hash = ${recoveryOwnerHash}
+        )
     `,
     transaction`
       DELETE FROM launchlens_workspace_members
       WHERE member_hash = ${currentOwnerHash} AND role = 'owner'
+        AND (
+          SELECT COUNT(*)
+          FROM launchlens_workspaces
+          WHERE owner_hash IN (${currentOwnerHash}, ${recoveryOwnerHash})
+        ) <= ${workspaceLimit}
     `,
   ]);
   const counts = firstRow<{
@@ -542,11 +631,13 @@ export async function listWorkspaceMembers(
   const memberHash = hashOwnerToken(ownerToken);
   const sql = getSql();
   const requester = (await sql`
-    SELECT role
-    FROM launchlens_workspace_members
-    WHERE workspace_id = ${id} AND member_hash = ${memberHash}
+    SELECT member.role, workspace.owner_hash
+    FROM launchlens_workspace_members AS member
+    INNER JOIN launchlens_workspaces AS workspace
+      ON workspace.id = member.workspace_id
+    WHERE member.workspace_id = ${id} AND member.member_hash = ${memberHash}
     LIMIT 1
-  `) as unknown as Array<{ role: string }>;
+  `) as unknown as Array<{ role: string; owner_hash: string }>;
 
   if (!isWorkspaceRole(requester[0]?.role)) {
     return null;
@@ -585,11 +676,13 @@ export async function createWorkspaceInvite(
   const memberHash = hashOwnerToken(ownerToken);
   const sql = getSql();
   const requester = (await sql`
-    SELECT role
-    FROM launchlens_workspace_members
-    WHERE workspace_id = ${id} AND member_hash = ${memberHash}
+    SELECT member.role, workspace.owner_hash
+    FROM launchlens_workspace_members AS member
+    INNER JOIN launchlens_workspaces AS workspace
+      ON workspace.id = member.workspace_id
+    WHERE member.workspace_id = ${id} AND member.member_hash = ${memberHash}
     LIMIT 1
-  `) as unknown as Array<{ role: string }>;
+  `) as unknown as Array<{ role: string; owner_hash: string }>;
 
   if (requester[0]?.role !== "owner") {
     return null;
@@ -601,7 +694,11 @@ export async function createWorkspaceInvite(
     WHERE workspace_id = ${id}
   `) as unknown as Array<{ count: number }>;
 
+  const entitlement = await resolveCommercialEntitlementForOwnerHash(
+    requester[0].owner_hash,
+  );
   assertCommercialLimit(
+    entitlement.plan,
     "membersPerWorkspace",
     Number(memberCountRows[0]?.count ?? 0),
   );

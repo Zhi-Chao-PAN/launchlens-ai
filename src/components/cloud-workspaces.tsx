@@ -29,7 +29,6 @@ import type {
   CloudWorkspaceResponse,
   CloudWorkspaceSummary,
 } from "@/lib/launchlens/cloud-workspace";
-import { MAX_CLOUD_WORKSPACES } from "@/lib/launchlens/cloud-workspace";
 import { formatSnapshotTime } from "@/lib/launchlens/snapshot-time";
 import { shareExpirySuffix } from "@/lib/launchlens/share-expiry-suffix";
 import { cloudRowExpiry } from "@/lib/launchlens/cloud-row-expiry";
@@ -82,6 +81,7 @@ export function CloudWorkspaces({
   const [cloudState, setCloudState] = useState<CloudState>("checking");
   const [cloudError, setCloudError] = useState<{ code: string; message: string } | null>(null);
   const [workspaces, setWorkspaces] = useState<CloudWorkspaceSummary[]>([]);
+  const [cloudSnapshotLimit, setCloudSnapshotLimit] = useState(0);
   const [busyAction, setBusyAction] = useState("");
   const [recoveryLabel, setRecoveryLabel] = useState("");
   const [recoveryKey, setRecoveryKey] = useState("");
@@ -143,6 +143,7 @@ export function CloudWorkspaces({
         if ("code" in body && body.code === "cloud_unavailable") {
           setCloudState("unavailable");
           setWorkspaces([]);
+          setCloudSnapshotLimit(0);
           return;
         }
 
@@ -159,10 +160,12 @@ export function CloudWorkspaces({
       if (!body.configured) {
         setCloudState("unavailable");
         setWorkspaces([]);
+        setCloudSnapshotLimit(0);
         return;
       }
 
       setWorkspaces(body.workspaces);
+      setCloudSnapshotLimit(body.cloudSnapshotLimit);
       setCloudState("ready");
       setListRenderKey((k) => k + 1);
     } catch (error) {
@@ -482,7 +485,7 @@ export function CloudWorkspaces({
             </h2>
             <p className="mt-0.5 text-sm text-muted">
               {cloudState === "ready"
-                ? `${ownerScope}, ${workspaces.length} of ${MAX_CLOUD_WORKSPACES} snapshots`
+                ? `${ownerScope}, ${workspaces.length} of ${cloudSnapshotLimit} snapshots`
                 : cloudState === "unavailable"
                   ? "Local-only mode"
                   : cloudState === "checking"

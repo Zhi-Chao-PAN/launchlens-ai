@@ -153,6 +153,65 @@ async function main() {
     ALTER COLUMN tenant_id SET NOT NULL
   `;
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS launchlens_commercial_subscriptions (
+      owner_hash CHAR(64) PRIMARY KEY,
+      billing_tenant_id UUID NOT NULL
+        REFERENCES launchlens_tenants(id) ON DELETE RESTRICT,
+      plan_id TEXT NOT NULL CHECK (plan_id IN ('solo', 'team')),
+      status TEXT NOT NULL CHECK (
+        status IN (
+          'incomplete',
+          'incomplete_expired',
+          'trialing',
+          'active',
+          'past_due',
+          'canceled',
+          'unpaid',
+          'paused'
+        )
+      ),
+      provider TEXT NOT NULL DEFAULT 'stripe' CHECK (provider = 'stripe'),
+      provider_customer_id TEXT NOT NULL,
+      provider_subscription_id TEXT NOT NULL,
+      current_period_end TIMESTAMPTZ,
+      cancel_at_period_end BOOLEAN NOT NULL DEFAULT FALSE,
+      grace_until TIMESTAMPTZ,
+      latest_event_id TEXT NOT NULL,
+      latest_event_created_at BIGINT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE (provider, provider_customer_id),
+      UNIQUE (provider, provider_subscription_id)
+    )
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS launchlens_commercial_subscriptions_tenant_idx
+    ON launchlens_commercial_subscriptions (billing_tenant_id)
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS launchlens_billing_events (
+      provider TEXT NOT NULL CHECK (provider = 'stripe'),
+      event_id TEXT NOT NULL,
+      event_type TEXT NOT NULL,
+      event_created_at BIGINT NOT NULL,
+      payload_digest CHAR(64) NOT NULL,
+      processing_status TEXT NOT NULL DEFAULT 'received'
+        CHECK (processing_status IN ('received', 'processed', 'stale', 'ignored')),
+      owner_hash CHAR(64),
+      received_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      processed_at TIMESTAMPTZ,
+      PRIMARY KEY (provider, event_id)
+    )
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS launchlens_billing_events_received_idx
+    ON launchlens_billing_events (received_at DESC)
+  `;
+
   console.log("LaunchLens cloud database migration completed.");
 }
 

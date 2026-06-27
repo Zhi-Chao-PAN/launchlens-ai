@@ -32,6 +32,32 @@ export const API_ERROR_MESSAGES: Record<string, string> = {
   quota_exceeded: "Storage quota exceeded. Delete an older snapshot first.",
   commercial_plan_limit_reached:
     "This action is outside the current plan limit. Remove usage or move to the next plan.",
+  billing_not_configured:
+    "Stripe billing is not enabled on this deployment.",
+  invalid_billing_plan:
+    "Choose the Solo or Team plan before starting checkout.",
+  billing_subscription_exists:
+    "This account already has a subscription. Use Manage billing to change it.",
+  billing_subscription_missing:
+    "This account does not have a managed subscription yet.",
+  billing_signature_invalid:
+    "The billing update could not be verified.",
+  billing_return_url_invalid:
+    "The billing return address is not configured safely.",
+  billing_checkout_failed:
+    "Stripe Checkout could not be started. Please retry.",
+  billing_request_failed:
+    "Billing is temporarily unavailable. Please retry.",
+  billing_storage_unavailable:
+    "Billing storage is temporarily unavailable. Please retry.",
+  billing_tenant_unavailable:
+    "The billing account could not be prepared. Please retry.",
+  billing_owner_conflict:
+    "Both capability accounts have billing records. Manage them before linking recovery.",
+  billing_event_conflict:
+    "A billing event identifier was reused with different content.",
+  invalid_billing_record:
+    "The saved billing state could not be read safely. Please contact support.",
 
   cloud_unavailable: "Cloud storage is not configured on this deployment.",
   cloud_request_failed: "Cloud storage could not be reached. Please retry.",

@@ -9,7 +9,7 @@
 
 LaunchLens AI is an AI-powered SaaS workspace that turns a raw product idea into an editable go-to-market plan for indie founders, solo builders, and small product teams.
 
-If you only have five minutes, open the hosted case study at `https://launchlens-ai-two.vercel.app/case-study` and the commercial readiness page at `https://launchlens-ai-two.vercel.app/readiness`, then read `docs/PORTFOLIO_CASE_STUDY.md`, `docs/COMMERCIAL_READINESS.md`, `docs/COMMERCIAL_ENTITLEMENTS.md`, and `ARCHITECTURE.md`. If you have twenty minutes, read `README.md` end-to-end. If you want the full design history, read `ROADMAP.md`, `TASKS.md`, `PROJECT_MATURITY.md`, and `NIGHTLY_LOG.md` in that order.
+If you only have five minutes, open the hosted case study at `https://launchlens-ai-two.vercel.app/case-study` and the commercial readiness page at `https://launchlens-ai-two.vercel.app/readiness`, then read `docs/PORTFOLIO_CASE_STUDY.md`, `docs/COMMERCIAL_READINESS.md`, `docs/COMMERCIAL_ENTITLEMENTS.md`, `docs/COMMERCIAL_BILLING.md`, and `ARCHITECTURE.md`. If you have twenty minutes, read `README.md` end-to-end. If you want the full design history, read `ROADMAP.md`, `TASKS.md`, `PROJECT_MATURITY.md`, and `NIGHTLY_LOG.md` in that order.
 
 
 The portfolio goal is to show full-stack AI product judgment: product strategy, UX workflow, provider abstraction, secure environment handling, tests, and a path from mock demo to real LLM-backed SaaS. It is not a pure algorithm or notebook project.
@@ -26,6 +26,7 @@ The commercial/productization readiness package lives in two forms:
 - Hosted readiness page: [`/readiness`](https://launchlens-ai-two.vercel.app/readiness)
 - Detailed readiness plan: [`docs/COMMERCIAL_READINESS.md`](docs/COMMERCIAL_READINESS.md)
 - Executable entitlement contract: [`docs/COMMERCIAL_ENTITLEMENTS.md`](docs/COMMERCIAL_ENTITLEMENTS.md), `src/lib/launchlens/commercial-entitlements.ts`, and `/api/commercial/entitlements`
+- Stripe-ready subscription lifecycle: [`docs/COMMERCIAL_BILLING.md`](docs/COMMERCIAL_BILLING.md), `/billing`, `/api/commercial/subscription`, hosted Checkout/Portal routes, and `/api/webhooks/stripe`
 
 Problem: early founders often have many product ideas but no coherent path from concept to target user, MVP scope, pricing, launch content, and execution tasks.
 
@@ -378,7 +379,7 @@ This is a single-author portfolio build that took three evening sessions over th
 - Total human time on this repository: approximately 8 to 10 hours of focused authoring plus the time spent reviewing Playwright traces, Vercel deployment logs, and the local Neon production smoke.
 - Total commits: 48 at the time of the portfolio release. Roughly two thirds of the commits are real product, security, or evaluation work; the rest are CI and lockfile fixes that came from running the standard pipeline against a fresh clone on a different OS/Node version than the dev machine. The exact commit count will keep growing as the post-portfolio enhancements land; this sentence is intentionally a snapshot, not a moving claim.
 - The eleven CI and lockfile commits are not pad commits. They came from three real environment crossings: a first GitHub Actions run that discovered lockfile drift, a Playwright install on Ubuntu that introduced optional native `@emnapi/*` deps requiring a lockfile regeneration, and a Chromium rendering mismatch between the Windows-captured baselines and the hosted CI renderer. Each commit message names the underlying cause so the trail is readable.
-- I chose to scope this portfolio release around a single founder workflow with a registration-free capability account. A full OAuth identity, team workspaces, billing, and a hosted pricing page were considered and intentionally deferred. See the re-entry cost note in `PROJECT_MATURITY.md` for what the conversion to a real commercial SaaS would require.
+- I chose to keep the registration-free capability account for the portfolio workflow. Team workspaces, RBAC, entitlements, and a Stripe-ready subscription core now exist; conventional identity, account-owned Stripe activation, billing/support roles, and usage metering remain explicit commercial re-entry work. See `PROJECT_MATURITY.md` and `docs/COMMERCIAL_BILLING.md`.
 - Reviewers who want a quick read of the engineering signals behind the project can scan the Phase coverage table below; reviewers who want the design intent can read `ARCHITECTURE.md`; reviewers who want the build diary can read `NIGHTLY_LOG.md`.
 
 ## Phase coverage

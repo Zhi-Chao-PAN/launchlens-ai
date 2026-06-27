@@ -49,8 +49,9 @@ Expected meaning:
   packet, README, and live-demo references still form a coherent portfolio
   handoff.
 - `verify:commercial-readiness` proves the commercial/productization readiness
-  plan, hosted readiness page, maturity notes, roadmap, and task list are wired
-  into the release package.
+  plan, billing contract, Stripe route surface, migration contract, hosted
+  readiness page, maturity notes, roadmap, and task list are wired into the
+  release package.
 - `verify:public-demo` proves the currently public URL is healthy and connected
   to cloud storage.
 - `verify:production-demo` proves the public URL reports the expected SHA and
@@ -72,6 +73,23 @@ Use the same value as the production Neon database URL unless a narrower
 smoke-test role is available. Prefer an elevated `DATABASE_MIGRATION_URL` only
 for migration work; the app runtime should continue using a least-privilege
 `DATABASE_URL` role.
+
+Stripe activation is optional for deploying the code safely. Keep these values
+unset to retain the configured preview entitlement, or configure all of them
+together before enabling checkout:
+
+```text
+STRIPE_SECRET_KEY
+STRIPE_WEBHOOK_SECRET
+STRIPE_PRICE_SOLO
+STRIPE_PRICE_TEAM
+NEXT_PUBLIC_APP_URL
+```
+
+Never place their values in release evidence or terminal transcripts. Before
+claiming billing is active, also register the production webhook endpoint and
+complete the external sandbox acceptance steps in
+`docs/COMMERCIAL_BILLING.md`.
 
 For a hosted pre-promotion audit trail that does not deploy production, run the
 manual workflow:
@@ -116,7 +134,10 @@ This gate checks:
 
 - `/api/status` returns LaunchLens JSON instead of a Vercel auth page.
 - The public deployment reports the intended `gitSha`.
-- The production database schema matches the expected contract.
+- The production database schema includes the subscription and durable billing
+  event tables and matches the expected contract.
+- `/billing` and `GET /api/commercial/subscription` expose a credential-safe
+  disabled or configured state without leaking provider secrets.
 - Workspace save, restore, recovery migration, public share, private-data
   boundary, share revocation, tenant isolation, and RBAC smoke paths pass.
 
@@ -162,13 +183,17 @@ If the post-promotion gate fails:
    fix and the fix has been reviewed.
 3. Restore the previous known-good production deployment from the Vercel
    dashboard, or revert the faulty commit and promote the revert.
-4. Re-run:
+4. Do not drop the additive commercial subscription or billing event tables
+   during an application rollback. If the incident is Stripe-specific, remove
+   the Stripe runtime variables to disable checkout and return accounts without
+   persisted subscriptions to the preview entitlement.
+5. Re-run:
 
 ```bash
 LAUNCHLENS_BASE_URL=https://launchlens-ai-two.vercel.app npm run verify:public-demo
 ```
 
-5. If the rollback restored a known-good commit, re-run with its expected SHA:
+6. If the rollback restored a known-good commit, re-run with its expected SHA:
 
 ```bash
 LAUNCHLENS_BASE_URL=https://launchlens-ai-two.vercel.app LAUNCHLENS_EXPECTED_GIT_SHA=<known-good-sha> npm run verify:public-demo
@@ -187,3 +212,6 @@ database mutation paths, tenant isolation, and RBAC end to end.
   serving an older deployment.
 - A Vercel authentication HTML response from `/api/status` means the target URL
   is not a public production URL and cannot satisfy the demo gate.
+- `release:cloud` verifies the schema and LaunchLens application paths. It does
+  not replace account-owned Stripe sandbox checkout, signed webhook delivery,
+  customer portal, refund, or dispute acceptance.

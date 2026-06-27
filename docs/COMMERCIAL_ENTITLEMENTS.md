@@ -7,9 +7,17 @@ but plan limits are now represented in code and consumed by product flows.
 Authoritative code:
 
 - `src/lib/launchlens/commercial-entitlements.ts`
+- `src/lib/launchlens/commercial-subscription.ts`
+- `src/lib/launchlens/commercial-subscription-store.ts`
+- `src/lib/launchlens/stripe-server.ts`
 - `src/app/api/commercial/entitlements/route.ts`
+- `src/app/api/commercial/subscription/route.ts`
+- `src/app/api/webhooks/stripe/route.ts`
 - `src/lib/launchlens/commercial-entitlements.test.ts`
 - `src/app/api/commercial/entitlements/route.test.ts`
+
+Billing operations and deployment configuration are documented in
+`docs/COMMERCIAL_BILLING.md`.
 
 Reviewer-safe API:
 
@@ -19,12 +27,11 @@ Reviewer-safe API:
 
 ## Active Preview Plan
 
-The default public deployment resolves to `team`.
+The default public deployment resolves to the `team` preview envelope.
 
 Reason: the hosted reviewer build must keep tenant isolation, RBAC invites,
 cloud history, and smoke tests exercisable without pretending Stripe checkout is
-live. The plan is therefore a Team preview entitlement, not a paid Team
-subscription.
+live. A persisted Stripe subscription takes precedence over this preview.
 
 The active plan can be changed later with:
 
@@ -41,8 +48,8 @@ preview default.
 | Plan | Checkout status | Cloud snapshots | Tenants | Members per workspace | Live-provider allowance |
 | --- | --- | ---: | ---: | ---: | ---: |
 | Free demo | not wired | 0 | 0 | 1 | 0 |
-| Solo | manual intake | 20 | 1 | 1 | 100/month |
-| Team preview | manual intake | 20 | 5 | 10 | 500/month |
+| Solo | Stripe-ready | 20 | 1 | 1 | 100/month |
+| Team | Stripe-ready | 20 | 5 | 10 | 500/month |
 
 ## Enforced Today
 
@@ -52,24 +59,23 @@ The entitlement contract is already consumed by:
 - tenant creation limits;
 - tenant-scoped workspace create limits;
 - workspace member invite capacity;
+- public share-link capacity;
+- persisted subscription precedence and cancellation restrictions;
 - pricing and readiness public pages;
 - reviewer-safe entitlement API output.
 
-The current implementation intentionally does not create billing records or
-customer identities. It turns pricing claims into a single tested source of
-truth so checkout can be added without scattering plan constants through the
-workspace code.
+Checkout, portal, signed webhooks, event idempotency, fixed grace periods, and
+subscription storage are implemented. They remain disabled on deployments that
+do not provide a complete Stripe configuration.
 
 ## Still Pending
 
 Real commercialization still needs:
 
-- Stripe checkout and billing portal;
-- subscription status storage;
-- webhook idempotency;
-- cancellation, unpaid, trial, and grace-period behavior;
-- quota-source precedence when billing data is unavailable;
-- account identity, passkeys or OAuth, and tenant ownership migration.
+- account-owned Stripe sandbox and production activation evidence;
+- account identity, passkeys or OAuth, and tenant ownership migration;
+- live-provider usage metering and retained decision-history enforcement;
+- billing-admin, support, refund, dispute, and audit workflows.
 
 These remain tracked in `docs/COMMERCIAL_READINESS.md`.
 

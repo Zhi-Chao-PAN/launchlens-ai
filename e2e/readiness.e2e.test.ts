@@ -9,7 +9,7 @@ test.describe("LaunchLens AI commercial readiness", () => {
     await expect(
       page.getByRole("heading", {
         level: 1,
-        name: /commercial\/productization readiness starts with proof/i,
+        name: /commercial\/productization readiness connects proof/i,
       }),
     ).toBeVisible();
 
@@ -25,6 +25,12 @@ test.describe("LaunchLens AI commercial readiness", () => {
     await expect(
       page.getByRole("link", { name: "/api/commercial/entitlements" }),
     ).toHaveAttribute("href", "/api/commercial/entitlements");
+    await expect(
+      page.getByRole("link", { name: "Open Billing" }),
+    ).toHaveAttribute("href", "/billing");
+    await expect(
+      page.getByRole("link", { name: "/api/commercial/subscription" }),
+    ).toHaveAttribute("href", "/api/commercial/subscription");
     await expect(page.getByText("Onboarding and activation")).toBeVisible();
     await expect(page.getByText("Eval and ops visibility")).toBeVisible();
     await expect(
@@ -68,5 +74,25 @@ test.describe("LaunchLens AI commercial readiness", () => {
         membersPerWorkspace: 10,
       },
     });
+  });
+
+  test("shows the operational billing surface without exposing provider ids", async ({
+    page,
+  }) => {
+    await page.goto("/billing");
+
+    await expect(
+      page.getByRole("heading", {
+        level: 1,
+        name: "Subscription and plan access",
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Team preview" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Choose a recurring subscription" }),
+    ).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/cus_|sub_|sk_|whsec_/);
   });
 });

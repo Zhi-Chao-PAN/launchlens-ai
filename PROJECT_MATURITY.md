@@ -15,6 +15,11 @@ The post-portfolio phase has started. The detailed plan now lives in
 The first executable commercial slice is now tracked in
 `docs/COMMERCIAL_ENTITLEMENTS.md` and exposed through
 `/api/commercial/entitlements`.
+The second executable slice is tracked in `docs/COMMERCIAL_BILLING.md`:
+subscription state, Stripe-ready hosted Checkout and Portal routes, signed
+webhooks, durable event idempotency, fixed past-due grace behavior, persisted
+entitlement precedence, and `/billing` are implemented. The public deployment
+still does not claim an activated Stripe merchant account.
 
 This readiness phase does not claim that LaunchLens AI is already a paid SaaS.
 It converts the commercial gap into explicit, verifiable tracks:
@@ -87,9 +92,11 @@ These additions do not change the portfolio scope but raise the ceiling on demon
 These are commercial expansion paths, not missing evidence for the current portfolio release. They are ranked from cheapest to most expensive, with the cheapest items deliberately left for a future "pricing and evaluation polish" pass because they are not portfolio blockers.
 
 ### P0 - Hosted pricing page and self-serve onboarding
-- Pure frontend pricing page with Stripe Checkout links.
-- Estimated effort: 1 evening.
-- Why it is not in the portfolio release: this artifact is positioning for a Master of AI application, not selling a SaaS, and a pricing page without real billing would be theatre.
+- **Status: billing core done, merchant activation pending.** `/pricing` links
+  to `/billing`; hosted Checkout and Portal sessions activate only when complete
+  Stripe settings exist.
+- Card details remain on Stripe-hosted surfaces, and the disabled public state
+  does not pretend that a merchant account is live.
 
 ### P1 - Longitudinal provider/decision eval retention and drift alerts
 - Done. `fixtures/providers/decision-history/` keeps committed per-run history, `npm run decision:history -- --window --size 5 --drift-threshold 5` is wired into CI as a release gate, and `docs/decision-dashboard.html` is regenerated and uploaded as a build artifact on every push to `main`. A 90-day retention policy with a 10-entry minimum is enforced by `npm run decision:history -- --prune`.
@@ -101,22 +108,34 @@ These are commercial expansion paths, not missing evidence for the current portf
 
 
 ### P3 - Multi-tenant workspaces, billing, and hosted pricing as a real product
-- Tenant isolation, quota, billing, and a hosted pricing page that charges money.
-- Estimated effort: this is a separate project. The current code has a single owner_hash per row; tenant isolation requires schema migration, per-tenant quotas, and a billing webhook.
-- Why it is not in the portfolio release: see the re-entry cost note below.
+- **Status: core infrastructure implemented, external activation and identity
+  remain.** Tenant isolation, RBAC, plan quotas, subscription persistence,
+  webhook idempotency, Checkout, Portal, and hosted billing UI now exist.
+- Still required: conventional identity, billing-admin/support roles,
+  live-provider usage metering, account-owned Stripe sandbox evidence, and
+  production merchant activation.
 
 ## Re-entry cost to convert this into a real commercial SaaS
 
-This is a written-for-the-future-me note, not a deferred task. If someone (me, three months from now, or a successor) wants to turn LaunchLens into a paying product, the items above are not equally cheap. The re-entry cost is dominated by the P3 items, and converting P3 first blocks P2 and P1 because billing and tenant isolation change the meaning of every row in the existing schema.
+This is a written-for-the-future-me note, not a deferred task. The original
+P3 estimate has been reduced by implemented tenant, RBAC, entitlement, and
+billing infrastructure, but accepting real payments still changes account,
+support, audit, and operations responsibilities.
 
 Honest scope estimate from a code review in mid-2026:
 
-- Tenant isolation, billing, hosted pricing: 4 to 6 weeks of refactoring on top of the current code base. The current owner_hash becomes a tenant key plus a workspace key, every route gets a tenant guard, and the recovery-key account model is replaced or wrapped by a real identity provider.
-- Hosted pricing page, real billing: 1 to 2 weeks on top of the tenant refactor.
-- Team roles and collaboration: 1 to 2 weeks.
+- Conventional identity, tenant ownership migration, deletion, and recovery:
+  2 to 4 weeks.
+- Account-owned Stripe sandbox, production activation, billing-admin/support
+  policy, audit evidence, and incident runbook: 1 to 2 weeks.
+- Live-provider usage metering and quota reconciliation: 3 to 5 days.
+- Tenant isolation, billing state, hosted pricing, and team roles: implemented.
 - Eval retention and drift alerts: 1 to 2 days.
 
-Total re-entry estimate: 6 to 10 weeks for a small team to convert this portfolio release into a real commercial SaaS. The current code is intentionally designed to make that re-entry tractable (server-only DML, schema in a migration, owner-scoped queries, capability account on a single column) but it has not been built with billing in mind. The bar for portfolio-ready is met; the bar for ship to paying teams is not, and the difference is documented here so that the next reader does not mistake one for the other.
+Remaining re-entry estimate: roughly 3 to 6 weeks for a small team to move from
+the current Stripe-ready core to a supportable paid SaaS. The bar for
+portfolio-ready is met; the code path for billing now exists; the bar for
+accepting and supporting real paying teams is not yet met.
 
 ### P3 - Multi-tenant workspace isolation (2026-06-14)
 - Database migration adds launchlens_tenants table with UUID PK, owner_hash FK, and tenant_id column on workspaces.
@@ -127,7 +146,8 @@ Total re-entry estimate: 6 to 10 weeks for a small team to convert this portfoli
 - Smoke test (smoke:tenant) verifies: 2 tenants per owner, cross-tenant workspace isolation, cross-owner 404, same-owner visibility.
 - Unit tests for tenant store (4 tests).
 - Status: ✅ Complete. Smoke:tenant, smoke:cloud, smoke:rbac all pass against production Neon.
-- Re-entry cost estimate for full commercial multi-tenancy (billing, RBAC matrix, quota per tenant): 2-3 weeks.
+- Remaining re-entry work is identity migration, billing/support roles,
+  provider usage metering, and external Stripe acceptance evidence.
 
 ## Engineering hygiene (2026-06-14)
 

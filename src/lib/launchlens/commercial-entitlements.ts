@@ -71,8 +71,8 @@ export const commercialPlanCatalog: Record<
     id: "solo",
     name: "Solo",
     audience: "One founder validating a product idea with durable cloud history.",
-    billingStatus: "preview",
-    checkoutStatus: "manual-intake",
+    billingStatus: "paid-ready",
+    checkoutStatus: "stripe-ready",
     summary:
       "Capability account, recovery key, cloud history, public shares, and live-provider allowance for one founder.",
     limits: {
@@ -91,15 +91,16 @@ export const commercialPlanCatalog: Record<
     enforcementNotes: [
       "Tenant creation should stay single-owner for Solo accounts.",
       "Collaborator invites should upgrade to Team before being enabled.",
+      "Checkout activates only when all required Stripe settings are present.",
     ],
   },
   team: {
     id: "team",
-    name: "Team preview",
+    name: "Team",
     audience:
       "Small product teams and portfolio reviewers exercising tenant/RBAC flows.",
-    billingStatus: "preview",
-    checkoutStatus: "manual-intake",
+    billingStatus: "paid-ready",
+    checkoutStatus: "stripe-ready",
     summary:
       "Tenant workspaces, RBAC invites, recovery, cloud history, share links, and ops evidence for team evaluation.",
     limits: {
@@ -118,8 +119,8 @@ export const commercialPlanCatalog: Record<
       "Commercial readiness evidence surface",
     ],
     enforcementNotes: [
-      "The public deployment defaults to this preview entitlement so reviewer smoke tests can exercise Team behavior.",
-      "Checkout is still manual-intake; Stripe/webhook state is a later implementation phase.",
+      "The public deployment can use this plan envelope as a preview so reviewer smoke tests can exercise Team behavior.",
+      "Persisted Stripe subscription state takes precedence over the preview envelope.",
     ],
   },
 };
@@ -179,6 +180,22 @@ export function summarizeCommercialEntitlement(
     limits: plan.limits,
     capabilities: plan.capabilities,
     enforcementNotes: plan.enforcementNotes,
+  };
+}
+
+export function summarizePreviewCommercialEntitlement(
+  plan: CommercialPlanDefinition = getDefaultCommercialPlan(),
+): CommercialEntitlementSummary {
+  const summary = summarizeCommercialEntitlement(plan);
+
+  if (plan.id === "free") {
+    return summary;
+  }
+
+  return {
+    ...summary,
+    activePlanName: `${plan.name} preview`,
+    billingStatus: "preview",
   };
 }
 

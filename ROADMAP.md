@@ -144,6 +144,9 @@ page at `https://launchlens-ai-two.vercel.app/readiness`.
 The first executable commercial slice is `docs/COMMERCIAL_ENTITLEMENTS.md`,
 `src/lib/launchlens/commercial-entitlements.ts`, and
 `/api/commercial/entitlements`.
+The second executable slice is `docs/COMMERCIAL_BILLING.md`, `/billing`,
+`/api/commercial/subscription`, hosted Checkout and Portal routes, signed Stripe
+webhooks, and durable subscription/event tables.
 
 ### Phase 7 Acceptance
 
@@ -155,10 +158,16 @@ The first executable commercial slice is `docs/COMMERCIAL_ENTITLEMENTS.md`,
 - [x] Wire commercial readiness verification into CI and release workflows.
 - [x] Define Free, Solo, and Team-preview entitlement limits in code and expose
       them through `/api/commercial/entitlements`.
+- [x] Implement subscription states, webhook idempotency, cancellation,
+      seven-day grace periods, stale-event protection, and persisted-state
+      precedence on top of the entitlement contract.
+- [x] Add Stripe-ready hosted Checkout, Billing Portal, signed webhook, safe
+      disabled configuration, and an operational `/billing` surface.
 - [ ] Design the identity and tenant migration plan before implementing
-      checkout or account login.
-- [ ] Define subscription states, webhook idempotency, cancellation, grace
-      periods, and quota-source precedence on top of the entitlement contract.
+      conventional account login, billing-admin roles, or support access.
+- [ ] Run and archive an account-owned Stripe sandbox acceptance flow before
+      enabling a live merchant configuration.
+- [ ] Add live-provider usage metering before enforcing monthly paid allowance.
 - [ ] Specify first-session activation events without logging private founder
       input, evidence notes, provider payloads, or recovery credentials.
 - [ ] Decide how decision eval quality, latency risk, release evidence, and

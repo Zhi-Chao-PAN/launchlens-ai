@@ -1,9 +1,10 @@
 import {
-  
-cloudStorageConfigured,
+  cloudStorageConfigured,
   createWorkspace,
+  hashOwnerToken,
   listWorkspacesForMember
 } from "@/lib/launchlens/workspace-store";
+import { resolveCommercialEntitlementForOwnerHash } from "@/lib/launchlens/commercial-subscription-store";
 import { generateRequestId,
   allowWorkspaceMutation,
   MAX_WORKSPACE_BODY_BYTES,
@@ -24,14 +25,24 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const requestId = generateRequestId();
   if (!cloudStorageConfigured()) {
-    return noStoreJson({ configured: false, workspaces: [] });
+    return noStoreJson({
+      configured: false,
+      workspaces: [],
+      cloudSnapshotLimit: 0,
+    });
   }
 
   try {
-    const workspaces = await listWorkspacesForMember(
-      ownerTokenFromRequest(request),
-    );
-    return noStoreJson({ configured: true, workspaces });
+    const ownerToken = ownerTokenFromRequest(request);
+    const [workspaces, entitlement] = await Promise.all([
+      listWorkspacesForMember(ownerToken),
+      resolveCommercialEntitlementForOwnerHash(hashOwnerToken(ownerToken)),
+    ]);
+    return noStoreJson({
+      configured: true,
+      workspaces,
+      cloudSnapshotLimit: entitlement.plan.limits.cloudSnapshots,
+    });
   } catch (error) {
     return workspaceApiError(error, requestId);
   }

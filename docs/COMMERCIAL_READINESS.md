@@ -31,21 +31,30 @@ The current product proves the AI workflow and production engineering base:
 - CI, hosted visual regression, CodeQL, cloud smoke, production browser e2e,
   release evidence, provider eval, and decision eval gates.
 
-It does not yet prove a paid commercial product:
+It does not yet prove an activated paid commercial product:
 
-- No real checkout.
-- No subscription lifecycle.
+- Stripe Checkout, Portal, and signed webhook code now exist, but the public
+  portfolio deployment does not claim an activated merchant account.
+- Subscription lifecycle and idempotency are implemented, but an account-owned
+  Stripe sandbox acceptance run is still required.
 - No conventional user identity or passkeys.
 - No product analytics event model.
 - No support/admin workflow.
 - No long-term operational dashboard beyond committed eval artifacts and CI
   artifacts.
 
-The first true commercial substage is now executable plan entitlements:
+The first true commercial substage is executable plan entitlements:
 `docs/COMMERCIAL_ENTITLEMENTS.md`,
 `src/lib/launchlens/commercial-entitlements.ts`, and
 `/api/commercial/entitlements` define Free, Solo, and Team-preview limits
-before checkout exists.
+independently from the payment provider.
+
+The second commercial substage is executable subscription billing:
+`docs/COMMERCIAL_BILLING.md`, `/billing`,
+`/api/commercial/subscription`, `/api/commercial/checkout`,
+`/api/commercial/portal`, and `/api/webhooks/stripe` implement the hosted
+Checkout, Portal, subscription-state, grace-period, and webhook-idempotency
+path while remaining disabled without Stripe configuration.
 
 The next phase should reduce this gap deliberately. The goal is not to ship
 billing first. The goal is to make the re-entry path explicit enough that a
@@ -60,7 +69,7 @@ gate that can be checked before implementation expands.
 | --- | --- | --- | --- |
 | Reviewer Evidence Index | Public `/readiness` page and links to current verification commands | Lets a reviewer or future maintainer see the production proof path quickly | `npm run verify:commercial-readiness` |
 | Identity And Tenant Model | Written migration plan from capability account to conventional account | Prevents billing work from colliding with owner-hash assumptions | Identity decisions documented before schema changes |
-| Billing And Plan Limits | Executable entitlement contract tied to quotas, tenant roles, and checkout events | Keeps pricing honest and connects UI claims to enforceable limits | `src/lib/launchlens/commercial-entitlements.ts` and `/api/commercial/entitlements` are tested |
+| Billing And Plan Limits | Executable entitlement and subscription contract tied to quotas and signed checkout events | Keeps pricing honest and connects billing state to enforceable limits | Billing domain, routes, webhook, migration, and `/billing` are tested |
 | Onboarding And Activation | First-session path and activation event model | Turns the demo into a product funnel instead of a static workspace | Activation events and empty states are specified |
 | Eval And Ops Visibility | Public-facing summary of eval history and release evidence | Shows AI quality is operated, not hand-waved | Eval and release evidence are linked from docs/pages |
 
@@ -126,12 +135,16 @@ Required before implementation:
 
 Current state:
 
-- `/pricing` is a portfolio pricing page with mailto links.
+- `/pricing` links to the operational `/billing` surface.
 - Cloud snapshots, tenants, and workspace members now read from the commercial
   entitlement contract.
+- Public share limits and persisted subscription state also feed enforcement.
 - The public deployment defaults to Team preview so tenant/RBAC smoke tests
   remain exercisable without live billing.
-- The public deployment does not collect payment details.
+- Hosted Stripe Checkout and the customer portal are implemented but remain
+  disabled unless the deployment has complete Stripe configuration.
+- Signed subscription events are idempotent, reject stale updates, and persist
+  cancellation, unpaid, trial, current-period, and grace-period state.
 
 Executable artifact:
 
@@ -139,6 +152,15 @@ Executable artifact:
 - `src/lib/launchlens/commercial-entitlements.ts`
 - `src/app/api/commercial/entitlements/route.ts`
 - `/api/commercial/entitlements`
+- `docs/COMMERCIAL_BILLING.md`
+- `src/lib/launchlens/commercial-subscription.ts`
+- `src/lib/launchlens/commercial-subscription-store.ts`
+- `src/lib/launchlens/stripe-server.ts`
+- `/billing`
+- `/api/commercial/subscription`
+- `/api/commercial/checkout`
+- `/api/commercial/portal`
+- `/api/webhooks/stripe`
 
 Commercial re-entry target:
 
@@ -156,13 +178,6 @@ Initial plan envelope:
 | Solo | One founder validating a product idea | Per-account cloud history, recovery, live-provider allowance, public shares |
 | Team | Small product team | Tenant workspaces, members, role permissions, shared evidence trail |
 
-Required before implementation:
-
-- Subscription state machine.
-- Webhook idempotency plan.
-- Quota-source precedence when billing data is delayed or unavailable.
-- Failure copy for expired, unpaid, or quota-exceeded accounts.
-
 Completed in this substage:
 
 - Free, Solo, and Team preview limits have a single source of truth.
@@ -171,6 +186,25 @@ Completed in this substage:
   billing data.
 - Focused Vitest coverage proves default plan resolution, env override,
   stable `commercial_plan_limit_reached` behavior, and API output.
+- The subscription state machine distinguishes preview, full, grace, and
+  restricted access.
+- Persisted subscription state takes precedence over the preview plan.
+- Stripe Checkout, Portal, and raw-body signature verification are implemented
+  with lazy SDK initialization.
+- Durable event IDs prevent duplicate application, and event timestamps prevent
+  stale webhook state from replacing newer state.
+- Cancellation, unpaid, paused, incomplete, and expired grace states resolve to
+  Free restrictions.
+- Billing UI and API error copy expose configuration and state without exposing
+  customer IDs, subscription IDs, owner hashes, or secrets.
+
+Still required before accepting real payments:
+
+- Complete an account-owned Stripe sandbox checkout and signed webhook run.
+- Provision recurring prices and secrets in the intended production project.
+- Register and verify the production webhook destination.
+- Complete the identity and tenant-ownership migration plan.
+- Add live-provider usage metering before its monthly allowance is billable.
 
 ## Onboarding And Activation
 
@@ -251,6 +285,8 @@ This phase is accepted only when all of the following are true:
 - `npm run verify:commercial-readiness` passes.
 - The entitlement contract tests pass:
   `npx vitest run src/lib/launchlens/commercial-entitlements.test.ts src/app/api/commercial/entitlements/route.test.ts`.
+- The billing lifecycle tests pass:
+  `npx vitest run src/lib/launchlens/commercial-subscription.test.ts src/lib/launchlens/stripe-billing.test.ts src/lib/launchlens/stripe-server.test.ts src/app/api/commercial/subscription/route.test.ts src/app/api/commercial/checkout/route.test.ts src/app/api/commercial/portal/route.test.ts src/app/api/webhooks/stripe/route.test.ts`.
 - `npm run verify:portfolio` passes.
 - `npm run verify:release-readiness` passes.
 - `npm run verify:production-demo` passes after the public deployment updates.
@@ -264,8 +300,7 @@ This phase is accepted only when all of the following are true:
 
 This phase does not pretend to ship:
 
-- Real Stripe checkout.
-- Real subscription webhooks.
+- An activated live Stripe merchant account or completed external sandbox run.
 - OAuth or passkey login.
 - A support console.
 - A production analytics warehouse.

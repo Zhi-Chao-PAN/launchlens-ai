@@ -50,6 +50,10 @@ const requiredFiles: Record<string, RequiredText[]> = {
       label: "commercial entitlements reference",
     },
     {
+      value: "docs/COMMERCIAL_BILLING.md",
+      label: "commercial billing reference",
+    },
+    {
       value: "src/lib/launchlens/commercial-entitlements.ts",
       label: "entitlement source reference",
     },
@@ -57,6 +61,11 @@ const requiredFiles: Record<string, RequiredText[]> = {
       value: "/api/commercial/entitlements",
       label: "entitlement API reference",
     },
+    {
+      value: "/api/commercial/subscription",
+      label: "subscription API reference",
+    },
+    { value: "/api/webhooks/stripe", label: "Stripe webhook reference" },
     { value: "Onboarding And Activation", label: "onboarding track" },
     { value: "Eval And Ops Visibility", label: "eval and ops track" },
     { value: "Security And Compliance Re-entry", label: "security track" },
@@ -118,6 +127,39 @@ const requiredFiles: Record<string, RequiredText[]> = {
       value: "npm run verify:commercial-readiness",
       label: "commercial verifier command",
     },
+    {
+      value: "docs/COMMERCIAL_BILLING.md",
+      label: "commercial billing reference",
+    },
+    {
+      value: "src/lib/launchlens/commercial-subscription.ts",
+      label: "subscription domain reference",
+    },
+  ],
+  "docs/COMMERCIAL_BILLING.md": [
+    {
+      value: "LaunchLens AI Commercial Billing",
+      label: "commercial billing heading",
+    },
+    { value: "Implemented Surface", label: "implemented billing surface" },
+    {
+      value: "State And Entitlement Precedence",
+      label: "subscription precedence section",
+    },
+    { value: "Webhook Safety", label: "webhook safety section" },
+    {
+      value: "launchlens_commercial_subscriptions",
+      label: "subscription table",
+    },
+    { value: "launchlens_billing_events", label: "billing event table" },
+    { value: "/api/commercial/checkout", label: "checkout route" },
+    { value: "/api/commercial/portal", label: "portal route" },
+    { value: "/api/webhooks/stripe", label: "webhook route" },
+    { value: "STRIPE_WEBHOOK_SECRET", label: "webhook configuration" },
+    {
+      value: "npm run verify:commercial-readiness",
+      label: "commercial verifier command",
+    },
   ],
   "src/app/readiness/page.tsx": [
     {
@@ -135,6 +177,12 @@ const requiredFiles: Record<string, RequiredText[]> = {
       value: "/api/commercial/entitlements",
       label: "entitlement API link",
     },
+    { value: "Subscription billing", label: "billing verification row" },
+    { value: "/billing", label: "billing page link" },
+    {
+      value: "/api/commercial/subscription",
+      label: "subscription API link",
+    },
     { value: "Onboarding and activation", label: "onboarding track" },
     { value: "Eval and ops visibility", label: "eval track" },
     {
@@ -148,8 +196,8 @@ const requiredFiles: Record<string, RequiredText[]> = {
     ],
   "src/app/api/commercial/entitlements/route.ts": [
     {
-      value: "summarizeCommercialEntitlement",
-      label: "entitlement summary helper",
+      value: "summarizePreviewCommercialEntitlement",
+      label: "preview entitlement summary helper",
     },
     {
       value: "commercialPlanRows",
@@ -185,11 +233,123 @@ const requiredFiles: Record<string, RequiredText[]> = {
       label: "plan-limit code test",
     },
   ],
+  "src/app/billing/page.tsx": [
+    { value: "CommercialBilling", label: "billing client surface" },
+    { value: "Billing - LaunchLens AI", label: "billing page metadata" },
+  ],
+  "src/components/commercial-billing.tsx": [
+    {
+      value: "Subscription and plan access",
+      label: "billing page heading",
+    },
+    {
+      value: "/api/commercial/subscription",
+      label: "subscription status request",
+    },
+    { value: "/api/commercial/checkout", label: "checkout request" },
+    { value: "/api/commercial/portal", label: "portal request" },
+  ],
+  "src/app/api/commercial/subscription/route.ts": [
+    {
+      value: "resolveCommercialEntitlementForOwnerHash",
+      label: "persisted entitlement resolver",
+    },
+    { value: "safeSubscription", label: "safe subscription projection" },
+    { value: "noStoreJson", label: "no-store response" },
+  ],
+  "src/app/api/commercial/checkout/route.ts": [
+    { value: "createStripeCheckout", label: "Stripe Checkout call" },
+    {
+      value: "ERROR_BILLING_SUBSCRIPTION_EXISTS",
+      label: "existing subscription guard",
+    },
+  ],
+  "src/app/api/commercial/portal/route.ts": [
+    { value: "createStripePortal", label: "Stripe Portal call" },
+    {
+      value: "ERROR_BILLING_SUBSCRIPTION_MISSING",
+      label: "missing subscription guard",
+    },
+  ],
+  "src/lib/launchlens/error-codes.ts": [
+    {
+      value: "billing_subscription_exists",
+      label: "existing subscription error code",
+    },
+    {
+      value: "billing_subscription_missing",
+      label: "missing subscription error code",
+    },
+  ],
+  "src/app/api/webhooks/stripe/route.ts": [
+    {
+      value: "constructStripeWebhookEvent",
+      label: "Stripe signature verification",
+    },
+    {
+      value: "applyCommercialSubscriptionEvent",
+      label: "idempotent event application",
+    },
+  ],
+  "src/lib/launchlens/commercial-subscription.ts": [
+    {
+      value: "STRIPE_SUBSCRIPTION_STATUSES",
+      label: "Stripe subscription statuses",
+    },
+    {
+      value: "resolveCommercialSubscriptionEntitlement",
+      label: "subscription entitlement resolver",
+    },
+    { value: "graceUntilForPastDue", label: "past due grace helper" },
+  ],
+  "src/lib/launchlens/commercial-subscription-store.ts": [
+    {
+      value: "applyCommercialSubscriptionEvent",
+      label: "billing event application",
+    },
+    {
+      value: "latest_event_created_at",
+      label: "stale event protection",
+    },
+    {
+      value: "processing_status",
+      label: "billing event disposition",
+    },
+  ],
+  "src/lib/launchlens/stripe-server.ts": [
+    { value: "constructEvent", label: "raw webhook signature verification" },
+    {
+      value: "subscription_data",
+      label: "Checkout subscription metadata",
+    },
+    { value: "idempotencyKey", label: "Checkout idempotency key" },
+  ],
+  "scripts/migrate-cloud-db.ts": [
+    {
+      value: "launchlens_commercial_subscriptions",
+      label: "subscription migration",
+    },
+    { value: "launchlens_billing_events", label: "billing event migration" },
+  ],
+  "src/lib/launchlens/cloud-db-contract.ts": [
+    {
+      value: "launchlens_commercial_subscriptions",
+      label: "subscription schema contract",
+    },
+    {
+      value: "launchlens_billing_events",
+      label: "billing event schema contract",
+    },
+  ],
   "README.md": [
     { value: "docs/COMMERCIAL_READINESS.md", label: "readiness doc link" },
     {
       value: "docs/COMMERCIAL_ENTITLEMENTS.md",
       label: "entitlements doc link",
+    },
+    {
+      value: "docs/COMMERCIAL_BILLING.md",
+      label: "billing doc link",
     },
     {
       value: "/api/commercial/entitlements",

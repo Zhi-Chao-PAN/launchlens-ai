@@ -17,6 +17,7 @@ import Link from "next/link";
 import {
   commercialPlanRows,
   getDefaultCommercialPlan,
+  summarizePreviewCommercialEntitlement,
 } from "@/lib/launchlens/commercial-entitlements";
 
 export const metadata: Metadata = {
@@ -54,8 +55,8 @@ const readinessTracks = [
   {
     icon: Landmark,
     title: "Billing and plan limits",
-    status: "In code",
-    body: "Free, Solo, and Team limits now live in an executable entitlement contract consumed by workspace, tenant, and member flows before Stripe is wired.",
+    status: "Implemented",
+    body: "Plan limits, subscription precedence, hosted Checkout, Portal, signed webhooks, event idempotency, and fixed grace periods now live in code.",
   },
   {
     icon: Rocket,
@@ -79,6 +80,8 @@ const readinessTracks = [
 
 const entitlementRows = commercialPlanRows();
 const defaultEntitlement = getDefaultCommercialPlan();
+const defaultEntitlementSummary =
+  summarizePreviewCommercialEntitlement(defaultEntitlement);
 
 const verificationRows = [
   {
@@ -90,6 +93,11 @@ const verificationRows = [
     label: "Entitlement contract",
     command: "npx vitest run src/lib/launchlens/commercial-entitlements.test.ts src/app/api/commercial/entitlements/route.test.ts",
     proof: "Proves Free, Solo, and Team plan limits resolve to reviewer-safe API output and stable plan-limit codes.",
+  },
+  {
+    label: "Subscription billing",
+    command: "npx vitest run src/lib/launchlens/commercial-subscription.test.ts src/lib/launchlens/stripe-server.test.ts src/app/api/webhooks/stripe/route.test.ts",
+    proof: "Proves billing-state precedence, fixed grace periods, signed event projection, and duplicate delivery handling.",
   },
   {
     label: "Portfolio package",
@@ -121,8 +129,8 @@ const currentVsNext = [
   },
   {
     area: "Pricing",
-    current: "Portfolio pricing page with honest mailto placeholders and executable plan limits.",
-    next: "Wire checkout, subscription state, webhook idempotency, cancellation, grace periods, and quota-source precedence.",
+    current: "Operational Billing page with Stripe-ready Checkout, Portal, subscription state, idempotent webhooks, and quota precedence.",
+    next: "Run an account-owned Stripe sandbox acceptance flow, provision production prices, and archive activation evidence.",
   },
   {
     area: "Activation",
@@ -148,13 +156,14 @@ export default function ReadinessPage() {
           <div className="grid gap-6 lg:grid-cols-[0.82fr_1fr] lg:items-end">
             <div className="space-y-4">
               <h1 className="max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl">
-                Commercial/Productization readiness starts with proof, not
-                pretend checkout.
+                Commercial/Productization readiness connects proof to real
+                product gates.
               </h1>
               <p className="max-w-2xl text-base leading-7 text-foreground/80">
                 This page marks the next stage after the portfolio release:
                 make the productization path visible, scoped, and verifiable
-                before adding identity, billing, analytics, or support surfaces.
+                while identity, billing, analytics, and support mature in
+                explicit stages.
               </p>
             </div>
             <div className="flex flex-wrap gap-3 lg:justify-end">
@@ -224,9 +233,10 @@ export default function ReadinessPage() {
               Plan limits are now executable, not only written down.
             </h2>
             <p className="mt-3 text-sm leading-6 text-foreground/75">
-              The public deployment defaults to {defaultEntitlement.name} so
-              tenant and RBAC smoke tests stay exercisable. Future billing can
-              switch the resolved plan without rewriting workspace code.
+              The public deployment defaults to{" "}
+              {defaultEntitlementSummary.activePlanName} so tenant and RBAC
+              smoke tests stay exercisable. Persisted subscription state takes
+              precedence without rewriting workspace code.
             </p>
             <a
               href="/api/commercial/entitlements"
@@ -234,6 +244,20 @@ export default function ReadinessPage() {
             >
               /api/commercial/entitlements
             </a>
+            <div className="mt-3 flex flex-wrap gap-3 text-sm font-semibold">
+              <Link
+                href="/billing"
+                className="rounded text-accent underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                Open Billing
+              </Link>
+              <a
+                href="/api/commercial/subscription"
+                className="rounded text-accent underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                /api/commercial/subscription
+              </a>
+            </div>
           </div>
           <div className="overflow-hidden rounded-lg border border-card bg-card">
             <div className="hidden grid-cols-[1fr_0.8fr_0.8fr_0.9fr] border-b border-card bg-muted px-4 py-3 text-xs font-semibold uppercase text-muted md:grid">
@@ -354,17 +378,18 @@ export default function ReadinessPage() {
             <h2 className="mt-4 text-lg font-semibold">Non-goal</h2>
             <p className="mt-2 text-sm leading-6 text-foreground/75">
               This phase does not pretend to ship Stripe, OAuth, a support
-              console, or an analytics warehouse. It scopes them so the next
-              implementation is honest.
+              merchant activation, OAuth, a support console, or an analytics
+              warehouse. Stripe integration code is present; external account
+              activation remains a separate acceptance step.
             </p>
           </article>
           <article className="rounded-lg border border-card bg-card p-5">
             <CheckCircle2 className="size-5 text-accent" aria-hidden="true" />
             <h2 className="mt-4 text-lg font-semibold">Next implementation</h2>
             <p className="mt-2 text-sm leading-6 text-foreground/75">
-              Start with the reviewer evidence index, then design identity,
-              billing limits, onboarding events, and eval operations before
-              wiring commercial infrastructure.
+              Complete the identity and tenant migration design, then add
+              activation events, provider usage metering, and operator
+              visibility around the implemented billing core.
             </p>
           </article>
         </div>

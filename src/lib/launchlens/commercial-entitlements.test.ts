@@ -57,8 +57,8 @@ describe("commercial entitlements", () => {
     expect(summarizeCommercialEntitlement(getCommercialPlan("solo"))).toEqual({
       activePlanId: "solo",
       activePlanName: "Solo",
-      billingStatus: "preview",
-      checkoutStatus: "manual-intake",
+      billingStatus: "paid-ready",
+      checkoutStatus: "stripe-ready",
       limits: commercialPlanCatalog.solo.limits,
       capabilities: commercialPlanCatalog.solo.capabilities,
       enforcementNotes: commercialPlanCatalog.solo.enforcementNotes,
