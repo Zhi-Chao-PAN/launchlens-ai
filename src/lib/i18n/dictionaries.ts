@@ -76,6 +76,7 @@ export type DictionaryKey =
   // Generate button / loading
   | "generate.blockedTooShort"
   | "generate.blockedAlready"
+  | "generate.blockedOwnerToken"
   | "generate.button"
   | "generate.generating"
   | "generate.srReason"
@@ -340,6 +341,7 @@ const en: Dict = {
   "voice.technical": "Technical and product-led",
   "generate.blockedTooShort": "Describe your product idea in at least 20 characters before generating.",
   "generate.blockedAlready": "Workspace is already generating.",
+  "generate.blockedOwnerToken": "Preparing secure session — please wait a moment.",
   "generate.button": "Generate workspace",
   "generate.generating": "Generating",
   "generate.srReason": "Workspace is being generated; please wait or cancel.",
@@ -589,6 +591,7 @@ const zhCN: Dict = {
   "voice.technical": "技术型、产品驱动",
   "generate.blockedTooShort": "生成前请至少用 20 个字符描述你的产品想法。",
   "generate.blockedAlready": "工作台正在生成中。",
+  "generate.blockedOwnerToken": "正在准备安全会话 — 请稍等片刻。",
   "generate.button": "生成工作台",
   "generate.generating": "生成中",
   "generate.srReason": "工作台正在生成，请等待或取消。",

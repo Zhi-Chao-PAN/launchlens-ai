@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createOwnerToken } from "./owner-token";
+import { createOwnerToken, getOrCreateOwnerToken } from "./owner-token";
 
 // Deterministic random: returns the same byte value for every position
 function fixed(value: number) {
@@ -42,5 +42,54 @@ describe("createOwnerToken", () => {
       const token = createOwnerToken(fixed(v));
       expect(token).not.toMatch(/[+/=]/);
     }
+  });
+});
+
+// Minimal in-memory Storage stub for the getOrCreateOwnerToken tests below.
+function memoryStorage(initial: Record<string, string> = {}) {
+  const data = new Map(Object.entries(initial));
+  return {
+    getItem: (k: string) => data.get(k) ?? null,
+    setItem: (k: string, v: string) => {
+      data.set(k, v);
+    },
+    removeItem: (k: string) => {
+      data.delete(k);
+    },
+    clear: () => data.clear(),
+  };
+}
+
+describe("getOrCreateOwnerToken", () => {
+  it("returns the existing token when storage holds a valid one", () => {
+    const stored = createOwnerToken(fixed(7));
+    const storage = memoryStorage({ "launchlens.ownerToken": stored });
+    expect(getOrCreateOwnerToken(storage, "launchlens.ownerToken")).toBe(stored);
+  });
+
+  it("mints a fresh token and persists it when storage is empty", () => {
+    const storage = memoryStorage();
+    const token = getOrCreateOwnerToken(storage, "launchlens.ownerToken");
+    expect(token).toMatch(/^[A-Za-z0-9_-]{43,128}$/);
+    // Persisted under the same key so subsequent calls reuse it.
+    expect(storage.getItem("launchlens.ownerToken")).toBe(token);
+  });
+
+  it("replaces a malformed stored value with a freshly minted one", () => {
+    const storage = memoryStorage({ "launchlens.ownerToken": "not-a-valid-token" });
+    const token = getOrCreateOwnerToken(storage, "launchlens.ownerToken");
+    expect(token).toMatch(/^[A-Za-z0-9_-]{43,128}$/);
+    expect(token).not.toBe("not-a-valid-token");
+    expect(storage.getItem("launchlens.ownerToken")).toBe(token);
+  });
+
+  it("does not throw when storage is null (e.g. SSR / sandboxed context)", () => {
+    // The primary failure mode this guards against: launch-workspace.tsx
+    // mounts on the server briefly during SSR, and some browsers throw on
+    // any localStorage access in private mode. Both should yield a token
+    // without bubbling an exception to the caller.
+    expect(() => getOrCreateOwnerToken(null, "launchlens.ownerToken")).not.toThrow();
+    const token = getOrCreateOwnerToken(null, "launchlens.ownerToken");
+    expect(token).toMatch(/^[A-Za-z0-9_-]{43,128}$/);
   });
 });

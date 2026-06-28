@@ -63,6 +63,7 @@ import { safeMarkdownFilename, workspaceToMarkdown } from "@/lib/launchlens/mark
 import { SCHEMA_VERSION, workspaceFromJson, workspaceToJson, type WorkspaceImportResult } from "@/lib/launchlens/json-export";
 import { briefFromFile, briefFromJson, type BriefImportResult } from "@/lib/launchlens/brief-from-json";
 import { briefFromHashFragment } from "@/lib/launchlens/brief-fragment";
+import { getOrCreateOwnerToken } from "@/lib/launchlens/owner-token";
 import { decryptToJson, encryptJson, isEncryptedPayload, randomPassword } from "@/lib/launchlens/encrypt-export";
 import type { CloudWorkspaceRecord } from "@/lib/launchlens/cloud-workspace";
 import {
@@ -491,6 +492,23 @@ export function LaunchWorkspace({
   // hydration mismatch — the server renders the default-locale placeholder.
   const [mounted, setMounted] = useState(false);
   const { t } = useLocale();
+
+  // R255: live provider (MiniMax) requires a per-browser owner token via the
+  // x-launchlens-owner header — the /api/generate route hashes it before
+  // metering live-provider usage. Without a token, live mode rejects the call
+  // with invalid_owner_token. Cloud-workspaces and billing panels already
+  // mint tokens via getOrCreateOwnerToken, but the main brief builder did
+  // not. Read from localStorage, otherwise mint and persist.
+  const OWNER_TOKEN_STORAGE_KEY = "launchlens.ownerToken";
+  const [ownerToken, setOwnerToken] = useState<string>("");
+  useEffect(() => {
+    setOwnerToken(
+      getOrCreateOwnerToken(
+        typeof window !== "undefined" ? window.localStorage : null,
+        OWNER_TOKEN_STORAGE_KEY,
+      ),
+    );
+  }, []);
 
   // Load collapsed section state from localStorage on mount
   useEffect(() => {
@@ -998,8 +1016,20 @@ export function LaunchWorkspace({
   }
 
   const ideaTrimmed = input.idea.trim();
-  const canGenerate = ideaTrimmed.length >= 20 && !isGenerating;
-  const generateBlockedReason = ideaTrimmed.length < 20 ? t("generate.blockedTooShort") : isGenerating ? t("generate.blockedAlready") : "";
+  // R255: gate Generate on owner token readiness so users never see a raw
+  // "invalid_owner_token" 401 from /api/generate. The mount effect that
+  // mints the token runs synchronously in setState on first render, so
+  // token arrives by the time the user clicks — but a guarded disabled
+  // state prevents the visible red error if anything ever delays it.
+  const canGenerate = ideaTrimmed.length >= 20 && !isGenerating && ownerToken.length > 0;
+  const generateBlockedReason =
+    ideaTrimmed.length < 20
+      ? t("generate.blockedTooShort")
+      : isGenerating
+        ? t("generate.blockedAlready")
+: ownerToken.length === 0
+            ? t("generate.blockedOwnerToken")
+            : "";
   // Localized loading-step labels for the generation loading UI.
   const loadingStepLabels = [t("generate.step.brief"), t("generate.step.structure"), t("generate.step.tasks")];
 
@@ -1018,7 +1048,16 @@ export function LaunchWorkspace({
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        // R255: send the per-browser owner token so /api/generate can hash it
+        // and meter live-provider usage. Without this header the live provider
+        // path (MiniMax) rejects with invalid_owner_token. Falls back to an
+        // empty header in the (very narrow) window before the mount effect
+        // mints a token — the server treats empty as invalid, so the call
+        // surfaces an actionable error instead of silently bypassing metering.
+        headers: {
+          "Content-Type": "application/json",
+          ...(ownerToken ? { "x-launchlens-owner": ownerToken } : {}),
+        },
         body: JSON.stringify(
           briefSource ? { input, sourceBrief: briefSource } : input,
         ),
