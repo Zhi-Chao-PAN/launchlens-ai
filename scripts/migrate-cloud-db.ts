@@ -256,8 +256,16 @@ async function main() {
       mode TEXT CHECK (
         mode IS NULL OR mode IN ('demo', 'real', 'fallback')
       ),
+      stage2_participant_hash CHAR(64),
+      stage2_batch_hash CHAR(64),
       occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
+  `;
+
+  await sql`
+    ALTER TABLE launchlens_product_events
+    ADD COLUMN IF NOT EXISTS stage2_participant_hash CHAR(64),
+    ADD COLUMN IF NOT EXISTS stage2_batch_hash CHAR(64)
   `;
 
   await sql`
@@ -268,6 +276,16 @@ async function main() {
   await sql`
     CREATE INDEX IF NOT EXISTS launchlens_product_events_journey_idx
     ON launchlens_product_events (journey_hash, event_name, occurred_at DESC)
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS launchlens_product_events_stage2_idx
+    ON launchlens_product_events (
+      stage2_batch_hash,
+      stage2_participant_hash,
+      event_name,
+      occurred_at DESC
+    )
   `;
 
   console.log("LaunchLens cloud database migration completed.");

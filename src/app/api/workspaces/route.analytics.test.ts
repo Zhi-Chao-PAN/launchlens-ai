@@ -62,4 +62,44 @@ describe("/api/workspaces product events", () => {
       subjectKey: "4b5cf786-923d-4dd9-9f05-c10fe7fbe212",
     });
   });
+
+  it("carries Stage 2 context into the cloud handoff event", async () => {
+    const example = exampleWorkspaces[0];
+    analyticsMocks.createWorkspace.mockResolvedValue({
+      id: "4b5cf786-923d-4dd9-9f05-c10fe7fbe212",
+      title: "Activation workspace",
+      input: example.input,
+      workspace: example.workspace,
+      execution: example.execution,
+    });
+
+    const response = await POST(
+      new Request("http://localhost/api/workspaces", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-launchlens-owner": ownerToken,
+          "x-launchlens-stage2-participant": "P01",
+          "x-launchlens-stage2-batch": "pilot-1",
+        },
+        body: JSON.stringify({
+          title: "Activation workspace",
+          input: example.input,
+          workspace: example.workspace,
+          execution: example.execution,
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    expect(analyticsMocks.recordProductEvent).toHaveBeenCalledWith({
+      ownerToken,
+      eventName: "cloud_snapshot_saved",
+      subjectKey: "4b5cf786-923d-4dd9-9f05-c10fe7fbe212",
+      stage2: {
+        stage2Participant: "P01",
+        stage2Batch: "pilot-1",
+      },
+    });
+  });
 });

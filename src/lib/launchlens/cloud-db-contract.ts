@@ -100,6 +100,8 @@ export const cloudDbColumnRequirements: CloudDbColumnRequirement[] = [
   { tableName: "launchlens_product_events", columnName: "subject_key", nullable: true, dataTypes: ["character"] },
   { tableName: "launchlens_product_events", columnName: "provider", nullable: true, dataTypes: ["text"] },
   { tableName: "launchlens_product_events", columnName: "mode", nullable: true, dataTypes: ["text"] },
+  { tableName: "launchlens_product_events", columnName: "stage2_participant_hash", nullable: true, dataTypes: ["character"] },
+  { tableName: "launchlens_product_events", columnName: "stage2_batch_hash", nullable: true, dataTypes: ["character"] },
   { tableName: "launchlens_product_events", columnName: "occurred_at", nullable: false, dataTypes: ["timestamp with time zone"] },
 ];
 
@@ -114,6 +116,7 @@ export const cloudDbIndexRequirements: CloudDbIndexRequirement[] = [
   { tableName: "launchlens_live_provider_usage", indexName: "launchlens_live_provider_usage_owner_period_idx" },
   { tableName: "launchlens_product_events", indexName: "launchlens_product_events_occurred_idx" },
   { tableName: "launchlens_product_events", indexName: "launchlens_product_events_journey_idx" },
+  { tableName: "launchlens_product_events", indexName: "launchlens_product_events_stage2_idx" },
 ];
 
 export function requiredCloudDbTableNames() {

@@ -125,6 +125,38 @@ describe("/api/generate live provider usage", () => {
     });
   });
 
+  it("carries Stage 2 context into generation milestones", async () => {
+    const response = await postJson({
+      "x-launchlens-owner": ownerToken,
+      "x-launchlens-stage2-participant": "P01",
+      "x-launchlens-stage2-batch": "pilot-1",
+    });
+
+    expect(response.status).toBe(200);
+    expect(routeMocks.recordProductEvent).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        ownerToken,
+        eventName: "workspace_generation_started",
+        stage2: {
+          stage2Participant: "P01",
+          stage2Batch: "pilot-1",
+        },
+      }),
+    );
+    expect(routeMocks.recordProductEvent).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        ownerToken,
+        eventName: "workspace_generation_completed",
+        stage2: {
+          stage2Participant: "P01",
+          stage2Batch: "pilot-1",
+        },
+      }),
+    );
+  });
+
   it("rejects live provider generation without a capability owner token", async () => {
     const response = await postJson();
 

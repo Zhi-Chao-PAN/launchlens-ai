@@ -35,6 +35,7 @@ import { cloudRowExpiry } from "@/lib/launchlens/cloud-row-expiry";
 import { validateRecoveryInput } from "@/lib/launchlens/recovery-input";
 import { ownerScopeLabel } from "@/lib/launchlens/owner-scope";
 import { futureIso } from "@/lib/launchlens/future-iso";
+import { stage2HeadersFromCurrentUrl } from "@/lib/launchlens/stage2-context";
 import {
   getOrCreateOwnerToken,
   OWNER_TOKEN_STORAGE_KEY,
@@ -104,6 +105,9 @@ export function CloudWorkspaces({
   async function cloudRequest<T>(path: string, init?: RequestInit) {
     const headers = new Headers(init?.headers);
     headers.set("x-launchlens-owner", ownerToken);
+    for (const [key, value] of Object.entries(stage2HeadersFromCurrentUrl())) {
+      headers.set(key, value);
+    }
 
     if (init?.body) {
       headers.set("Content-Type", "application/json");

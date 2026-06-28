@@ -18,6 +18,7 @@ import {
 import { consumeLiveProviderUsageSlot } from "@/lib/launchlens/live-provider-usage";
 import { hashOwnerToken } from "@/lib/launchlens/workspace-store";
 import { recordProductEvent } from "@/lib/launchlens/product-events";
+import { stage2ContextFromRequest } from "@/lib/launchlens/stage2-context";
 import {
   ERROR_BODY_TOO_LARGE,
   ERROR_RATE_LIMITED,
@@ -198,10 +199,12 @@ export async function POST(request: Request) {
 
   try {
     const ownerToken = ownerTokenFromRequest(request);
+    const stage2 = stage2ContextFromRequest(request);
     await recordProductEvent({
       ownerToken,
       eventName: "workspace_generation_started",
       subjectKey: sourceBrief?.sessionId,
+      ...(stage2 ? { stage2 } : {}),
     });
     const usage =
       launchWorkspaceLiveProviderEnabled() && configuredRealProvider()
@@ -226,6 +229,7 @@ export async function POST(request: Request) {
       subjectKey: sourceBrief?.sessionId,
       provider: result.workspace.provider,
       mode: result.usedFallback ? "fallback" : result.mode,
+      ...(stage2 ? { stage2 } : {}),
     });
 
     return noStoreJson(

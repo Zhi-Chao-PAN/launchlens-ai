@@ -4,6 +4,8 @@ import { createHash, randomUUID } from "node:crypto";
 import { neon } from "@neondatabase/serverless";
 
 import { pickEnvConnection, sanitizedErrorMessage } from "./env-clean";
+import type { Stage2TrackingContext } from "./stage2-context";
+import { normalizeStage2Value } from "./stage2-context";
 
 export const PRODUCT_EVENT_NAMES = [
   "workspace_generation_started",
@@ -72,12 +74,19 @@ function subjectHash(value: string | undefined) {
   return createHash("sha256").update(normalized, "utf8").digest("hex");
 }
 
+function stage2Hash(value: string | null | undefined) {
+  const normalized = normalizeStage2Value(value);
+  if (!normalized) return null;
+  return createHash("sha256").update(normalized, "utf8").digest("hex");
+}
+
 export async function recordProductEvent(options: {
   ownerToken: string;
   eventName: ProductEventName;
   subjectKey?: string;
   provider?: ProductEventProvider;
   mode?: ProductEventMode;
+  stage2?: Stage2TrackingContext | null;
   occurredAt?: Date;
 }): Promise<boolean> {
   const sql = getSql();
@@ -93,6 +102,8 @@ export async function recordProductEvent(options: {
         subject_key,
         provider,
         mode,
+        stage2_participant_hash,
+        stage2_batch_hash,
         occurred_at
       )
       VALUES (
@@ -102,6 +113,8 @@ export async function recordProductEvent(options: {
         ${subjectHash(options.subjectKey)},
         ${options.provider ?? null},
         ${options.mode ?? null},
+        ${stage2Hash(options.stage2?.stage2Participant)},
+        ${stage2Hash(options.stage2?.stage2Batch)},
         ${(options.occurredAt ?? new Date()).toISOString()}::timestamptz
       )
     `;

@@ -80,6 +80,7 @@ import { formatGeneratedTime } from "@/lib/launchlens/generated-time";
 import { formatGenerationModeLabel } from "@/lib/launchlens/generation-mode-label";
 import { formatProviderLabel } from "@/lib/launchlens/provider-label";
 import { formatSaveLabel } from "@/lib/launchlens/save-label";
+import { stage2HeadersFromCurrentUrl } from "@/lib/launchlens/stage2-context";
 import { Bullets } from "@/components/bullets";
 import { clearIfStill, FLASH_STATE_DURATION_MS } from "@/lib/launchlens/flash-state";
 import { evaluateWorkspaceQuality } from "@/lib/launchlens/workspace-quality";
@@ -1109,6 +1110,7 @@ export function LaunchWorkspace({
         headers: {
           "Content-Type": "application/json",
           ...(ownerToken ? { "x-launchlens-owner": ownerToken } : {}),
+          ...stage2HeadersFromCurrentUrl(),
         },
         body: JSON.stringify(
           briefSource ? { input, sourceBrief: briefSource } : input,

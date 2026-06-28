@@ -19,6 +19,7 @@ import {
 } from "@/lib/launchlens/error-codes";
 import { parseWorkspaceSnapshot } from "@/lib/launchlens/workspace-validation";
 import { recordProductEvent } from "@/lib/launchlens/product-events";
+import { stage2ContextFromRequest } from "@/lib/launchlens/stage2-context";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -77,6 +78,7 @@ export async function POST(request: Request) {
 
   try {
     const ownerToken = ownerTokenFromRequest(request);
+    const stage2 = stage2ContextFromRequest(request);
     const workspace = await createWorkspace(
       ownerToken,
       payload,
@@ -85,6 +87,7 @@ export async function POST(request: Request) {
       ownerToken,
       eventName: "cloud_snapshot_saved",
       subjectKey: workspace.id,
+      ...(stage2 ? { stage2 } : {}),
     });
     return noStoreJson({ workspace }, { status: 201 });
   } catch (error) {

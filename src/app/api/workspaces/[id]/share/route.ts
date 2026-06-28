@@ -16,6 +16,7 @@ import {
 import { setWorkspaceSharingForMember } from "@/lib/launchlens/workspace-store";
 import { isRecord, isUuid } from "@/lib/launchlens/workspace-validation";
 import { recordProductEvent } from "@/lib/launchlens/product-events";
+import { stage2ContextFromRequest } from "@/lib/launchlens/stage2-context";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -66,6 +67,7 @@ export async function POST(request: Request, context: RouteContext) {
 
   try {
     const ownerToken = ownerTokenFromRequest(request);
+    const stage2 = stage2ContextFromRequest(request);
     const workspace = await setWorkspaceSharingForMember(
       ownerToken,
       id,
@@ -85,6 +87,7 @@ export async function POST(request: Request, context: RouteContext) {
         ownerToken,
         eventName: "public_share_enabled",
         subjectKey: id,
+        ...(stage2 ? { stage2 } : {}),
       });
     }
 

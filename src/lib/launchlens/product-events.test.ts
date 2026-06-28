@@ -58,6 +58,35 @@ describe("privacy-safe product events", () => {
     ).toHaveLength(2);
   });
 
+  it("hashes Stage 2 tracking labels before inserting analytics", async () => {
+    const sql = vi.fn(async () => []);
+    eventMocks.neon.mockReturnValue(sql);
+
+    await expect(
+      recordProductEvent({
+        ownerToken,
+        eventName: "workspace_generation_started",
+        subjectKey: "research-session-123",
+        stage2: {
+          stage2Participant: "P01",
+          stage2Batch: "pilot-1",
+        },
+      }),
+    ).resolves.toBe(true);
+
+    const values = sql.mock.calls[0].slice(1);
+    expect(values).not.toContain(ownerToken);
+    expect(values).not.toContain("research-session-123");
+    expect(values).not.toContain("P01");
+    expect(values).not.toContain("pilot-1");
+    expect(
+      values.filter(
+        (value) =>
+          typeof value === "string" && /^[a-f0-9]{64}$/.test(value),
+      ),
+    ).toHaveLength(4);
+  });
+
   it("skips analytics when cloud storage or a valid journey is absent", async () => {
     delete process.env.DATABASE_URL;
 
