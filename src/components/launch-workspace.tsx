@@ -2846,6 +2846,58 @@ export function LaunchWorkspace({
         </div>
       </div>
     </main>
+        {/* P1-bug fix: when a fresh brief has been loaded (hash/file/paste) and
+            the workspace hasn't been regenerated yet, the right-pane still
+            shows the previous run. Block the user from confusing old
+            workspace content for new-brief results by overlaying a
+            "needs generate" panel over the workspace detail area until they
+            either generate from the new brief or clear the briefSource. The
+            five brief fields on the left stay editable so they can review
+            what was imported. */}
+        {briefSource &&
+          briefSource.exportedAt &&
+          briefSource.exportedAt > workspace.generatedAt && (
+            <div
+              role="alertdialog"
+              aria-modal="false"
+              aria-labelledby="workspace-outdated-title"
+              data-testid="workspace-outdated-overlay"
+              className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-[1480px] px-4 pb-4 sm:px-6 sm:pb-5 lg:px-8 lg:pb-6"
+            >
+              <div className="mx-auto flex flex-col gap-3 rounded-xl border border-accent/40 bg-card/95 p-5 shadow-2xl backdrop-blur sm:flex-row sm:items-center sm:gap-5">
+                <div className="flex-1">
+                  <h3
+                    id="workspace-outdated-title"
+                    className="text-base font-semibold text-foreground"
+                  >
+                    {t("workspace.outdated.title")}
+                  </h3>
+                  <p className="mt-1 text-sm leading-5 text-foreground/80">
+                    {t("workspace.outdated.body")}
+                  </p>
+                </div>
+                <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
+                  <button
+                    type="button"
+                    onClick={() => void generate()}
+                    data-testid="workspace-outdated-generate"
+                    className="flex h-10 items-center justify-center gap-2 rounded-md bg-accent px-4 text-sm font-semibold text-primary-text transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                  >
+                    <Rocket className="size-4" aria-hidden="true" />
+                    {t("workspace.outdated.generate")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBriefSource(null)}
+                    data-testid="workspace-outdated-discard"
+                    className="flex h-10 items-center justify-center rounded-md border border-input bg-card px-4 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                  >
+                    {t("workspace.outdated.discard")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         {importPreview && (
           <div
             role="dialog"

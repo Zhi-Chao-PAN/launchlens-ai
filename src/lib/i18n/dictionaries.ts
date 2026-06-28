@@ -238,6 +238,10 @@ export type DictionaryKey =
   | "toast.briefLoaded"
   | "toast.briefFromHash"
   | "toast.briefLinkError"
+  | "workspace.outdated.title"
+  | "workspace.outdated.body"
+  | "workspace.outdated.generate"
+  | "workspace.outdated.discard"
   | "toast.saveHint"
   | "toast.restored"
   | "toast.storageUnavailable"
@@ -490,6 +494,10 @@ const en: Dict = {
   "toast.briefLoaded": "{label} loaded - review and Generate",
   "toast.briefFromHash": "Brief loaded from Research Studio - click Generate",
   "toast.briefLinkError": "Research Studio brief link could not be read. Import the JSON file instead.",
+  "workspace.outdated.title": "A new brief is loaded but not generated yet",
+  "workspace.outdated.body": "The five fields on the left are from your latest source. The workspace on the right is from a previous run and will be replaced when you generate. Choose what to do with the new brief:",
+  "workspace.outdated.generate": "Generate workspace from this brief",
+  "workspace.outdated.discard": "Discard new brief, keep current workspace",
   "toast.saveHint": "Use the Cloud history section below to save snapshots to cloud.",
   "toast.restored": "Local workspace restored from browser storage.",
   "toast.storageUnavailable": "Local storage unavailable - changes may not persist.",
@@ -740,6 +748,10 @@ const zhCN: Dict = {
   "toast.briefLoaded": "{label} 已加载 — 检查后点击「生成」",
   "toast.briefFromHash": "已从 Research Studio 加载简报 — 点击「生成」",
   "toast.briefLinkError": "无法读取 Research Studio 简报链接，请改为导入 JSON 文件。",
+  "workspace.outdated.title": "已加载新简报，尚未生成工作台",
+  "workspace.outdated.body": "左侧五个字段来自你最新的来源。右侧工作台仍是上次的结果，生成后会被替换。请选择如何处理新简报：",
+  "workspace.outdated.generate": "基于此简报生成工作台",
+  "workspace.outdated.discard": "丢弃新简报，保留当前工作台",
   "toast.saveHint": "使用下方云端历史区域将快照保存到云端。",
   "toast.restored": "已从浏览器存储恢复本地工作台。",
   "toast.storageUnavailable": "本地存储不可用 — 更改可能无法保留。",
