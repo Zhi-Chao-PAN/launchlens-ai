@@ -218,3 +218,88 @@ describe("briefFromFile", () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// R251/R254 cross-repo contract: this block pins the wire shape that
+// launchlens-research-studio's brief-mapper.ts::toLaunchLensBrief emits.
+// The fixture below is a verbatim copy of that envelope (hand-verified against
+// the mapper's field derivation). If either repo changes the envelope shape —
+// field names, the meta.toneDefault flag, provenance keys — this test breaks
+// before a silent handoff regression can ship. The symmetric encoder test
+// lives in research-studio's brief-mapper.test.ts.
+// ---------------------------------------------------------------------------
+describe("briefFromJson — Research Studio handoff contract", () => {
+  // Fixture mirrors toLaunchLensBrief output exactly: schemaVersion, source,
+  // input (5 fields), meta with toneDefault:true, plus provenance.
+  const studioEnvelope = JSON.stringify({
+    schemaVersion: "1.0.0",
+    source: "launchlens-research-studio",
+    exportedAt: "2026-06-28T12:00:00.000Z",
+    sessionId: "sess-contract-001",
+    query: "AI onboarding analyst for indie SaaS",
+    reportUrl: "https://launchlens-research-studio.vercel.app/research/sess-contract-001",
+    input: {
+      idea: "AI onboarding analyst for indie SaaS founders",
+      audience: "Target users: solo founders (building). Segments: B2B SaaS.",
+      market: "$2.5B TAM, growing 18%/yr. Key competitors: Appcues, Userflow.",
+      tone: "Practical, crisp, and founder-friendly",
+      constraints: "Pricing guidance: Tier Starter. Key risks: churn.",
+    },
+    meta: {
+      opportunityScore: 82,
+      riskScore: 38,
+      completedAgents: [
+        "competitor-analyst",
+        "market-sizer",
+        "pain-detective",
+        "pricing-scout",
+        "synthesis",
+      ],
+      truncated: [],
+      toneDefault: true,
+    },
+  });
+
+  it("round-trips every input field unchanged", () => {
+    const result = briefFromJson(studioEnvelope);
+    expect(result.input.idea).toBe("AI onboarding analyst for indie SaaS founders");
+    expect(result.input.audience).toBe("Target users: solo founders (building). Segments: B2B SaaS.");
+    expect(result.input.market).toBe("$2.5B TAM, growing 18%/yr. Key competitors: Appcues, Userflow.");
+    expect(result.input.tone).toBe("Practical, crisp, and founder-friendly");
+    expect(result.input.constraints).toBe("Pricing guidance: Tier Starter. Key risks: churn.");
+  });
+
+  it("preserves the full provenance chain (sessionId, reportUrl, scores)", () => {
+    const result = briefFromJson(studioEnvelope);
+    expect(result.source).toBe("research-studio");
+    expect(result.sourceBrief).toEqual({
+      source: "launchlens-research-studio",
+      sessionId: "sess-contract-001",
+      reportUrl: "https://launchlens-research-studio.vercel.app/research/sess-contract-001",
+      exportedAt: "2026-06-28T12:00:00.000Z",
+      opportunityScore: 82,
+      riskScore: 38,
+    });
+  });
+
+  // R254: the toneDefault flag is what lets the workspace preserve the user's
+  // tone. This assertion guards the flag's presence so a mapper change that
+  // drops it fails here rather than silently clobbering user tone.
+  it("propagates meta.toneDefault so the workspace can preserve user tone", () => {
+    const result = briefFromJson(studioEnvelope);
+    expect(result.toneIsDefault).toBe(true);
+  });
+
+  it("does not flag toneIsDefault when toneDefault is absent (older envelopes)", () => {
+    const legacy = JSON.stringify({
+      schemaVersion: "1.0.0",
+      source: "launchlens-research-studio",
+      exportedAt: "2026-06-28T12:00:00.000Z",
+      sessionId: "sess-legacy",
+      input: validInput,
+      meta: { opportunityScore: 50, riskScore: 50, completedAgents: [], truncated: [] },
+    });
+    const result = briefFromJson(legacy);
+    expect(result.toneIsDefault).not.toBe(true);
+  });
+});

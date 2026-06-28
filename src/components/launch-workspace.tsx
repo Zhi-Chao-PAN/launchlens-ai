@@ -11,6 +11,7 @@ import {
   CircleDollarSign,
   ClipboardCheck,
   ClipboardList,
+  ClipboardPaste,
   Compass,
   Copy,
   Download,
@@ -60,7 +61,7 @@ import { ValidationBoard } from "@/components/validation-board";
 import { copyTextToClipboard, downloadTextFile } from "@/lib/launchlens/clipboard";
 import { safeMarkdownFilename, workspaceToMarkdown } from "@/lib/launchlens/markdown-export";
 import { SCHEMA_VERSION, workspaceFromJson, workspaceToJson, type WorkspaceImportResult } from "@/lib/launchlens/json-export";
-import { briefFromFile, type BriefImportResult } from "@/lib/launchlens/brief-from-json";
+import { briefFromFile, briefFromJson, type BriefImportResult } from "@/lib/launchlens/brief-from-json";
 import { briefFromHashFragment } from "@/lib/launchlens/brief-fragment";
 import { decryptToJson, encryptJson, isEncryptedPayload, randomPassword } from "@/lib/launchlens/encrypt-export";
 import type { CloudWorkspaceRecord } from "@/lib/launchlens/cloud-workspace";
@@ -525,6 +526,13 @@ export function LaunchWorkspace({
   const [decrypting, setDecrypting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [briefImportPreview, setBriefImportPreview] = useState<BriefImportResult | null>(null);
+  // R252: paste-JSON entry point. When the user picks "Paste JSON" in the brief
+  // import chooser, we open a small dialog with a textarea instead of the file
+  // picker. This is the single-point-of-failure fallback for when the URL hash
+  // handoff is blocked (popup blocked, URL too long) — the user can always paste
+  // the envelope they copied from Research Studio.
+  const [briefPasteOpen, setBriefPasteOpen] = useState(false);
+  const [briefPasteText, setBriefPasteText] = useState("");
   const briefFileInputRef = useRef<HTMLInputElement>(null);
   const [isStorageReady, setIsStorageReady] = useState(false);
   const [isBriefOpen, setIsBriefOpen] = useState(false);
@@ -539,7 +547,16 @@ export function LaunchWorkspace({
       options: { successMessage?: string; focus?: boolean } = {},
     ) => {
       const { input: nextInput, warnings, source } = result;
-      setInput(nextInput);
+      // R254: when the brief's tone is Research Studio's non-researched default
+      // (flagged via toneIsDefault), preserve the user's existing tone instead
+      // of overwriting it. The other four fields are always taken from the
+      // brief — only tone, which Research Studio can't actually research, is
+      // kept user-authored.
+      const mergedInput =
+        result.toneIsDefault
+          ? { ...nextInput, tone: input.tone }
+          : nextInput;
+      setInput(mergedInput);
       setBriefSource(result.sourceBrief ?? null);
       setError("");
       setFallbackNotice("");
@@ -562,7 +579,7 @@ export function LaunchWorkspace({
         if (ideaField) ideaField.focus();
       }
     },
-    [showToast, t],
+    [input.tone, showToast, t],
   );
 
   useEffect(() => {
@@ -585,6 +602,24 @@ export function LaunchWorkspace({
         applyBriefImportResult(result, {
           successMessage: t("toast.briefFromHash"),
         });
+        // R253: acknowledge the handoff to the opening tab (research-studio's
+        // "Send to LaunchLens AI" window.open). The opener arms a one-shot
+        // message listener expecting {type:"launchlens:brief-applied"} so it
+        // can toast a meaningful "applied" instead of a generic "opened".
+        // Guarded: only postMessage when an opener exists, and we don't care
+        // if the message never arrives (older research-studio builds don't
+        // listen) — this is purely a best-effort confirmation.
+        if (window.opener && !window.opener.closed) {
+          try {
+            window.opener.postMessage(
+              { type: "launchlens:brief-applied" },
+              "*",
+            );
+          } catch {
+            // Cross-origin opener may throw on postMessage in some browsers;
+            // swallow — the import already succeeded on our side.
+          }
+        }
       }, 0);
     } catch {
       showToast(
@@ -1314,6 +1349,41 @@ export function LaunchWorkspace({
     briefFileInputRef.current?.click();
   }
 
+  // R252: open the paste-JSON dialog. The user pastes a Research Studio brief
+  // envelope (or any LaunchLensInput JSON) into a textarea; we parse it with the
+  // same briefFromJson the file and hash paths use, then route through the same
+  // preview-and-confirm flow so all three entry points are identical downstream.
+  function openBriefPaste() {
+    setBriefPasteText("");
+    setBriefPasteOpen(true);
+  }
+
+  function cancelBriefPaste() {
+    setBriefPasteOpen(false);
+    setBriefPasteText("");
+  }
+
+  function applyBriefPaste() {
+    const text = briefPasteText.trim();
+    if (!text) {
+      showToast(t("briefDialog.pasteEmpty"), "error");
+      return;
+    }
+    try {
+      const result = briefFromJson(text);
+      setBriefPasteOpen(false);
+      setBriefPasteText("");
+      setBriefImportPreview(result);
+      showToast(t("briefDialog.pasteParsed"), "info");
+    } catch (error) {
+      const msg =
+        error && typeof error === "object" && "message" in error
+          ? String((error as { message: unknown }).message)
+          : "Invalid JSON";
+      showToast(t("briefDialog.pasteError", { msg }), "error");
+    }
+  }
+
   async function retryCopyFromTextarea() {
     if (!exportText) return;
     try {
@@ -1908,6 +1978,18 @@ export function LaunchWorkspace({
                     >
                       <FlaskConical className="size-4" aria-hidden="true" />
                       {t("toolbar.researchStudio")}
+                    </button>
+                    {/* R252: paste-JSON fallback entry. Sits beside the file
+                        picker so a blocked hash handoff never strands the user
+                        — they can always paste the envelope they copied. */}
+                    <button
+                      type="button"
+                      onClick={openBriefPaste}
+                      title={t("toolbar.pasteBriefTitle")}
+                      className="flex h-9 items-center gap-1.5 rounded-md border border-input bg-input px-3 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                    >
+                      <ClipboardPaste className="size-4" aria-hidden="true" />
+                      {t("toolbar.pasteBrief")}
                     </button>
                     <input
                       ref={fileInputRef}
@@ -2792,6 +2874,64 @@ export function LaunchWorkspace({
                 >
                   <Upload className="size-3.5" aria-hidden="true" />
                   {t("importDialog.import")}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {briefPasteOpen && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="brief-paste-dialog-title"
+            className="fixed inset-0 z-50 flex items-center justify-center px-4 py-12"
+          >
+            <button
+              type="button"
+              aria-label={t("briefDialog.cancelAria")}
+              onClick={cancelBriefPaste}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            />
+            <div
+              className="relative w-full max-w-lg overflow-hidden rounded-md border border-card bg-card shadow-2xl"
+              style={{ animation: "fadeInDown 200ms ease-out both" }}
+            >
+              <div className="border-b border-input px-6 py-4">
+                <h3 id="brief-paste-dialog-title" className="text-lg font-semibold text-foreground">
+                  {t("briefDialog.pasteTitle")}
+                </h3>
+              </div>
+              <div className="space-y-3 px-6 py-4">
+                <p className="text-sm text-foreground/80">
+                  {t("briefDialog.pasteBody")}
+                </p>
+                <textarea
+                  value={briefPasteText}
+                  onChange={(e) => setBriefPasteText(e.target.value)}
+                  placeholder={t("briefDialog.pastePlaceholder")}
+                  rows={10}
+                  className="w-full resize-y rounded-md border border-input bg-input px-3 py-2 font-mono text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                  autoFocus
+                  spellCheck={false}
+                />
+              </div>
+              <div className="flex gap-2 border-t border-input px-6 py-4 sm:justify-end">
+                <button
+                  type="button"
+                  onClick={cancelBriefPaste}
+                  className="flex h-9 items-center gap-1.5 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                >
+                  {t("briefDialog.cancel")}
+                </button>
+                <button
+                  type="button"
+                  onClick={applyBriefPaste}
+                  disabled={!briefPasteText.trim()}
+                  className="flex h-9 items-center gap-1.5 rounded-md bg-accent px-3 text-sm font-semibold text-primary-text transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:opacity-50"
+                >
+                  <ClipboardPaste className="size-3.5" aria-hidden="true" />
+                  {t("briefDialog.pasteLoad")}
                 </button>
               </div>
             </div>

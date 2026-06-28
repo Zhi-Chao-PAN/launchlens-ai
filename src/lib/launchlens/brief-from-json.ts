@@ -15,6 +15,14 @@ export type BriefImportResult = {
   sourceBrief?: LaunchLensWorkspaceSourceBrief;
   warnings: string[];
   source: BriefImportSource;
+  /**
+   * R254: true when the imported brief's tone field is a non-researched default
+   * (Research Studio has no tone/style agent, so it ships a fixed placeholder).
+   * The workspace uses this to preserve the user's existing tone instead of
+   * clobbering it with the default. Absent/undefined for bare-input and legacy
+   * shapes, where tone (if present) was authored intentionally.
+   */
+  toneIsDefault?: boolean;
 };
 
 export type BriefImportError = {
@@ -122,9 +130,15 @@ export function briefFromJson(json: string): BriefImportResult {
     if (typeof parsed.schemaVersion === "string") {
       // Informational only for now; no migrations needed at v1.0.0.
     }
+    // R254: read the toneDefault flag from the envelope meta so the workspace
+    // can preserve the user's existing tone rather than overwriting it with
+    // Research Studio's fixed placeholder.
+    const toneIsDefault = isRecord(parsed.meta)
+      ? parsed.meta.toneDefault === true
+      : false;
     return sourceBrief
-      ? { input, warnings, source, sourceBrief }
-      : { input, warnings, source };
+      ? { input, warnings, source, sourceBrief, toneIsDefault }
+      : { input, warnings, source, toneIsDefault };
   }
 
   // Shape 2: bare LaunchLensInput

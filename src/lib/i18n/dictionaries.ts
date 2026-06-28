@@ -115,6 +115,8 @@ export type DictionaryKey =
   | "toolbar.import"
   | "toolbar.importBriefTitle"
   | "toolbar.researchStudio"
+  | "toolbar.pasteBrief"
+  | "toolbar.pasteBriefTitle"
   | "toolbar.passwordProtect"
   | "toolbar.passphrasePlaceholder"
   | "toolbar.passphraseAria"
@@ -210,6 +212,13 @@ export type DictionaryKey =
   | "briefDialog.warningMany"
   | "briefDialog.cancel"
   | "briefDialog.load"
+  | "briefDialog.pasteTitle"
+  | "briefDialog.pasteBody"
+  | "briefDialog.pastePlaceholder"
+  | "briefDialog.pasteLoad"
+  | "briefDialog.pasteEmpty"
+  | "briefDialog.pasteParsed"
+  | "briefDialog.pasteError"
   // Encrypted import dialog
   | "encrypt.title"
   | "encrypt.body"
@@ -367,6 +376,8 @@ const en: Dict = {
   "toolbar.import": "Import",
   "toolbar.importBriefTitle": "Import a Research Studio brief",
   "toolbar.researchStudio": "Research Studio",
+  "toolbar.pasteBrief": "Paste JSON",
+  "toolbar.pasteBriefTitle": "Paste a brief as JSON",
   "toolbar.passwordProtect": "Password-protect JSON export",
   "toolbar.passphrasePlaceholder": "passphrase",
   "toolbar.passphraseAria": "Export passphrase",
@@ -454,6 +465,13 @@ const en: Dict = {
   "briefDialog.warningMany": "{count} warnings:",
   "briefDialog.cancel": "Cancel",
   "briefDialog.load": "Load brief",
+  "briefDialog.pasteTitle": "Paste brief JSON",
+  "briefDialog.pasteBody": "Paste a Research Studio brief envelope (or a bare { idea, audience, market, tone, constraints } object) below. You'll get a chance to review before it's applied.",
+  "briefDialog.pastePlaceholder": "{\n  \"schemaVersion\": \"1.0.0\",\n  \"source\": \"launchlens-research-studio\",\n  \"input\": { \"idea\": \"...\", ... }\n}",
+  "briefDialog.pasteLoad": "Parse & preview",
+  "briefDialog.pasteEmpty": "Nothing to import — paste a brief JSON first.",
+  "briefDialog.pasteParsed": "Brief parsed — review and confirm.",
+  "briefDialog.pasteError": "Could not parse brief: {msg}",
   "encrypt.title": "Enter passphrase",
   "encrypt.body": "{file} is password-protected. Type the passphrase you used when exporting.",
   "encrypt.passphraseLabel": "Passphrase",
@@ -607,6 +625,8 @@ const zhCN: Dict = {
   "toolbar.import": "导入",
   "toolbar.importBriefTitle": "导入 Research Studio 简报",
   "toolbar.researchStudio": "Research Studio",
+  "toolbar.pasteBrief": "粘贴 JSON",
+  "toolbar.pasteBriefTitle": "粘贴简报 JSON",
   "toolbar.passwordProtect": "用密码保护 JSON 导出",
   "toolbar.passphrasePlaceholder": "口令",
   "toolbar.passphraseAria": "导出口令",
@@ -694,6 +714,13 @@ const zhCN: Dict = {
   "briefDialog.warningMany": "{count} 项警告：",
   "briefDialog.cancel": "取消",
   "briefDialog.load": "加载简报",
+  "briefDialog.pasteTitle": "粘贴简报 JSON",
+  "briefDialog.pasteBody": "在下方粘贴 Research Studio 简报信封（或一个包含 { idea, audience, market, tone, constraints } 的裸对象）。应用前你可以先预览。",
+  "briefDialog.pastePlaceholder": "{\n  \"schemaVersion\": \"1.0.0\",\n  \"source\": \"launchlens-research-studio\",\n  \"input\": { \"idea\": \"...\", ... }\n}",
+  "briefDialog.pasteLoad": "解析并预览",
+  "briefDialog.pasteEmpty": "没有可导入的内容 — 请先粘贴简报 JSON。",
+  "briefDialog.pasteParsed": "简报已解析 — 请核对后确认。",
+  "briefDialog.pasteError": "无法解析简报：{msg}",
   "encrypt.title": "输入口令",
   "encrypt.body": "{file} 已加密保护。请输入导出时使用的口令。",
   "encrypt.passphraseLabel": "口令",
