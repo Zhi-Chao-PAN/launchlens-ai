@@ -126,6 +126,11 @@ type GenerationMeta = {
   fallbackReason?: string;
 };
 
+type PendingBriefImport = {
+  previousInput: LaunchLensInput;
+  previousSourceBrief: LaunchLensWorkspaceSourceBrief | null;
+};
+
 const tones = [
   "Practical, crisp, and founder-friendly",
   "Analytical and investor-ready",
@@ -486,12 +491,11 @@ export function LaunchWorkspace({
   const [isGenerating, setIsGenerating] = useState(false);
   const generateAbortRef = useRef<AbortController | null>(null);
   const briefHashProcessedRef = useRef<string | null>(null);
-  // P1-bug v2: tracks the moment the user imported a brief via any path
-  // (hash pre-fill, file upload, paste). Independent of briefSource which can
-  // be null when source-brief normalize fails — the overlay still needs to
-  // show so the user knows the right-pane workspace is stale relative to
-  // the five fields they just imported.
-  const [briefImportedAt, setBriefImportedAt] = useState<string | null>(null);
+  // An imported brief changes the five input fields without regenerating the
+  // workspace. Keep the previous input so the user can genuinely discard the
+  // pending import instead of only hiding the warning.
+  const [pendingBriefImport, setPendingBriefImport] =
+    useState<PendingBriefImport | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
   // mounted gate for client-only UI (language switcher) to avoid SSR/CSR
@@ -508,12 +512,15 @@ export function LaunchWorkspace({
   const OWNER_TOKEN_STORAGE_KEY = "launchlens.ownerToken";
   const [ownerToken, setOwnerToken] = useState<string>("");
   useEffect(() => {
-    setOwnerToken(
-      getOrCreateOwnerToken(
-        typeof window !== "undefined" ? window.localStorage : null,
-        OWNER_TOKEN_STORAGE_KEY,
-      ),
-    );
+    const timer = window.setTimeout(() => {
+      setOwnerToken(
+        getOrCreateOwnerToken(
+          window.localStorage,
+          OWNER_TOKEN_STORAGE_KEY,
+        ),
+      );
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   // Load collapsed section state from localStorage on mount
@@ -580,12 +587,14 @@ export function LaunchWorkspace({
         result.toneIsDefault
           ? { ...nextInput, tone: input.tone }
           : nextInput;
+      setPendingBriefImport((current) =>
+        current ?? {
+          previousInput: input,
+          previousSourceBrief: briefSource,
+        },
+      );
       setInput(mergedInput);
       setBriefSource(result.sourceBrief ?? null);
-      // P1-bug v2: mark this exact moment so the stale-workspace overlay
-      // can compare against workspace.generatedAt regardless of whether
-      // sourceBrief was successfully parsed.
-      setBriefImportedAt(new Date().toISOString());
       setError("");
       setFallbackNotice("");
       const label =
@@ -607,7 +616,15 @@ export function LaunchWorkspace({
         if (ideaField) ideaField.focus();
       }
     },
-    [input.tone, showToast, t],
+    [
+      briefSource,
+      input,
+      setError,
+      setFallbackNotice,
+      setPendingBriefImport,
+      showToast,
+      t,
+    ],
   );
 
   useEffect(() => {
@@ -620,23 +637,14 @@ export function LaunchWorkspace({
       return;
     }
 
-    briefHashProcessedRef.current = hash;
-    console.log("[LaunchLens] Hash prefill starting:", {
-      hashPrefix: hash.slice(0, 40),
-      hashLength: hash.length,
-    });
     try {
       const result = briefFromHashFragment(hash);
       if (!result) {
-        console.warn("[LaunchLens] Hash prefill: briefFromHashFragment returned null");
         throw new Error("Missing brief payload.");
       }
-      console.log("[LaunchLens] Hash prefill parsed:", {
-        idea: result.input.idea.slice(0, 80),
-        source: result.source,
-        hasSourceBrief: !!result.sourceBrief,
-        toneIsDefault: result.toneIsDefault,
-      });
+      // Mark the hash as valid before the local-storage restore effect runs.
+      // Otherwise its queued restore can overwrite the freshly imported fields.
+      briefHashProcessedRef.current = hash;
       window.setTimeout(() => {
         applyBriefImportResult(result, {
           successMessage: t("toast.briefFromHash"),
@@ -836,15 +844,18 @@ export function LaunchWorkspace({
       }
 
       try {
+        const hasExplicitBriefHandoff = Boolean(
+          briefHashProcessedRef.current,
+        );
         const rawSnapshot = localStorage.getItem(LOCAL_WORKSPACE_KEY);
-    if (rawSnapshot) {
-      try {
-        const parsed = JSON.parse(rawSnapshot);
-        if (parsed.savedAt) setSavedAt(parsed.savedAt);
-      } catch {
-        // ignore parse errors
-      }
-    }
+        if (rawSnapshot) {
+          try {
+            const parsed = JSON.parse(rawSnapshot);
+            if (parsed.savedAt) setSavedAt(parsed.savedAt);
+          } catch {
+            // ignore parse errors
+          }
+        }
 
         if (rawSnapshot) {
           const snapshot = parseLocalWorkspaceSnapshot(
@@ -852,17 +863,32 @@ export function LaunchWorkspace({
           );
 
           if (snapshot) {
-            setInput(snapshot.input);
             setWorkspace(snapshot.workspace);
             setExecution(snapshot.execution);
-            setBriefSource(snapshot.workspace.sourceBrief ?? null);
+            if (hasExplicitBriefHandoff) {
+              // Keep the imported fields/source, but restore the user's prior
+              // generated workspace and retain its input for a real discard.
+              setPendingBriefImport({
+                previousInput: snapshot.input,
+                previousSourceBrief: snapshot.workspace.sourceBrief ?? null,
+              });
+            } else {
+              setInput(snapshot.input);
+              setBriefSource(snapshot.workspace.sourceBrief ?? null);
+              setPendingBriefImport(null);
+            }
             setGenerationMeta({
               mode: snapshot.workspace.provider === "mock" ? "demo" : "real",
               provider: snapshot.workspace.provider,
               generatedAt: snapshot.workspace.generatedAt,
               usedFallback: false,
             });
-            showToast("Local workspace restored from browser storage.", "success");
+            if (!hasExplicitBriefHandoff) {
+              showToast(
+                "Local workspace restored from browser storage.",
+                "success",
+              );
+            }
           }
         }
       } catch {
@@ -930,6 +956,7 @@ export function LaunchWorkspace({
       setWorkspace(example.workspace);
       setExecution(example.execution);
       setBriefSource(null);
+      setPendingBriefImport(null);
       setGenerationMeta({
         mode: "demo",
         provider: example.workspace.provider,
@@ -972,6 +999,7 @@ export function LaunchWorkspace({
       setWorkspace(initialWorkspace);
       setExecution(initialExecution);
       setBriefSource(initialWorkspace.sourceBrief ?? null);
+      setPendingBriefImport(null);
       setGenerationMeta({
         mode: "demo",
         provider: initialWorkspace.provider,
@@ -1007,6 +1035,7 @@ export function LaunchWorkspace({
       setWorkspace(record.workspace);
       setExecution(record.execution);
       setBriefSource(record.workspace.sourceBrief ?? null);
+      setPendingBriefImport(null);
       setGenerationMeta({
         mode: record.workspace.provider === "mock" ? "demo" : "real",
         provider: record.workspace.provider,
@@ -1102,6 +1131,7 @@ export function LaunchWorkspace({
 
       setWorkspace(data.workspace);
       setBriefSource(data.workspace.sourceBrief ?? briefSource ?? null);
+      setPendingBriefImport(null);
       const freshExecution = createExecutionState(data.workspace);
       setExecution(freshExecution);
       setSrAnnouncement(
@@ -2867,7 +2897,7 @@ export function LaunchWorkspace({
         </div>
       </div>
     </main>
-        {briefImportedAt && briefImportedAt > workspace.generatedAt && (
+        {pendingBriefImport && (
             <div
               role="alertdialog"
               aria-modal="false"
@@ -2890,22 +2920,10 @@ export function LaunchWorkspace({
                 <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
                   <button
                     type="button"
-                    onClick={() => {
-                      // P2-debug: log diagnostic info so we can see whether
-                      // the five fields actually match the new brief or are
-                      // still the initialExample. Helps distinguish "hash
-                      // prefill worked but workspace looks stale" from "hash
-                      // prefill failed silently".
-                      console.log("[LaunchLens] Generate from overlay:", {
-                        inputIdea: input.idea.slice(0, 80),
-                        briefImportedAt,
-                        workspaceGeneratedAt: workspace.generatedAt,
-                        briefSourceExportedAt: briefSource?.exportedAt,
-                      });
-                      void generate();
-                    }}
+                    onClick={() => void generate()}
+                    disabled={!canGenerate}
                     data-testid="workspace-outdated-generate"
-                    className="flex h-10 items-center justify-center gap-2 rounded-md bg-accent px-4 text-sm font-semibold text-primary-text transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                    className="flex h-10 items-center justify-center gap-2 rounded-md bg-accent px-4 text-sm font-semibold text-primary-text transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <Rocket className="size-4" aria-hidden="true" />
                     {t("workspace.outdated.generate")}
@@ -2913,8 +2931,13 @@ export function LaunchWorkspace({
                   <button
                     type="button"
                     onClick={() => {
-                      setBriefSource(null);
-                      setBriefImportedAt(null);
+                      setInput(pendingBriefImport.previousInput);
+                      setBriefSource(
+                        pendingBriefImport.previousSourceBrief,
+                      );
+                      setPendingBriefImport(null);
+                      setError("");
+                      setFallbackNotice("");
                     }}
                     data-testid="workspace-outdated-discard"
                     className="flex h-10 items-center justify-center rounded-md border border-input bg-card px-4 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
