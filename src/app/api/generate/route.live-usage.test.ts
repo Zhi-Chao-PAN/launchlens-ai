@@ -15,6 +15,7 @@ const routeMocks = vi.hoisted(() => {
   return {
     configuredRealProvider: vi.fn(),
     consumeLiveProviderUsageSlot: vi.fn(),
+    recordProductEvent: vi.fn(),
     generateLaunchWorkspace: vi.fn(),
     launchWorkspaceLiveProviderEnabled: vi.fn(),
     LiveProviderUsageError: MockLiveProviderUsageError,
@@ -28,6 +29,10 @@ vi.mock("@/lib/launchlens/provider-runtime", () => ({
 vi.mock("@/lib/launchlens/live-provider-usage", () => ({
   LiveProviderUsageError: routeMocks.LiveProviderUsageError,
   consumeLiveProviderUsageSlot: routeMocks.consumeLiveProviderUsageSlot,
+}));
+
+vi.mock("@/lib/launchlens/product-events", () => ({
+  recordProductEvent: routeMocks.recordProductEvent,
 }));
 
 vi.mock("@/lib/launchlens/provider", () => ({
@@ -72,6 +77,7 @@ describe("/api/generate live provider usage", () => {
       used: 41,
       remaining: 459,
     });
+    routeMocks.recordProductEvent.mockResolvedValue(true);
     routeMocks.generateLaunchWorkspace.mockResolvedValue({
       workspace: { provider: "minimax", generatedAt: "2026-06-27T00:00:00.000Z" },
       mode: "real",
@@ -92,6 +98,22 @@ describe("/api/generate live provider usage", () => {
       feature: "workspace_generation",
     });
     expect(routeMocks.generateLaunchWorkspace).toHaveBeenCalledWith(validInput);
+    expect(routeMocks.recordProductEvent).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        ownerToken,
+        eventName: "workspace_generation_started",
+      }),
+    );
+    expect(routeMocks.recordProductEvent).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        ownerToken,
+        eventName: "workspace_generation_completed",
+        provider: "minimax",
+        mode: "real",
+      }),
+    );
     await expect(response.json()).resolves.toMatchObject({
       mode: "real",
       usage: {

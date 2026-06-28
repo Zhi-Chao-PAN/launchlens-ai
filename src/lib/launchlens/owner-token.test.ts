@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { createOwnerToken, getOrCreateOwnerToken } from "./owner-token";
+import {
+  createOwnerToken,
+  getOrCreateOwnerToken,
+  LEGACY_OWNER_TOKEN_STORAGE_KEY,
+  OWNER_TOKEN_STORAGE_KEY,
+} from "./owner-token";
 
 // Deterministic random: returns the same byte value for every position
 function fixed(value: number) {
@@ -61,6 +66,23 @@ function memoryStorage(initial: Record<string, string> = {}) {
 }
 
 describe("getOrCreateOwnerToken", () => {
+  it("uses one canonical key across product surfaces", () => {
+    const stored = createOwnerToken(fixed(6));
+    const storage = memoryStorage({ [OWNER_TOKEN_STORAGE_KEY]: stored });
+
+    expect(getOrCreateOwnerToken(storage)).toBe(stored);
+  });
+
+  it("migrates the former generation-only key when the canonical key is absent", () => {
+    const legacy = createOwnerToken(fixed(5));
+    const storage = memoryStorage({
+      [LEGACY_OWNER_TOKEN_STORAGE_KEY]: legacy,
+    });
+
+    expect(getOrCreateOwnerToken(storage)).toBe(legacy);
+    expect(storage.getItem(OWNER_TOKEN_STORAGE_KEY)).toBe(legacy);
+  });
+
   it("returns the existing token when storage holds a valid one", () => {
     const stored = createOwnerToken(fixed(7));
     const storage = memoryStorage({ "launchlens.ownerToken": stored });

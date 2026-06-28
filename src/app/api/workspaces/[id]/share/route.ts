@@ -15,6 +15,7 @@ import {
 } from "@/lib/launchlens/error-codes";
 import { setWorkspaceSharingForMember } from "@/lib/launchlens/workspace-store";
 import { isRecord, isUuid } from "@/lib/launchlens/workspace-validation";
+import { recordProductEvent } from "@/lib/launchlens/product-events";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -64,8 +65,9 @@ export async function POST(request: Request, context: RouteContext) {
     : null;
 
   try {
+    const ownerToken = ownerTokenFromRequest(request);
     const workspace = await setWorkspaceSharingForMember(
-      ownerTokenFromRequest(request),
+      ownerToken,
       id,
       body.enabled,
       { expiresInDays },
@@ -76,6 +78,14 @@ export async function POST(request: Request, context: RouteContext) {
         { code: ERROR_WORKSPACE_FORBIDDEN, error: "Sharing requires editor or owner access." },
         { status: 403 },
       );
+    }
+
+    if (body.enabled) {
+      await recordProductEvent({
+        ownerToken,
+        eventName: "public_share_enabled",
+        subjectKey: id,
+      });
     }
 
     return noStoreJson({ workspace });

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const storeMocks = vi.hoisted(() => ({
   setWorkspaceSharingForMember: vi.fn(),
+  recordProductEvent: vi.fn(),
 }));
 
 vi.mock("@/lib/launchlens/workspace-store", async (importOriginal) => ({
@@ -9,6 +10,10 @@ vi.mock("@/lib/launchlens/workspace-store", async (importOriginal) => ({
     typeof import("@/lib/launchlens/workspace-store")
   >()),
   setWorkspaceSharingForMember: storeMocks.setWorkspaceSharingForMember,
+}));
+
+vi.mock("@/lib/launchlens/product-events", () => ({
+  recordProductEvent: storeMocks.recordProductEvent,
 }));
 
 import { exampleWorkspaces } from "@/lib/launchlens/example-workspaces";
@@ -27,6 +32,7 @@ describe("/api/workspaces/[id]/share", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetWorkspaceRateLimitsForTests();
+    storeMocks.recordProductEvent.mockResolvedValue(true);
   });
 
   it("requires an explicit boolean share state", async () => {
@@ -81,6 +87,11 @@ describe("/api/workspaces/[id]/share", () => {
       true,
       { expiresInDays: null },
     );
+    expect(storeMocks.recordProductEvent).toHaveBeenCalledWith({
+      ownerToken,
+      eventName: "public_share_enabled",
+      subjectKey: workspaceId,
+    });
     await expect(response.json()).resolves.toEqual({
       workspace: sharedRecord,
     });

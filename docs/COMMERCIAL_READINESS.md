@@ -3,7 +3,7 @@
 LaunchLens AI is currently a production-verified portfolio product, not a paid
 commercial SaaS. This document starts the next phase: converting the portfolio
 artifact into a credible productization plan without pretending that billing,
-identity, analytics, or support operations already exist.
+identity or support operations already exist.
 
 Hosted readiness page:
 
@@ -38,7 +38,9 @@ It does not yet prove an activated paid commercial product:
 - Subscription lifecycle and idempotency are implemented, but an account-owned
   Stripe sandbox acceptance run is still required.
 - No conventional user identity or passkeys.
-- No product analytics event model.
+- A privacy-minimized, server-confirmed activation funnel now covers workspace
+  generation, cloud save, and public-share handoff; real-user evidence is still
+  required before product decisions are made from it.
 - No support/admin workflow.
 - No long-term operational dashboard beyond committed eval artifacts and CI
   artifacts.
@@ -75,7 +77,7 @@ gate that can be checked before implementation expands.
 | Reviewer Evidence Index | Public `/readiness` page and links to current verification commands | Lets a reviewer or future maintainer see the production proof path quickly | `npm run verify:commercial-readiness` |
 | Identity And Tenant Model | Written migration plan from capability account to conventional account | Prevents billing work from colliding with owner-hash assumptions | Identity decisions documented before schema changes |
 | Billing And Plan Limits | Executable entitlement and subscription contract tied to quotas and signed checkout events | Keeps pricing honest and connects billing state to enforceable limits | Billing domain, routes, webhook, migration, and `/billing` are tested |
-| Onboarding And Activation | First-session path and activation event model | Turns the demo into a product funnel instead of a static workspace | Activation events and empty states are specified |
+| Onboarding And Activation | Server-confirmed first-session funnel and user-test protocol | Turns the demo into a measurable product journey | Core funnel is queryable and real-user sessions are recorded |
 | Eval And Ops Visibility | Public-facing summary of eval history and release evidence | Shows AI quality is operated, not hand-waved | Eval and release evidence are linked from docs/pages |
 
 ## Reviewer Evidence Index
@@ -238,14 +240,21 @@ Commercial re-entry target:
   input.
 - Clear re-entry prompts for saving, recovering, sharing, and inviting.
 
-Activation events to design:
+Implemented core events:
 
-- First workspace generated.
+- Workspace generation started and completed.
+- Cloud snapshot saved.
+- Public share enabled.
+
+Extended events still to design and validate:
+
 - First validation evidence recorded.
 - First cited decision brief generated.
-- First cloud snapshot saved.
-- First public share enabled.
 - First collaborator invited or accepted.
+- Local export completed.
+
+The implementation and operator query are documented in
+`docs/PRODUCT_ANALYTICS.md`.
 
 Privacy rule:
 

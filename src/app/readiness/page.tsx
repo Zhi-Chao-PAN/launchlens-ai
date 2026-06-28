@@ -61,8 +61,8 @@ const readinessTracks = [
   {
     icon: Rocket,
     title: "Onboarding and activation",
-    status: "Design next",
-    body: "Turn the strong demo into a measurable first-session path without logging founder briefs, evidence notes, sources, or provider payloads.",
+    status: "Core funnel live",
+    body: "Server-confirmed generation, cloud-save, and public-share milestones now measure anonymous journeys without logging founder briefs, evidence notes, sources, or provider payloads.",
   },
   {
     icon: BarChart3,
@@ -139,8 +139,8 @@ const currentVsNext = [
   },
   {
     area: "Activation",
-    current: "Quick-start guide plus deterministic sample briefs.",
-    next: "Specify first-session events and re-entry prompts without collecting private founder content.",
+    current: "Quick-start guide, deterministic samples, and a privacy-minimized generation-to-handoff funnel.",
+    next: "Run 5–10 real-user sessions, then add only the evidence, decision, or re-entry events justified by observed friction.",
   },
   {
     area: "Operations",
@@ -382,9 +382,9 @@ export default function ReadinessPage() {
             <UsersRound className="size-5 text-accent" aria-hidden="true" />
             <h2 className="mt-4 text-lg font-semibold">Non-goal</h2>
             <p className="mt-2 text-sm leading-6 text-foreground/75">
-              This phase does not pretend to ship Stripe, OAuth, a support
-              merchant activation, OAuth, a support console, or an analytics
-              warehouse. Stripe integration code is present; external account
+              This phase does not pretend to ship merchant activation, OAuth,
+              a support console, or an analytics warehouse. Stripe integration
+              code and a minimal product funnel are present; external account
               activation remains a separate acceptance step.
             </p>
           </article>
@@ -392,9 +392,9 @@ export default function ReadinessPage() {
             <CheckCircle2 className="size-5 text-accent" aria-hidden="true" />
             <h2 className="mt-4 text-lg font-semibold">Next implementation</h2>
             <p className="mt-2 text-sm leading-6 text-foreground/75">
-              Complete the identity and tenant migration design, then add
-              activation events, provider usage metering, and operator
-              visibility around the implemented billing core.
+              Run the real-user activation study, complete the identity and
+              tenant migration design, then add only the retention or flow
+              changes supported by the resulting evidence.
             </p>
           </article>
         </div>

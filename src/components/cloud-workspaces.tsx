@@ -35,7 +35,10 @@ import { cloudRowExpiry } from "@/lib/launchlens/cloud-row-expiry";
 import { validateRecoveryInput } from "@/lib/launchlens/recovery-input";
 import { ownerScopeLabel } from "@/lib/launchlens/owner-scope";
 import { futureIso } from "@/lib/launchlens/future-iso";
-import { createOwnerToken } from "@/lib/launchlens/owner-token";
+import {
+  getOrCreateOwnerToken,
+  OWNER_TOKEN_STORAGE_KEY,
+} from "@/lib/launchlens/owner-token";
 import type { WorkspaceExecutionState } from "@/lib/launchlens/execution";
 import {
   createRecoveryKey,
@@ -46,9 +49,7 @@ import type {
   LaunchLensWorkspace,
 } from "@/lib/launchlens/types";
 
-const OWNER_TOKEN_KEY = "launchlens.ownerToken.v1";
 const RECOVERY_LABEL_KEY = "launchlens.recoveryLabel.v1";
-const OWNER_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43,128}$/;
 
 type CloudWorkspacesProps = {
   input: LaunchLensInput;
@@ -188,11 +189,10 @@ export function CloudWorkspaces({
       }
 
       try {
-        const storedToken = localStorage.getItem(OWNER_TOKEN_KEY) ?? "";
-        const token = OWNER_TOKEN_PATTERN.test(storedToken)
-          ? storedToken
-          : createOwnerToken();
-        localStorage.setItem(OWNER_TOKEN_KEY, token);
+        const token = getOrCreateOwnerToken(
+          localStorage,
+          OWNER_TOKEN_STORAGE_KEY,
+        );
         setRecoveryLabel(localStorage.getItem(RECOVERY_LABEL_KEY) ?? "");
         setOwnerToken(token);
         void refresh(token);
@@ -429,7 +429,7 @@ export function CloudWorkspaces({
       if (beforeSetToken) {
         await beforeSetToken(recoveryOwnerToken);
       }
-      localStorage.setItem(OWNER_TOKEN_KEY, recoveryOwnerToken);
+      localStorage.setItem(OWNER_TOKEN_STORAGE_KEY, recoveryOwnerToken);
       localStorage.setItem(RECOVERY_LABEL_KEY, trimmedLabel);
       setOwnerToken(recoveryOwnerToken);
       setRecoveryTouched(false);

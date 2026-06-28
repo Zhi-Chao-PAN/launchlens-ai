@@ -18,6 +18,7 @@ import {
   ERROR_INVALID_WORKSPACE,
 } from "@/lib/launchlens/error-codes";
 import { parseWorkspaceSnapshot } from "@/lib/launchlens/workspace-validation";
+import { recordProductEvent } from "@/lib/launchlens/product-events";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -75,10 +76,16 @@ export async function POST(request: Request) {
   }
 
   try {
+    const ownerToken = ownerTokenFromRequest(request);
     const workspace = await createWorkspace(
-      ownerTokenFromRequest(request),
+      ownerToken,
       payload,
     );
+    await recordProductEvent({
+      ownerToken,
+      eventName: "cloud_snapshot_saved",
+      subjectKey: workspace.id,
+    });
     return noStoreJson({ workspace }, { status: 201 });
   } catch (error) {
     return workspaceApiError(error, requestId);

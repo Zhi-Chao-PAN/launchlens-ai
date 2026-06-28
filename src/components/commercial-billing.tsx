@@ -24,10 +24,10 @@ import {
   canStartCommercialCheckout,
   type StripeSubscriptionStatus,
 } from "@/lib/launchlens/commercial-subscription";
-import { createOwnerToken } from "@/lib/launchlens/owner-token";
-
-const OWNER_TOKEN_KEY = "launchlens.ownerToken.v1";
-const OWNER_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43,128}$/;
+import {
+  getOrCreateOwnerToken,
+  OWNER_TOKEN_STORAGE_KEY,
+} from "@/lib/launchlens/owner-token";
 
 type BillingResponse = {
   billing: {
@@ -286,11 +286,10 @@ export function CommercialBilling() {
       }
 
       try {
-        const stored = localStorage.getItem(OWNER_TOKEN_KEY) ?? "";
-        const token = OWNER_TOKEN_PATTERN.test(stored)
-          ? stored
-          : createOwnerToken();
-        localStorage.setItem(OWNER_TOKEN_KEY, token);
+        const token = getOrCreateOwnerToken(
+          localStorage,
+          OWNER_TOKEN_STORAGE_KEY,
+        );
         setOwnerToken(token);
         void refresh(token);
       } catch {

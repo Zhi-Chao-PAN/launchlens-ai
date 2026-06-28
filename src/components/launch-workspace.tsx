@@ -63,7 +63,10 @@ import { safeMarkdownFilename, workspaceToMarkdown } from "@/lib/launchlens/mark
 import { SCHEMA_VERSION, workspaceFromJson, workspaceToJson, type WorkspaceImportResult } from "@/lib/launchlens/json-export";
 import { briefFromFile, briefFromJson, type BriefImportResult } from "@/lib/launchlens/brief-from-json";
 import { briefFromHashFragment } from "@/lib/launchlens/brief-fragment";
-import { getOrCreateOwnerToken } from "@/lib/launchlens/owner-token";
+import {
+  getOrCreateOwnerToken,
+  OWNER_TOKEN_STORAGE_KEY,
+} from "@/lib/launchlens/owner-token";
 import { decryptToJson, encryptJson, isEncryptedPayload, randomPassword } from "@/lib/launchlens/encrypt-export";
 import type { CloudWorkspaceRecord } from "@/lib/launchlens/cloud-workspace";
 import {
@@ -509,7 +512,6 @@ export function LaunchWorkspace({
   // with invalid_owner_token. Cloud-workspaces and billing panels already
   // mint tokens via getOrCreateOwnerToken, but the main brief builder did
   // not. Read from localStorage, otherwise mint and persist.
-  const OWNER_TOKEN_STORAGE_KEY = "launchlens.ownerToken";
   const [ownerToken, setOwnerToken] = useState<string>("");
   useEffect(() => {
     const timer = window.setTimeout(() => {

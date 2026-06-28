@@ -232,6 +232,44 @@ async function main() {
     ON launchlens_live_provider_usage (owner_hash, period_start)
   `;
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS launchlens_product_events (
+      id UUID PRIMARY KEY,
+      journey_hash CHAR(64) NOT NULL,
+      event_name TEXT NOT NULL CHECK (
+        event_name IN (
+          'workspace_generation_started',
+          'workspace_generation_completed',
+          'validation_evidence_recorded',
+          'decision_brief_generated',
+          'cloud_snapshot_saved',
+          'public_share_enabled',
+          'collaborator_invited',
+          'collaborator_accepted',
+          'workspace_exported'
+        )
+      ),
+      subject_key CHAR(64),
+      provider TEXT CHECK (
+        provider IS NULL OR provider IN ('mock', 'minimax', 'openai')
+      ),
+      mode TEXT CHECK (
+        mode IS NULL OR mode IN ('demo', 'real', 'fallback')
+      ),
+      occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS launchlens_product_events_occurred_idx
+    ON launchlens_product_events (occurred_at DESC)
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS launchlens_product_events_journey_idx
+    ON launchlens_product_events (journey_hash, event_name, occurred_at DESC)
+  `;
+
   console.log("LaunchLens cloud database migration completed.");
 }
 
