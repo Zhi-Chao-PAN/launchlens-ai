@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/toast";
 import { SkipLink } from "@/components/skip-link";
+import { LocaleProvider } from "@/lib/i18n/LocaleProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -87,7 +88,9 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col pt-safe pb-safe">
       <SkipLink />
-      <ToastProvider>{children}</ToastProvider>
+      <LocaleProvider>
+        <ToastProvider>{children}</ToastProvider>
+      </LocaleProvider>
     </body>
     </html>
   );

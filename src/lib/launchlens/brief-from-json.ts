@@ -26,21 +26,44 @@ const MAX_IMPORT_SIZE = 512 * 1024; // 512 KB — mirrors workspace import
 const MAX_FIELD_CHARS = 1_200; // launchlens-ai server gate (/api/generate)
 const IDEA_MIN_CHARS = 12; // launchlens-ai server gate
 
+/**
+ * Per-field advisory limits that match the launch-workspace form's soft
+ * "Recommended under N chars" thresholds. The server gate is 1200 for every
+ * field, but the form warns earlier. Clamping imports to these tighter limits
+ * on the way in means a brief authored by Research Studio (or pasted from a
+ * stale cached build) never lands in the form already over the advisory
+ * threshold, so the user never sees a red "Too long" on a field they didn't
+ * type. Missing keys fall back to the server gate.
+ */
+const FIELD_ADVISORY_LIMITS: Record<keyof LaunchLensInput, number> = {
+  idea: 500,
+  audience: 240,
+  market: 120,
+  tone: 1200,
+  constraints: 320,
+};
+
 /** Coerce an unknown value to a trimmed string, or "" if not a string. */
 function asString(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
-/** Clamp a field to the server limit, recording a warning when cut. */
+/**
+ * Clamp a field to the tighter of its advisory limit and the server limit,
+ * recording a warning when cut. We clamp to the advisory limit (not just the
+ * server limit) so the imported brief clears the form's soft "Recommended
+ * under N chars" thresholds and the user never starts in a red-warning state.
+ */
 function clampField(
   raw: unknown,
   name: keyof LaunchLensInput,
   warnings: string[],
 ): string {
   const text = asString(raw).trim();
-  if (text.length <= MAX_FIELD_CHARS) return text;
-  warnings.push(`${name} was truncated to ${MAX_FIELD_CHARS} characters.`);
-  return text.slice(0, MAX_FIELD_CHARS);
+  const limit = Math.min(FIELD_ADVISORY_LIMITS[name] ?? MAX_FIELD_CHARS, MAX_FIELD_CHARS);
+  if (text.length <= limit) return text;
+  warnings.push(`${name} was truncated to ${limit} characters.`);
+  return text.slice(0, limit);
 }
 
 /**

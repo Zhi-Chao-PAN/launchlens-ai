@@ -43,6 +43,8 @@ import { formatShortcut, useKeyboardShortcuts } from "@/hooks/use-keyboard-short
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
 
 import { ThemeToggle } from "./theme-toggle";
+import { LanguageSwitcher } from "./language-switcher";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { EditableText } from "./editable-text";
 import { EditableLines } from "./editable-lines";
 import { CloudWorkspaces } from "@/components/cloud-workspaces";
@@ -131,11 +133,6 @@ const tones = [
 
 const LOCAL_WORKSPACE_KEY = "launchlens.currentWorkspace.v1";
 const COLLAPSED_SECTIONS_KEY = "launchlens:collapsed-sections";
-const loadingSteps = [
-  "Reading founder brief",
-  "Structuring GTM workspace",
-  "Checking launch tasks",
-];
 
 function formatSourceScore(label: string, value: number | null) {
   return `${label} ${typeof value === "number" ? Math.round(value) : "n/a"}`;
@@ -489,9 +486,17 @@ export function LaunchWorkspace({
   const briefHashProcessedRef = useRef(false);
   const [isEditing, setIsEditing] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+  // mounted gate for client-only UI (language switcher) to avoid SSR/CSR
+  // hydration mismatch — the server renders the default-locale placeholder.
+  const [mounted, setMounted] = useState(false);
+  const { t } = useLocale();
 
   // Load collapsed section state from localStorage on mount
   useEffect(() => {
+    // mounted gate for client-only UI (language switcher); this is a
+    // deliberate post-hydration flag, not a derived-state cascade.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
     try {
       const stored = localStorage.getItem(COLLAPSED_SECTIONS_KEY);
       if (stored) {
@@ -539,15 +544,15 @@ export function LaunchWorkspace({
       setError("");
       setFallbackNotice("");
       const label =
-        source === "research-studio" ? "Research Studio brief" : "brief";
+        source === "research-studio" ? t("toast.label.researchStudioBrief", "Research Studio brief") : t("toast.label.brief", "brief");
       if (warnings.length > 0) {
         showToast(
-          `${label} loaded (${warnings.length} warning${warnings.length === 1 ? "" : "s"}) - review and Generate`,
+          t("toast.briefLoadedWarn", { label, count: warnings.length }),
           "info",
         );
       } else {
         showToast(
-          options.successMessage ?? `${label} loaded - review and Generate`,
+          options.successMessage ?? t("toast.briefLoaded", { label }),
           "success",
         );
       }
@@ -557,7 +562,7 @@ export function LaunchWorkspace({
         if (ideaField) ideaField.focus();
       }
     },
-    [showToast],
+    [showToast, t],
   );
 
   useEffect(() => {
@@ -578,12 +583,12 @@ export function LaunchWorkspace({
       }
       window.setTimeout(() => {
         applyBriefImportResult(result, {
-          successMessage: "Brief loaded from Research Studio - click Generate",
+          successMessage: t("toast.briefFromHash"),
         });
       }, 0);
     } catch {
       showToast(
-        "Research Studio brief link could not be read. Import the JSON file instead.",
+        t("toast.briefLinkError"),
         "error",
       );
     } finally {
@@ -593,7 +598,7 @@ export function LaunchWorkspace({
         `${window.location.pathname}${window.location.search}`,
       );
     }
-  }, [applyBriefImportResult, showToast]);
+  }, [applyBriefImportResult, showToast, t]);
 
   /**
    * Brief opacity crossfade when switching examples or restoring snapshots:
@@ -959,7 +964,9 @@ export function LaunchWorkspace({
 
   const ideaTrimmed = input.idea.trim();
   const canGenerate = ideaTrimmed.length >= 20 && !isGenerating;
-  const generateBlockedReason = ideaTrimmed.length < 20 ? "Describe your product idea in at least 20 characters before generating." : isGenerating ? "Workspace is already generating." : "";
+  const generateBlockedReason = ideaTrimmed.length < 20 ? t("generate.blockedTooShort") : isGenerating ? t("generate.blockedAlready") : "";
+  // Localized loading-step labels for the generation loading UI.
+  const loadingStepLabels = [t("generate.step.brief"), t("generate.step.structure"), t("generate.step.tasks")];
 
   function updateInput(mutator: Parameters<typeof setInput>[0]) { setInput(mutator); if (error) setError(""); if (fallbackNotice) setFallbackNotice(""); }
 
@@ -971,7 +978,7 @@ export function LaunchWorkspace({
     setError("");
     setFallbackNotice("");
     setExportText("");
-    setSrAnnouncement("Generating workspace from your founder brief. This will take a moment.");
+    setSrAnnouncement(t("sr.generating"));
 
     try {
       const response = await fetch("/api/generate", {
@@ -990,8 +997,8 @@ export function LaunchWorkspace({
       if (!response.ok || data.error || !data.workspace) {
         const fallback =
           response.status === 429
-            ? "Too many requests —please wait a moment and try again."
-            : "Generation failed.";
+            ? t("fallback.tooManyRequests")
+            : t("fallback.generationFailed");
         const message = friendlyApiMessage(data.code, data.error ?? fallback);
         const err = new Error(message);
         (err as Error & { status?: number }).status = response.status;
@@ -1003,7 +1010,7 @@ export function LaunchWorkspace({
       const freshExecution = createExecutionState(data.workspace);
       setExecution(freshExecution);
       setSrAnnouncement(
-        `Workspace ready. ${data.workspace.targetUsers.length} audience segments, ${data.workspace.tasks.length} execution tasks, ${freshExecution.experiments.length} validation hypotheses.`,
+        t("sr.ready", { segments: data.workspace.targetUsers.length, tasks: data.workspace.tasks.length, hypotheses: freshExecution.experiments.length }),
       );
       setGenerationMeta({
         mode: data.mode ?? "demo",
@@ -1012,10 +1019,10 @@ export function LaunchWorkspace({
         usedFallback: Boolean(data.usedFallback),
         fallbackReason: data.fallbackReason,
       });
-      
+
       if (data.usedFallback) {
-        showToast("Real provider unavailable - returned demo workspace instead.", "info");
-        setFallbackNotice("Real provider failed, so LaunchLens returned the mock workspace.");
+        showToast(t("toast.demoFallback"), "info");
+        setFallbackNotice(t("fallback.demoNotice"));
       } else {
         setFallbackNotice("");
       }
@@ -1036,14 +1043,14 @@ export function LaunchWorkspace({
     } catch (caught) {
       if (caught instanceof DOMException && caught.name === "AbortError") {
         setFallbackNotice("");
-        setSrAnnouncement("Generation cancelled.");
+        setSrAnnouncement(t("sr.cancelled"));
       } else {
         const msg =
           caught instanceof Error
             ? caught.message
-            : "Something went wrong during generation.";
+            : t("sr.fallbackError");
         setError(msg);
-        setSrAnnouncement(`Generation failed: ${msg}`);
+        setSrAnnouncement(t("sr.generationFailed", { msg }));
       }
     } finally {
       setIsGenerating(false);
@@ -1354,27 +1361,27 @@ export function LaunchWorkspace({
               </span>
               <div className="min-w-0">
                 <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-white/55">
-                  LaunchLens AI
+                  {t("header.brand")}
                 </p>
                 <h1 className="truncate text-xl font-semibold tracking-[-0.02em] text-white sm:text-2xl">
-                  Go-to-market workspace
+                  {t("header.title")}
                 </h1>
               </div>
               <span className="hidden rounded-md border border-white/10 bg-white/[0.08] px-2.5 py-1 text-xs font-semibold text-white/70 md:inline-flex">
-                Productized build
+                {t("header.badge")}
               </span>
             </div>
 
             <nav
-              aria-label="Workspace navigation"
+              aria-label={t("header.navAria")}
               className="grid grid-cols-3 gap-1 rounded-md border border-white/10 bg-white/[0.06] p-1 sm:flex sm:overflow-x-auto"
             >
-              <WorkspaceNavLink href="#founder-brief" label="Brief" icon={Sparkles} />
-              <WorkspaceNavLink href="#cloud-workspaces-section" label="History" icon={History} />
-              <WorkspaceNavLink href="#workspace-main" label="Evidence" icon={BarChart3} />
-              <WorkspaceNavLink href="#decision-copilot-section" label="Decisions" icon={Workflow} />
-              <WorkspaceNavLink href="/billing" label="Account" icon={CircleDollarSign} />
-              <WorkspaceNavLink href="/readiness" label="Readiness" icon={ShieldCheck} />
+              <WorkspaceNavLink href="#founder-brief" label={t("nav.brief")} icon={Sparkles} />
+              <WorkspaceNavLink href="#cloud-workspaces-section" label={t("nav.history")} icon={History} />
+              <WorkspaceNavLink href="#workspace-main" label={t("nav.evidence")} icon={BarChart3} />
+              <WorkspaceNavLink href="#decision-copilot-section" label={t("nav.decisions")} icon={Workflow} />
+              <WorkspaceNavLink href="/billing" label={t("nav.account")} icon={CircleDollarSign} />
+              <WorkspaceNavLink href="/readiness" label={t("nav.readiness")} icon={ShieldCheck} />
             </nav>
 
             <div className="flex items-center gap-2 overflow-x-auto pb-1 text-sm sm:pb-0 xl:justify-end">
@@ -1385,12 +1392,13 @@ export function LaunchWorkspace({
               <button
                 type="button"
                 onClick={resetLocalWorkspace}
-                title="Reset local draft"
-                aria-label="Reset local draft"
+                title={t("header.resetTitle")}
+                aria-label={t("header.resetTitle")}
                 className="flex size-9 shrink-0 items-center justify-center rounded-md border border-white/10 bg-white/[0.08] text-white/72 transition hover:border-accent hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
               >
                 <RotateCcw className="size-4" aria-hidden="true" />
               </button>
+              <LanguageSwitcher mounted={mounted} />
               <ThemeToggle />
               <SystemStatus />
               <ReplayTourButton />
@@ -1399,39 +1407,39 @@ export function LaunchWorkspace({
         </header>
 
         <section
-          aria-label="Workspace operating status"
+          aria-label={t("metrics.sectionAria")}
           className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5"
         >
           <WorkspaceMetric
-            label="Quality"
+            label={t("metrics.quality")}
             value={`${qualityResult.score}%`}
-            detail={`${qualityPassed}/${qualityResult.checks.length} generated checks`}
+            detail={t("metrics.qualityDetail", { passed: qualityPassed, total: qualityResult.checks.length })}
             icon={Gauge}
             tone={qualityTone}
           />
           <WorkspaceMetric
-            label="Validation"
+            label={t("metrics.validation")}
             value={`${executionProgress.score}%`}
-            detail={`${executionProgress.withEvidence}/${executionProgress.total} with evidence`}
+            detail={t("metrics.validationDetail", { with: executionProgress.withEvidence, total: executionProgress.total })}
             icon={BarChart3}
             tone={validationTone}
           />
           <WorkspaceMetric
-            label="Execution"
+            label={t("metrics.execution")}
             value={`${completedTasks}/${workspace.tasks.length}`}
-            detail="launch tasks completed"
+            detail={t("metrics.executionDetail")}
             icon={ListChecks}
             tone={completedTasks === workspace.tasks.length ? "support" : "plain"}
           />
           <WorkspaceMetric
-            label="Backlog"
+            label={t("metrics.backlog")}
             value={`${workspace.backlog.length}`}
-            detail={`${workspace.assumptions.length} assumptions linked`}
+            detail={t("metrics.backlogDetail", { count: workspace.assumptions.length })}
             icon={ClipboardCheck}
             tone="plain"
           />
           <WorkspaceMetric
-            label="AI mode"
+            label={t("metrics.aiMode")}
             value={generationModeLabel}
             detail={providerLabel}
             icon={LayoutDashboard}
@@ -1440,7 +1448,7 @@ export function LaunchWorkspace({
         </section>
 
         <div className="grid gap-5 lg:grid-cols-[372px_minmax(0,1fr)]">
-          <aside id="founder-brief" aria-label="Founder brief" className="min-w-0 rounded-md border border-card bg-card p-4 shadow-[0_30px_90px_-72px_rgba(17,19,18,0.62)] lg:sticky lg:top-24 lg:self-start">
+          <aside id="founder-brief" aria-label={t("brief.asideAria")} className="min-w-0 rounded-md border border-card bg-card p-4 shadow-[0_30px_90px_-72px_rgba(17,19,18,0.62)] lg:sticky lg:top-24 lg:self-start">
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-foreground text-background">
@@ -1448,10 +1456,10 @@ export function LaunchWorkspace({
                 </span>
                 <div className="min-w-0">
                   <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
-                    Input
+                    {t("brief.inputLabel")}
                   </p>
                   <h2 className="text-base font-semibold tracking-[-0.01em] text-foreground">
-                    Brief builder
+                    {t("brief.builderTitle")}
                   </h2>
                 </div>
               </div>
@@ -1463,7 +1471,7 @@ export function LaunchWorkspace({
                 className="flex h-9 items-center gap-2 rounded-md border border-input bg-input px-3 text-sm font-semibold text-foreground transition hover:border-accent lg:hidden"
               >
                 <PencilLine className="size-4" aria-hidden="true" />
-                {isBriefOpen ? "Hide brief" : "Edit brief"}
+                {isBriefOpen ? t("brief.hide") : t("brief.edit")}
               </button>
             </div>
 
@@ -1478,9 +1486,9 @@ export function LaunchWorkspace({
               className={`${isBriefOpen ? "mt-5 block" : "hidden"} lg:mt-5 lg:block`}
             >
               <p className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-                Example workspaces
+                {t("brief.examplesLabel")}
               </p>
-              <div className="mb-5 grid gap-2" role="group" aria-label="Sample briefs">
+              <div className="mb-5 grid gap-2" role="group" aria-label={t("brief.examplesAria")}>
                 {exampleWorkspaces.map((example) => {
                   const isSelected = workspace.generatedAt === example.workspace.generatedAt
                     && input.idea === example.input.idea;
@@ -1508,7 +1516,7 @@ export function LaunchWorkspace({
               <div className="space-y-4">
                 <label className="block">
                   <span className="mb-2 block text-sm font-medium text-foreground/80">
-                    Product idea
+                    {t("field.idea.label")}
                   </span>
                   <textarea
                     id="founder-brief-idea" aria-invalid={(ideaTrimmed.length > 0 && ideaTrimmed.length < 20) || input.idea.length > 500} aria-describedby={`founder-brief-idea-hint founder-brief-idea-count${(ideaTrimmed.length > 0 && ideaTrimmed.length < 20) ? " founder-generate-blocked" : ""}`}
@@ -1530,22 +1538,18 @@ export function LaunchWorkspace({
                       }
                     }}
                     rows={3}
-                    placeholder="Describe the product you are validating..."
+                    placeholder={t("field.idea.placeholder")}
                     className="w-full field-sizing-content resize-y min-h-[96px] max-h-[400px] rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
                   <p id="founder-brief-idea-count" className="mt-1 flex items-center justify-between text-xs text-muted">
-                    <span id="founder-brief-idea-hint" className="sr-only">Use{" "}<kbd className="rounded border border-input bg-muted px-1 font-mono">
-                        {formatShortcut({ key: "Enter", meta: true, ctrl: true, description: "", category: "" })}
-                      </kbd>{" "}
-                      to generate.
-                    </span>
-                    <span className={input.idea.length < 20 || input.idea.length > 500 ? "text-signal-challenges" : input.idea.length > 400 ? "text-amber-500" : "text-muted/70"} title={"Recommended 20-500 chars" + (input.idea.length > 500 ? " - please shorten" : "")}>{input.idea.length} chars{input.idea.length > 500 ? <span className="ml-1 font-semibold">Too long - aim under 500.</span> : null}</span>
+                    <span id="founder-brief-idea-hint" className="sr-only">{t("field.idea.hint", { shortcut: formatShortcut({ key: "Enter", meta: true, ctrl: true, description: "", category: "" }) })}</span>
+                    <span className={input.idea.length < 20 || input.idea.length > 500 ? "text-signal-challenges" : input.idea.length > 400 ? "text-amber-500" : "text-muted/70"} title={t("field.idea.recommended") + (input.idea.length > 500 ? t("field.pleaseShorten") : "")}>{input.idea.length} {t("field.charsSuffix")}{input.idea.length > 500 ? <span className="ml-1 font-semibold">{t("field.idea.tooLong")}</span> : null}</span>
                   </p>
                 </label>
 
                 <label className="block">
                   <span className="mb-2 block text-sm font-medium text-foreground/80">
-                    Target audience
+                    {t("field.audience.label")}
                   </span>
                   <textarea
                     onKeyDown={(event) => {
@@ -1571,12 +1575,12 @@ export function LaunchWorkspace({
                     rows={2}
                     className="w-full field-sizing-content resize-y min-h-[64px] max-h-[240px] rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
-                  <p id="founder-brief-audience-count" className={"mt-1 text-right text-[11px] " + (input.audience.length > 400 ? "text-signal-challenges" : input.audience.length > 240 ? "text-amber-500" : "text-muted/70")} title={"Recommended under 240 chars" + (input.audience.length > 400 ? " - please shorten" : "")}>{input.audience.length} chars{input.audience.length > 400 ? <span className="ml-1 font-semibold">Too long - aim under 240.</span> : null}</p>
+                  <p id="founder-brief-audience-count" className={"mt-1 text-right text-[11px] " + (input.audience.length > 400 ? "text-signal-challenges" : input.audience.length > 240 ? "text-amber-500" : "text-muted/70")} title={t("field.audience.recommended") + (input.audience.length > 400 ? t("field.pleaseShorten") : "")}>{input.audience.length} {t("field.charsSuffix")}{input.audience.length > 400 ? <span className="ml-1 font-semibold">{t("field.audience.tooLong")}</span> : null}</p>
                 </label>
 
                 <label className="block">
                   <span className="mb-2 block text-sm font-medium text-foreground/80">
-                    Market context
+                    {t("field.market.label")}
                   </span>
                   <textarea
                     onKeyDown={(event) => {
@@ -1602,12 +1606,12 @@ export function LaunchWorkspace({
                     rows={2}
                     className="w-full field-sizing-content min-h-[64px] max-h-[180px] resize-y rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
-                  <p id="founder-brief-market-count" className={"mt-1 text-right text-[11px] " + (input.market.length > 200 ? "text-signal-challenges" : input.market.length > 120 ? "text-amber-500" : "text-muted/70")} title={"Recommended under 120 chars" + (input.market.length > 200 ? " - please shorten" : "")}>{input.market.length} chars{input.market.length > 200 ? <span className="ml-1 font-semibold">Too long - aim under 120.</span> : null}</p>
+                  <p id="founder-brief-market-count" className={"mt-1 text-right text-[11px] " + (input.market.length > 200 ? "text-signal-challenges" : input.market.length > 120 ? "text-amber-500" : "text-muted/70")} title={t("field.market.recommended") + (input.market.length > 200 ? t("field.pleaseShorten") : "")}>{input.market.length} {t("field.charsSuffix")}{input.market.length > 200 ? <span className="ml-1 font-semibold">{t("field.market.tooLong")}</span> : null}</p>
                 </label>
 
                 <label className="block">
                   <span className="mb-2 block text-sm font-medium text-foreground/80">
-                    Voice
+                    {t("field.voice.label")}
                   </span>
                   <select
                     value={input.tone}
@@ -1621,7 +1625,11 @@ export function LaunchWorkspace({
                   >
                     {tones.map((tone) => (
                       <option key={tone} value={tone}>
-                        {tone}
+                        {tone === "Practical, crisp, and founder-friendly" ? t("voice.practical")
+                          : tone === "Analytical and investor-ready" ? t("voice.analytical")
+                          : tone === "Warm and community-led" ? t("voice.warm")
+                          : tone === "Technical and product-led" ? t("voice.technical")
+                          : tone}
                       </option>
                     ))}
                   </select>
@@ -1629,7 +1637,7 @@ export function LaunchWorkspace({
 
                 <label className="block">
                   <span className="mb-2 block text-sm font-medium text-foreground/80">
-                    Constraints
+                    {t("field.constraints.label")}
                   </span>
                   <textarea
                     onKeyDown={(event) => {
@@ -1655,7 +1663,7 @@ export function LaunchWorkspace({
                     rows={4}
                     className="w-full resize-none rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
-                  <p id="founder-brief-constraints-count" className={"mt-1 text-right text-[11px] " + (input.constraints.length > 500 ? "text-signal-challenges" : input.constraints.length > 320 ? "text-amber-500" : "text-muted/70")} title={"Recommended under 320 chars" + (input.constraints.length > 500 ? " - please shorten" : "")}>{input.constraints.length} chars{input.constraints.length > 500 ? <span className="ml-1 font-semibold">Too long - aim under 320.</span> : null}</p>
+                  <p id="founder-brief-constraints-count" className={"mt-1 text-right text-[11px] " + (input.constraints.length > 500 ? "text-signal-challenges" : input.constraints.length > 320 ? "text-amber-500" : "text-muted/70")} title={t("field.constraints.recommended") + (input.constraints.length > 500 ? t("field.pleaseShorten") : "")}>{input.constraints.length} {t("field.charsSuffix")}{input.constraints.length > 500 ? <span className="ml-1 font-semibold">{t("field.constraints.tooLong")}</span> : null}</p>
                 </label>
 
                 <button
@@ -1675,13 +1683,13 @@ export function LaunchWorkspace({
                   ) : (
                     <Rocket className="size-4" aria-hidden="true" />
                   )}
-                  {isGenerating ? "Generating" : "Generate workspace"}
+                  {isGenerating ? t("generate.generating") : t("generate.button")}
                 </button>
-                {isGenerating && <p id="founder-generate-reason" className="sr-only">Workspace is being generated; please wait or cancel.</p>}
+                {isGenerating && <p id="founder-generate-reason" className="sr-only">{t("generate.srReason")}</p>}
                 {!canGenerate && generateBlockedReason && (<p id="founder-generate-blocked" role="alert" className="mt-2 text-center text-[11px] text-signal-challenges">{generateBlockedReason}</p>)}
                                 {isGenerating && (
                   <button type="button" onClick={() => generateAbortRef.current?.abort()} className="mt-2 block w-full text-center text-xs font-medium text-muted underline-offset-2 transition hover:text-signal-challenges hover:underline">
-                    Cancel generation
+                    {t("generate.cancel")}
                   </button>
                 )}
               </div>
@@ -1697,10 +1705,10 @@ export function LaunchWorkspace({
                       className="size-4 animate-spin text-accent"
                       aria-hidden="true"
                     />
-                    Generating workspace
+                    {t("generate.loadingHeading")}
                   </div>
                   <div className="space-y-2">
-                    {loadingSteps.map((step, idx) => (
+                    {loadingStepLabels.map((step, idx) => (
                       <div key={step} className="flex items-center gap-3" style={{ animationDelay: `${idx * 60}ms` }}>
                         <span className="size-2 animate-[launchlens-dot-pulse_1.4s_ease-in-out_infinite] rounded-full bg-primary" style={{ animationDelay: `${idx * 120}ms` }} />
                         <span className="text-sm text-foreground/80">{step}</span>
@@ -1725,7 +1733,7 @@ export function LaunchWorkspace({
                       onClick={() => generate()}
                       className="shrink-0 rounded-md border border-signal-challenges px-3 py-1 text-xs font-semibold text-signal-challenges transition hover:bg-signal-challenges hover:text-primary-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--signal-challenges)]"
                     >
-                      Try again
+                      {t("generate.errorRetry")}
                     </button>
                   )}
                 </div>
@@ -1740,10 +1748,10 @@ export function LaunchWorkspace({
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase text-accent">
-                    Account workspace
+                    {t("account.label")}
                   </p>
                   <h2 className="text-base font-semibold text-foreground">
-                    Snapshot history and private sharing
+                    {t("account.title")}
                   </h2>
                 </div>
                 <span className="hidden rounded-md border border-card bg-card px-3 py-2 text-xs font-semibold text-foreground/70 sm:inline-flex">
@@ -1763,14 +1771,14 @@ export function LaunchWorkspace({
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                   <div>
                     <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-accent">
-                      Strategy snapshot
+                      {t("snapshot.label")}
                     </p>
                     <h2 className="mt-1 text-lg font-semibold tracking-[-0.01em] text-foreground">
-                      Workspace summary
+                      {t("snapshot.title")}
                     </h2>
                     <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-foreground/75">
                       <span className="rounded-md border border-input bg-input px-2.5 py-1">
-                        Generated {formatGeneratedTime(generationMeta.generatedAt)}
+                        {t("snapshot.generatedPrefix")}{formatGeneratedTime(generationMeta.generatedAt)}
                       </span>
                       <span className="rounded-md border border-input bg-input px-2.5 py-1">
                         {generationModeLabel}
@@ -1780,7 +1788,7 @@ export function LaunchWorkspace({
                       </span>
                       {generationMeta.usedFallback && generationMeta.fallbackReason && (
                         <span className="rounded-md bg-signal-challenges px-2.5 py-1 text-signal-challenges">
-                          Fallback: {generationMeta.fallbackReason}
+                          {t("snapshot.fallbackPrefix")}{generationMeta.fallbackReason}
                         </span>
                       )}
                     </div>
@@ -1793,15 +1801,15 @@ export function LaunchWorkspace({
                           />
                           <div className="min-w-0">
                             <p className="font-semibold text-foreground">
-                              Generated from Research Studio intelligence report
+                              {t("sourceBrief.heading")}
                             </p>
                             <p className="mt-1 text-xs leading-5 text-muted">
-                              Session{" "}
+                              {t("sourceBrief.session")}{" "}
                               <span className="break-all font-mono">
                                 {workspace.sourceBrief.sessionId}
                               </span>{" "}
-                              / {formatSourceScore("Opportunity", workspace.sourceBrief.opportunityScore)} /{" "}
-                              {formatSourceScore("Risk", workspace.sourceBrief.riskScore)}
+                              / {formatSourceScore(t("sourceBrief.opportunity"), workspace.sourceBrief.opportunityScore)} /{" "}
+                              {formatSourceScore(t("sourceBrief.risk"), workspace.sourceBrief.riskScore)}
                             </p>
                           </div>
                         </div>
@@ -1812,12 +1820,12 @@ export function LaunchWorkspace({
                             rel="noreferrer"
                             className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-md border border-accent/40 bg-card px-2.5 text-xs font-semibold text-accent transition hover:bg-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                           >
-                            View full report
+                            {t("sourceBrief.viewReport")}
                             <ExternalLink className="size-3.5" aria-hidden="true" />
                           </a>
                         ) : (
                           <span className="inline-flex h-8 shrink-0 items-center rounded-md border border-input bg-input px-2.5 text-xs font-semibold text-muted">
-                            Report link pending
+                            {t("sourceBrief.linkPending")}
                           </span>
                         )}
                       </div>
@@ -1835,12 +1843,12 @@ export function LaunchWorkspace({
                       ) : (
                         <PencilLine className="size-4" aria-hidden="true" />
                       )}
-                      {isEditing ? "Preview" : "Edit"}
+                      {isEditing ? t("toolbar.preview") : t("toolbar.edit")}
                     </button>
                     <button
                       type="button"
                       onClick={copyMarkdown}
-                      aria-label={copyJustSucceeded === "markdown" ? "Copied Markdown" : "Copy Markdown"}
+                      aria-label={copyJustSucceeded === "markdown" ? t("toolbar.copiedMarkdownAria") : t("toolbar.copyMarkdownAria")}
                       aria-live="polite"
                       className="flex h-9 items-center gap-2 rounded-md bg-foreground px-3 text-sm font-semibold text-background transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
                     >
@@ -1849,12 +1857,12 @@ export function LaunchWorkspace({
                       ) : (
                         <Copy className="size-4" aria-hidden="true" />
                       )}
-                      {copyJustSucceeded === "markdown" ? "Copied" : "Markdown"}
+                      {copyJustSucceeded === "markdown" ? t("toolbar.copied") : t("toolbar.markdown")}
                     </button>
                     <button
                       type="button"
                       onClick={copyJson}
-                      aria-label={copyJustSucceeded === "json" ? "Copied JSON" : "Copy JSON"}
+                      aria-label={copyJustSucceeded === "json" ? t("toolbar.copiedJsonAria") : t("toolbar.copyJsonAria")}
                       aria-live="polite"
                       className="flex h-9 items-center gap-2 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                     >
@@ -1863,12 +1871,12 @@ export function LaunchWorkspace({
                       ) : (
                         <Braces className="size-4" aria-hidden="true" />
                       )}
-                      {copyJustSucceeded === "json" ? "Copied" : "JSON"}
+                      {copyJustSucceeded === "json" ? t("toolbar.copied") : t("toolbar.json")}
                     </button>
                     <button
                       type="button"
                       onClick={downloadMarkdownFile}
-                      title="Download Markdown file"
+                      title={t("toolbar.downloadMdTitle")}
                       className="flex h-9 items-center gap-1.5 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground/80 transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                     >
                       <Download className="size-4" aria-hidden="true" />
@@ -1877,7 +1885,7 @@ export function LaunchWorkspace({
                     <button
                       type="button"
                       onClick={downloadJsonFile}
-                      title="Download JSON file"
+                      title={t("toolbar.downloadJsonTitle")}
                       className="flex h-9 items-center gap-1.5 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground/80 transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                     >
                       <Download className="size-4" aria-hidden="true" />
@@ -1886,20 +1894,20 @@ export function LaunchWorkspace({
                     <button
                       type="button"
                       onClick={triggerImport}
-                      title="Import JSON workspace"
+                      title={t("toolbar.importJsonTitle")}
                       className="flex h-9 items-center gap-1.5 rounded-md border border-input bg-input px-3 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                     >
                       <Upload className="size-4" aria-hidden="true" />
-                      Import
+                      {t("toolbar.import")}
                     </button>
                     <button
                       type="button"
                       onClick={triggerBriefImport}
-                      title="Import a Research Studio brief"
+                      title={t("toolbar.importBriefTitle")}
                       className="flex h-9 items-center gap-1.5 rounded-md border border-input bg-input px-3 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                     >
                       <FlaskConical className="size-4" aria-hidden="true" />
-                      Research Studio
+                      {t("toolbar.researchStudio")}
                     </button>
                     <input
                       ref={fileInputRef}
@@ -1931,12 +1939,12 @@ export function LaunchWorkspace({
                 <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-card pt-3 text-xs">
                   <label className="flex items-center gap-1.5 text-muted">
                     <input type="checkbox" checked={exportEncrypted} onChange={(e) => { setExportEncrypted(e.target.checked); if (e.target.checked && !exportPassword) setExportPassword(randomPassword()); }} className="h-3.5 w-3.5 rounded border-input" />
-                    Password-protect JSON export
+                    {t("toolbar.passwordProtect")}
                   </label>
                   {exportEncrypted && (
                     <>
-                      <input type="text" value={exportPassword} onChange={(e) => setExportPassword(e.target.value)} placeholder="passphrase" className="w-40 rounded bg-input px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-accent" aria-label="Export passphrase" />
-                      <button type="button" onClick={() => setExportPassword(randomPassword())} className="text-accent hover:underline">regenerate</button>
+                      <input type="text" value={exportPassword} onChange={(e) => setExportPassword(e.target.value)} placeholder={t("toolbar.passphrasePlaceholder")} className="w-40 rounded bg-input px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-accent" aria-label={t("toolbar.passphraseAria")} />
+                      <button type="button" onClick={() => setExportPassword(randomPassword())} className="text-accent hover:underline">{t("toolbar.regenerate")}</button>
                     </>
                   )}
                 </div>
@@ -1945,12 +1953,12 @@ export function LaunchWorkspace({
               <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_250px]">
                 <div>
                   <p className="mb-2 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-                    Generated positioning
+                    {t("positioning.label")}
                   </p>
                   {isEditing ? (
                     <div className="space-y-3">
                       <EditableText
-                        label="Landing page headline"
+                        label={t("positioning.headline")}
                         value={workspace.landingPage.headline}
                         rows={2}
                         onCommit={(value) =>
@@ -1964,7 +1972,7 @@ export function LaunchWorkspace({
                         }
                       />
                       <EditableText
-                        label="Workspace summary"
+                        label={t("positioning.summary")}
                         value={workspace.summary}
                         rows={4}
                         onCommit={(value) =>
@@ -1988,11 +1996,11 @@ export function LaunchWorkspace({
                 </div>
                 <aside className="border-t border-card pt-4 lg:border-l lg:border-t-0 lg:pl-4 lg:pt-0">
                   <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
-                    Launch CTA
+                    {t("launchCta.label")}
                   </p>
                   {isEditing ? (
                     <EditableText
-                      label="Launch call to action"
+                      label={t("launchCta.title")}
                       value={workspace.landingPage.cta}
                       rows={2}
                       onCommit={(value) =>
@@ -2011,7 +2019,7 @@ export function LaunchWorkspace({
                     </p>
                   )}
                   <div className="mt-4 flex items-center text-sm font-medium text-accent">
-                    Next action
+                    {t("launchCta.nextAction")}
                     <ArrowRight className="ml-2 size-4" aria-hidden="true" />
                   </div>
                 </aside>
@@ -2025,15 +2033,15 @@ export function LaunchWorkspace({
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm font-semibold text-foreground">
                     <span className="flex items-center gap-2">
                       <FileText className="size-4" aria-hidden="true" />
-                      Workspace export
+                      {t("export.heading")}
                       <span className="rounded bg-signal-supports px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase text-signal-supports">
-                        {exportFormat === "json" ? "JSON" : "Markdown"}
+                        {exportFormat === "json" ? t("export.badgeJson") : t("export.badgeMarkdown")}
                       </span>
                     </span>
                     <button
                       type="button"
                       onClick={() => { setExportText(""); setExportFormat(""); }}
-                      aria-label="Dismiss export"
+                      aria-label={t("export.dismissAria")}
                       className="text-muted transition hover:text-foreground"
                     >
                       <X className="size-4" aria-hidden="true" />
@@ -2042,7 +2050,7 @@ export function LaunchWorkspace({
                   {exportText && (
                     <textarea
                       readOnly
-                      aria-label={`Exported workspace in ${exportFormat === "json" ? "JSON" : "Markdown"} format, select and copy`}
+                      aria-label={t("export.textareaAria", { format: exportFormat === "json" ? t("export.badgeJson") : t("export.badgeMarkdown") })}
                       value={exportText}
                       rows={8}
                       onFocus={(e) => e.currentTarget.select()}
@@ -2056,7 +2064,7 @@ export function LaunchWorkspace({
                       className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-card px-2.5 text-xs font-medium text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                     >
                       <Copy className="size-3.5" aria-hidden="true" />
-                      Copy selection
+                      {t("export.copySelection")}
                     </button>
                     <button
                       type="button"
@@ -2064,31 +2072,31 @@ export function LaunchWorkspace({
                       className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-card px-2.5 text-xs font-medium text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                     >
                       <Download className="size-3.5" aria-hidden="true" />
-                      Download file
+                      {t("export.downloadFile")}
                     </button>
                   </div>
                 </div>
               )}
             </section>
 
-            <ErrorBoundary label="Validation board">
+            <ErrorBoundary label={t("validation.boardLabel")}>
               <section
                 id="workspace-main"
                 tabIndex={-1}
-                aria-label="Generated workspace"
+                aria-label={t("validation.sectionAria")}
                 className="scroll-mt-28 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase text-accent">
-                      Evidence loop
+                      {t("validation.label")}
                     </p>
                     <h2 className="text-base font-semibold text-foreground">
-                      Validate assumptions before committing the launch plan
+                      {t("validation.title")}
                     </h2>
                   </div>
                   <p className="font-mono text-xs font-semibold tabular-nums text-muted">
-                    {executionProgress.evidenceCount} evidence items / {executionProgress.decided} decisions
+                    {t("validation.counter", { evidence: executionProgress.evidenceCount, decided: executionProgress.decided })}
                   </p>
                 </div>
                 <ValidationBoard
@@ -2103,17 +2111,17 @@ export function LaunchWorkspace({
               <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase text-accent">
-                    Decision layer
+                    {t("decision.label")}
                   </p>
                   <h2 className="text-base font-semibold text-foreground">
-                    Evidence-grounded AI briefs
+                    {t("decision.title")}
                   </h2>
                 </div>
                 <p className="text-xs font-semibold text-muted">
-                  Cites only recorded validation evidence
+                  {t("decision.hint")}
                 </p>
               </div>
-              <ErrorBoundary label="Decision copilot">
+              <ErrorBoundary label={t("decision.copilotLabel")}>
                 <DecisionCopilot
                   execution={execution}
                   onChange={setExecution}
@@ -2122,10 +2130,10 @@ export function LaunchWorkspace({
             </div>
 
             <div className="grid gap-6 xl:grid-cols-2">
-              <Section title="Target users" icon={UsersRound} collapsible sectionId="target-users" collapsed={collapsedSections.has("target-users")} onToggle={() => toggleSection("target-users")}>
+              <Section title={t("section.targetUsers")} icon={UsersRound} collapsible sectionId="target-users" collapsed={collapsedSections.has("target-users")} onToggle={() => toggleSection("target-users")}>
                 {isEditing ? (
                   <EditableLines
-                    label="Target users"
+                    label={t("section.targetUsers")}
                     items={workspace.targetUsers}
                     onCommit={(items) => updateList("targetUsers", items)}
                   />
@@ -2134,10 +2142,10 @@ export function LaunchWorkspace({
                 )}
               </Section>
 
-              <Section title="Pain map" icon={Target} collapsible sectionId="pain-map" collapsed={collapsedSections.has("pain-map")} onToggle={() => toggleSection("pain-map")}>
+              <Section title={t("section.painMap")} icon={Target} collapsible sectionId="pain-map" collapsed={collapsedSections.has("pain-map")} onToggle={() => toggleSection("pain-map")}>
                 {isEditing ? (
                   <EditableLines
-                    label="Pain map"
+                    label={t("section.painMap")}
                     items={workspace.pains}
                     onCommit={(items) => updateList("pains", items)}
                   />
@@ -2146,10 +2154,10 @@ export function LaunchWorkspace({
                 )}
               </Section>
 
-              <Section title="MVP scope" icon={ClipboardList} collapsible sectionId="mvp-scope" collapsed={collapsedSections.has("mvp-scope")} onToggle={() => toggleSection("mvp-scope")}>
+              <Section title={t("section.mvpScope")} icon={ClipboardList} collapsible sectionId="mvp-scope" collapsed={collapsedSections.has("mvp-scope")} onToggle={() => toggleSection("mvp-scope")}>
                 {isEditing ? (
                   <EditableLines
-                    label="MVP scope"
+                    label={t("section.mvpScope")}
                     items={workspace.mvpScope}
                     onCommit={(items) => updateList("mvpScope", items)}
                   />
@@ -2158,11 +2166,11 @@ export function LaunchWorkspace({
                 )}
               </Section>
 
-              <Section title="Landing page copy" icon={Megaphone} collapsible sectionId="landing-page-copy" collapsed={collapsedSections.has("landing-page-copy")} onToggle={() => toggleSection("landing-page-copy")}>
+              <Section title={t("section.landingCopy")} icon={Megaphone} collapsible sectionId="landing-page-copy" collapsed={collapsedSections.has("landing-page-copy")} onToggle={() => toggleSection("landing-page-copy")}>
                 {isEditing ? (
                   <div className="space-y-3">
                     <EditableText
-                      label="Landing page subheadline"
+                      label={t("section.landingSubheadline")}
                       value={workspace.landingPage.subheadline}
                       rows={3}
                       onCommit={(value) =>
@@ -2177,7 +2185,7 @@ export function LaunchWorkspace({
                       }
                     />
                     <EditableLines
-                      label="Landing page proof bullets"
+                      label={t("section.landingProofBullets")}
                       items={workspace.landingPage.proofBullets}
                       onCommit={(items) =>
                         setWorkspace((current) => ({
@@ -2204,7 +2212,7 @@ export function LaunchWorkspace({
               </Section>
             </div>
 
-            <Section title="Feature backlog" icon={ClipboardCheck} collapsible sectionId="feature-backlog" collapsed={collapsedSections.has("feature-backlog")} onToggle={() => toggleSection("feature-backlog")}>
+            <Section title={t("section.featureBacklog")} icon={ClipboardCheck} collapsible sectionId="feature-backlog" collapsed={collapsedSections.has("feature-backlog")} onToggle={() => toggleSection("feature-backlog")}>
               {isEditing ? (
                 <div className="grid gap-3 lg:grid-cols-2">
                   {workspace.backlog.map((item, index) => (
@@ -2317,11 +2325,11 @@ export function LaunchWorkspace({
             </Section>
 
             <div className="grid gap-6 xl:grid-cols-2">
-              <Section title="Pricing hypothesis" icon={CircleDollarSign} collapsible sectionId="pricing-hypothesis" collapsed={collapsedSections.has("pricing-hypothesis")} onToggle={() => toggleSection("pricing-hypothesis")}>
+              <Section title={t("section.pricingHypothesis")} icon={CircleDollarSign} collapsible sectionId="pricing-hypothesis" collapsed={collapsedSections.has("pricing-hypothesis")} onToggle={() => toggleSection("pricing-hypothesis")}>
                 {isEditing ? (
                   <div className="space-y-3">
                     <EditableText
-                      label="Pricing hypothesis"
+                      label={t("section.pricingHypothesis")}
                       value={workspace.pricing.hypothesis}
                       rows={4}
                       onCommit={(value) =>
@@ -2335,7 +2343,7 @@ export function LaunchWorkspace({
                       }
                     />
                     <EditableLines
-                      label="Pricing tiers"
+                      label={t("section.pricingTiers")}
                       items={workspace.pricing.tiers}
                       onCommit={(items) =>
                         setWorkspace((current) => ({
@@ -2361,10 +2369,10 @@ export function LaunchWorkspace({
                 )}
               </Section>
 
-              <Section title="Launch plan" icon={Rocket} collapsible sectionId="launch-plan" collapsed={collapsedSections.has("launch-plan")} onToggle={() => toggleSection("launch-plan")}>
+              <Section title={t("section.launchPlan")} icon={Rocket} collapsible sectionId="launch-plan" collapsed={collapsedSections.has("launch-plan")} onToggle={() => toggleSection("launch-plan")}>
                 {isEditing ? (
                   <EditableLines
-                    label="Launch plan"
+                    label={t("section.launchPlan")}
                     items={workspace.launchPlan}
                     onCommit={(items) => updateList("launchPlan", items)}
                   />
@@ -2375,11 +2383,11 @@ export function LaunchWorkspace({
             </div>
 
             <div className="grid gap-6 xl:grid-cols-2">
-              <Section title="Assumptions to validate" icon={AlertTriangle} collapsible sectionId="assumptions-to-validate" collapsed={collapsedSections.has("assumptions-to-validate")} onToggle={() => toggleSection("assumptions-to-validate")}>
+              <Section title={t("section.assumptions")} icon={AlertTriangle} collapsible sectionId="assumptions-to-validate" collapsed={collapsedSections.has("assumptions-to-validate")} onToggle={() => toggleSection("assumptions-to-validate")}>
                 {isEditing ? (
                   <div className="space-y-3">
                     <EditableLines
-                      label="Assumptions"
+                      label={t("section.assumptions")}
                       items={workspace.assumptions}
                       onCommit={(items) => updateList("assumptions", items)}
                     />
@@ -2401,10 +2409,10 @@ export function LaunchWorkspace({
                 )}
               </Section>
 
-              <Section title="Pricing risks" icon={AlertTriangle} collapsible sectionId="pricing-risks" collapsed={collapsedSections.has("pricing-risks")} onToggle={() => toggleSection("pricing-risks")}>
+              <Section title={t("section.pricingRisks")} icon={AlertTriangle} collapsible sectionId="pricing-risks" collapsed={collapsedSections.has("pricing-risks")} onToggle={() => toggleSection("pricing-risks")}>
                 {isEditing ? (
                   <EditableLines
-                    label="Pricing risks"
+                    label={t("section.pricingRisks")}
                     items={workspace.pricing.risks}
                     onCommit={(items) =>
                       setWorkspace((current) => ({
@@ -2424,7 +2432,7 @@ export function LaunchWorkspace({
             </div>
 
             <div className="grid gap-6 xl:grid-cols-2">
-              <Section title="Content calendar" icon={CalendarDays} collapsible sectionId="content-calendar" collapsed={collapsedSections.has("content-calendar")} onToggle={() => toggleSection("content-calendar")}>
+              <Section title={t("section.contentCalendar")} icon={CalendarDays} collapsible sectionId="content-calendar" collapsed={collapsedSections.has("content-calendar")} onToggle={() => toggleSection("content-calendar")}>
                 {isEditing ? (
                   <div className="space-y-3">
                     {workspace.contentCalendar.map((item, index) => (
@@ -2535,9 +2543,9 @@ export function LaunchWorkspace({
               <Section
                 title={
                   <div className="flex items-center gap-2">
-                    <span>Execution tasks</span>
+                    <span>{t("section.executionTasks")}</span>
                     <span className="text-xs font-normal text-muted">
-                      {workspace.tasks.filter((t) => t.completed).length}/{workspace.tasks.length} completed
+                      {t("section.executionCount", { completed: workspace.tasks.filter((task) => task.completed).length, total: workspace.tasks.length })}
                     </span>
                   </div>
                 }
@@ -2726,7 +2734,7 @@ export function LaunchWorkspace({
           >
             <button
               type="button"
-              aria-label="Cancel import"
+              aria-label={t("importDialog.cancelAria")}
               onClick={cancelImport}
               className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             />
@@ -2736,31 +2744,30 @@ export function LaunchWorkspace({
             >
               <div className="border-b border-input px-6 py-4">
                 <h3 id="import-dialog-title" className="text-lg font-semibold text-foreground">
-                  Import workspace
+                  {t("importDialog.title")}
                 </h3>
               </div>
               <div className="space-y-4 px-6 py-4">
                 <p className="text-sm text-foreground/80">
-                  This will replace your current workspace and validation state.
-                  This cannot be undone.
+                  {t("importDialog.body")}
                 </p>
                 <div className="rounded-md bg-muted p-3 text-xs text-muted">
-                  <p className="font-medium text-foreground/70">Summary</p>
+                  <p className="font-medium text-foreground/70">{t("importDialog.summary")}</p>
                   <p className="mt-1 line-clamp-3">
                     {importPreview.workspace.summary}
                   </p>
                 </div>
                 {importPreview.execution && (
                   <p className="text-xs text-signal-supports">
-                    Includes validation state with{" "}
-                    {importPreview.execution.experiments.length} experiments.
+                    {t("importDialog.includesValidation", { count: importPreview.execution.experiments.length })}
                   </p>
                 )}
                 {importPreview.warnings.length > 0 && (
                   <div className="rounded-md border border-signal-challenges bg-signal-challenges/5 p-3 text-xs text-signal-challenges">
                     <p className="font-semibold">
-                      {importPreview.warnings.length} warning
-                      {importPreview.warnings.length === 1 ? "" : "s"}:
+                      {importPreview.warnings.length === 1
+                        ? t("importDialog.warningOne", { count: importPreview.warnings.length })
+                        : t("importDialog.warningMany", { count: importPreview.warnings.length })}
                     </p>
                     <ul className="mt-1 list-disc space-y-0.5 pl-4">
                       {importPreview.warnings.map((w, i) => (
@@ -2776,7 +2783,7 @@ export function LaunchWorkspace({
                   onClick={cancelImport}
                   className="flex h-9 items-center gap-1.5 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                 >
-                  Cancel
+                  {t("importDialog.cancel")}
                 </button>
                 <button
                   type="button"
@@ -2784,7 +2791,7 @@ export function LaunchWorkspace({
                   className="flex h-9 items-center gap-1.5 rounded-md bg-accent px-3 text-sm font-semibold text-primary-text transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                 >
                   <Upload className="size-3.5" aria-hidden="true" />
-                  Import
+                  {t("importDialog.import")}
                 </button>
               </div>
             </div>
@@ -2800,7 +2807,7 @@ export function LaunchWorkspace({
           >
             <button
               type="button"
-              aria-label="Cancel brief import"
+              aria-label={t("briefDialog.cancelAria")}
               onClick={cancelBriefImport}
               className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             />
@@ -2810,55 +2817,53 @@ export function LaunchWorkspace({
             >
               <div className="border-b border-input px-6 py-4">
                 <h3 id="brief-import-dialog-title" className="text-lg font-semibold text-foreground">
-                  Import brief from{" "}
                   {briefImportPreview.source === "research-studio"
-                    ? "Research Studio"
-                    : "file"}
+                    ? t("briefDialog.titleResearchStudio")
+                    : t("briefDialog.titleFile")}
                 </h3>
               </div>
               <div className="space-y-4 px-6 py-4">
                 <p className="text-sm text-foreground/80">
-                  This loads the five brief fields below. Your current workspace
-                  stays as-is - click Generate after confirming to build a fresh
-                  GTM plan from this brief.
+                  {t("briefDialog.body")}
                 </p>
                 <dl className="space-y-2 rounded-md bg-muted p-3 text-xs">
                   <div>
-                    <dt className="font-medium text-foreground/70">Idea</dt>
+                    <dt className="font-medium text-foreground/70">{t("briefDialog.idea")}</dt>
                     <dd className="mt-0.5 line-clamp-2 text-foreground/80">
-                      {briefImportPreview.input.idea || "(empty)"}
+                      {briefImportPreview.input.idea || t("briefDialog.empty")}
                     </dd>
                   </div>
                   <div>
-                    <dt className="font-medium text-foreground/70">Audience</dt>
+                    <dt className="font-medium text-foreground/70">{t("briefDialog.audience")}</dt>
                     <dd className="mt-0.5 line-clamp-2 text-foreground/80">
-                      {briefImportPreview.input.audience || "(empty)"}
+                      {briefImportPreview.input.audience || t("briefDialog.empty")}
                     </dd>
                   </div>
                   <div>
-                    <dt className="font-medium text-foreground/70">Market</dt>
+                    <dt className="font-medium text-foreground/70">{t("briefDialog.market")}</dt>
                     <dd className="mt-0.5 line-clamp-2 text-foreground/80">
-                      {briefImportPreview.input.market || "(empty)"}
+                      {briefImportPreview.input.market || t("briefDialog.empty")}
                     </dd>
                   </div>
                   <div>
-                    <dt className="font-medium text-foreground/70">Tone</dt>
+                    <dt className="font-medium text-foreground/70">{t("briefDialog.tone")}</dt>
                     <dd className="mt-0.5 text-foreground/80">
-                      {briefImportPreview.input.tone || "(empty)"}
+                      {briefImportPreview.input.tone || t("briefDialog.empty")}
                     </dd>
                   </div>
                   <div>
-                    <dt className="font-medium text-foreground/70">Constraints</dt>
+                    <dt className="font-medium text-foreground/70">{t("briefDialog.constraints")}</dt>
                     <dd className="mt-0.5 line-clamp-2 text-foreground/80">
-                      {briefImportPreview.input.constraints || "(empty)"}
+                      {briefImportPreview.input.constraints || t("briefDialog.empty")}
                     </dd>
                   </div>
                 </dl>
                 {briefImportPreview.warnings.length > 0 && (
                   <div className="rounded-md border border-signal-challenges bg-signal-challenges/5 p-3 text-xs text-signal-challenges">
                     <p className="font-semibold">
-                      {briefImportPreview.warnings.length} warning
-                      {briefImportPreview.warnings.length === 1 ? "" : "s"}:
+                      {briefImportPreview.warnings.length === 1
+                        ? t("briefDialog.warningOne", { count: briefImportPreview.warnings.length })
+                        : t("briefDialog.warningMany", { count: briefImportPreview.warnings.length })}
                     </p>
                     <ul className="mt-1 list-disc space-y-0.5 pl-4">
                       {briefImportPreview.warnings.map((w, i) => (
@@ -2874,7 +2879,7 @@ export function LaunchWorkspace({
                   onClick={cancelBriefImport}
                   className="flex h-9 items-center gap-1.5 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                 >
-                  Cancel
+                  {t("briefDialog.cancel")}
                 </button>
                 <button
                   type="button"
@@ -2882,7 +2887,7 @@ export function LaunchWorkspace({
                   className="flex h-9 items-center gap-1.5 rounded-md bg-accent px-3 text-sm font-semibold text-primary-text transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                 >
                   <FlaskConical className="size-3.5" aria-hidden="true" />
-                  Load brief
+                  {t("briefDialog.load")}
                 </button>
               </div>
             </div>

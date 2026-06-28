@@ -110,15 +110,34 @@ describe("briefFromJson — legacy free-text brief", () => {
 });
 
 describe("briefFromJson — truncation", () => {
-  it("truncates fields over 1200 chars and records a warning", () => {
+  it("truncates fields to their per-field advisory limit and records a warning", () => {
     const long = "x".repeat(1400);
     const result = briefFromJson(
       researchStudioEnvelope({ idea: long, audience: long }),
     );
-    expect(result.input.idea.length).toBe(1200);
-    expect(result.input.audience.length).toBe(1200);
+    // idea clamps to its 500-char advisory limit, audience to its 240-char
+    // advisory limit (both tighter than the 1200-char server gate) so the
+    // imported brief never starts the form in a red "Too long" state.
+    expect(result.input.idea.length).toBe(500);
+    expect(result.input.audience.length).toBe(240);
     expect(result.warnings.some((w) => w.includes("idea was truncated"))).toBe(true);
     expect(result.warnings.some((w) => w.includes("audience was truncated"))).toBe(true);
+  });
+
+  it("leaves fields under their advisory limit untouched", () => {
+    const result = briefFromJson(
+      researchStudioEnvelope({
+        idea: "x".repeat(499),
+        audience: "x".repeat(240),
+        market: "x".repeat(120),
+        constraints: "x".repeat(320),
+      }),
+    );
+    expect(result.input.idea.length).toBe(499);
+    expect(result.input.audience.length).toBe(240);
+    expect(result.input.market.length).toBe(120);
+    expect(result.input.constraints.length).toBe(320);
+    expect(result.warnings).toHaveLength(0);
   });
 });
 
