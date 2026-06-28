@@ -485,7 +485,7 @@ export function LaunchWorkspace({
     );
   const [isGenerating, setIsGenerating] = useState(false);
   const generateAbortRef = useRef<AbortController | null>(null);
-  const briefHashProcessedRef = useRef(false);
+  const briefHashProcessedRef = useRef<string | null>(null);
   // P1-bug v2: tracks the moment the user imported a brief via any path
   // (hash pre-fill, file upload, paste). Independent of briefSource which can
   // be null when source-brief normalize fails — the overlay still needs to
@@ -620,12 +620,23 @@ export function LaunchWorkspace({
       return;
     }
 
-    briefHashProcessedRef.current = true;
+    briefHashProcessedRef.current = hash;
+    console.log("[LaunchLens] Hash prefill starting:", {
+      hashPrefix: hash.slice(0, 40),
+      hashLength: hash.length,
+    });
     try {
       const result = briefFromHashFragment(hash);
       if (!result) {
+        console.warn("[LaunchLens] Hash prefill: briefFromHashFragment returned null");
         throw new Error("Missing brief payload.");
       }
+      console.log("[LaunchLens] Hash prefill parsed:", {
+        idea: result.input.idea.slice(0, 80),
+        source: result.source,
+        hasSourceBrief: !!result.sourceBrief,
+        toneIsDefault: result.toneIsDefault,
+      });
       window.setTimeout(() => {
         applyBriefImportResult(result, {
           successMessage: t("toast.briefFromHash"),
@@ -2879,7 +2890,20 @@ export function LaunchWorkspace({
                 <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
                   <button
                     type="button"
-                    onClick={() => void generate()}
+                    onClick={() => {
+                      // P2-debug: log diagnostic info so we can see whether
+                      // the five fields actually match the new brief or are
+                      // still the initialExample. Helps distinguish "hash
+                      // prefill worked but workspace looks stale" from "hash
+                      // prefill failed silently".
+                      console.log("[LaunchLens] Generate from overlay:", {
+                        inputIdea: input.idea.slice(0, 80),
+                        briefImportedAt,
+                        workspaceGeneratedAt: workspace.generatedAt,
+                        briefSourceExportedAt: briefSource?.exportedAt,
+                      });
+                      void generate();
+                    }}
                     data-testid="workspace-outdated-generate"
                     className="flex h-10 items-center justify-center gap-2 rounded-md bg-accent px-4 text-sm font-semibold text-primary-text transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
                   >
