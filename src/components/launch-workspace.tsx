@@ -486,6 +486,12 @@ export function LaunchWorkspace({
   const [isGenerating, setIsGenerating] = useState(false);
   const generateAbortRef = useRef<AbortController | null>(null);
   const briefHashProcessedRef = useRef(false);
+  // P1-bug v2: tracks the moment the user imported a brief via any path
+  // (hash pre-fill, file upload, paste). Independent of briefSource which can
+  // be null when source-brief normalize fails — the overlay still needs to
+  // show so the user knows the right-pane workspace is stale relative to
+  // the five fields they just imported.
+  const [briefImportedAt, setBriefImportedAt] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
   // mounted gate for client-only UI (language switcher) to avoid SSR/CSR
@@ -576,6 +582,10 @@ export function LaunchWorkspace({
           : nextInput;
       setInput(mergedInput);
       setBriefSource(result.sourceBrief ?? null);
+      // P1-bug v2: mark this exact moment so the stale-workspace overlay
+      // can compare against workspace.generatedAt regardless of whether
+      // sourceBrief was successfully parsed.
+      setBriefImportedAt(new Date().toISOString());
       setError("");
       setFallbackNotice("");
       const label =
@@ -2846,17 +2856,7 @@ export function LaunchWorkspace({
         </div>
       </div>
     </main>
-        {/* P1-bug fix: when a fresh brief has been loaded (hash/file/paste) and
-            the workspace hasn't been regenerated yet, the right-pane still
-            shows the previous run. Block the user from confusing old
-            workspace content for new-brief results by overlaying a
-            "needs generate" panel over the workspace detail area until they
-            either generate from the new brief or clear the briefSource. The
-            five brief fields on the left stay editable so they can review
-            what was imported. */}
-        {briefSource &&
-          briefSource.exportedAt &&
-          briefSource.exportedAt > workspace.generatedAt && (
+        {briefImportedAt && briefImportedAt > workspace.generatedAt && (
             <div
               role="alertdialog"
               aria-modal="false"
@@ -2888,7 +2888,10 @@ export function LaunchWorkspace({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setBriefSource(null)}
+                    onClick={() => {
+                      setBriefSource(null);
+                      setBriefImportedAt(null);
+                    }}
                     data-testid="workspace-outdated-discard"
                     className="flex h-10 items-center justify-center rounded-md border border-input bg-card px-4 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
                   >
