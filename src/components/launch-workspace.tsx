@@ -347,6 +347,7 @@ function EncryptedImportDialog({
 }) {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const { t } = useLocale();
   const cancelRef = useRef<HTMLButtonElement | null>(null);
   const submitRef = useRef<HTMLButtonElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -408,11 +409,10 @@ function EncryptedImportDialog({
         className="w-full max-w-md rounded-md bg-card p-5 shadow-xl ring-1 ring-black/5"
       >
         <h3 id={titleId} className="text-base font-semibold text-foreground">
-          Enter passphrase
+          {t("encrypt.title")}
         </h3>
         <p id={bodyId} className="mt-2 text-sm leading-6 text-muted">
-          <span className="font-mono text-xs text-foreground/80">{fileName}</span>{" "}
-          is password-protected. Type the passphrase you used when exporting.
+          {t("encrypt.body", { file: fileName })}
         </p>
         <form
           className="mt-4 space-y-2"
@@ -422,7 +422,7 @@ function EncryptedImportDialog({
           }}
         >
           <label className="block">
-            <span className="sr-only">Passphrase</span>
+            <span className="sr-only">{t("encrypt.passphraseLabel")}</span>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -432,17 +432,17 @@ function EncryptedImportDialog({
                 spellCheck={false}
                 aria-invalid={Boolean(error) || undefined}
                 aria-describedby={error ? errorId : undefined}
-                placeholder="Passphrase"
+                placeholder={t("encrypt.passphrasePlaceholder")}
                 className="h-10 w-full rounded-md border border-input bg-input px-3 pr-20 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
                 className="absolute right-1 top-1/2 inline-flex h-8 -translate-y-1/2 items-center rounded px-2 text-[10px] font-semibold uppercase text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-                aria-label={showPassword ? "Hide passphrase" : "Show passphrase"}
+                aria-label={showPassword ? t("encrypt.hideAria") : t("encrypt.showAria")}
                 aria-pressed={showPassword}
               >
-                {showPassword ? "Hide" : "Show"}
+                {showPassword ? t("encrypt.hide") : t("encrypt.show")}
               </button>
             </div>
           </label>
@@ -459,7 +459,7 @@ function EncryptedImportDialog({
               disabled={busy}
               className="inline-flex h-9 items-center rounded-md border border-input bg-input px-3 text-sm font-medium text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:opacity-60"
             >
-              Cancel
+              {t("encrypt.cancel")}
             </button>
             <button
               ref={submitRef}
@@ -467,11 +467,11 @@ function EncryptedImportDialog({
               disabled={busy || !password}
               className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-primary-text transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-1 disabled:opacity-60"
             >
-              {busy ? "Decrypting..." : "Decrypt & preview"}
+              {busy ? t("encrypt.decrypting") : t("encrypt.decrypt")}
             </button>
           </div>
           <p className="sr-only">
-            Press Control or Command Enter to submit.
+            {t("encrypt.submitHint")}
           </p>
         </form>
       </div>
@@ -810,7 +810,7 @@ export function LaunchWorkspace({
   }, []);
   
   const handleSave = useCallback(() => {
-    showToast("Use the Cloud history section below to save snapshots to cloud.", "info");
+    showToast(t("toast.saveHint"), "info");
     window.setTimeout(() => {
       const cloudSection = document.getElementById("cloud-workspaces-section");
       cloudSection?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -888,14 +888,14 @@ export function LaunchWorkspace({
             });
             if (!hasExplicitBriefHandoff) {
               showToast(
-                "Local workspace restored from browser storage.",
+                t("toast.restored"),
                 "success",
               );
             }
           }
         }
       } catch {
-        showToast("Local storage unavailable - changes may not persist.", "error");
+        showToast(t("toast.storageUnavailable"), "error");
       } finally {
         setIsStorageReady(true);
       }
@@ -941,7 +941,7 @@ export function LaunchWorkspace({
       }, 0);
     } catch {
       window.setTimeout(() => {
-        showToast("Local storage unavailable - changes may not persist.", "error");
+        showToast(t("toast.storageUnavailable"), "error");
       }, 0);
     }
   }, [execution, input, isStorageReady, setSaveFlash, showToast, srSave, workspace]);
@@ -993,7 +993,7 @@ export function LaunchWorkspace({
         }
       });
     });
-    showToast("Example workspace loaded.", "success");
+    showToast(t("toast.exampleLoaded"), "success");
   }
 
   function resetLocalWorkspace() {
@@ -1029,7 +1029,7 @@ export function LaunchWorkspace({
         }
       });
     });
-    showToast("Workspace reset to starter example.", "success");
+    showToast(t("toast.reset"), "success");
   }
 
   function restoreCloudWorkspace(record: CloudWorkspaceRecord) {
@@ -1065,7 +1065,7 @@ export function LaunchWorkspace({
         }
       });
     });
-    showToast("Cloud snapshot restored successfully.", "success");
+    showToast(t("toast.cloudRestored"), "success");
   }
 
   const ideaTrimmed = input.idea.trim();
@@ -1206,10 +1206,10 @@ export function LaunchWorkspace({
     const markdown = workspaceToMarkdown(workspace, execution);
     let outText = markdown;
     let mime = "text/markdown;charset=utf-8";
-    let label = "Markdown";
+    let label = t("toast.label.markdown");
     if (exportEncrypted && exportPassword.trim()) {
       outText = await encryptJson(markdown, exportPassword.trim());
-      label = "Encrypted Markdown";
+      label = t("toast.label.encryptedMarkdown");
       mime = "text/plain;charset=utf-8";
     }
     setExportText(outText);
@@ -1218,16 +1218,16 @@ export function LaunchWorkspace({
     if (navigator.clipboard?.writeText) {
       try {
         await navigator.clipboard.writeText(outText);
-        showToast(exportEncrypted ? `${label} copied (password not stored)` : `${label} copied to clipboard`, "success");
+        showToast(exportEncrypted ? t("toast.copiedLabelNoPass", { label }) : t("toast.copiedLabel", { label }), "success");
         flashCopySuccess("markdown");
-    setSrAnnouncement("Markdown exported and copied to clipboard.");
+    setSrAnnouncement(t("sr.markdownExported"));
         return;
       } catch {
         // fall through to sync path
       }
     }
     if (await copyTextToClipboard(outText)) {
-      showToast(exportEncrypted ? `${label} copied (password not stored)` : `${label} copied to clipboard`, "success");
+      showToast(exportEncrypted ? t("toast.copiedLabelNoPass", { label }) : t("toast.copiedLabel", { label }), "success");
       flashCopySuccess("markdown");
       return;
     }
@@ -1238,17 +1238,17 @@ export function LaunchWorkspace({
       landingPage: { headline: workspace.landingPage.headline },
     });
     downloadTextFile(filename, outText, mime);
-    showToast(exportEncrypted ? `Clipboard unavailable - downloaded ${label} file instead` : "Clipboard unavailable - downloaded Markdown file instead", "info");
+    showToast(exportEncrypted ? t("toast.clipboardFallbackLabel", { label }) : t("toast.clipboardFallbackGeneric", { label: t("toast.label.markdown") }), "info");
   }
 
   async function copyJson() {
     const json = workspaceToJson(workspace, execution);
     let outText = json;
     let mime = "application/json;charset=utf-8";
-    let label = "JSON";
+    let label = t("toast.label.json");
     if (exportEncrypted && exportPassword.trim()) {
       outText = await encryptJson(json, exportPassword.trim());
-      label = "Encrypted JSON";
+      label = t("toast.label.encryptedJson");
       mime = "text/plain;charset=utf-8";
     }
     setExportText(outText);
@@ -1257,16 +1257,16 @@ export function LaunchWorkspace({
     if (navigator.clipboard?.writeText) {
       try {
         await navigator.clipboard.writeText(outText);
-        showToast(exportEncrypted ? `${label} copied (password not stored)` : `${label} copied to clipboard`, "success");
+        showToast(exportEncrypted ? t("toast.copiedLabelNoPass", { label }) : t("toast.copiedLabel", { label }), "success");
         flashCopySuccess("json");
-    setSrAnnouncement("JSON exported and copied to clipboard.");
+    setSrAnnouncement(t("sr.jsonExported"));
         return;
       } catch {
         // fall through to sync path
       }
     }
     if (await copyTextToClipboard(outText)) {
-      showToast(exportEncrypted ? `${label} copied (password not stored)` : `${label} copied to clipboard`, "success");
+      showToast(exportEncrypted ? t("toast.copiedLabelNoPass", { label }) : t("toast.copiedLabel", { label }), "success");
       flashCopySuccess("json");
       return;
     }
@@ -1276,7 +1276,7 @@ export function LaunchWorkspace({
       outText,
       mime,
     );
-    showToast(exportEncrypted ? `Clipboard unavailable - downloaded ${label} file instead` : "Clipboard unavailable - downloaded JSON file instead", "info");
+    showToast(exportEncrypted ? t("toast.clipboardFallbackLabel", { label }) : t("toast.clipboardFallbackGeneric", { label: t("toast.label.json") }), "info");
   }
 
   function downloadExport() {
@@ -1289,8 +1289,8 @@ export function LaunchWorkspace({
       exportText,
       `${mime};charset=utf-8`,
     );
-    if (ok) showToast(`Exported as .${ext} file`, "success");
-    else showToast(`Unable to download ${ext.toUpperCase()} file in this browser`, "error");
+    if (ok) showToast(t("toast.exportedExt", { ext }), "success");
+    else showToast(t("toast.downloadErrorExt", { ext: ext.toUpperCase() }), "error");
   }
 
   async function downloadMarkdownFile() {
@@ -1306,7 +1306,7 @@ export function LaunchWorkspace({
       mime = "text/plain;charset=utf-8";
     }
     if (downloadTextFile(filename, outText, mime)) {
-      showToast(exportEncrypted ? "Encrypted Markdown downloaded. Password not stored - remember it!" : "Markdown file downloaded", "success");
+      showToast(exportEncrypted ? t("toast.encryptedMdDownloaded") : t("toast.mdDownloaded"), "success");
     }
   }
 
@@ -1324,8 +1324,8 @@ export function LaunchWorkspace({
     if (downloadTextFile(filename, outText, mime)) {
       showToast(
         exportEncrypted
-          ? "Encrypted file downloaded. Password not stored - remember it!"
-          : "JSON file downloaded",
+          ? t("toast.encryptedFileDownloaded")
+          : t("toast.jsonDownloaded"),
         "success",
       );
     }
@@ -1343,7 +1343,7 @@ export function LaunchWorkspace({
       parseAndPreviewImport(text);
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unknown import error";
-      showToast(`Import failed: ${msg}`, "error");
+      showToast(t("toast.importFailed", { msg }), "error");
     }
   }
 
@@ -1372,10 +1372,10 @@ export function LaunchWorkspace({
     try {
       const result = workspaceFromJson(text);
       setImportPreview(result);
-      showToast("File parsed successfully - review and confirm", "info");
+      showToast(t("toast.parsedSuccess"), "info");
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unknown import error";
-      showToast(`Import failed: ${msg}`, "error");
+      showToast(t("toast.importFailed", { msg }), "error");
     }
   }
 
@@ -1392,11 +1392,11 @@ export function LaunchWorkspace({
     const warningCount = importPreview.warnings.length;
     if (warningCount > 0) {
       showToast(
-        `Workspace imported (${warningCount} warning${warningCount === 1 ? "" : "s"})`,
+        t("toast.importedWarn", { count: warningCount }),
         "info",
       );
     } else {
-      showToast("Workspace imported successfully", "success");
+      showToast(t("toast.importedSuccess"), "success");
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -1419,10 +1419,10 @@ export function LaunchWorkspace({
     try {
       const result = await briefFromFile(file);
       setBriefImportPreview(result);
-      showToast("Brief parsed - review and confirm", "info");
+      showToast(t("toast.briefParsed"), "info");
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unknown import error";
-      showToast(`Brief import failed: ${msg}`, "error");
+      showToast(t("toast.briefImportFailed", { msg }), "error");
     } finally {
       if (briefFileInputRef.current) briefFileInputRef.current.value = "";
     }
@@ -1482,10 +1482,10 @@ export function LaunchWorkspace({
     if (!exportText) return;
     try {
       await navigator.clipboard.writeText(exportText);
-      showToast("Copied from export panel", "success");
+      showToast(t("toast.copiedFromPanel"), "success");
       flashCopySuccess(exportFormat as "markdown" | "json");
     } catch {
-      showToast("Clipboard still unavailable - use the Download button instead", "error");
+      showToast(t("toast.clipboardStillUnavailable"), "error");
     }
   }
 
@@ -2408,7 +2408,7 @@ export function LaunchWorkspace({
                               ),
                             }))
                           }
-                          placeholder="Feature"
+                          placeholder={t("edit.featurePlaceholder")}
                           className="flex-1 rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                         />
                         <select
@@ -2436,7 +2436,7 @@ export function LaunchWorkspace({
                             }))
                           }
                           className="rounded-md p-1.5 text-muted transition hover:bg-muted hover:text-signal-challenges"
-                          aria-label="Remove backlog item"
+                          aria-label={t("edit.removeBacklogAria")}
                         >
                           <X className="size-4" aria-hidden="true" />
                         </button>
@@ -2452,7 +2452,7 @@ export function LaunchWorkspace({
                           }))
                         }
                         rows={2}
-                        placeholder="Why this matters"
+                        placeholder={t("edit.whyMattersPlaceholder")}
                         className="w-full resize-y rounded-md border border-input bg-card px-3 py-2 text-sm leading-6 text-foreground/80 outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                       />
                     </div>
@@ -2628,7 +2628,7 @@ export function LaunchWorkspace({
                                 ),
                               }))
                             }
-                            placeholder="Channel"
+                            placeholder={t("edit.channelPlaceholder")}
                             className="flex-1 rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                           />
                           <input
@@ -2642,7 +2642,7 @@ export function LaunchWorkspace({
                                 ),
                               }))
                             }
-                            placeholder="Cadence"
+                            placeholder={t("edit.cadencePlaceholder")}
                             className="w-24 rounded-md border border-input bg-card px-3 py-1.5 text-sm font-medium text-signal-challenges outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                           />
                           <button
@@ -2654,7 +2654,7 @@ export function LaunchWorkspace({
                               }))
                             }
                             className="rounded-md p-1.5 text-muted transition hover:bg-muted hover:text-signal-challenges"
-                            aria-label="Remove content item"
+                            aria-label={t("edit.removeContentAria")}
                           >
                             <X className="size-4" aria-hidden="true" />
                           </button>
@@ -2670,7 +2670,7 @@ export function LaunchWorkspace({
                             }))
                           }
                           rows={2}
-                          placeholder="Content angle or hook"
+                          placeholder={t("edit.contentAnglePlaceholder")}
                           className="w-full resize-y rounded-md border border-input bg-card px-3 py-2 text-sm leading-6 text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                         />
                       </div>
@@ -2766,7 +2766,7 @@ export function LaunchWorkspace({
                                 ),
                               }))
                             }
-                            placeholder="Task title"
+                            placeholder={t("edit.taskTitlePlaceholder")}
                             className={`flex-1 rounded-md border border-input bg-card px-3 py-1.5 text-sm font-semibold ${task.completed ? "text-foreground/50 line-through" : "text-foreground"} outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]`}
                           />
                           <button
@@ -2778,7 +2778,7 @@ export function LaunchWorkspace({
                               }))
                             }
                             className="rounded-md p-1.5 text-muted transition hover:bg-muted hover:text-signal-challenges"
-                            aria-label="Remove task"
+                            aria-label={t("edit.removeTaskAria")}
                           >
                             <X className="size-4" aria-hidden="true" />
                           </button>
@@ -2795,7 +2795,7 @@ export function LaunchWorkspace({
                                 ),
                               }))
                             }
-                            placeholder="Owner"
+                            placeholder={t("edit.ownerPlaceholder")}
                             className="rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                           />
                           <input
@@ -2809,7 +2809,7 @@ export function LaunchWorkspace({
                                 ),
                               }))
                             }
-                            placeholder="Due"
+                            placeholder={t("edit.duePlaceholder")}
                             className="rounded-md border border-input bg-card px-3 py-1.5 text-sm font-medium text-signal-supports outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                           />
                         </div>
@@ -2824,7 +2824,7 @@ export function LaunchWorkspace({
                               ),
                             }))
                           }
-                          placeholder="Outcome"
+                          placeholder={t("edit.outcomePlaceholder")}
                           className="w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm text-foreground/80 outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                         />
                       </div>
@@ -3196,7 +3196,7 @@ export function LaunchWorkspace({
             onNavigate: navigateToSection,
             onToggleEdit: () => setIsEditing(!isEditing),
             onGenerate: generate,
-            onSave: () => showToast("Saved locally", "success"),
+            onSave: () => showToast(t("toast.savedLocally"), "success"),
             onReset: resetLocalWorkspace,
             onCopyMarkdown: copyMarkdown,
           })}
