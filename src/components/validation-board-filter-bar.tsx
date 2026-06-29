@@ -2,6 +2,7 @@
 
 import type { Ref } from "react";
 import { Filter, Search, X } from "lucide-react";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export type ValidationBoardStatusFilter = "all" | "active" | "decided";
 export type ValidationBoardSortMode =
@@ -28,12 +29,12 @@ export type ValidationBoardFilterBarProps = {
 
 const statusTabs: Array<{
   id: ValidationBoardStatusFilter;
-  label: string;
+  labelKey: "vFilter.statusAll" | "vFilter.statusActive" | "vFilter.statusDecided";
   count: (props: ValidationBoardFilterBarProps) => number;
 }> = [
-  { id: "all", label: "All", count: (props) => props.experimentCount },
-  { id: "active", label: "Active", count: (props) => props.activeCount },
-  { id: "decided", label: "Decided", count: (props) => props.decidedCount },
+  { id: "all", labelKey: "vFilter.statusAll", count: (props) => props.experimentCount },
+  { id: "active", labelKey: "vFilter.statusActive", count: (props) => props.activeCount },
+  { id: "decided", labelKey: "vFilter.statusDecided", count: (props) => props.decidedCount },
 ];
 
 export function ValidationBoardFilterBar({
@@ -52,6 +53,7 @@ export function ValidationBoardFilterBar({
   onSortByChange,
 }: ValidationBoardFilterBarProps) {
   const counts = { experimentCount, activeCount, decidedCount };
+  const { t } = useLocale();
 
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-2 xl:flex-row xl:items-center">
@@ -59,7 +61,7 @@ export function ValidationBoardFilterBar({
         <Filter className="size-3.5 text-muted" aria-hidden="true" />
         <div
           role="tablist"
-          aria-label="Filter experiments by status"
+          aria-label={t("vFilter.ariaLabel")}
           className="flex flex-wrap gap-0.5"
         >
           {statusTabs.map((tab) => (
@@ -74,7 +76,7 @@ export function ValidationBoardFilterBar({
                   : "text-muted hover:bg-muted hover:text-foreground"
               }`}
             >
-              {tab.label}
+              {t(tab.labelKey)}
               <span className="ml-1 opacity-70">
                 (
                 {tab.id === "all"
@@ -90,19 +92,19 @@ export function ValidationBoardFilterBar({
         {tags.length > 0 && (
           <div className="flex flex-wrap items-center gap-1">
             <span className="pr-1 text-[11px] font-semibold uppercase text-muted">
-              Tags:
+              {t("vFilter.tagsLabel")}
             </span>
             <button
               type="button"
               onClick={() => onTagFilterChange(null)}
-              title="Show hypotheses with any tag"
+              title={t("vFilter.anyTagTitle")}
               className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition ${
                 tagFilter === null
                   ? "bg-accent text-primary-text"
                   : "bg-muted text-muted hover:text-foreground"
               }`}
             >
-              all
+              {t("vFilter.anyTag")}
             </button>
             {tags.map((tag) => (
               <button
@@ -113,10 +115,10 @@ export function ValidationBoardFilterBar({
                 }
                 title={
                   tagFilter === tag
-                    ? `Clear tag filter "${tag}"`
-                    : `Filter to hypotheses tagged "${tag}" (click again to clear)`
+                    ? t("vFilter.clearTagTitle", { tag })
+                    : t("vFilter.filterTagTitle", { tag })
                 }
-                aria-label={`Filter by tag ${tag}`}
+                aria-label={t("vFilter.filterTagAria", { tag })}
                 className={`rounded-full px-2 py-0.5 text-[11px] font-medium transition ${
                   tagFilter === tag
                     ? "bg-accent text-primary-text"
@@ -141,15 +143,15 @@ export function ValidationBoardFilterBar({
             type="search"
             value={searchQuery}
             onChange={(event) => onSearchQueryChange(event.target.value)}
-            placeholder="Search..."
-            aria-label="Search hypotheses, evidence, tags"
+            placeholder={t("vFilter.searchPlaceholder")}
+            aria-label={t("vFilter.searchAria")}
             className="h-7 w-full rounded-md border border-input bg-card pl-7 pr-6 text-xs text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)] sm:w-40"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => onSearchQueryChange("")}
-              aria-label="Clear search"
+              aria-label={t("vFilter.clearSearch")}
               className="absolute right-1 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               <X className="size-3" aria-hidden="true" />
@@ -162,14 +164,14 @@ export function ValidationBoardFilterBar({
           onChange={(event) =>
             onSortByChange(event.target.value as ValidationBoardSortMode)
           }
-          title="Default: manual order. Highest confidence: high to low. By status: supported/testing/untested/refuted. Most evidence: evidence count descending."
+          title={t("vFilter.sortTitle")}
           className="h-7 max-w-full rounded-md border border-input bg-card px-2 py-1 text-xs font-semibold text-foreground/70 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
-          aria-label="Sort hypotheses"
+          aria-label={t("vFilter.sortAria")}
         >
-          <option value="default">Default order</option>
-          <option value="confidence">Highest confidence</option>
-          <option value="status">By status</option>
-          <option value="progress">Most evidence</option>
+          <option value="default">{t("vFilter.sortDefault")}</option>
+          <option value="confidence">{t("vFilter.sortConfidence")}</option>
+          <option value="status">{t("vFilter.sortStatus")}</option>
+          <option value="progress">{t("vFilter.sortEvidence")}</option>
         </select>
       </div>
     </div>

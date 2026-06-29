@@ -3,6 +3,7 @@
 import { Loader2 } from "lucide-react";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export type ConfirmDialogProps = {
   open: boolean;
@@ -21,12 +22,14 @@ export function ConfirmDialog({
   title,
   body,
   confirmLabel,
-  cancelLabel = "Cancel",
+  cancelLabel,
   danger = false,
   busy = false,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const { t } = useLocale();
+  const resolvedCancelLabel = cancelLabel ?? t("confirm.cancel");
   const cancelRef = useRef<HTMLButtonElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const confirmRef = useRef<HTMLButtonElement | null>(null);
@@ -102,7 +105,7 @@ export function ConfirmDialog({
             aria-disabled={busyFinal || undefined}
             className="inline-flex h-9 items-center rounded-md border border-input bg-input px-3 text-sm font-medium text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
           >
-            {cancelLabel}
+            {resolvedCancelLabel}
           </button>
           <button
             ref={confirmRef}

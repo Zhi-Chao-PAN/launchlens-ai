@@ -6,6 +6,7 @@ import { Search, X, Command, ArrowRight } from "lucide-react";
 import { useFocusTrap } from "@/hooks/use-focus-trap";
 import { pushOverlay } from "@/lib/launchlens/overlays";
 import { registerShortcut } from "@/hooks/use-keyboard-shortcuts";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export type CommandPaletteAction = {
   id: string;
@@ -28,7 +29,7 @@ type CommandPaletteProps = {
 
 export function CommandPalette({
   actions,
-  openLabel = "Search or jump to...",
+  openLabel,
 }: CommandPaletteProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -38,6 +39,29 @@ export function CommandPalette({
   const trapRef = useFocusTrap<HTMLDivElement>(isOpen && mounted, { restoreFocus: false });
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const overlayPopRef = useRef<(() => void) | null>(null);
+  const { t } = useLocale();
+  const resolvedPlaceholder = openLabel ?? t("palette.placeholder");
+
+  // Map a raw category string (as registered by callers) to a translated
+  // label. Unknown categories fall back to the raw string so custom
+  // categories still render.
+  const categoryLabel = useCallback(
+    (raw: string) => {
+      switch (raw) {
+        case "Actions":
+          return t("palette.cat.Actions");
+        case "Navigate":
+          return t("palette.cat.Navigate");
+        case "Workspace content":
+          return t("palette.cat.WorkspaceContent");
+        case "Other":
+          return t("palette.cat.Other");
+        default:
+          return raw;
+      }
+    },
+    [t],
+  );
 
   const filtered = useMemo(() => {
     if (!query.trim()) {
@@ -167,13 +191,13 @@ export function CommandPalette({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Command palette"
+      aria-label={t("palette.ariaLabel")}
       className="fixed inset-0 z-50 flex items-center justify-center px-3 pt-4 sm:items-start sm:px-4 sm:pt-[15vh]"
     >
       {/* Backdrop */}
       <button
         type="button"
-        aria-label="Close command palette"
+        aria-label={t("palette.closeAria")}
         onClick={close}
         className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-200 motion-reduce:transition-none"
         style={{ opacity: mounted ? 1 : 0 }}
@@ -196,8 +220,8 @@ export function CommandPalette({
             value={query}
             onChange={(e) => { setQuery(e.target.value); setSelectedIndex(0); }}
             onKeyDown={handleKeyDown}
-            placeholder={openLabel}
-            aria-label="Search commands"
+            placeholder={resolvedPlaceholder}
+            aria-label={t("palette.searchAria")}
             aria-autocomplete="list"
             aria-controls="command-list"
             aria-activedescendant={
@@ -211,7 +235,7 @@ export function CommandPalette({
           <button
             type="button"
             onClick={close}
-            aria-label="Close"
+            aria-label={t("palette.close")}
             className="rounded p-1 text-muted transition hover:bg-muted hover:text-foreground"
           >
             <X className="size-4" aria-hidden="true" />
@@ -227,15 +251,15 @@ export function CommandPalette({
           
           {filtered.length === 0 ? (
             <li className="px-4 py-6 text-center text-sm text-muted">
-              No commands found for &ldquo;{query}&rdquo;
+              {t("palette.noResults", { query })}
             </li>
           ) : (
             Object.entries(grouped).map(([category, categoryActions]) => (
               <li key={category} role="presentation">
                 <div className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted/70">
-                  {category}
+                  {categoryLabel(category)}
                 </div>
-                <ul role="group" aria-label={category} className="list-none">
+                <ul role="group" aria-label={categoryLabel(category)} className="list-none">
                   {categoryActions.map((action) => (
                       <li
                         key={action.id}
@@ -294,13 +318,13 @@ export function CommandPalette({
         {/* Footer hint */}
         <div className="flex items-center gap-4 border-t border-input px-4 py-2 text-[10px] text-muted">
           <span>
-            <kbd className="rounded bg-muted px-1 py-0.5 font-mono">??</kbd> navigate
+            <kbd className="rounded bg-muted px-1 py-0.5 font-mono">??</kbd> {t("palette.footerNavigate")}
           </span>
           <span>
-            <kbd className="rounded bg-muted px-1 py-0.5 font-mono">?</kbd> select
+            <kbd className="rounded bg-muted px-1 py-0.5 font-mono">?</kbd> {t("palette.footerSelect")}
           </span>
           <span>
-            <kbd className="rounded bg-muted px-1 py-0.5 font-mono">?K</kbd> toggle
+            <kbd className="rounded bg-muted px-1 py-0.5 font-mono">?K</kbd> {t("palette.footerToggle")}
           </span>
         </div>
       </div>

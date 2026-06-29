@@ -1,6 +1,7 @@
 "use client";
 
 import type { ExperimentStatus } from "@/lib/launchlens/execution";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export type ValidationBatchTagMode = "add" | "remove" | null;
 
@@ -57,6 +58,7 @@ export function ValidationBulkActionsToolbar({
   onDelete,
   onClear,
 }: ValidationBulkActionsToolbarProps) {
+  const { t } = useLocale();
   if (batchCount <= 0) {
     return null;
   }
@@ -69,18 +71,18 @@ export function ValidationBulkActionsToolbar({
   return (
     <div
       role="toolbar"
-      aria-label="Bulk actions on selected hypotheses"
+      aria-label={t("vBulk.ariaLabel")}
       data-hypothesis-bulk-toolbar
       className="flex w-full flex-wrap items-center gap-2 rounded-md border border-accent/60 bg-accent/5 p-2 text-xs"
     >
       <span className="px-1 font-semibold text-foreground">
-        {batchCount} selected
+        {batchCount} {t("vBulk.selected")}
       </span>
       <span className="sr-only">
-        Shift+click range
+        {t("vBulk.shiftRange")}
       </span>
       <button type="button" onClick={onSelectAll} className={actionClass}>
-        All
+        {t("vBulk.all")}
       </button>
       <span className="mx-1 h-4 w-px bg-border" />
       <button
@@ -88,28 +90,28 @@ export function ValidationBulkActionsToolbar({
         onClick={() => onSetStatus("untested")}
         className={actionClass}
       >
-        Mark untested
+        {t("vBulk.markUntested")}
       </button>
       <button
         type="button"
         onClick={() => onSetStatus("testing")}
         className="rounded px-2 py-1 text-accent hover:bg-muted"
       >
-        Mark testing
+        {t("vBulk.markTesting")}
       </button>
       <button
         type="button"
         onClick={() => onSetStatus("supported")}
         className="rounded px-2 py-1 text-signal-supports hover:bg-muted"
       >
-        Mark supported
+        {t("vBulk.markSupported")}
       </button>
       <button
         type="button"
         onClick={() => onSetStatus("refuted")}
         className="rounded px-2 py-1 text-signal-challenges hover:bg-muted"
       >
-        Mark refuted
+        {t("vBulk.markRefuted")}
       </button>
       <span className="mx-1 h-4 w-px bg-border" />
 
@@ -125,7 +127,7 @@ export function ValidationBulkActionsToolbar({
             (batchTagMode === "add" ? "bg-accent text-primary-text" : "hover:bg-muted")
           }
         >
-          + Tag
+          {t("vBulk.addTag")}
         </button>
         {batchTagMode === "add" && (
           <div className="absolute left-0 top-full z-20 mt-1 w-64 rounded-md border border-input bg-card p-2 shadow-lg">
@@ -136,14 +138,14 @@ export function ValidationBulkActionsToolbar({
                   type="button"
                   onClick={() => onBatchAddTag(tag.tag)}
                   className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted hover:bg-accent hover:text-primary-text"
-                  title={`Add "${tag.tag}" (used ${tag.count}x)`}
+                  title={t("vBulk.addTagTitle", { tag: tag.tag, count: String(tag.count) })}
                 >
                   {tag.tag}
                 </button>
               ))}
               {allWorkspaceTags.length === 0 && (
                 <span className="text-[10px] text-muted">
-                  No existing tags yet.
+                  {t("vBulk.noTagsYet")}
                 </span>
               )}
             </div>
@@ -160,7 +162,7 @@ export function ValidationBulkActionsToolbar({
                     onBatchTagModeChange(null);
                   }
                 }}
-                placeholder="new or existing tag"
+                placeholder={t("vBulk.newTagPlaceholder")}
                 className="flex-1 rounded bg-input px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-accent"
               />
               <button
@@ -168,7 +170,7 @@ export function ValidationBulkActionsToolbar({
                 onClick={() => onApplyBatchTagInput("add")}
                 className="rounded bg-accent px-2 py-1 text-xs text-primary-text"
               >
-                Add
+                {t("vBulk.add")}
               </button>
             </div>
           </div>
@@ -189,7 +191,7 @@ export function ValidationBulkActionsToolbar({
               : "hover:bg-muted")
           }
         >
-          - Tag
+          {t("vBulk.removeTag")}
         </button>
         {batchTagMode === "remove" && (
           <div className="absolute left-0 top-full z-20 mt-1 w-64 rounded-md border border-input bg-card p-2 shadow-lg">
@@ -200,14 +202,14 @@ export function ValidationBulkActionsToolbar({
                   type="button"
                   onClick={() => onBatchRemoveTag(tag)}
                   className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted hover:bg-signal-challenges hover:text-primary-text"
-                  title={`Remove "${tag}"`}
+                  title={t("vBulk.removeTagTitle", { tag })}
                 >
                   {tag}
                 </button>
               ))}
               {selectedTags.union.size === 0 && (
                 <span className="text-[10px] text-muted">
-                  No tags on selected.
+                  {t("vBulk.noTagsSelected")}
                 </span>
               )}
             </div>
@@ -224,7 +226,7 @@ export function ValidationBulkActionsToolbar({
                     onBatchTagModeChange(null);
                   }
                 }}
-                placeholder="tag to remove"
+                placeholder={t("vBulk.removeTagPlaceholder")}
                 className="flex-1 rounded bg-input px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-accent"
               />
               <button
@@ -232,7 +234,7 @@ export function ValidationBulkActionsToolbar({
                 onClick={() => onApplyBatchTagInput("remove")}
                 className="rounded bg-signal-challenges px-2 py-1 text-xs text-primary-text"
               >
-                Remove
+                {t("vBulk.remove")}
               </button>
             </div>
           </div>
@@ -244,9 +246,9 @@ export function ValidationBulkActionsToolbar({
           type="button"
           onClick={() => void onGenerateBriefs()}
           className={actionClass}
-          title="Generate decision briefs for selected hypotheses with evidence and no brief"
+          title={t("vBulk.briefsTitle")}
         >
-          Briefs
+          {t("vBulk.briefs")}
         </button>
       ) : (
         <span className="rounded px-2 py-1 text-xs text-muted">
@@ -254,21 +256,21 @@ export function ValidationBulkActionsToolbar({
         </span>
       )}
       <button type="button" onClick={onArchive} className={actionClass}>
-        Archive
+        {t("vBulk.archive")}
       </button>
       <button
         type="button"
         onClick={onDelete}
         className="rounded px-2 py-1 text-signal-challenges hover:bg-signal-challenges/10"
       >
-        Delete
+        {t("vBulk.delete")}
       </button>
       <button
         type="button"
         onClick={onClear}
         className="ml-auto rounded px-2 py-1 text-muted hover:bg-muted hover:text-foreground"
       >
-        Clear
+        {t("vBulk.clear")}
       </button>
     </div>
   );

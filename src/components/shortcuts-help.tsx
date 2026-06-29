@@ -7,6 +7,7 @@ import {
   getShortcutList,
   registerShortcut,
 } from "@/hooks/use-keyboard-shortcuts";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 function ShortcutKeys({ value }: { value: string }) {
   return (
@@ -23,6 +24,7 @@ function ShortcutKeys({ value }: { value: string }) {
 
 export function ShortcutsHelp() {
   const [open, setOpen] = useState(false);
+  const { t } = useLocale();
 
   const close = useCallback(() => setOpen(false), []);
 
@@ -64,23 +66,23 @@ export function ShortcutsHelp() {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Keyboard shortcuts"
+      aria-label={t("helpHelp.ariaLabel")}
       className="fixed inset-0 z-50 flex items-center justify-center px-4"
     >
       <button
         type="button"
-        aria-label="Close shortcuts"
+        aria-label={t("helpHelp.closeAria")}
         onClick={close}
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         tabIndex={-1}
       />
       <div className="relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-md border border-card bg-card p-6 shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Keyboard shortcuts</h2>
+          <h2 className="text-lg font-semibold">{t("helpHelp.title")}</h2>
           <button
             type="button"
             onClick={close}
-            aria-label="Close"
+            aria-label={t("helpHelp.close")}
             className="rounded-md p-1 transition hover:bg-muted"
           >
             <X className="size-4" aria-hidden="true" />
@@ -90,7 +92,7 @@ export function ShortcutsHelp() {
           {Object.entries(grouped).map(([category, items]) => (
             <div key={category}>
               <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
-                {category}
+                {t(items[0].categoryKey ?? "shortcut.cat.Actions")}
               </h3>
               <ul className="divide-y divide-border/50">
                 {items.map((shortcut) => (
@@ -99,7 +101,7 @@ export function ShortcutsHelp() {
                     className="flex items-center justify-between gap-4 py-1.5"
                   >
                     <span className="text-foreground/90">
-                      {shortcut.description}
+                      {t(shortcut.descriptionKey ?? shortcut.description)}
                     </span>
                     <ShortcutKeys value={formatShortcut(shortcut)} />
                   </li>
@@ -110,26 +112,26 @@ export function ShortcutsHelp() {
         </div>
         <div className="mt-4 border-t border-border/50 pt-3">
           <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
-            Quick gestures
+            {t("helpHelp.quickGestures")}
           </h3>
           <ul className="divide-y divide-border/50 text-[12px]">
             <li className="flex items-center justify-between gap-4 py-1.5">
               <span className="text-foreground/90">
-                Toggle hypothesis select mode for bulk actions
+                {t("helpHelp.toggleSelectMode")}
               </span>
-              <span className="shrink-0 text-muted">Select pill</span>
+              <span className="shrink-0 text-muted">{t("helpHelp.selectPill")}</span>
             </li>
             <li className="flex items-center justify-between gap-4 py-1.5">
               <span className="text-foreground/90">
-                Filter timeline by event kind
+                {t("helpHelp.filterTimeline")}
               </span>
-              <span className="shrink-0 text-muted">Filter chips</span>
+              <span className="shrink-0 text-muted">{t("helpHelp.filterChips")}</span>
             </li>
             <li className="flex items-center justify-between gap-4 py-1.5">
               <span className="text-foreground/90">
-                Reorder hypotheses and evidence
+                {t("helpHelp.reorder")}
               </span>
-              <span className="shrink-0 text-muted">Drag handle</span>
+              <span className="shrink-0 text-muted">{t("helpHelp.dragHandle")}</span>
             </li>
           </ul>
         </div>

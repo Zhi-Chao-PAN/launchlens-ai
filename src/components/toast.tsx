@@ -11,6 +11,7 @@ import {
 } from "react";
 import { CheckCircle2, AlertTriangle, Info, X, Undo2 } from "lucide-react";
 import { hasOpenOverlay } from "@/lib/launchlens/overlays";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export type ToastType = "success" | "error" | "info";
 
@@ -225,7 +226,8 @@ export function useToast() {
 
 function ToastContainer() {
   const { toasts, dismissToast, dismissAllToasts } = useToast();
-  const activeCount = toasts.filter((t) => !t.leaving).length;
+  const { t } = useLocale();
+  const activeCount = toasts.filter((item) => !item.leaving).length;
 
   if (toasts.length === 0) return null;
 
@@ -236,9 +238,9 @@ function ToastContainer() {
           type="button"
           onClick={dismissAllToasts}
           className="mr-1 rounded-md border border-input bg-card/95 px-2 py-0.5 text-[11px] font-medium text-muted shadow-sm backdrop-blur transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
-          aria-label="Dismiss all notifications"
+          aria-label={t("toastChrome.dismissAllAria")}
         >
-          Dismiss all
+          {t("toastChrome.dismissAll")}
         </button>
       )}
       <div
@@ -256,6 +258,7 @@ function ToastContainer() {
 
 
 function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
+  const { t } = useLocale();
   const [entered, setEntered] = useState(false);
   /** Width percentage of the progress bar fill (100 = full time left, 0 = done). */
   const [widthPct, setWidthPct] = useState(100);
@@ -404,7 +407,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
       <button
         type="button"
         onClick={onDismiss}
-        aria-label="Dismiss notification"
+        aria-label={t("toastChrome.dismissAria")}
         className="shrink-0 rounded text-muted transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
       >
         <X className="size-4" aria-hidden="true" />
@@ -415,7 +418,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(widthPct)}
-        aria-label="Time remaining"
+        aria-label={t("toastChrome.timeRemaining")}
       >
         <div
           ref={barInnerRef}

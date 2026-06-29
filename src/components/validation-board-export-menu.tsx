@@ -1,6 +1,7 @@
 "use client";
 
 import { Download } from "lucide-react";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export type ValidationBoardExportMenuProps = {
   open: boolean;
@@ -22,6 +23,7 @@ export function ValidationBoardExportMenu({
   onDownloadMarkdown,
   onDownloadJson,
 }: ValidationBoardExportMenuProps) {
+  const { t } = useLocale();
   return (
     <div className="relative">
       <button
@@ -29,12 +31,12 @@ export function ValidationBoardExportMenu({
         onClick={onToggle}
         aria-expanded={open}
         aria-haspopup="true"
-        aria-label="Export validation board"
-        title="Export all hypotheses"
+        aria-label={t("vExport.ariaLabel")}
+        title={t("vExport.allTitle")}
         className="flex items-center gap-1 rounded-md border border-input bg-card px-2 py-1 text-xs font-medium text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
       >
         <Download className="size-3.5" aria-hidden="true" />
-        <span className="hidden sm:inline">Export</span>
+        <span className="hidden sm:inline">{t("vExport.export")}</span>
       </button>
       {open && (
         <>
@@ -49,7 +51,7 @@ export function ValidationBoardExportMenu({
               onClick={onCopyMarkdown}
               className={menuItemClass}
             >
-              Copy Markdown
+              {t("vExport.copyMarkdown")}
             </button>
             <button
               type="button"
@@ -57,7 +59,7 @@ export function ValidationBoardExportMenu({
               onClick={onDownloadMarkdown}
               className={menuItemClass}
             >
-              Download Markdown
+              {t("vExport.downloadMarkdown")}
             </button>
             <button
               type="button"
@@ -65,7 +67,7 @@ export function ValidationBoardExportMenu({
               onClick={onDownloadJson}
               className={menuItemClass}
             >
-              Download JSON
+              {t("vExport.downloadJson")}
             </button>
           </div>
         </>

@@ -430,7 +430,136 @@ export type DictionaryKey =
   | "shortcut.desc.submitEvidence"
   | "shortcut.desc.toggleSelectMode"
   | "shortcut.desc.undo"
-  | "shortcut.desc.redo";
+  | "shortcut.desc.redo"
+  // Toast chrome
+  | "toastChrome.dismissAllAria"
+  | "toastChrome.dismissAll"
+  | "toastChrome.dismissAria"
+  | "toastChrome.timeRemaining"
+  // Confirm dialog
+  | "confirm.cancel"
+  // Copy link button
+  | "copyLink.copiedAria"
+  | "copyLink.copyAria"
+  | "copyLink.copied"
+  | "copyLink.copy"
+  // System status
+  | "status.srRestored"
+  | "status.srLost"
+  | "status.srRetrying"
+  | "status.srCheckSucceeded"
+  | "status.srCheckFailing"
+  | "status.retrying"
+  | "status.checking"
+  | "status.offline"
+  | "status.unreachable"
+  | "status.operational"
+  | "status.degraded"
+  | "status.ariaLabel"
+  | "status.detailsAria"
+  | "status.endpointError"
+  | "status.retry"
+  | "status.noNetwork"
+  | "status.aiProvider"
+  | "status.mockDemo"
+  | "status.cloudStorage"
+  | "status.localOnly"
+  | "status.healthy"
+  | "status.unavailable"
+  | "status.envPrefix"
+  | "status.versionPrefix"
+  | "status.contacting"
+  // Command palette
+  | "palette.placeholder"
+  | "palette.cat.Actions"
+  | "palette.cat.Navigate"
+  | "palette.cat.WorkspaceContent"
+  | "palette.cat.Other"
+  | "palette.ariaLabel"
+  | "palette.closeAria"
+  | "palette.searchAria"
+  | "palette.close"
+  | "palette.noResults"
+  | "palette.footerNavigate"
+  | "palette.footerSelect"
+  | "palette.footerToggle"
+  // Shortcuts help (secondary help panel)
+  | "helpHelp.ariaLabel"
+  | "helpHelp.closeAria"
+  | "helpHelp.title"
+  | "helpHelp.close"
+  | "helpHelp.quickGestures"
+  | "helpHelp.toggleSelectMode"
+  | "helpHelp.selectPill"
+  | "helpHelp.filterTimeline"
+  | "helpHelp.filterChips"
+  | "helpHelp.reorder"
+  | "helpHelp.dragHandle"
+  // Validation board — filter bar
+  | "vFilter.statusAll"
+  | "vFilter.statusActive"
+  | "vFilter.statusDecided"
+  | "vFilter.ariaLabel"
+  | "vFilter.tagsLabel"
+  | "vFilter.anyTagTitle"
+  | "vFilter.anyTag"
+  | "vFilter.clearTagTitle"
+  | "vFilter.filterTagTitle"
+  | "vFilter.filterTagAria"
+  | "vFilter.searchPlaceholder"
+  | "vFilter.searchAria"
+  | "vFilter.clearSearch"
+  | "vFilter.sortTitle"
+  | "vFilter.sortAria"
+  | "vFilter.sortDefault"
+  | "vFilter.sortConfidence"
+  | "vFilter.sortStatus"
+  | "vFilter.sortEvidence"
+  // Validation board — bulk actions toolbar
+  | "vBulk.ariaLabel"
+  | "vBulk.selected"
+  | "vBulk.shiftRange"
+  | "vBulk.all"
+  | "vBulk.markUntested"
+  | "vBulk.markTesting"
+  | "vBulk.markSupported"
+  | "vBulk.markRefuted"
+  | "vBulk.addTag"
+  | "vBulk.addTagTitle"
+  | "vBulk.noTagsYet"
+  | "vBulk.newTagPlaceholder"
+  | "vBulk.add"
+  | "vBulk.removeTag"
+  | "vBulk.removeTagTitle"
+  | "vBulk.noTagsSelected"
+  | "vBulk.removeTagPlaceholder"
+  | "vBulk.remove"
+  | "vBulk.briefsTitle"
+  | "vBulk.briefs"
+  | "vBulk.archive"
+  | "vBulk.delete"
+  | "vBulk.clear"
+  // Validation board — history preview
+  | "vHistory.confidence"
+  | "vHistory.status"
+  | "vHistory.ariaLabel"
+  // Validation board — export menu
+  | "vExport.ariaLabel"
+  | "vExport.allTitle"
+  | "vExport.export"
+  | "vExport.copyMarkdown"
+  | "vExport.downloadMarkdown"
+  | "vExport.downloadJson"
+  // Validation board — footer
+  | "vFooter.tipPrefix"
+  | "vFooter.tipSearchTo"
+  | "vFooter.tipMultiTo"
+  | "vFooter.tipHoldFor"
+  | "vFooter.tipOr"
+  | "vFooter.tipInSearch"
+  | "vFooter.shortcutsPrefix"
+  | "vFooter.shortcutsPalette"
+  | "vFooter.shortcutsHelp";
 
 type Dict = Record<DictionaryKey, string>;
 
@@ -764,6 +893,124 @@ const en: Dict = {
   "shortcut.desc.toggleSelectMode": "Toggle hypothesis select mode (bulk actions)",
   "shortcut.desc.undo": "Undo the last validation-board edit",
   "shortcut.desc.redo": "Redo the last undone edit",
+  "toastChrome.dismissAllAria": "Dismiss all notifications",
+  "toastChrome.dismissAll": "Dismiss all",
+  "toastChrome.dismissAria": "Dismiss notification",
+  "toastChrome.timeRemaining": "Time remaining",
+  "confirm.cancel": "Cancel",
+  "copyLink.copiedAria": "Link copied",
+  "copyLink.copyAria": "Copy share link",
+  "copyLink.copied": "Copied",
+  "copyLink.copy": "Copy link",
+  "status.srRestored": "Network connection restored. Checking system status.",
+  "status.srLost": "Network connection lost. Showing offline indicator.",
+  "status.srRetrying": "Retrying system status check.",
+  "status.srCheckSucceeded": "System status check succeeded.",
+  "status.srCheckFailing": "System status check still failing.",
+  "status.retrying": "Retrying...",
+  "status.checking": "Checking...",
+  "status.offline": "Offline",
+  "status.unreachable": "Status unreachable",
+  "status.operational": "All systems operational",
+  "status.degraded": "Degraded mode",
+  "status.ariaLabel": "System status",
+  "status.detailsAria": "System status details",
+  "status.endpointError": "Could not reach the status endpoint. The app may be offline or the server is restarting.",
+  "status.retry": "Retry",
+  "status.noNetwork": "Browser reports no network connection. Local draft and export still work.",
+  "status.aiProvider": "AI Provider",
+  "status.mockDemo": "Mock demo",
+  "status.cloudStorage": "Cloud storage",
+  "status.localOnly": "Local only",
+  "status.healthy": "Healthy",
+  "status.unavailable": "Unavailable",
+  "status.envPrefix": "Environment: ",
+  "status.versionPrefix": "Version: ",
+  "status.contacting": "Contacting status endpoint...",
+  "palette.placeholder": "Search or jump to...",
+  "palette.cat.Actions": "Actions",
+  "palette.cat.Navigate": "Navigate",
+  "palette.cat.WorkspaceContent": "Workspace content",
+  "palette.cat.Other": "Other",
+  "palette.ariaLabel": "Command palette",
+  "palette.closeAria": "Close command palette",
+  "palette.searchAria": "Search commands",
+  "palette.close": "Close",
+  "palette.noResults": "No commands found for “{query}”",
+  "palette.footerNavigate": "navigate",
+  "palette.footerSelect": "select",
+  "palette.footerToggle": "toggle",
+  "helpHelp.ariaLabel": "Keyboard shortcuts",
+  "helpHelp.closeAria": "Close shortcuts",
+  "helpHelp.title": "Keyboard shortcuts",
+  "helpHelp.close": "Close",
+  "helpHelp.quickGestures": "Quick gestures",
+  "helpHelp.toggleSelectMode": "Toggle hypothesis select mode for bulk actions",
+  "helpHelp.selectPill": "Select pill",
+  "helpHelp.filterTimeline": "Filter timeline by event kind",
+  "helpHelp.filterChips": "Filter chips",
+  "helpHelp.reorder": "Reorder hypotheses and evidence",
+  "helpHelp.dragHandle": "Drag handle",
+  "vFilter.statusAll": "All",
+  "vFilter.statusActive": "Active",
+  "vFilter.statusDecided": "Decided",
+  "vFilter.ariaLabel": "Filter experiments by status",
+  "vFilter.tagsLabel": "Tags:",
+  "vFilter.anyTagTitle": "Show hypotheses with any tag",
+  "vFilter.anyTag": "all",
+  "vFilter.clearTagTitle": "Clear tag filter \"{tag}\"",
+  "vFilter.filterTagTitle": "Filter to hypotheses tagged \"{tag}\" (click again to clear)",
+  "vFilter.filterTagAria": "Filter by tag {tag}",
+  "vFilter.searchPlaceholder": "Search...",
+  "vFilter.searchAria": "Search hypotheses, evidence, tags",
+  "vFilter.clearSearch": "Clear search",
+  "vFilter.sortTitle": "Default: manual order. Highest confidence: high to low. By status: supported/testing/untested/refuted. Most evidence: evidence count descending.",
+  "vFilter.sortAria": "Sort hypotheses",
+  "vFilter.sortDefault": "Default order",
+  "vFilter.sortConfidence": "Highest confidence",
+  "vFilter.sortStatus": "By status",
+  "vFilter.sortEvidence": "Most evidence",
+  "vBulk.ariaLabel": "Bulk actions on selected hypotheses",
+  "vBulk.selected": "selected",
+  "vBulk.shiftRange": "Shift+click range",
+  "vBulk.all": "All",
+  "vBulk.markUntested": "Mark untested",
+  "vBulk.markTesting": "Mark testing",
+  "vBulk.markSupported": "Mark supported",
+  "vBulk.markRefuted": "Mark refuted",
+  "vBulk.addTag": "+ Tag",
+  "vBulk.addTagTitle": "Add \"{tag}\" (used {count}x)",
+  "vBulk.noTagsYet": "No existing tags yet.",
+  "vBulk.newTagPlaceholder": "new or existing tag",
+  "vBulk.add": "Add",
+  "vBulk.removeTag": "- Tag",
+  "vBulk.removeTagTitle": "Remove \"{tag}\"",
+  "vBulk.noTagsSelected": "No tags on selected.",
+  "vBulk.removeTagPlaceholder": "tag to remove",
+  "vBulk.remove": "Remove",
+  "vBulk.briefsTitle": "Generate decision briefs for selected hypotheses with evidence and no brief",
+  "vBulk.briefs": "Briefs",
+  "vBulk.archive": "Archive",
+  "vBulk.delete": "Delete",
+  "vBulk.clear": "Clear",
+  "vHistory.confidence": "Confidence",
+  "vHistory.status": "Status",
+  "vHistory.ariaLabel": "Status over time",
+  "vExport.ariaLabel": "Export validation board",
+  "vExport.allTitle": "Export all hypotheses",
+  "vExport.export": "Export",
+  "vExport.copyMarkdown": "Copy Markdown",
+  "vExport.downloadMarkdown": "Download Markdown",
+  "vExport.downloadJson": "Download JSON",
+  "vFooter.tipPrefix": "Tip: press ",
+  "vFooter.tipSearchTo": " to search, ",
+  "vFooter.tipMultiTo": " to multi-select, hold ",
+  "vFooter.tipHoldFor": "+click a checkbox for range select, ",
+  "vFooter.tipOr": " or ",
+  "vFooter.tipInSearch": " in search.",
+  "vFooter.shortcutsPrefix": "Shortcuts: ",
+  "vFooter.shortcutsPalette": " command palette ",
+  "vFooter.shortcutsHelp": " help",
   "share.enableTitle": "Enable public share link?",
   "share.enableBody": "Validation decisions and evidence counts will be visible to anyone with the link. Evidence notes, sources, and the founder brief stay private.",
   "share.enableConfirm": "Enable and copy link",
@@ -1151,6 +1398,124 @@ const zhCN: Dict = {
   "shortcut.desc.toggleSelectMode": "切换假设多选模式（批量操作）",
   "shortcut.desc.undo": "撤销最近的验证板编辑",
   "shortcut.desc.redo": "重做最近撤销的编辑",
+  "toastChrome.dismissAllAria": "关闭所有通知",
+  "toastChrome.dismissAll": "全部关闭",
+  "toastChrome.dismissAria": "关闭通知",
+  "toastChrome.timeRemaining": "剩余时间",
+  "confirm.cancel": "取消",
+  "copyLink.copiedAria": "链接已复制",
+  "copyLink.copyAria": "复制分享链接",
+  "copyLink.copied": "已复制",
+  "copyLink.copy": "复制链接",
+  "status.srRestored": "网络连接已恢复。正在检查系统状态。",
+  "status.srLost": "网络连接已断开。显示离线指示。",
+  "status.srRetrying": "正在重试系统状态检查。",
+  "status.srCheckSucceeded": "系统状态检查成功。",
+  "status.srCheckFailing": "系统状态检查仍失败。",
+  "status.retrying": "重试中……",
+  "status.checking": "检查中……",
+  "status.offline": "离线",
+  "status.unreachable": "状态不可达",
+  "status.operational": "所有系统运行正常",
+  "status.degraded": "降级模式",
+  "status.ariaLabel": "系统状态",
+  "status.detailsAria": "系统状态详情",
+  "status.endpointError": "无法连接状态端点。应用可能离线或服务器正在重启。",
+  "status.retry": "重试",
+  "status.noNetwork": "浏览器报告无网络连接。本地草稿与导出仍可使用。",
+  "status.aiProvider": "AI 模型供应商",
+  "status.mockDemo": "模拟演示",
+  "status.cloudStorage": "云端存储",
+  "status.localOnly": "仅本地",
+  "status.healthy": "健康",
+  "status.unavailable": "不可用",
+  "status.envPrefix": "环境：",
+  "status.versionPrefix": "版本：",
+  "status.contacting": "正在联系状态端点……",
+  "palette.placeholder": "搜索或跳转至……",
+  "palette.cat.Actions": "操作",
+  "palette.cat.Navigate": "导航",
+  "palette.cat.WorkspaceContent": "工作台内容",
+  "palette.cat.Other": "其他",
+  "palette.ariaLabel": "命令面板",
+  "palette.closeAria": "关闭命令面板",
+  "palette.searchAria": "搜索命令",
+  "palette.close": "关闭",
+  "palette.noResults": "未找到与“{query}”匹配的命令",
+  "palette.footerNavigate": "导航",
+  "palette.footerSelect": "选择",
+  "palette.footerToggle": "切换",
+  "helpHelp.ariaLabel": "键盘快捷键",
+  "helpHelp.closeAria": "关闭快捷键",
+  "helpHelp.title": "键盘快捷键",
+  "helpHelp.close": "关闭",
+  "helpHelp.quickGestures": "快捷手势",
+  "helpHelp.toggleSelectMode": "切换假设多选模式以进行批量操作",
+  "helpHelp.selectPill": "选择药丸",
+  "helpHelp.filterTimeline": "按事件类型筛选时间线",
+  "helpHelp.filterChips": "筛选标签",
+  "helpHelp.reorder": "重排假设与证据",
+  "helpHelp.dragHandle": "拖拽手柄",
+  "vFilter.statusAll": "全部",
+  "vFilter.statusActive": "进行中",
+  "vFilter.statusDecided": "已决策",
+  "vFilter.ariaLabel": "按状态筛选实验",
+  "vFilter.tagsLabel": "标签：",
+  "vFilter.anyTagTitle": "显示含任意标签的假设",
+  "vFilter.anyTag": "全部",
+  "vFilter.clearTagTitle": "清除标签筛选「{tag}」",
+  "vFilter.filterTagTitle": "筛选含标签「{tag}」的假设（再次点击清除）",
+  "vFilter.filterTagAria": "按标签 {tag} 筛选",
+  "vFilter.searchPlaceholder": "搜索……",
+  "vFilter.searchAria": "搜索假设、证据、标签",
+  "vFilter.clearSearch": "清除搜索",
+  "vFilter.sortTitle": "默认：手动顺序。置信度最高：从高到低。按状态：已支持/测试中/未测试/已反驳。证据最多：证据数降序。",
+  "vFilter.sortAria": "排序假设",
+  "vFilter.sortDefault": "默认顺序",
+  "vFilter.sortConfidence": "置信度最高",
+  "vFilter.sortStatus": "按状态",
+  "vFilter.sortEvidence": "证据最多",
+  "vBulk.ariaLabel": "对选中假设进行批量操作",
+  "vBulk.selected": "已选",
+  "vBulk.shiftRange": "Shift+点击范围",
+  "vBulk.all": "全选",
+  "vBulk.markUntested": "标记未测试",
+  "vBulk.markTesting": "标记测试中",
+  "vBulk.markSupported": "标记已支持",
+  "vBulk.markRefuted": "标记已反驳",
+  "vBulk.addTag": "+ 标签",
+  "vBulk.addTagTitle": "添加「{tag}」（已用 {count} 次）",
+  "vBulk.noTagsYet": "暂无已有标签。",
+  "vBulk.newTagPlaceholder": "新标签或已有标签",
+  "vBulk.add": "添加",
+  "vBulk.removeTag": "- 标签",
+  "vBulk.removeTagTitle": "移除「{tag}」",
+  "vBulk.noTagsSelected": "选中项无标签。",
+  "vBulk.removeTagPlaceholder": "要移除的标签",
+  "vBulk.remove": "移除",
+  "vBulk.briefsTitle": "为含证据但无简报的选中假设生成决策简报",
+  "vBulk.briefs": "简报",
+  "vBulk.archive": "归档",
+  "vBulk.delete": "删除",
+  "vBulk.clear": "清除",
+  "vHistory.confidence": "置信度",
+  "vHistory.status": "状态",
+  "vHistory.ariaLabel": "状态随时间变化",
+  "vExport.ariaLabel": "导出验证板",
+  "vExport.allTitle": "导出全部假设",
+  "vExport.export": "导出",
+  "vExport.copyMarkdown": "复制 Markdown",
+  "vExport.downloadMarkdown": "下载 Markdown",
+  "vExport.downloadJson": "下载 JSON",
+  "vFooter.tipPrefix": "提示：按 ",
+  "vFooter.tipSearchTo": " 搜索，按 ",
+  "vFooter.tipMultiTo": " 多选，按住 ",
+  "vFooter.tipHoldFor": "+点击复选框进行范围选择，",
+  "vFooter.tipOr": " 或 ",
+  "vFooter.tipInSearch": " 在搜索中使用。",
+  "vFooter.shortcutsPrefix": "快捷键：",
+  "vFooter.shortcutsPalette": " 命令面板 ",
+  "vFooter.shortcutsHelp": " 帮助",
   "share.enableTitle": "启用公开分享链接？",
   "share.enableBody": "拥有链接的任何人都可查看验证决策与证据计数。证据笔记、来源与创始人简报保持私密。",
   "share.enableConfirm": "启用并复制链接",

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
 import { CheckCircle2, CloudOff, Cloud, Cpu, AlertTriangle, Loader2, RefreshCw, WifiOff } from "lucide-react";
 import { pushOverlay } from "@/lib/launchlens/overlays";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type Status = {
   status: string;
@@ -26,6 +27,7 @@ export function SystemStatus() {
   const [isOpen, setIsOpen] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const { announce: setSrAnnouncement, message: srAnnouncement } = useSrAnnounce();
+  const { t } = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
   const pollTimerRef = useRef<number | null>(null);
 
@@ -71,7 +73,7 @@ export function SystemStatus() {
 
     const handleOnline = () => {
       if (!mounted) return;
-      setSrAnnouncement("Network connection restored. Checking system status.");
+      setSrAnnouncement(t("status.srRestored"));
       setFetchState("loading");
       window.requestAnimationFrame(() => {
         if (mounted) void fetchStatus();
@@ -79,7 +81,7 @@ export function SystemStatus() {
     };
     const handleOffline = () => {
       if (!mounted) return;
-      setSrAnnouncement("Network connection lost. Showing offline indicator.");
+      setSrAnnouncement(t("status.srLost"));
       setFetchState("offline");
     };
     window.addEventListener("online", handleOnline);
@@ -96,9 +98,9 @@ export function SystemStatus() {
   async function manualRetry() {
     setRetrying(true);
     setFetchState("loading");
-    setSrAnnouncement("Retrying system status check.");
+    setSrAnnouncement(t("status.srRetrying"));
     await fetchStatus();
-    setSrAnnouncement(fetchState === "ok" ? "System status check succeeded." : "System status check still failing.");
+    setSrAnnouncement(fetchState === "ok" ? t("status.srCheckSucceeded") : t("status.srCheckFailing"));
     setRetrying(false);
   }
 
@@ -142,11 +144,11 @@ export function SystemStatus() {
   };
 
   const buttonLabel = () => {
-    if (retrying) return "Retrying...";
-    if (fetchState === "loading") return "Checking...";
-    if (fetchState === "offline") return "Offline";
-    if (fetchState === "error") return "Status unreachable";
-    return allOk ? "All systems operational" : "Degraded mode";
+    if (retrying) return t("status.retrying");
+    if (fetchState === "loading") return t("status.checking");
+    if (fetchState === "offline") return t("status.offline");
+    if (fetchState === "error") return t("status.unreachable");
+    return allOk ? t("status.operational") : t("status.degraded");
   };
 
   return (
@@ -158,7 +160,7 @@ export function SystemStatus() {
         type="button"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((v) => !v)}
-        aria-label="System status"
+        aria-label={t("status.ariaLabel")}
         className="flex h-10 items-center gap-2 rounded-md border border-card bg-card px-3 text-sm text-foreground/80 transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
       >
         {buttonIcon()}
@@ -169,15 +171,15 @@ export function SystemStatus() {
         <div
           className="absolute right-0 top-12 z-50 w-[min(20rem,calc(100vw-2rem))] origin-top-right rounded-lg border border-card bg-card p-4 shadow-lg animate-[fadeInDown_150ms_ease-out]"
           role="dialog"
-          aria-label="System status details"
+          aria-label={t("status.detailsAria")}
         >
-          <h3 className="mb-3 text-sm font-semibold text-foreground">System status</h3>
+          <h3 className="mb-3 text-sm font-semibold text-foreground">{t("status.ariaLabel")}</h3>
 
           {fetchState === "error" && (
             <div role="alert" className="mb-3 flex items-start gap-2 rounded-md border border-signal-challenges bg-signal-challenges p-2.5 text-xs leading-5 text-signal-challenges">
               <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
               <span className="flex-1">
-                Could not reach the status endpoint. The app may be offline or the server is restarting.
+                {t("status.endpointError")}
               </span>
               <button
                 type="button"
@@ -186,7 +188,7 @@ export function SystemStatus() {
                 className="inline-flex shrink-0 items-center gap-1 rounded border border-signal-challenges bg-card px-2 py-0.5 text-[11px] font-medium text-signal-challenges transition hover:bg-signal-challenges focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1 disabled:opacity-50"
               >
                 <RefreshCw className={`size-3 ${retrying ? "animate-spin" : ""}`} aria-hidden="true" />
-                Retry
+                {t("status.retry")}
               </button>
             </div>
           )}
@@ -194,7 +196,7 @@ export function SystemStatus() {
           {fetchState === "offline" && (
             <div role="alert" className="mb-3 flex items-start gap-2 rounded-md border border-card bg-muted p-2.5 text-xs leading-5 text-foreground/80">
               <WifiOff className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-              <span>Browser reports no network connection. Local draft and export still work.</span>
+              <span>{t("status.noNetwork")}</span>
             </div>
           )}
 
@@ -203,10 +205,10 @@ export function SystemStatus() {
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-foreground/80">
                   <Cpu className="size-4" aria-hidden="true" />
-                  AI Provider
+                  {t("status.aiProvider")}
                 </span>
                 <span className={providerOk ? "text-accent" : "text-muted"}>
-                  {providerOk ? systemStatus.provider : "Mock demo"}
+                  {providerOk ? systemStatus.provider : t("status.mockDemo")}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -218,7 +220,7 @@ export function SystemStatus() {
                   ) : (
                     <CloudOff className="size-4 text-signal-challenges" aria-hidden="true" />
                   )}
-                  Cloud storage
+                  {t("status.cloudStorage")}
                 </span>
                 <span
                   className={
@@ -230,25 +232,25 @@ export function SystemStatus() {
                   }
                 >
                   {dbOk === null
-                    ? "Local only"
+                    ? t("status.localOnly")
                     : dbOk
-                      ? `Healthy${systemStatus.dbLatencyMs ? ` (${systemStatus.dbLatencyMs}ms)` : ""}`
-                      : "Unavailable"}
+                      ? `${t("status.healthy")}${systemStatus.dbLatencyMs ? ` (${systemStatus.dbLatencyMs}ms)` : ""}`
+                      : t("status.unavailable")}
                 </span>
               </div>
               {systemStatus.vercelEnv !== "production" && (
                 <div className="mt-3 border-t border-card pt-2 text-xs text-muted">
-                  Environment: {systemStatus.vercelEnv}
+                  {t("status.envPrefix")}{systemStatus.vercelEnv}
                 </div>
               )}
               <div className="text-xs text-muted">
-                Version: {systemStatus.version}
+                {t("status.versionPrefix")}{systemStatus.version}
               </div>
             </div>
           )}
 
           {fetchState === "loading" && !systemStatus && (
-            <p className="text-sm text-muted">Contacting status endpoint...</p>
+            <p className="text-sm text-muted">{t("status.contacting")}</p>
           )}
         </div>
       )}
