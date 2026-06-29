@@ -5,35 +5,11 @@ import { Rocket, Sparkles, Target, UsersRound, HelpCircle, X } from "lucide-reac
 import { registerShortcut } from "@/hooks/use-keyboard-shortcuts";
 import { pushOverlay } from "@/lib/launchlens/overlays";
 import { useFocusTrap } from "@/hooks/use-focus-trap";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 const STORAGE_KEY = "launchlens-onboarding-dismissed";
 
-const steps = [
-  {
-    icon: Target,
-    title: "Choose a founder brief",
-    description:
-      "Select one of the three sample briefs, or write your own product idea. The brief captures your audience, market, tone, and constraints.",
-  },
-  {
-    icon: Sparkles,
-    title: "Generate a workspace",
-    description:
-      "Click the Generate button. The mock provider builds a complete go-to-market plan: users, pains, MVP scope, pricing, launch plan, and tasks.",
-  },
-  {
-    icon: UsersRound,
-    title: "Validate assumptions",
-    description:
-      "Each assumption is a hypothesis. Add evidence, set confidence, record a decision, and link an execution task. The AI decision copilot cites only your evidence.",
-  },
-  {
-    icon: Rocket,
-    title: "Save, share, or export",
-    description:
-      "If a database is configured, save cloud snapshots and generate privacy-safe share links. Otherwise, export your workspace as Markdown or JSON.",
-  },
-];
+const stepIcons = [Target, Sparkles, UsersRound, Rocket];
 
 type Listener = { show: () => void };
 const listeners = new Set<Listener>();
@@ -46,6 +22,14 @@ export function OnboardingWizard() {
   const [mounted, setMounted] = useState(false);
   const trapRef = useFocusTrap<HTMLDivElement>(visible, { restoreFocus: false });
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const { t } = useLocale();
+
+  const steps = [
+    { icon: stepIcons[0], title: t("onboarding.step1Title"), description: t("onboarding.step1Body") },
+    { icon: stepIcons[1], title: t("onboarding.step2Title"), description: t("onboarding.step2Body") },
+    { icon: stepIcons[2], title: t("onboarding.step3Title"), description: t("onboarding.step3Body") },
+    { icon: stepIcons[3], title: t("onboarding.step4Title"), description: t("onboarding.step4Body") },
+  ];
 
   useEffect(() => {
     const dismissed = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
@@ -142,7 +126,7 @@ export function OnboardingWizard() {
     <div
       ref={trapRef} role="dialog"
       aria-modal="true"
-      aria-label="Quick start guide"
+      aria-label={t("onboarding.ariaLabel")}
       aria-describedby="onboarding-steps onboarding-hints"
       className={[
         "fixed inset-0 z-50 flex items-center justify-center px-4",
@@ -162,14 +146,14 @@ export function OnboardingWizard() {
         <button
           type="button"
           onClick={dismiss}
-          aria-label="Dismiss quick start guide"
+          aria-label={t("onboarding.dismiss")}
           className="absolute right-3 top-3 flex size-10 items-center justify-center rounded-md text-muted transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
         >
           <X className="size-5" aria-hidden="true" />
         </button>
 
         <h2 className="pr-6 text-lg font-semibold text-foreground">
-          Welcome to LaunchLens AI
+          {t("onboarding.welcome")}
         </h2>
 
         <ol id="onboarding-steps" className="flex flex-col gap-4">
@@ -199,8 +183,7 @@ export function OnboardingWizard() {
           className="flex flex-col gap-3 border-t border-card pt-4 sm:flex-row sm:items-center sm:justify-between"
         >
           <p className="text-xs leading-5 text-muted">
-            Your workspace stays local by default, with cloud history available
-            when you choose to save a snapshot.
+            {t("onboarding.hint")}
           </p>
           <button
             type="button"
@@ -208,7 +191,7 @@ export function OnboardingWizard() {
             autoFocus
             className="inline-flex h-10 shrink-0 items-center justify-center rounded-md bg-primary px-5 text-sm font-semibold text-primary-text transition hover:bg-primary-hover active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
           >
-            Get started
+            {t("onboarding.getStarted")}
           </button>
         </div>
       </div>
@@ -230,11 +213,12 @@ export function showOnboarding() {
 }
 
 export function ReplayTourButton({ className = "" }: { className?: string }) {
+  const { t } = useLocale();
   return (
     <button
       type="button"
       onClick={() => showOnboarding()}
-      aria-label="Replay quick start tour"
+      aria-label={t("onboarding.replayAria")}
       className={[
         "inline-flex items-center gap-1.5 rounded-md border border-input bg-card px-3 py-1.5 text-xs font-medium text-foreground/80",
         "transition hover:border-accent hover:text-accent",
@@ -243,7 +227,7 @@ export function ReplayTourButton({ className = "" }: { className?: string }) {
       ].join(" ")}
     >
       <HelpCircle className="size-3.5" aria-hidden="true" />
-      Tour
+      {t("onboarding.tour")}
     </button>
   );
 }

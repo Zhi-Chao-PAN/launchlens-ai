@@ -12,6 +12,12 @@ type ShortcutConfig = {
   alt?: boolean;
   description: string;
   category: string;
+  // i18n keys consumed by the keyboard-shortcuts modal. Kept alongside the
+  // English source so the modal can translate without a second lookup table.
+  // Optional so callers that only need the key combo (formatShortcut,
+  // matchesConfig) can pass a partial config.
+  descriptionKey?: string;
+  categoryKey?: string;
 };
 
 type ShortcutEntry = ShortcutConfig & {
@@ -23,11 +29,15 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     key: "g",
     description: "Generate workspace from brief",
     category: "Actions",
+    descriptionKey: "shortcut.desc.generate",
+    categoryKey: "shortcut.cat.Actions",
   },
   edit: {
     key: "e",
     description: "Toggle edit/preview mode",
     category: "Actions",
+    descriptionKey: "shortcut.desc.edit",
+    categoryKey: "shortcut.cat.Actions",
   },
   save: {
     key: "s",
@@ -35,26 +45,36 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     ctrl: true,
     description: "Save workspace to cloud",
     category: "Actions",
+    descriptionKey: "shortcut.desc.save",
+    categoryKey: "shortcut.cat.Actions",
   },
   focusBrief: {
     key: "b",
     description: "Focus founder brief input",
     category: "Navigation",
+    descriptionKey: "shortcut.desc.focusBrief",
+    categoryKey: "shortcut.cat.Navigation",
   },
   focusSearch: {
     key: "/",
     description: "Focus validation search",
     category: "Navigation",
+    descriptionKey: "shortcut.desc.focusSearch",
+    categoryKey: "shortcut.cat.Navigation",
   },
   collapseAll: {
     key: "[",
     description: "Collapse all sections",
     category: "Navigation",
+    descriptionKey: "shortcut.desc.collapseAll",
+    categoryKey: "shortcut.cat.Navigation",
   },
   expandAll: {
     key: "]",
     description: "Expand all sections",
     category: "Navigation",
+    descriptionKey: "shortcut.desc.expandAll",
+    categoryKey: "shortcut.cat.Navigation",
   },
   commandPalette: {
     key: "k",
@@ -62,17 +82,23 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     ctrl: true,
     description: "Open command palette",
     category: "Navigation",
+    descriptionKey: "shortcut.desc.commandPalette",
+    categoryKey: "shortcut.cat.Navigation",
   },
   toggleShortcuts: {
     key: "?",
     shift: true,
     description: "Show keyboard shortcuts",
     category: "Help",
+    descriptionKey: "shortcut.desc.toggleShortcuts",
+    categoryKey: "shortcut.cat.Help",
   },
   closeModal: {
     key: "Escape",
     description: "Close any open modal or dialog",
     category: "Navigation",
+    descriptionKey: "shortcut.desc.closeModal",
+    categoryKey: "shortcut.cat.Navigation",
   },
   copyMarkdown: {
     key: "m",
@@ -80,6 +106,8 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     ctrl: true,
     description: "Copy workspace as Markdown",
     category: "Actions",
+    descriptionKey: "shortcut.desc.copyMarkdown",
+    categoryKey: "shortcut.cat.Actions",
   },
   reset: {
     key: "r",
@@ -88,6 +116,8 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     shift: true,
     description: "Reset workspace to initial example",
     category: "Actions",
+    descriptionKey: "shortcut.desc.reset",
+    categoryKey: "shortcut.cat.Actions",
   },
   showTour: {
     key: "h",
@@ -95,6 +125,8 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     ctrl: true,
     description: "Replay the quick start tour",
     category: "Help",
+    descriptionKey: "shortcut.desc.showTour",
+    categoryKey: "shortcut.cat.Help",
   },
   addEvidence: {
     key: "e",
@@ -102,6 +134,8 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     ctrl: true,
     description: "Add evidence to first hypothesis",
     category: "Actions",
+    descriptionKey: "shortcut.desc.addEvidence",
+    categoryKey: "shortcut.cat.Actions",
   },
   newHypothesis: {
     key: "n",
@@ -109,6 +143,8 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     ctrl: true,
     description: "Add a new hypothesis",
     category: "Actions",
+    descriptionKey: "shortcut.desc.newHypothesis",
+    categoryKey: "shortcut.cat.Actions",
   },
   submitEvidence: {
     key: "Enter",
@@ -116,6 +152,8 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     ctrl: true,
     description: "Submit evidence form (when focus is in note)",
     category: "Actions",
+    descriptionKey: "shortcut.desc.submitEvidence",
+    categoryKey: "shortcut.cat.Actions",
   },
   toggleSelectMode: {
     key: "v",
@@ -123,6 +161,8 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     ctrl: true,
     description: "Toggle hypothesis select mode (bulk actions)",
     category: "Actions",
+    descriptionKey: "shortcut.desc.toggleSelectMode",
+    categoryKey: "shortcut.cat.Actions",
   },
   undo: {
     key: "z",
@@ -130,6 +170,8 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     ctrl: true,
     description: "Undo the last validation-board edit",
     category: "Actions",
+    descriptionKey: "shortcut.desc.undo",
+    categoryKey: "shortcut.cat.Actions",
   },
   redo: {
     key: "y",
@@ -137,6 +179,8 @@ const SHORTCUTS: Record<string, ShortcutConfig> = {
     ctrl: true,
     description: "Redo the last undone edit",
     category: "Actions",
+    descriptionKey: "shortcut.desc.redo",
+    categoryKey: "shortcut.cat.Actions",
   },
 };
 

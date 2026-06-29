@@ -19,6 +19,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useToast } from "@/components/toast";
 import { Skeleton } from "@/components/skeleton";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { copyTextToClipboard } from "@/lib/launchlens/clipboard";
 import { friendlyApiMessage } from "@/lib/launchlens/api-errors";
 
@@ -93,6 +94,7 @@ export function CloudWorkspaces({
   const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(null);
   const [shareExpiry, setShareExpiry] = useState<ShareExpiry>("permanent");
   const { showToast } = useToast();
+  const { t } = useLocale();
 
   const {
     trimmedLabel,
@@ -153,12 +155,12 @@ export function CloudWorkspaces({
         }
 
         const code = "code" in body ? body.code : "cloud_request_failed";
-        setCloudError({ code, message: friendlyApiMessage(code, "Cloud history could not be reached.") });
+        setCloudError({ code, message: friendlyApiMessage(code, t("toast.cloudUnreachable")) });
         throw new Error(code || "cloud_request_failed");
       }
 
       if (!("workspaces" in body)) {
-        setCloudError({ code: "cloud_request_failed", message: "Cloud history returned an unexpected response." });
+        setCloudError({ code: "cloud_request_failed", message: t("toast.cloudUnexpected") });
         throw new Error("cloud_request_failed");
       }
 
@@ -177,7 +179,7 @@ export function CloudWorkspaces({
       setCloudState("error");
       if (!cloudError) {
         const code = error instanceof Error ? error.message : "";
-        setCloudError({ code, message: friendlyApiMessage(code, "Cloud history could not be reached. Your local draft remains available.") });
+        setCloudError({ code, message: friendlyApiMessage(code, t("cloud.errorFallback")) });
       }
     } finally {
       setBusyAction("");
@@ -226,8 +228,8 @@ export function CloudWorkspaces({
       });
       const newId = saved.workspace.id;
       const nowIso = new Date().toISOString();
-      showToast("Cloud snapshot saved.", "success", 5000, {
-        label: "Share",
+      showToast(t("toast.cloudSaved"), "success", 5000, {
+        label: t("share.enable"),
         onClick: () => toggleShare({
           id: newId,
           isPublic: false,
@@ -243,8 +245,8 @@ export function CloudWorkspaces({
       const code = error instanceof Error ? error.message : "";
       const defaultMsg =
         code === "quota_exceeded" || code === "workspace_limit_reached"
-          ? "Cloud history is full. Delete a snapshot before saving."
-          : "Cloud save failed. Your local draft is still safe.";
+          ? t("toast.cloudFull")
+          : t("toast.cloudSaveFailed");
       showToast(friendlyApiMessage(code, defaultMsg), "error");
     } finally {
       setBusyAction("");
@@ -261,11 +263,11 @@ export function CloudWorkspaces({
       );
       previousSnapshotForUndo.current = { input, workspace, execution };
       onRestore(response.workspace);
-      showToast("Cloud snapshot restored to the editor.", "success", 7000, { label: "Undo", onClick: () => { const prev = previousSnapshotForUndo.current; if (prev) { previousSnapshotForUndo.current = null; onRestore(prev as CloudWorkspaceRecord); showToast("Restore undone; editor returned to prior state.", "success"); } } });
+      showToast(t("toast.cloudRestoredEditor"), "success", 7000, { label: t("toast.undo"), onClick: () => { const prev = previousSnapshotForUndo.current; if (prev) { previousSnapshotForUndo.current = null; onRestore(prev as CloudWorkspaceRecord); showToast(t("toast.restoreUndone"), "success"); } } });
     } catch (error) {
       const code = error instanceof Error ? error.message : "";
       showToast(
-        friendlyApiMessage(code, "Could not restore that cloud snapshot."),
+        friendlyApiMessage(code, t("toast.restoreFailed")),
         "error",
       );
     } finally {
@@ -279,9 +281,9 @@ export function CloudWorkspaces({
       setPendingConfirm({
         kind: "share-enable",
         item,
-        title: "Enable public share link?",
-        body: "Validation decisions and evidence counts will be visible to anyone with the link. Evidence notes, sources, and the founder brief stay private.",
-        confirmLabel: "Enable and copy link",
+        title: t("share.enableTitle"),
+        body: t("share.enableBody"),
+        confirmLabel: t("share.enableConfirm"),
       });
       return;
     }
@@ -309,18 +311,20 @@ export function CloudWorkspaces({
           createdAt: item.createdAt, updatedAt: new Date().toISOString(),
         };
         const copied = await copyTextToClipboard(shareUrl);
+        const suffix = shareExpirySuffix(justShared.expiresAt);
+        const suffixText = t(suffix.key, suffix.params);
         if (copied) {
-          showToast("Read-only share link copied to clipboard." + shareExpirySuffix(justShared.expiresAt), "success");
+          showToast(t("share.linkCopied") + suffixText, "success");
         } else {
-          showToast(`Share link ready: ${shareUrl}` + shareExpirySuffix(justShared.expiresAt), "info");
+          showToast(t("share.linkReady", { url: shareUrl }) + suffixText, "info");
         }
       } else {
         showToast(
-          "Public sharing disabled.",
+          t("share.disabled"),
           "info",
           6000,
           {
-            label: "Undo",
+            label: t("toast.undo"),
             onClick: async () => {
               try {
                 setBusyAction(`share:${item.id}`);
@@ -331,12 +335,12 @@ export function CloudWorkspaces({
                     body: JSON.stringify({ enabled: true }),
                   },
                 );
-                showToast("Sharing re-enabled.", "success");
+                showToast(t("share.reenabled"), "success");
                 await refresh();
               } catch (err) {
                 const code = err instanceof Error ? err.message : "";
                 showToast(
-                  friendlyApiMessage(code, "Could not re-enable sharing."),
+                  friendlyApiMessage(code, t("share.reenableFailed")),
                   "error",
                 );
               } finally {
@@ -351,7 +355,7 @@ export function CloudWorkspaces({
     } catch (error) {
       const code = error instanceof Error ? error.message : "";
       showToast(
-        friendlyApiMessage(code, "Could not update sharing settings."),
+        friendlyApiMessage(code, t("share.updateFailed")),
         "error",
       );
     } finally {
@@ -362,12 +366,13 @@ export function CloudWorkspaces({
   async function copyShareLink(item: CloudWorkspaceSummary) {
     const shareUrl = `${window.location.origin}/share/${item.id}`;
     const suffix = shareExpirySuffix(item.expiresAt);
+    const suffixText = t(suffix.key, suffix.params);
 
     const copied = await copyTextToClipboard(shareUrl);
     if (copied) {
-      showToast("Read-only share link copied to clipboard." + suffix, "success");
+      showToast(t("share.linkCopied") + suffixText, "success");
     } else {
-      showToast(`Share link ready: ${shareUrl}` + suffix, "info");
+      showToast(t("share.linkReady", { url: shareUrl }) + suffixText, "info");
     }
   }
 
@@ -375,9 +380,9 @@ export function CloudWorkspaces({
     setPendingConfirm({
       kind: "snapshot-delete",
       item,
-      title: "Delete cloud snapshot?",
-      body: `"${item.title}" will be permanently removed from cloud history. This cannot be undone.`,
-      confirmLabel: "Delete snapshot",
+      title: t("cloud.deleteTitle"),
+      body: t("cloud.deleteBody", { title: item.title }),
+      confirmLabel: t("cloud.deleteConfirm"),
       danger: true,
     });
   }
@@ -388,12 +393,12 @@ export function CloudWorkspaces({
       await cloudRequest<null>(`/api/workspaces/${item.id}`, {
         method: "DELETE",
       });
-      showToast("Cloud snapshot deleted.", "success");
+      showToast(t("toast.cloudDeleted"), "success");
       await refresh();
     } catch (error) {
       const code = error instanceof Error ? error.message : "";
       showToast(
-        friendlyApiMessage(code, "Could not delete cloud snapshot."),
+        friendlyApiMessage(code, t("toast.deleteFailed")),
         "error",
       );
     } finally {
@@ -404,15 +409,15 @@ export function CloudWorkspaces({
   function generateRecoveryKey() {
     setRecoveryKey(createRecoveryKey());
     setShowRecoveryKey(true);
-    showToast("Recovery key generated - keep it somewhere private!", "success");
+    showToast(t("toast.recoveryGenerated"), "success");
   }
 
   async function copyRecoveryKey() {
     const copied = await copyTextToClipboard(recoveryKey);
     if (copied) {
-      showToast("Recovery key copied. Store it safely!", "success");
+      showToast(t("toast.recoveryCopied"), "success");
     } else {
-      showToast("Copy failed - please select and save the key manually.", "error");
+      showToast(t("toast.recoveryCopyFailed"), "error");
     }
   }
 
@@ -443,9 +448,9 @@ export function CloudWorkspaces({
       const message = caught instanceof Error ? caught.message : "";
       if (message === "invalid_recovery_input") {
         setRecoveryTouched(true);
-        showToast("Recovery details don't look right - double-check handle and key.", "error");
+        showToast(t("toast.recoveryInvalid"), "error");
       } else {
-        showToast("Recovery failed - check your handle and recovery key.", "error");
+        showToast(t("toast.recoveryFailed"), "error");
       }
     } finally {
       setBusyAction("");
@@ -454,7 +459,7 @@ export function CloudWorkspaces({
 
   async function linkRecoveryOwner() {
     await performRecovery(
-      "Cloud history linked to your recovery key.",
+      t("toast.recoveryLinked"),
       async (token) => {
         await cloudRequest<{ migrated: number }>("/api/workspaces/recovery", {
           method: "POST",
@@ -465,7 +470,7 @@ export function CloudWorkspaces({
   }
 
   async function recoverOwner() {
-    await performRecovery("Recovery key loaded - cloud history restored.", null);
+    await performRecovery(t("toast.recoveryLoaded"), null);
   }
 
   const isBusy = Boolean(busyAction);
@@ -485,16 +490,16 @@ export function CloudWorkspaces({
           </span>
           <div>
             <h2 className="text-base font-semibold tracking-[-0.01em] text-foreground">
-              Cloud history
+              {t("cloud.heading")}
             </h2>
             <p className="mt-0.5 text-sm text-muted">
               {cloudState === "ready"
-                ? `${ownerScope}, ${workspaces.length} of ${cloudSnapshotLimit} snapshots`
+                ? t("cloud.snapshotCount", { scope: ownerScope, count: String(workspaces.length), total: String(cloudSnapshotLimit) })
                 : cloudState === "unavailable"
-                  ? "Local-only mode"
+                  ? t("cloud.localOnlyMode")
                   : cloudState === "checking"
-                    ? "Checking availability"
-                    : "Cloud status unavailable"}
+                    ? t("cloud.checking")
+                    : t("cloud.statusUnavailable")}
             </p>
           </div>
         </div>
@@ -504,8 +509,8 @@ export function CloudWorkspaces({
             type="button"
             onClick={() => void refresh()}
             disabled={!ownerToken || isBusy}
-            title="Refresh cloud history"
-            aria-label="Refresh cloud history"
+            title={t("cloud.refresh")}
+            aria-label={t("cloud.refresh")}
             className="flex size-10 items-center justify-center rounded-md border border-input bg-card text-foreground/80 transition hover:border-accent hover:bg-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <RefreshCw
@@ -524,15 +529,14 @@ export function CloudWorkspaces({
             ) : (
               <UploadCloud className="size-4" aria-hidden="true" />
             )}
-            Save snapshot
+            {t("cloud.save")}
           </button>
         </div>
       </div>
 
       {cloudState === "unavailable" && (
         <p className="mt-4 rounded-md border border-card bg-input p-3 text-sm leading-6 text-foreground/80">
-          Cloud history is not configured on this deployment. Local autosave,
-          editing, generation, and export remain available.
+          {t("cloud.unavailableBody")}
         </p>
       )}
 
@@ -542,7 +546,7 @@ export function CloudWorkspaces({
           role="alert"
           className="mt-4 rounded-md border border-signal-challenges bg-signal-challenges p-3 text-sm leading-6 text-signal-challenges"
         >
-          <p>{cloudError?.message || "Cloud history could not be reached. Your local draft remains available."}</p>
+          <p>{cloudError?.message || t("cloud.errorFallback")}</p>
           {cloudError?.code && (
             <div className="mt-2 flex items-center justify-between gap-2 border-t border-signal-challenges pt-2 text-xs">
               <code className="rounded bg-card px-1.5 py-0.5 font-mono text-signal-challenges">{cloudError.code}</code>
@@ -550,11 +554,11 @@ export function CloudWorkspaces({
                 type="button"
                 onClick={() => {
                   copyTextToClipboard(cloudError.code);
-                  showToast("Error code copied to clipboard.", "success");
+                  showToast(t("cloud.errorCodeCopied"), "success");
                 }}
                 className="rounded border border-signal-challenges bg-card px-2 py-1 font-medium transition hover:bg-signal-challenges focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1"
               >
-                Copy code
+                {t("cloud.copyCode")}
               </button>
             </div>
           )}
@@ -562,7 +566,7 @@ export function CloudWorkspaces({
       )}
 
       {cloudState === "checking" ? (
-        <div className="mt-4 space-y-2" aria-busy="true" aria-label="Checking cloud history">
+        <div className="mt-4 space-y-2" aria-busy="true" aria-label={t("cloud.checkingAria")}>
           {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
@@ -583,8 +587,7 @@ export function CloudWorkspaces({
         <div className="mt-4 flex items-center gap-3 rounded-md border border-dashed border-input bg-input p-4">
           <History className="size-5 text-accent" aria-hidden="true" />
           <p className="text-sm text-foreground/80">
-            No cloud snapshots yet. Save the current workspace when it reaches
-            a useful decision point.
+            {t("cloud.empty")}
           </p>
         </div>
       )}
@@ -600,22 +603,24 @@ export function CloudWorkspaces({
               onSubmit={(event) => event.preventDefault()}
             >
               <h3 className="text-sm font-semibold text-foreground">
-                Account recovery
+                {t("recovery.title")}
               </h3>
               <p className="mt-1 text-xs leading-5 text-muted">
-                Save this key privately. Possession grants access to cloud
-                history. Use <strong>Link history</strong> on the device that created the account and <strong>Recover</strong> on a new device.
+                {t("recovery.body", {
+                  link: t("recovery.link"),
+                  recover: t("recovery.recover"),
+                })}
               </p>
               <div className="mt-3 grid min-w-0 gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
                 <label className="block min-w-0">
                   <span className="mb-1 block text-xs font-semibold uppercase text-muted">
-                    Handle
+                    {t("recovery.handle")}
                   </span>
                   <input
                     value={recoveryLabel}
                     onChange={(event) => { setRecoveryLabel(event.target.value); }}
                     onBlur={() => setRecoveryTouched(true)}
-                    placeholder="founder@example.com"
+                    placeholder={t("recovery.handlePlaceholder")}
                     aria-invalid={recoveryTouched && !!labelError}
                     aria-describedby={recoveryTouched && labelError ? "recovery-label-error" : undefined}
                     className={`h-10 w-full rounded-md border bg-card px-3 text-sm text-foreground outline-none ${
@@ -630,11 +635,11 @@ export function CloudWorkspaces({
                 </label>
                 <div className="min-w-0">
                   <span className="mb-1 block text-xs font-semibold uppercase text-muted">
-                    Recovery key
+                    {t("recovery.key")}
                   </span>
                   <div className="flex min-w-0 gap-1">
                     <input
-                      aria-label="Recovery key"
+                      aria-label={t("recovery.keyAria")}
                       type={showRecoveryKey ? "text" : "password"}
                       autoComplete="off"
                       spellCheck={false}
@@ -654,13 +659,13 @@ export function CloudWorkspaces({
                       onClick={() => setShowRecoveryKey((value) => !value)}
                       title={
                         showRecoveryKey
-                          ? "Hide recovery key"
-                          : "Show recovery key"
+                          ? t("recovery.hide")
+                          : t("recovery.show")
                       }
                       aria-label={
                         showRecoveryKey
-                          ? "Hide recovery key"
-                          : "Show recovery key"
+                          ? t("recovery.hide")
+                          : t("recovery.show")
                       }
                       className="flex size-10 shrink-0 items-center justify-center rounded-md border border-input bg-card text-foreground/80 transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                     >
@@ -674,8 +679,8 @@ export function CloudWorkspaces({
                       type="button"
                       onClick={copyRecoveryKey}
                       disabled={!recoveryKey}
-                      title="Copy recovery key"
-                      aria-label="Copy recovery key"
+                      title={t("recovery.copy")}
+                      aria-label={t("recovery.copy")}
                       className="flex size-10 shrink-0 items-center justify-center rounded-md border border-input bg-card text-foreground/80 transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:opacity-50"
                     >
                       <Copy className="size-4" aria-hidden="true" />
@@ -694,7 +699,7 @@ export function CloudWorkspaces({
                   className="flex h-9 items-center gap-2 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground/80 transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:opacity-50"
                 >
                   <KeyRound className="size-4" aria-hidden="true" />
-                  Generate key
+                  {t("recovery.generate")}
                 </button>
                 <button
                   type="button"
@@ -703,7 +708,7 @@ export function CloudWorkspaces({
                   aria-disabled={isBusy || (recoveryTouched ? !recoveryReady : (!recoveryLabel || !recoveryKey))}
                   className="h-9 rounded-md bg-primary px-3 text-sm font-semibold text-primary-text transition hover:bg-primary-hover active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted"
                 >
-                  Link history
+                  {t("recovery.link")}
                 </button>
                 <button
                   type="button"
@@ -712,7 +717,7 @@ export function CloudWorkspaces({
                   aria-disabled={isBusy || (recoveryTouched ? !recoveryReady : (!recoveryLabel || !recoveryKey))}
                   className="h-9 rounded-md border border-input bg-card px-3 text-sm font-semibold text-foreground/80 transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:opacity-50"
                 >
-                  Recover
+                  {t("recovery.recover")}
                 </button>
               </div>
             </form>
@@ -735,7 +740,7 @@ export function CloudWorkspaces({
                   </h3>
                   {item.isPublic && (
                     <span className="shrink-0 rounded-md bg-signal-neutral px-2 py-1 text-xs font-semibold text-signal-neutral">
-                      Shared
+                      {t("cloud.sharedBadge")}
                     </span>
                   )}
                   {item.isPublic && (() => {
@@ -746,13 +751,13 @@ export function CloudWorkspaces({
                         className="shrink-0 rounded-md bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800"
                         title={row.title}
                       >
-                        {row.label}
+                        {t(row.key, row.params)}
                       </span>
                     );
                   })()}
                 </div>
                 <p className="mt-1 text-xs text-muted">
-                  Saved <time dateTime={item.updatedAt} title={new Date(item.updatedAt).toLocaleString()}>{formatSnapshotTime(item.updatedAt, Intl.DateTimeFormat().resolvedOptions().timeZone)}</time>
+                  {t("cloud.savedPrefix")}<time dateTime={item.updatedAt} title={new Date(item.updatedAt).toLocaleString()}>{formatSnapshotTime(item.updatedAt, Intl.DateTimeFormat().resolvedOptions().timeZone)}</time>
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-1">
@@ -760,8 +765,8 @@ export function CloudWorkspaces({
                   type="button"
                   onClick={() => restoreSnapshot(item.id)}
                   disabled={isBusy}
-                  title="Restore snapshot"
-                  aria-label={`Restore ${item.title}`}
+                  title={t("cloud.restore")}
+                  aria-label={t("cloud.restoreFor", { title: item.title })}
                   className="flex size-9 items-center justify-center rounded-md border border-input bg-card text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:opacity-50"
                 >
                   {busyAction === `restore:${item.id}` ? (
@@ -778,9 +783,9 @@ export function CloudWorkspaces({
                     type="button"
                     onClick={() => copyShareLink(item)}
                     disabled={isBusy}
-                    title="Copy share link"
-                    aria-label={`Copy share link for ${item.title}`}
-                    className="flex size-9 items-center justify-center rounded-md border border-input bg-card text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:opacity-50"
+                    title={t("share.copyLink")}
+                    aria-label={t("share.copyLinkFor", { title: item.title })}
+                    className="flex size-9 items-center justify-center rounded-md border border-input bg-card text-foreground/80 transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:opacity-50"
                   >
                     <Copy className="size-4" aria-hidden="true" />
                   </button>
@@ -789,13 +794,13 @@ export function CloudWorkspaces({
                   type="button"
                   onClick={() => toggleShare(item)}
                   disabled={isBusy}
-                  title={item.isPublic ? "Disable sharing" : "Enable sharing"}
+                  title={item.isPublic ? t("share.disable") : t("share.enable")}
                   aria-label={
                     item.isPublic
-                      ? `Disable sharing for ${item.title}`
-                      : `Share ${item.title}`
+                      ? t("share.disableFor", { title: item.title })
+                      : t("share.for", { title: item.title })
                   }
-                  className="flex size-9 items-center justify-center rounded-md border border-input bg-card text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:opacity-50"
+                  className="flex size-9 items-center justify-center rounded-md border border-input bg-card text-foreground/80 transition hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:opacity-50"
                 >
                   {item.isPublic ? (
                     <Unlink className="size-4" aria-hidden="true" />
@@ -807,8 +812,8 @@ export function CloudWorkspaces({
                   type="button"
                   onClick={() => deleteSnapshot(item)}
                   disabled={isBusy}
-                  title="Delete snapshot"
-                  aria-label={`Delete ${item.title}`}
+                  title={t("cloud.delete")}
+                  aria-label={t("cloud.deleteFor", { title: item.title })}
                   className="flex size-9 items-center justify-center rounded-md border border-input bg-card text-signal-challenges transition hover:border-signal-challenges focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1 disabled:opacity-50"
                 >
                   <Trash2 className="size-4" aria-hidden="true" />
@@ -828,11 +833,11 @@ export function CloudWorkspaces({
             <p>{pendingConfirm?.body}</p>
             {pendingConfirm?.kind === "share-enable" ? (
               <fieldset className="mt-4 space-y-2">
-                <legend className="mb-1 text-xs font-semibold uppercase tracking-wide text-foreground/70">Link expires</legend>
+                <legend className="mb-1 text-xs font-semibold uppercase tracking-wide text-foreground/70">{t("share.expiresLegend")}</legend>
                 {[
-                  { v: "permanent", label: "Never (permanent)" },
-                  { v: "days7", label: "In 7 days" },
-                  { v: "days30", label: "In 30 days" },
+                  { v: "permanent", label: t("share.expiryPermanent") },
+                  { v: "days7", label: t("share.expiry7") },
+                  { v: "days30", label: t("share.expiry30") },
                 ].map((opt) => (
                   <label key={opt.v} className="flex cursor-pointer items-center gap-2 rounded-md border border-input px-3 py-2 text-sm hover:border-accent has-[:checked]:border-accent has-[:checked]:bg-muted/40">
                     <input
@@ -850,7 +855,7 @@ export function CloudWorkspaces({
             ) : null}
           </>
         }
-        confirmLabel={pendingConfirm?.confirmLabel ?? "Confirm"}
+        confirmLabel={pendingConfirm?.confirmLabel ?? t("share.confirm")}
         danger={Boolean(pendingConfirm?.danger)}
         busy={isBusy}
         onCancel={() => setPendingConfirm(null)}

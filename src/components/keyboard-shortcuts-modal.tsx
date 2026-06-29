@@ -10,6 +10,7 @@ import {
   getShortcutList,
   registerShortcut,
 } from "@/hooks/use-keyboard-shortcuts";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export function KeyboardShortcutsModal() {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,6 +19,7 @@ export function KeyboardShortcutsModal() {
   const trapRef = useFocusTrap<HTMLDivElement>(isOpen, { restoreFocus: false });
   const isOpenRef = useRef(isOpen);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const { t } = useLocale();
   useEffect(() => { isOpenRef.current = isOpen; }, [isOpen]);
 
   function openModal() {
@@ -73,7 +75,7 @@ export function KeyboardShortcutsModal() {
           with toasts which appear at bottom-right. */}
       <button
         onClick={openModal}
-        aria-label="Show keyboard shortcuts"
+        aria-label={t("shortcuts.showAria")}
         className="fixed bottom-4 left-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-input bg-card/90 text-base font-semibold text-foreground/80 shadow-sm backdrop-blur transition hover:border-accent hover:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 print:hidden sm:h-9 sm:w-9 sm:text-sm" style={{ paddingBottom: "env(safe-area-inset-bottom, 0)" }}
       >
         ?
@@ -104,12 +106,12 @@ export function KeyboardShortcutsModal() {
                 id="shortcuts-title"
                 className="text-base font-semibold text-foreground sm:text-lg"
               >
-                Keyboard Shortcuts
+                {t("shortcuts.title")}
               </h2>
               <button
                 type="button"
                 onClick={closeModal}
-                aria-label="Close shortcuts"
+                aria-label={t("shortcuts.close")}
                 className="flex size-10 items-center justify-center rounded-md text-muted transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                autoFocus>
                 <X className="size-5" aria-hidden="true" />
@@ -120,7 +122,7 @@ export function KeyboardShortcutsModal() {
               {Object.entries(grouped).map(([category, items]) => (
                 <div key={category} className="mb-5 last:mb-0">
                   <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
-                    {category}
+                    {t(items[0].categoryKey ?? "shortcut.cat.Actions")}
                   </h3>
                   <div className="space-y-2">
                     {items.map((sc) => (
@@ -129,7 +131,7 @@ export function KeyboardShortcutsModal() {
                         className="flex items-center justify-between text-sm"
                       >
                         <span className="text-foreground">
-                          {sc.description}
+                          {t(sc.descriptionKey ?? sc.description)}
                         </span>
                         <kbd className="inline-flex items-center rounded border border-input bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground shadow-sm">
                           {formatShortcut(sc)}
@@ -141,36 +143,36 @@ export function KeyboardShortcutsModal() {
               ))}
               {shortcuts.length === 0 && (
                 <p className="text-sm text-muted">
-                  No shortcuts registered yet.
+                  {t("shortcuts.empty")}
                 </p>
               )}
             </div>
 
             <div className="border-t border-card px-5 py-4 sm:px-6">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
-                Experiment cards (when focused)
+                {t("shortcuts.experimentCards")}
               </h3>
               <div className="mt-3 space-y-2">
                 <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-foreground/90">Move focus up</span>
+                  <span className="text-foreground/90">{t("shortcuts.moveFocusUp")}</span>
                   <kbd className="inline-flex items-center rounded border border-input bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground shadow-sm">
                     ↑
                   </kbd>
                 </div>
                 <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-foreground/90">Move focus down</span>
+                  <span className="text-foreground/90">{t("shortcuts.moveFocusDown")}</span>
                   <kbd className="inline-flex items-center rounded border border-input bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground shadow-sm">
                     ↓
                   </kbd>
                 </div>
                 <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-foreground/90">Expand / collapse</span>
+                  <span className="text-foreground/90">{t("shortcuts.expandCollapse")}</span>
                   <kbd className="inline-flex items-center rounded border border-input bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground shadow-sm">
                     Enter
                   </kbd>
                 </div>
                 <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-foreground/90">Set status (1-4)</span>
+                  <span className="text-foreground/90">{t("shortcuts.setStatus")}</span>
                   <div className="flex gap-1">
                     <kbd className="inline-flex items-center rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-xs font-medium text-foreground shadow-sm">
                       1
@@ -189,23 +191,23 @@ export function KeyboardShortcutsModal() {
               </div>
 
               <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-muted">
-                Evidence list (when focused)
+                {t("shortcuts.evidenceList")}
               </h3>
               <div className="mt-3 space-y-2">
                 <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-foreground/90">Move focus up</span>
+                  <span className="text-foreground/90">{t("shortcuts.moveFocusUp")}</span>
                   <kbd className="inline-flex items-center rounded border border-input bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground shadow-sm">
                     ↑
                   </kbd>
                 </div>
                 <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-foreground/90">Move focus down</span>
+                  <span className="text-foreground/90">{t("shortcuts.moveFocusDown")}</span>
                   <kbd className="inline-flex items-center rounded border border-input bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground shadow-sm">
                     ↓
                   </kbd>
                 </div>
                 <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-foreground/90">Move evidence up</span>
+                  <span className="text-foreground/90">{t("shortcuts.moveEvidenceUp")}</span>
                   <div className="flex gap-1">
                     <kbd className="inline-flex items-center rounded border border-input bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground shadow-sm">
                       Alt
@@ -216,7 +218,7 @@ export function KeyboardShortcutsModal() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-foreground/90">Move evidence down</span>
+                  <span className="text-foreground/90">{t("shortcuts.moveEvidenceDown")}</span>
                   <div className="flex gap-1">
                     <kbd className="inline-flex items-center rounded border border-input bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground shadow-sm">
                       Alt
@@ -227,7 +229,7 @@ export function KeyboardShortcutsModal() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-foreground/90">Undo delete evidence</span>
+                  <span className="text-foreground/90">{t("shortcuts.undoDeleteEvidence")}</span>
                   <div className="flex gap-1">
                     <kbd className="inline-flex items-center rounded border border-input bg-muted px-2 py-0.5 font-mono text-xs font-medium text-foreground shadow-sm">
                       Ctrl
@@ -241,23 +243,21 @@ export function KeyboardShortcutsModal() {
             </div>
 
             <div className="border-t border-card px-5 py-3 text-xs leading-5 text-muted sm:px-6">
-              Press{" "}
-              <kbd className="rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-foreground">
-                {formatShortcut({ key: "?", shift: true, description: "", category: "" })}
-              </kbd>{" "}
-              to open this panel. Press{" "}
+              {t("shortcuts.footerOpenPanel", {
+                key: formatShortcut({ key: "?", shift: true, description: "", category: "" }),
+              })}
               <kbd className="rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-foreground">
                 {formatShortcut({ key: "k", meta: true, ctrl: true, description: "", category: "" })}
-              </kbd>{" "}
-              for the command palette, or{" "}
-              <kbd className="rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-foreground">/</kbd>{" "}
-              to focus validation search. Press{" "}
-              <kbd className="rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-foreground">Esc</kbd>{" "}
-              to dismiss the newest toast or topmost overlay; hold{" "}
-              <kbd className="rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-foreground">Shift</kbd>{" "}
-              with{" "}
-              <kbd className="rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-foreground">Esc</kbd>{" "}
-              to clear all toasts.
+              </kbd>
+              {t("shortcuts.footerPalette")}
+              <kbd className="rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-foreground">/</kbd>
+              {t("shortcuts.footerSlash")}
+              <kbd className="rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-foreground">Esc</kbd>
+              {t("shortcuts.footerEsc")}
+              <kbd className="rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-foreground">Shift</kbd>
+              {t("shortcuts.footerClear")}
+              <kbd className="rounded border border-input bg-muted px-1.5 py-0.5 font-mono text-foreground">Esc</kbd>
+              {t("shortcuts.footerEnd")}
             </div>
           </div>
         </div>

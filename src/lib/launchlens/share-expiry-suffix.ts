@@ -1,20 +1,37 @@
 import { formatExpiryBadge } from "./expiry-format";
 
 /**
- * Build the trailing sentence appended to a cloud-workspace share-link
- * description.
+ * Build the trailing-sentence descriptor appended to a cloud-workspace
+ * share-link description.
  *
- * The label forms a continuous sentence when concatenated with the
- * preceding text ("Share this link. It expires in 3 days."), so the
- * leading space and trailing period are intentional. When the snapshot
- * has no expiry at all (`expiresAt` is empty), the caller should not
- * invoke this helper — there is nothing meaningful to append.
+ * Returns an i18n descriptor `{ key, params }` rather than a pre-rendered
+ * string so the caller can translate it with its active locale. The
+ * dictionary entries (`shareExpiry.permanent` / `.expired` / `.expiresIn`)
+ * carry their own leading space and trailing period so the rendered text
+ * still forms a continuous sentence.
+ *
+ * - null/empty expiry → `shareExpiry.permanent` (" Permanent.")
+ * - already expired or unparseable → `shareExpiry.expired` (" It has expired.")
+ * - future expiry → `shareExpiry.expiresIn` with `{ label }` drawn from
+ *   `formatExpiryBadge`'s bucket label (e.g. "Expires in 3 days").
  *
  * If `formatExpiryBadge` returns `null` (already expired), the helper
- * reports that explicitly rather than emitting an empty fragment.
+ * reports that explicitly rather than emitting a permanent suffix.
  */
-export function shareExpirySuffix(expiresAt: string | null | undefined): string {
+export type ShareExpirySuffix = {
+  key: "shareExpiry.permanent" | "shareExpiry.expired" | "shareExpiry.expiresIn";
+  params?: Record<string, string>;
+};
+
+export function shareExpirySuffix(
+  expiresAt: string | null | undefined,
+): ShareExpirySuffix {
+  if (!expiresAt) {
+    return { key: "shareExpiry.permanent" };
+  }
   const badge = formatExpiryBadge(expiresAt ?? null);
-  if (!badge) return " It has expired.";
-  return " " + badge.label + ".";
+  if (!badge) {
+    return { key: "shareExpiry.expired" };
+  }
+  return { key: "shareExpiry.expiresIn", params: { label: badge.label } };
 }

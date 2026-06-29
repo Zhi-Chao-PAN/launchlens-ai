@@ -288,7 +288,149 @@ export type DictionaryKey =
   | "fallback.tooManyRequests"
   | "fallback.generationFailed"
   | "fallback.demoNotice"
-  | "format.na";
+  | "format.na"
+  // Cloud history panel (cloud-workspaces.tsx)
+  | "cloud.heading"
+  | "cloud.snapshotCount"
+  | "cloud.localOnlyMode"
+  | "cloud.checking"
+  | "cloud.statusUnavailable"
+  | "cloud.refresh"
+  | "cloud.save"
+  | "cloud.unavailableBody"
+  | "cloud.errorFallback"
+  | "cloud.errorCodeCopied"
+  | "cloud.copyCode"
+  | "cloud.checkingAria"
+  | "cloud.empty"
+  | "cloud.savedPrefix"
+  | "cloud.sharedBadge"
+  // Share / share-link controls
+  | "share.enableTitle"
+  | "share.enableBody"
+  | "share.enableConfirm"
+  | "share.linkCopied"
+  | "share.linkReady"
+  | "share.disabled"
+  | "share.reenabled"
+  | "share.reenableFailed"
+  | "share.updateFailed"
+  | "share.copyLink"
+  | "share.copyLinkFor"
+  | "share.disable"
+  | "share.disableFor"
+  | "share.enable"
+  | "share.for"
+  | "share.expiresLegend"
+  | "share.expiryPermanent"
+  | "share.expiry7"
+  | "share.expiry30"
+  | "share.confirm"
+  // Share expiry suffix + row badge (lib-driven, translated in component)
+  | "shareExpiry.permanent"
+  | "shareExpiry.expired"
+  | "shareExpiry.expiresIn"
+  | "rowExpiry.expired"
+  | "rowExpiry.expiresIn"
+  // Account recovery
+  | "recovery.title"
+  | "recovery.body"
+  | "recovery.handle"
+  | "recovery.handlePlaceholder"
+  | "recovery.key"
+  | "recovery.keyAria"
+  | "recovery.hide"
+  | "recovery.show"
+  | "recovery.copy"
+  | "recovery.generate"
+  | "recovery.link"
+  | "recovery.recover"
+  // Cloud / recovery toasts
+  | "toast.cloudSaved"
+  | "toast.cloudFull"
+  | "toast.cloudSaveFailed"
+  | "toast.cloudRestoredEditor"
+  | "toast.undo"
+  | "toast.restoreUndone"
+  | "toast.restoreFailed"
+  | "toast.cloudDeleted"
+  | "toast.deleteFailed"
+  | "toast.recoveryGenerated"
+  | "toast.recoveryCopied"
+  | "toast.recoveryCopyFailed"
+  | "toast.recoveryInvalid"
+  | "toast.recoveryFailed"
+  | "toast.recoveryLinked"
+  | "toast.recoveryLoaded"
+  | "toast.cloudUnreachable"
+  | "toast.cloudUnexpected"
+  // Snapshot row actions
+  | "cloud.restore"
+  | "cloud.restoreFor"
+  | "cloud.delete"
+  | "cloud.deleteFor"
+  | "cloud.deleteTitle"
+  | "cloud.deleteBody"
+  | "cloud.deleteConfirm"
+  // Onboarding wizard + replay tour
+  | "onboarding.ariaLabel"
+  | "onboarding.dismiss"
+  | "onboarding.welcome"
+  | "onboarding.step1Title"
+  | "onboarding.step1Body"
+  | "onboarding.step2Title"
+  | "onboarding.step2Body"
+  | "onboarding.step3Title"
+  | "onboarding.step3Body"
+  | "onboarding.step4Title"
+  | "onboarding.step4Body"
+  | "onboarding.hint"
+  | "onboarding.getStarted"
+  | "onboarding.replayAria"
+  | "onboarding.tour"
+  // Keyboard shortcuts modal
+  | "shortcuts.showAria"
+  | "shortcuts.title"
+  | "shortcuts.close"
+  | "shortcuts.empty"
+  | "shortcuts.experimentCards"
+  | "shortcuts.evidenceList"
+  | "shortcuts.moveFocusUp"
+  | "shortcuts.moveFocusDown"
+  | "shortcuts.expandCollapse"
+  | "shortcuts.setStatus"
+  | "shortcuts.moveEvidenceUp"
+  | "shortcuts.moveEvidenceDown"
+  | "shortcuts.undoDeleteEvidence"
+  | "shortcuts.footerOpenPanel"
+  | "shortcuts.footerPalette"
+  | "shortcuts.footerSlash"
+  | "shortcuts.footerEsc"
+  | "shortcuts.footerClear"
+  | "shortcuts.footerEnd"
+  // Shortcut categories + descriptions (dynamic, from shortcut registry)
+  | "shortcut.cat.Actions"
+  | "shortcut.cat.Navigation"
+  | "shortcut.cat.Help"
+  | "shortcut.desc.generate"
+  | "shortcut.desc.edit"
+  | "shortcut.desc.save"
+  | "shortcut.desc.focusBrief"
+  | "shortcut.desc.focusSearch"
+  | "shortcut.desc.collapseAll"
+  | "shortcut.desc.expandAll"
+  | "shortcut.desc.commandPalette"
+  | "shortcut.desc.toggleShortcuts"
+  | "shortcut.desc.closeModal"
+  | "shortcut.desc.copyMarkdown"
+  | "shortcut.desc.reset"
+  | "shortcut.desc.showTour"
+  | "shortcut.desc.addEvidence"
+  | "shortcut.desc.newHypothesis"
+  | "shortcut.desc.submitEvidence"
+  | "shortcut.desc.toggleSelectMode"
+  | "shortcut.desc.undo"
+  | "shortcut.desc.redo";
 
 type Dict = Record<DictionaryKey, string>;
 
@@ -544,6 +686,139 @@ const en: Dict = {
   "fallback.generationFailed": "Generation failed.",
   "fallback.demoNotice": "Real provider failed, so LaunchLens returned the mock workspace.",
   "format.na": "n/a",
+  "cloud.heading": "Cloud history",
+  "cloud.snapshotCount": "{scope}, {count} of {total} snapshots",
+  "cloud.localOnlyMode": "Local-only mode",
+  "cloud.checking": "Checking availability",
+  "cloud.statusUnavailable": "Cloud status unavailable",
+  "cloud.refresh": "Refresh cloud history",
+  "cloud.save": "Save snapshot",
+  "cloud.unavailableBody": "Cloud history is not configured on this deployment. Local autosave, editing, generation, and export remain available.",
+  "cloud.errorFallback": "Cloud history could not be reached. Your local draft remains available.",
+  "cloud.errorCodeCopied": "Error code copied to clipboard.",
+  "cloud.copyCode": "Copy code",
+  "cloud.checkingAria": "Checking cloud history",
+  "cloud.empty": "No cloud snapshots yet. Save the current workspace when it reaches a useful decision point.",
+  "cloud.savedPrefix": "Saved ",
+  "cloud.sharedBadge": "Shared",
+  "cloud.restore": "Restore snapshot",
+  "cloud.restoreFor": "Restore {title}",
+  "cloud.delete": "Delete snapshot",
+  "cloud.deleteFor": "Delete {title}",
+  "cloud.deleteTitle": "Delete cloud snapshot?",
+  "cloud.deleteBody": "\"{title}\" will be permanently removed from cloud history. This cannot be undone.",
+  "cloud.deleteConfirm": "Delete snapshot",
+  "onboarding.ariaLabel": "Quick start guide",
+  "onboarding.dismiss": "Dismiss quick start guide",
+  "onboarding.welcome": "Welcome to LaunchLens AI",
+  "onboarding.step1Title": "Choose a founder brief",
+  "onboarding.step1Body": "Select one of the three sample briefs, or write your own product idea. The brief captures your audience, market, tone, and constraints.",
+  "onboarding.step2Title": "Generate a workspace",
+  "onboarding.step2Body": "Click the Generate button. The mock provider builds a complete go-to-market plan: users, pains, MVP scope, pricing, launch plan, and tasks.",
+  "onboarding.step3Title": "Validate assumptions",
+  "onboarding.step3Body": "Each assumption is a hypothesis. Add evidence, set confidence, record a decision, and link an execution task. The AI decision copilot cites only your evidence.",
+  "onboarding.step4Title": "Save, share, or export",
+  "onboarding.step4Body": "If a database is configured, save cloud snapshots and generate privacy-safe share links. Otherwise, export your workspace as Markdown or JSON.",
+  "onboarding.hint": "Your workspace stays local by default, with cloud history available when you choose to save a snapshot.",
+  "onboarding.getStarted": "Get started",
+  "onboarding.replayAria": "Replay quick start tour",
+  "onboarding.tour": "Tour",
+  "shortcuts.showAria": "Show keyboard shortcuts",
+  "shortcuts.title": "Keyboard Shortcuts",
+  "shortcuts.close": "Close shortcuts",
+  "shortcuts.empty": "No shortcuts registered yet.",
+  "shortcuts.experimentCards": "Experiment cards (when focused)",
+  "shortcuts.evidenceList": "Evidence list (when focused)",
+  "shortcuts.moveFocusUp": "Move focus up",
+  "shortcuts.moveFocusDown": "Move focus down",
+  "shortcuts.expandCollapse": "Expand / collapse",
+  "shortcuts.setStatus": "Set status (1-4)",
+  "shortcuts.moveEvidenceUp": "Move evidence up",
+  "shortcuts.moveEvidenceDown": "Move evidence down",
+  "shortcuts.undoDeleteEvidence": "Undo delete evidence",
+  "shortcuts.footerOpenPanel": "Press {key} to open this panel. Press ",
+  "shortcuts.footerPalette": " for the command palette, or ",
+  "shortcuts.footerSlash": " to focus validation search. Press ",
+  "shortcuts.footerEsc": " to dismiss the newest toast or topmost overlay; hold ",
+  "shortcuts.footerClear": " with ",
+  "shortcuts.footerEnd": " to clear all toasts.",
+  "shortcut.cat.Actions": "Actions",
+  "shortcut.cat.Navigation": "Navigation",
+  "shortcut.cat.Help": "Help",
+  "shortcut.desc.generate": "Generate workspace from brief",
+  "shortcut.desc.edit": "Toggle edit/preview mode",
+  "shortcut.desc.save": "Save workspace to cloud",
+  "shortcut.desc.focusBrief": "Focus founder brief input",
+  "shortcut.desc.focusSearch": "Focus validation search",
+  "shortcut.desc.collapseAll": "Collapse all sections",
+  "shortcut.desc.expandAll": "Expand all sections",
+  "shortcut.desc.commandPalette": "Open command palette",
+  "shortcut.desc.toggleShortcuts": "Show keyboard shortcuts",
+  "shortcut.desc.closeModal": "Close any open modal or dialog",
+  "shortcut.desc.copyMarkdown": "Copy workspace as Markdown",
+  "shortcut.desc.reset": "Reset workspace to initial example",
+  "shortcut.desc.showTour": "Replay the quick start tour",
+  "shortcut.desc.addEvidence": "Add evidence to first hypothesis",
+  "shortcut.desc.newHypothesis": "Add a new hypothesis",
+  "shortcut.desc.submitEvidence": "Submit evidence form (when focus is in note)",
+  "shortcut.desc.toggleSelectMode": "Toggle hypothesis select mode (bulk actions)",
+  "shortcut.desc.undo": "Undo the last validation-board edit",
+  "shortcut.desc.redo": "Redo the last undone edit",
+  "share.enableTitle": "Enable public share link?",
+  "share.enableBody": "Validation decisions and evidence counts will be visible to anyone with the link. Evidence notes, sources, and the founder brief stay private.",
+  "share.enableConfirm": "Enable and copy link",
+  "share.linkCopied": "Read-only share link copied to clipboard.",
+  "share.linkReady": "Share link ready: {url}",
+  "share.disabled": "Public sharing disabled.",
+  "share.reenabled": "Sharing re-enabled.",
+  "share.reenableFailed": "Could not re-enable sharing.",
+  "share.updateFailed": "Could not update sharing settings.",
+  "share.copyLink": "Copy share link",
+  "share.copyLinkFor": "Copy share link for {title}",
+  "share.disable": "Disable sharing",
+  "share.disableFor": "Disable sharing for {title}",
+  "share.enable": "Enable sharing",
+  "share.for": "Share {title}",
+  "share.expiresLegend": "Link expires",
+  "share.expiryPermanent": "Never (permanent)",
+  "share.expiry7": "In 7 days",
+  "share.expiry30": "In 30 days",
+  "share.confirm": "Confirm",
+  "shareExpiry.permanent": " Permanent.",
+  "shareExpiry.expired": " It has expired.",
+  "shareExpiry.expiresIn": " Expires in {label}.",
+  "rowExpiry.expired": "Expired",
+  "rowExpiry.expiresIn": "Expires in {days}d",
+  "recovery.title": "Account recovery",
+  "recovery.body": "Save this key privately. Possession grants access to cloud history. Use {link} on the device that created the account and {recover} on a new device.",
+  "recovery.handle": "Handle",
+  "recovery.handlePlaceholder": "founder@example.com",
+  "recovery.key": "Recovery key",
+  "recovery.keyAria": "Recovery key",
+  "recovery.hide": "Hide recovery key",
+  "recovery.show": "Show recovery key",
+  "recovery.copy": "Copy recovery key",
+  "recovery.generate": "Generate key",
+  "recovery.link": "Link history",
+  "recovery.recover": "Recover",
+  "toast.cloudSaved": "Cloud snapshot saved.",
+  "toast.cloudFull": "Cloud history is full. Delete a snapshot before saving.",
+  "toast.cloudSaveFailed": "Cloud save failed. Your local draft is still safe.",
+  "toast.cloudRestoredEditor": "Cloud snapshot restored to the editor.",
+  "toast.undo": "Undo",
+  "toast.restoreUndone": "Restore undone; editor returned to prior state.",
+  "toast.restoreFailed": "Could not restore that cloud snapshot.",
+  "toast.cloudDeleted": "Cloud snapshot deleted.",
+  "toast.deleteFailed": "Could not delete cloud snapshot.",
+  "toast.recoveryGenerated": "Recovery key generated - keep it somewhere private!",
+  "toast.recoveryCopied": "Recovery key copied. Store it safely!",
+  "toast.recoveryCopyFailed": "Copy failed - please select and save the key manually.",
+  "toast.recoveryInvalid": "Recovery details don't look right - double-check handle and key.",
+  "toast.recoveryFailed": "Recovery failed - check your handle and recovery key.",
+  "toast.recoveryLinked": "Cloud history linked to your recovery key.",
+  "toast.recoveryLoaded": "Recovery key loaded - cloud history restored.",
+  "toast.cloudUnreachable": "Cloud history could not be reached.",
+  "toast.cloudUnexpected": "Cloud history returned an unexpected response.",
 };
 
 const zhCN: Dict = {
@@ -798,6 +1073,139 @@ const zhCN: Dict = {
   "fallback.generationFailed": "生成失败。",
   "fallback.demoNotice": "真实提供方失败，LaunchLens 已返回模拟工作台。",
   "format.na": "暂无",
+  "cloud.heading": "云端历史",
+  "cloud.snapshotCount": "{scope}，共 {total} 个快照，已有 {count} 个",
+  "cloud.localOnlyMode": "仅本地模式",
+  "cloud.checking": "正在检查可用性",
+  "cloud.statusUnavailable": "云端状态不可用",
+  "cloud.refresh": "刷新云端历史",
+  "cloud.save": "保存快照",
+  "cloud.unavailableBody": "此部署未配置云端历史。本地自动保存、编辑、生成与导出仍可正常使用。",
+  "cloud.errorFallback": "无法连接云端历史。本地草稿仍可用。",
+  "cloud.errorCodeCopied": "错误代码已复制到剪贴板。",
+  "cloud.copyCode": "复制代码",
+  "cloud.checkingAria": "正在检查云端历史",
+  "cloud.empty": "暂无云端快照。当工作台到达有价值的决策节点时，可保存当前状态。",
+  "cloud.savedPrefix": "已保存 ",
+  "cloud.sharedBadge": "已分享",
+  "cloud.restore": "恢复快照",
+  "cloud.restoreFor": "恢复「{title}」",
+  "cloud.delete": "删除快照",
+  "cloud.deleteFor": "删除「{title}」",
+  "cloud.deleteTitle": "删除云端快照？",
+  "cloud.deleteBody": "「{title}」将从云端历史中永久移除，此操作无法撤销。",
+  "cloud.deleteConfirm": "删除快照",
+  "onboarding.ariaLabel": "快速入门指南",
+  "onboarding.dismiss": "关闭快速入门指南",
+  "onboarding.welcome": "欢迎使用 LaunchLens AI",
+  "onboarding.step1Title": "选择创始人简报",
+  "onboarding.step1Body": "从三个示例简报中选择一个，或自行撰写产品想法。简报会记录你的受众、市场、语气与约束。",
+  "onboarding.step2Title": "生成工作台",
+  "onboarding.step2Body": "点击「生成」按钮。模拟提供方会构建完整的 GTM 方案：用户、痛点、MVP 范围、定价、发布计划与任务。",
+  "onboarding.step3Title": "验证假设",
+  "onboarding.step3Body": "每条假设都是一个待验证的命题。添加证据、设定置信度、记录决策，并关联执行任务。AI 决策助手仅引用你的证据。",
+  "onboarding.step4Title": "保存、分享或导出",
+  "onboarding.step4Body": "若已配置数据库，可保存云端快照并生成隐私安全的分享链接；否则可将工作台导出为 Markdown 或 JSON。",
+  "onboarding.hint": "工作台默认保存在本地；当你选择保存快照时，可使用云端历史。",
+  "onboarding.getStarted": "开始使用",
+  "onboarding.replayAria": "重放快速入门导览",
+  "onboarding.tour": "导览",
+  "shortcuts.showAria": "显示键盘快捷键",
+  "shortcuts.title": "键盘快捷键",
+  "shortcuts.close": "关闭快捷键",
+  "shortcuts.empty": "暂无已注册的快捷键。",
+  "shortcuts.experimentCards": "实验卡片（聚焦时）",
+  "shortcuts.evidenceList": "证据列表（聚焦时）",
+  "shortcuts.moveFocusUp": "上移焦点",
+  "shortcuts.moveFocusDown": "下移焦点",
+  "shortcuts.expandCollapse": "展开 / 折叠",
+  "shortcuts.setStatus": "设置状态（1-4）",
+  "shortcuts.moveEvidenceUp": "上移证据",
+  "shortcuts.moveEvidenceDown": "下移证据",
+  "shortcuts.undoDeleteEvidence": "撤销删除证据",
+  "shortcuts.footerOpenPanel": "按 {key} 打开此面板。按 ",
+  "shortcuts.footerPalette": " 打开命令面板，或按 ",
+  "shortcuts.footerSlash": " 聚焦验证搜索。按 ",
+  "shortcuts.footerEsc": " 关闭最新通知或最上层浮层；按住 ",
+  "shortcuts.footerClear": " 加 ",
+  "shortcuts.footerEnd": " 以清除所有通知。",
+  "shortcut.cat.Actions": "操作",
+  "shortcut.cat.Navigation": "导航",
+  "shortcut.cat.Help": "帮助",
+  "shortcut.desc.generate": "根据简报生成工作台",
+  "shortcut.desc.edit": "切换编辑/预览模式",
+  "shortcut.desc.save": "保存工作台到云端",
+  "shortcut.desc.focusBrief": "聚焦创始人简报输入框",
+  "shortcut.desc.focusSearch": "聚焦验证搜索",
+  "shortcut.desc.collapseAll": "折叠所有区块",
+  "shortcut.desc.expandAll": "展开所有区块",
+  "shortcut.desc.commandPalette": "打开命令面板",
+  "shortcut.desc.toggleShortcuts": "显示键盘快捷键",
+  "shortcut.desc.closeModal": "关闭任何打开的弹窗或对话框",
+  "shortcut.desc.copyMarkdown": "复制工作台为 Markdown",
+  "shortcut.desc.reset": "重置工作台为初始示例",
+  "shortcut.desc.showTour": "重放快速入门导览",
+  "shortcut.desc.addEvidence": "向首个假设添加证据",
+  "shortcut.desc.newHypothesis": "添加新假设",
+  "shortcut.desc.submitEvidence": "提交证据表单（光标在备注中时）",
+  "shortcut.desc.toggleSelectMode": "切换假设多选模式（批量操作）",
+  "shortcut.desc.undo": "撤销最近的验证板编辑",
+  "shortcut.desc.redo": "重做最近撤销的编辑",
+  "share.enableTitle": "启用公开分享链接？",
+  "share.enableBody": "拥有链接的任何人都可查看验证决策与证据计数。证据笔记、来源与创始人简报保持私密。",
+  "share.enableConfirm": "启用并复制链接",
+  "share.linkCopied": "只读分享链接已复制到剪贴板。",
+  "share.linkReady": "分享链接已就绪：{url}",
+  "share.disabled": "公开分享已关闭。",
+  "share.reenabled": "分享已重新启用。",
+  "share.reenableFailed": "无法重新启用分享。",
+  "share.updateFailed": "无法更新分享设置。",
+  "share.copyLink": "复制分享链接",
+  "share.copyLinkFor": "复制「{title}」的分享链接",
+  "share.disable": "关闭分享",
+  "share.disableFor": "关闭「{title}」的分享",
+  "share.enable": "启用分享",
+  "share.for": "分享「{title}」",
+  "share.expiresLegend": "链接有效期",
+  "share.expiryPermanent": "永久有效",
+  "share.expiry7": "7 天后",
+  "share.expiry30": "30 天后",
+  "share.confirm": "确认",
+  "shareExpiry.permanent": " 永久有效。",
+  "shareExpiry.expired": " 已过期。",
+  "shareExpiry.expiresIn": " {label}后过期。",
+  "rowExpiry.expired": "已过期",
+  "rowExpiry.expiresIn": "{days}天后过期",
+  "recovery.title": "账户恢复",
+  "recovery.body": "请私下保存此密钥。持有即可访问云端历史。在创建账户的设备上使用{link}，在新设备上使用{recover}。",
+  "recovery.handle": "账号标识",
+  "recovery.handlePlaceholder": "founder@example.com",
+  "recovery.key": "恢复密钥",
+  "recovery.keyAria": "恢复密钥",
+  "recovery.hide": "隐藏恢复密钥",
+  "recovery.show": "显示恢复密钥",
+  "recovery.copy": "复制恢复密钥",
+  "recovery.generate": "生成密钥",
+  "recovery.link": "关联历史",
+  "recovery.recover": "恢复",
+  "toast.cloudSaved": "云端快照已保存。",
+  "toast.cloudFull": "云端历史已满，请先删除一个快照再保存。",
+  "toast.cloudSaveFailed": "云端保存失败。本地草稿仍安全。",
+  "toast.cloudRestoredEditor": "云端快照已恢复到编辑器。",
+  "toast.undo": "撤销",
+  "toast.restoreUndone": "已撤销恢复；编辑器已回到先前状态。",
+  "toast.restoreFailed": "无法恢复该云端快照。",
+  "toast.cloudDeleted": "云端快照已删除。",
+  "toast.deleteFailed": "无法删除云端快照。",
+  "toast.recoveryGenerated": "恢复密钥已生成 — 请妥善保管！",
+  "toast.recoveryCopied": "恢复密钥已复制。请安全保存！",
+  "toast.recoveryCopyFailed": "复制失败 — 请手动选中并保存密钥。",
+  "toast.recoveryInvalid": "恢复信息有误 — 请核对账号标识与密钥。",
+  "toast.recoveryFailed": "恢复失败 — 请检查账号标识与恢复密钥。",
+  "toast.recoveryLinked": "云端历史已关联到你的恢复密钥。",
+  "toast.recoveryLoaded": "恢复密钥已加载 — 云端历史已恢复。",
+  "toast.cloudUnreachable": "无法连接云端历史。",
+  "toast.cloudUnexpected": "云端历史返回了意外的响应。",
 };
 
 const DICTIONARIES: Record<Locale, Dict> = {

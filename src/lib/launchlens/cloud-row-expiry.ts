@@ -5,14 +5,19 @@
  * Unlike `formatExpiryBadge` which produces human bucket labels
  * ("Expires in 3 weeks"), the row badge has a tighter visual budget
  * and only needs day-resolution: "Expires in 7d" or "Expired". This
- * helper centralises both the label generation and the local-timezone
+ * helper centralises both the badge-key generation and the local-timezone
  * tooltip text so every row in the list reads the same.
+ *
+ * Returns an i18n descriptor `{ key, params, title }` rather than a
+ * pre-rendered label string so the caller can translate the badge with
+ * its active locale. `title` is a local-tz timestamp (dates are locale-
+ * independent of the UI language) and is rendered verbatim.
  *
  * Inputs are the same ISO timestamp the workspace record already
  * stores. The function:
  * - clamps the remaining days to a minimum of 1 when still in the
  *   future (so "Expires in 1d" reads as "today/tomorrow", not "0d"),
- * - emits "Expired" once the timestamp is in the past,
+ * - emits `rowExpiry.expired` once the timestamp is in the past,
  * - returns `null` when there is no expiry at all so the caller can
  *   skip rendering the badge entirely.
  *
@@ -20,7 +25,8 @@
  * deterministically in unit tests.
  */
 export type CloudRowExpiry = {
-  label: string;
+  key: "rowExpiry.expired" | "rowExpiry.expiresIn";
+  params?: Record<string, string>;
   title: string;
 };
 
@@ -33,14 +39,15 @@ export function cloudRowExpiry(
   if (Number.isNaN(target)) return null;
   if (target <= now) {
     return {
-      label: "Expired",
-      title: "Expired " + new Date(target).toLocaleString(),
+      key: "rowExpiry.expired",
+      title: new Date(target).toLocaleString(),
     };
   }
   const ms = target - now;
   const days = Math.max(1, Math.ceil(ms / 86_400_000));
   return {
-    label: "Expires in " + days + "d",
-    title: "Expires " + new Date(target).toLocaleString(),
+    key: "rowExpiry.expiresIn",
+    params: { days: String(days) },
+    title: new Date(target).toLocaleString(),
   };
 }
