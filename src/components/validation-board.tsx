@@ -23,6 +23,7 @@ import {
   X,
 } from "lucide-react";
 import { memo, useCallback, useEffect, useDeferredValue, useMemo, useRef, useState } from "react";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { useSrAnnounce } from "@/hooks/use-sr-announce";
 import { parseInlineMarkdown } from "@/lib/launchlens/inline-markdown";
 import { decisionSourceFromExperiment, normalizeDecisionBrief } from "@/lib/launchlens/decision";
@@ -169,6 +170,20 @@ const EVIDENCE_SNIPPETS: { label: string; source: string; note: string }[] = [
   { label: "Churn", source: "Churn interview", note: "Left because " },
 ];
 
+// Map snippet button labels to their i18n keys. The prefill `source`/`note`
+// template strings stay as-is (they seed editable draft text); only the
+// visible button label is translated.
+const SNIPPET_LABEL_KEYS: Record<string, string> = {
+  Interview: "vBoard.snippet.interview",
+  Survey: "vBoard.snippet.survey",
+  Review: "vBoard.snippet.review",
+  Support: "vBoard.snippet.support",
+  Analytics: "vBoard.snippet.analytics",
+  Usability: "vBoard.snippet.usability",
+  "Sales call": "vBoard.snippet.salesCall",
+  Churn: "vBoard.snippet.churn",
+};
+
 export function ValidationBoard({
   execution,
   tasks,
@@ -207,6 +222,65 @@ export function ValidationBoard({
 
   const { announce: srAnnounce, message: srEvidenceAnnouncement } = useSrAnnounce();
   const { showToast } = useToast();
+  const { t } = useLocale();
+
+  // Display labels + descriptions for the validation-board enums. The shared
+  // constants (EXPERIMENT_STATUS_LABELS, SIGNAL_LABELS, …) stay English so the
+  // Markdown / JSON exporters keep stable output; the board translates at the
+  // call site via these locale-aware maps.
+  const STATUS_LABEL = {
+    untested: "vBoard.status.untested",
+    testing: "vBoard.status.testing",
+    supported: "vBoard.status.supported",
+    refuted: "vBoard.status.refuted",
+  } as const;
+  const STATUS_DESC = {
+    untested: "vBoard.statusDesc.untested",
+    testing: "vBoard.statusDesc.testing",
+    supported: "vBoard.statusDesc.supported",
+    refuted: "vBoard.statusDesc.refuted",
+  } as const;
+  const SIGNAL_LABEL = {
+    supports: "vBoard.signal.supports",
+    challenges: "vBoard.signal.challenges",
+    neutral: "vBoard.signal.neutral",
+  } as const;
+  const SIGNAL_DESC = {
+    supports: "vBoard.signalDesc.supports",
+    challenges: "vBoard.signalDesc.challenges",
+    neutral: "vBoard.signalDesc.neutral",
+  } as const;
+  const WEIGHT_LABEL = {
+    anecdotal: "vBoard.weight.anecdotal",
+    moderate: "vBoard.weight.moderate",
+    strong: "vBoard.weight.strong",
+  } as const;
+  const WEIGHT_DESC = {
+    anecdotal: "vBoard.weightDesc.anecdotal",
+    moderate: "vBoard.weightDesc.moderate",
+    strong: "vBoard.weightDesc.strong",
+  } as const;
+  const CONFIDENCE_LABEL = {
+    low: "vBoard.confidence.low",
+    medium: "vBoard.confidence.medium",
+    high: "vBoard.confidence.high",
+  } as const;
+  const CONFIDENCE_DESC = {
+    low: "vBoard.confidenceDesc.low",
+    medium: "vBoard.confidenceDesc.medium",
+    high: "vBoard.confidenceDesc.high",
+  } as const;
+  const statusLabel = (status: ExperimentStatus) => t(STATUS_LABEL[status]);
+  const statusDesc = (status: ExperimentStatus) => t(STATUS_DESC[status]);
+  const signalLabel = (signal: EvidenceSignal) => t(SIGNAL_LABEL[signal]);
+  const signalDesc = (signal: EvidenceSignal) => t(SIGNAL_DESC[signal]);
+  const weightLabel = (weight: EvidenceWeight) => t(WEIGHT_LABEL[weight]);
+  const weightDesc = (weight: EvidenceWeight) => t(WEIGHT_DESC[weight]);
+  const confidenceLabel = (c: ConfidenceLevel) => t(CONFIDENCE_LABEL[c]);
+  const confidenceDesc = (c: ConfidenceLevel) => t(CONFIDENCE_DESC[c]);
+  const DIRECTION_LABEL = { up: "vBoard.direction.up", down: "vBoard.direction.down" } as const;
+  const directionLabel = (d: "up" | "down") => t(DIRECTION_LABEL[d]);
+
   const evidenceListRef = useRef<HTMLUListElement | null>(null);
   const noteTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const newExperimentInputRef = useRef<HTMLInputElement | null>(null);
@@ -245,15 +319,15 @@ export function ValidationBoard({
     if (!prev) return;
     redoStack.current.push({ snapshot: structuredClone(execution), label: prev.label });
     applyHistory(prev.snapshot);
-    srAnnounce("Undo"); showToast("Undo: " + prev.label, "info", 1800);
-  }, [execution, applyHistory, srAnnounce, showToast]);
+    srAnnounce(t("vBoard.toast.undo")); showToast(t("vBoard.toast.undo") + ": " + prev.label, "info", 1800);
+  }, [execution, applyHistory, srAnnounce, showToast, t]);
   const redo = useCallback(() => {
     const next = redoStack.current.pop();
     if (!next) return;
     undoStack.current.push({ snapshot: structuredClone(execution), label: next.label });
     applyHistory(next.snapshot);
-    srAnnounce("Redo"); showToast("Redo: " + next.label, "info", 1800);
-  }, [execution, applyHistory, srAnnounce, showToast]);
+    srAnnounce(t("vBoard.toast.redo")); showToast(t("vBoard.toast.redo") + ": " + next.label, "info", 1800);
+  }, [execution, applyHistory, srAnnounce, showToast, t]);
   const flashEvidenceTimer = useRef<number | null>(null);
   function onTimelineEventClick(experimentId: string, kind: string, targetId?: string) {
     setTimelinePulseKey(experimentId);
@@ -312,7 +386,7 @@ export function ValidationBoard({
       setActiveExperimentId(first.id);
       setRequestedExpandedExperimentId(first.id);
       setIsAddingExperiment(false);
-      srAnnounce("Opening evidence form for first hypothesis.");
+      srAnnounce(t("vBoard.sr.openEvidenceForm"));
       setTimeout(() => {
         document.getElementById(`evidence-source-${first.id}`)?.focus();
       }, 50);
@@ -320,7 +394,7 @@ export function ValidationBoard({
     newHypothesis: () => {
       setIsAddingExperiment(true);
       setActiveExperimentId("");
-      srAnnounce("Opening new hypothesis form.");
+      srAnnounce(t("vBoard.sr.openNewHypothesis"));
       setTimeout(() => {
         document.querySelector<HTMLInputElement>('[data-new-experiment-input]')?.focus();
       }, 50);
@@ -332,16 +406,16 @@ export function ValidationBoard({
   const noteLen = draft.note.length;
   const sourceError = (
     (draftTouched.source && draft.source.trim().length < 2)
-      ? "Source needs at least 2 characters."
+      ? t("vBoard.err.sourceShort")
       : sourceLen > SOURCE_MAX
-      ? "Source is too long (max " + SOURCE_MAX + " characters)."
+      ? t("vBoard.err.sourceLong", { max: SOURCE_MAX })
       : ""
   );
   const noteError = (
     (draftTouched.note && draft.note.trim().length < 8)
-      ? "Observation needs at least 8 characters."
+      ? t("vBoard.err.noteShort")
       : noteLen > NOTE_MAX
-      ? "Observation is too long (max " + NOTE_MAX + " characters)."
+      ? t("vBoard.err.noteLong", { max: NOTE_MAX })
       : ""
   );
   const sourceNear = sourceLen > SOURCE_MAX * 0.8 && sourceLen <= SOURCE_MAX;
@@ -388,6 +462,7 @@ export function ValidationBoard({
   );
 
 function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { onDuplicate: () => void; onEdit: () => void; onDelete: () => void; sourceLabel: string }) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
@@ -419,7 +494,7 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
         onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={`More actions for evidence from ${sourceLabel}`}
+        aria-label={t("vBoard.overflowAria", { source: sourceLabel })}
         className="flex size-11 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
       >
         <MoreHorizontal className="size-4" aria-hidden="true" />
@@ -427,13 +502,13 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
       {open && (
         <div role="menu" className="absolute right-0 top-full z-50 mt-1 min-w-[10rem] overflow-hidden rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg" onClick={(e) => e.stopPropagation()}>
           <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); close(); onDuplicate(); }} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:bg-accent">
-            <Copy className="size-4" aria-hidden="true" /> Duplicate
+            <Copy className="size-4" aria-hidden="true" /> {t("vBoard.overflowDuplicate")}
           </button>
           <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); close(); onEdit(); }} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:bg-accent">
-            <PencilLine className="size-4" aria-hidden="true" /> Edit
+            <PencilLine className="size-4" aria-hidden="true" /> {t("vBoard.overflowEdit")}
           </button>
           <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); close(); onDelete(); }} className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm text-signal-challenges hover:bg-accent hover:text-signal-challenges focus-visible:outline-none focus-visible:bg-accent">
-            <Trash2 className="size-4" aria-hidden="true" /> Delete
+            <Trash2 className="size-4" aria-hidden="true" /> {t("vBoard.overflowDelete")}
           </button>
         </div>
       )}
@@ -602,7 +677,7 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
     setIsAddingExperiment(false);
     setRequestedExpandedExperimentId(newExperiment.id);
     if (statusFilter !== "all") setStatusFilter("all");
-    srAnnounce("New hypothesis added: " + newExperiment.assumption);
+    srAnnounce(t("vBoard.sr.newHypothesis", { assumption: newExperiment.assumption }));
     window.requestAnimationFrame(() => {
       const element = document.querySelector(
         `[data-experiment-article][data-experiment-id="${newExperiment.id}"]`,
@@ -624,10 +699,10 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
     const md = validationExperimentToMarkdown(experiment);
     const ok = await copyTextToClipboard(md);
     if (ok) {
-      showToast("Hypothesis markdown copied", "success", 2500);
-      srAnnounce("Hypothesis markdown copied to clipboard.");
+      showToast(t("vBoard.toast.hypMdCopied"), "success", 2500);
+      srAnnounce(t("vBoard.toast.hypMdCopiedSr"));
     } else {
-      showToast("Could not copy to clipboard", "error", 3000);
+      showToast(t("vBoard.toast.clipboardFail"), "error", 3000);
     }
   }
 
@@ -640,10 +715,10 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
       "text/markdown;charset=utf-8",
     );
     if (ok) {
-      showToast("Markdown downloaded", "success", 2000);
-      srAnnounce("Hypothesis markdown downloaded.");
+      showToast(t("vBoard.toast.mdDownloaded"), "success", 2000);
+      srAnnounce(t("vBoard.toast.hypMdDownloadedSr"));
     } else {
-      showToast("Could not start markdown download", "error", 3000);
+      showToast(t("vBoard.toast.mdDownloadFail"), "error", 3000);
     }
   }
 
@@ -656,10 +731,10 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
       "application/json;charset=utf-8",
     );
     if (ok) {
-      showToast("JSON downloaded", "success", 2000);
-      srAnnounce("Hypothesis JSON downloaded.");
+      showToast(t("vBoard.toast.jsonDownloaded"), "success", 2000);
+      srAnnounce(t("vBoard.toast.hypJsonDownloadedSr"));
     } else {
-      showToast("Could not start JSON download", "error", 3000);
+      showToast(t("vBoard.toast.jsonDownloadFail"), "error", 3000);
     }
   }
 
@@ -675,10 +750,10 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
     const md = validationBoardToMarkdown(execution.experiments);
     const ok = await copyTextToClipboard(md);
     if (ok) {
-      showToast("Validation board copied as markdown", "success", 2500);
-      srAnnounce("Validation board markdown copied to clipboard.");
+      showToast(t("vBoard.toast.boardMdCopied"), "success", 2500);
+      srAnnounce(t("vBoard.toast.boardMdCopiedSr"));
     } else {
-      showToast("Could not copy to clipboard", "error", 3000);
+      showToast(t("vBoard.toast.clipboardFail"), "error", 3000);
     }
     setBoardExportOpen(false);
   }
@@ -692,10 +767,10 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
       "text/markdown;charset=utf-8",
     );
     if (ok) {
-      showToast("Markdown downloaded", "success", 2000);
-      srAnnounce("Validation board markdown downloaded.");
+      showToast(t("vBoard.toast.mdDownloaded"), "success", 2000);
+      srAnnounce(t("vBoard.toast.boardMdDownloadedSr"));
     } else {
-      showToast("Could not start markdown download", "error", 3000);
+      showToast(t("vBoard.toast.mdDownloadFail"), "error", 3000);
     }
     setBoardExportOpen(false);
   }
@@ -709,10 +784,10 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
       "application/json;charset=utf-8",
     );
     if (ok) {
-      showToast("JSON downloaded", "success", 2000);
-      srAnnounce("Validation board JSON downloaded.");
+      showToast(t("vBoard.toast.jsonDownloaded"), "success", 2000);
+      srAnnounce(t("vBoard.toast.boardJsonDownloadedSr"));
     } else {
-      showToast("Could not start JSON download", "error", 3000);
+      showToast(t("vBoard.toast.jsonDownloadFail"), "error", 3000);
     }
     setBoardExportOpen(false);
   }
@@ -769,7 +844,7 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
       }
     }
 
-    srAnnounce("Evidence signal changed to " + nextSignal + ".");
+    srAnnounce(t("vBoard.sr.signalChanged", { signal: signalLabel(nextSignal) }));
   }
 
   function cycleEvidenceWeight(experimentId: string, evidenceId: string) {
@@ -809,7 +884,7 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
       }
     }
 
-    srAnnounce("Evidence weight changed to " + nextWeight + ".");
+    srAnnounce(t("vBoard.sr.weightChanged", { weight: weightLabel(nextWeight) }));
   }
 
   function moveExperiment(draggedId: string, targetId: string) {
@@ -854,53 +929,53 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
   const setSelectedStatus = useCallback((status: ExperimentStatus) => {
     if (batchCount === 0) return;
     pushHistory(execution, `bulk status ${status}`); onChange({ ...execution, experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, status } : e), updatedAt: new Date().toISOString() });
-    const msg = `Set ${batchCount} hypotheses to ${status}.`;
-    showToast(msg, "success", 5000, { label: "Undo", onClick: () => undo() });
+    const msg = t("vBoard.toast.bulkStatus", { count: batchCount, status: statusLabel(status) });
+    showToast(msg, "success", 5000, { label: t("vBoard.toast.undoLabel"), onClick: () => undo() });
     srAnnounce(msg);
-  }, [batchCount, execution, onChange, selectedExperimentIds, showToast, srAnnounce, undo]);
+  }, [batchCount, execution, onChange, selectedExperimentIds, showToast, srAnnounce, undo, t, statusLabel]);
   const performBatchArchive = useCallback((archived: boolean) => {
     if (batchCount === 0) return;
     pushHistory(execution, archived ? "bulk archive" : "bulk unarchive"); onChange({ ...execution, experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, archived } : e), updatedAt: new Date().toISOString() });
-    const msg = archived ? `Archived ${batchCount} hypotheses.` : `Unarchived ${batchCount} hypotheses.`;
-    showToast(msg, "success", 5000, { label: "Undo", onClick: () => undo() });
+    const msg = archived ? t("vBoard.toast.bulkArchived", { count: batchCount }) : t("vBoard.toast.bulkUnarchived", { count: batchCount });
+    showToast(msg, "success", 5000, { label: t("vBoard.toast.undoLabel"), onClick: () => undo() });
     srAnnounce(msg);
-  }, [batchCount, execution, onChange, selectedExperimentIds, showToast, srAnnounce, undo]);
+  }, [batchCount, execution, onChange, selectedExperimentIds, showToast, srAnnounce, undo, t]);
   const batchArchive = useCallback((archived: boolean) => {
     if (batchCount === 0) return;
     if (archived) { setPendingBatch({ kind: "archive", count: batchCount }); return; }
     performBatchArchive(false);
   }, [batchCount, performBatchArchive, setPendingBatch]);
   function batchAddTag(tag: string) {
-    const t = tag.trim();
-    if (!t || batchCount === 0) return;
+    const tagName = tag.trim();
+    if (!tagName || batchCount === 0) return;
     pushHistory(execution, "bulk add tag");
     onChange({
       ...execution,
-      experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, tags: Array.from(new Set([...(e.tags || []), t])) } : e),
+      experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, tags: Array.from(new Set([...(e.tags || []), tagName])) } : e),
       updatedAt: new Date().toISOString(),
     });
-    const msg = `Added tag "${t}" to ${batchCount} hypotheses.`;
-    showToast(msg, "success", 5000, { label: "Undo", onClick: () => undo() });
+    const msg = t("vBoard.toast.bulkTagAdded", { tag: tagName, count: batchCount });
+    showToast(msg, "success", 5000, { label: t("vBoard.toast.undoLabel"), onClick: () => undo() });
     srAnnounce(msg);
   }
   function batchRemoveTag(tag: string) {
-    const t = tag.trim();
-    if (!t || batchCount === 0) return;
+    const tagName = tag.trim();
+    if (!tagName || batchCount === 0) return;
     pushHistory(execution, "bulk remove tag");
     onChange({
       ...execution,
-      experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, tags: (e.tags || []).filter((x) => x !== t) } : e),
+      experiments: execution.experiments.map((e) => selectedExperimentIds.has(e.id) ? { ...e, tags: (e.tags || []).filter((x) => x !== tagName) } : e),
       updatedAt: new Date().toISOString(),
     });
-    const msg = `Removed tag "${t}" from ${batchCount} hypotheses.`;
-    showToast(msg, "success", 5000, { label: "Undo", onClick: () => undo() });
+    const msg = t("vBoard.toast.bulkTagRemoved", { tag: tagName, count: batchCount });
+    showToast(msg, "success", 5000, { label: t("vBoard.toast.undoLabel"), onClick: () => undo() });
     srAnnounce(msg);
   }
   async function batchGenerateBriefs() {
     if (batchCount === 0 || isBatchBriefing) return;
     const selectedExps = execution.experiments.filter((e) => selectedExperimentIds.has(e.id) && e.evidence.length > 0 && !e.decisionBrief);
     if (selectedExps.length === 0) {
-      showToast("All selected hypotheses already have briefs or have no evidence.", "info");
+      showToast(t("vBoard.toast.bulkNoBriefs"), "info");
       return;
     }
     setIsBatchBriefing(true);
@@ -926,12 +1001,12 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
     pushHistory(execution, "generate briefs"); onChange({ ...execution, experiments: updated, updatedAt: new Date().toISOString() });
     setIsBatchBriefing(false);
     const summary = `Generated ${success} brief${success === 1 ? "" : "s"}${failed > 0 ? `; ${failed} failed` : ""}.`;
-    showToast(summary, failed > 0 ? "error" : "success", 6000, { label: "Undo", onClick: () => undo() });
+    showToast(summary, failed > 0 ? "error" : "success", 6000, { label: t("vBoard.toast.undoLabel"), onClick: () => undo() });
     srAnnounce(summary);
   }
   function applyBatchTagFromInput(mode: "add" | "remove") {
-    const tags = batchTagInput.split(/[,;\s]+/).map((t) => t.trim()).filter(Boolean);
-    tags.forEach((t) => (mode === "add" ? batchAddTag(t) : batchRemoveTag(t)));
+    const tags = batchTagInput.split(/[,;\s]+/).map((tg) => tg.trim()).filter(Boolean);
+    tags.forEach((tg) => (mode === "add" ? batchAddTag(tg) : batchRemoveTag(tg)));
     setBatchTagInput("");
     setBatchTagMode(null);
   }
@@ -946,7 +1021,7 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
     });
     setSelectedExperimentIds(new Set());
     const msg = `Deleted ${toDelete.size} hypotheses.`;
-    showToast(msg, "success", 6000, { label: "Undo", onClick: () => undo() });
+    showToast(msg, "success", 6000, { label: t("vBoard.toast.undoLabel"), onClick: () => undo() });
     srAnnounce(msg);
   }
   function batchDeleteExperiments() {
@@ -1039,7 +1114,7 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
     removed.forEach((ev) => pushHistoryEvent(expId, { kind: "evidence_removed", source: ev.source, targetId: ev.id, label: ev.note.slice(0, 60) }));
     setSelectedEvidenceIds((prev) => ({ ...prev, [expId]: new Set() }));
     setEvidenceSelectMode((prev) => ({ ...prev, [expId]: false }));
-    showToast(ids.size + " evidence items deleted.", "success", 5000, { label: "Undo", onClick: () => undo() });
+    showToast(t("vBoard.evidenceItems", { count: ids.size }) + " " + t("vBoard.toast.evidenceDeleted"), "success", 5000, { label: t("vBoard.toast.undoLabel"), onClick: () => undo() });
   }
   
   function bulkSetEvidenceWeight(expId: string, weight: "strong" | "moderate" | "anecdotal") {
@@ -1056,7 +1131,7 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
       }),
       updatedAt: new Date().toISOString(),
     });
-    showToast("Set weight to " + weight + " on " + ids.size + " items.", "success", 5000, { label: "Undo", onClick: () => undo() });
+    showToast(t("vBoard.toast.evidenceWeightSet", { weight, count: ids.size }), "success", 5000, { label: t("vBoard.toast.undoLabel"), onClick: () => undo() });
   }
 
   function bulkSetEvidenceSignal(expId: string, signal: "supports" | "challenges" | "neutral") {
@@ -1073,7 +1148,7 @@ function EvidenceOverflowMenu({ onDuplicate, onEdit, onDelete, sourceLabel }: { 
       }),
       updatedAt: new Date().toISOString(),
     });
-    showToast("Set " + ids.size + " items to " + signal + ".", "success", 5000, { label: "Undo", onClick: () => undo() });
+    showToast(t("vBoard.toast.evidenceSignalSet", { count: ids.size, signal }), "success", 5000, { label: t("vBoard.toast.undoLabel"), onClick: () => undo() });
   }
 
   function toggleHypothesisPin(experimentId: string) {
@@ -1161,8 +1236,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
     }
 
     srAnnounce("Evidence from " + evidence.source + " removed. Press Ctrl+Z to undo.");
-    showToast("Evidence removed", "info", 5000, {
-      label: "Undo",
+    showToast(t("vBoard.toast.evidenceRemoved"), "info", 5000, {
+      label: t("vBoard.toast.undoLabel"),
       onClick: () => undoDeleteEvidence(),
     });
     setPendingDeleteId(null);
@@ -1186,8 +1261,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
     });
     if (activeExperimentId === experimentId) setActiveExperimentId("");
     if (requestedExpandedExperimentId === experimentId) setRequestedExpandedExperimentId(null);
-    showToast("Hypothesis removed", "info", 5000, {
-      label: "Undo",
+    showToast(t("vBoard.toast.hypothesisRemoved"), "info", 5000, {
+      label: t("vBoard.toast.undoLabel"),
       onClick: () => undoDeleteExperiment(),
     });
     if (experimentUndoTimerRef.current) window.clearTimeout(experimentUndoTimerRef.current);
@@ -1799,7 +1874,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
   }
 
   return (
-    <section id="validation-board" aria-label="Validation loop" className="overflow-hidden rounded-md border border-card bg-card shadow-[0_24px_80px_-68px_rgba(17,19,18,0.55)]">
+    <section id="validation-board" aria-label={t("vBoard.sectionAria")} className="overflow-hidden rounded-md border border-card bg-card shadow-[0_24px_80px_-68px_rgba(17,19,18,0.55)]">
       <span role="status" aria-live="polite" className="sr-only">
         {srEvidenceAnnouncement}
       </span>
@@ -1846,7 +1921,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
               onClick={() => setShowWeightPicker(!showWeightPicker)}
               aria-haspopup="menu"
               aria-expanded={showWeightPicker}
-              aria-label="Progress weight preset"
+              aria-label={t("vBoard.progress")}
               className="flex w-full items-center justify-between gap-2 rounded-md border border-input bg-card px-3 py-1.5 text-xs text-foreground/70 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
             >
               <span className="font-medium">
@@ -1963,10 +2038,10 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
             onClick={() => { setSelectMode((v) => { if (v) setSelectedExperimentIds(new Set()); return !v; }); }}
             aria-pressed={selectMode}
             className={"flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 " + (selectMode ? "border-accent bg-accent text-primary-text" : "border-input bg-card text-foreground/80 hover:border-accent hover:text-foreground")}
-            title="Select multiple hypotheses"
+            title={t("vBoard.selectModeTitle")}
           >
             <CheckSquare className="size-3.5" aria-hidden="true" />
-            <span className="hidden sm:inline">Select</span>
+            <span className="hidden sm:inline">{t("vBoard.select")}</span>
           </button>
           <ValidationBoardExportMenu
             open={boardExportOpen}
@@ -1983,8 +2058,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
             className="flex items-center gap-1 rounded-md bg-accent px-2.5 py-1 text-xs font-medium text-primary-text transition hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
           >
             <Plus className="size-3.5" aria-hidden="true" />
-            <span className="hidden sm:inline">New hypothesis</span>
-            <span className="sm:hidden">New</span>
+            <span className="hidden sm:inline">{t("vBoard.newHypothesis")}</span>
+            <span className="sm:hidden">{t("vBoard.newShort")}</span>
           </button>
         </div>
       </div>
@@ -1992,7 +2067,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
         <div className="border-b border-card bg-input p-3 sm:p-5">
           <label className="block">
             <span className="mb-1.5 block text-xs font-semibold uppercase text-muted">
-              New hypothesis
+              {t("vBoard.newHypothesisLabel")}
             </span>
             {(() => {
                 const trimmed = newExperimentDraft.trim();
@@ -2001,15 +2076,15 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                   isDuplicateAssumption(trimmed, execution.experiments);
                 const tooShort = trimmed.length > 0 && trimmed.length < 5;
                 return (<>
-                  <p id="new-hypothesis-hint" className="sr-only">At least 5 characters. Press Enter to add.</p>
-                  {(tooShort || dup) && <p id="new-hypothesis-error" role="alert" className="mt-1 text-[11px] text-signal-challenges">{dup ? "An identical hypothesis already exists." : "Use at least 5 characters."}</p>}
+                  <p id="new-hypothesis-hint" className="sr-only">{t("vBoard.newHypothesisHint")}</p>
+                  {(tooShort || dup) && <p id="new-hypothesis-error" role="alert" className="mt-1 text-[11px] text-signal-challenges">{dup ? t("vBoard.newHypothesisDup") : t("vBoard.newHypothesisTooShort")}</p>}
                 </>);
               })()}
             <input
               type="text"
               value={newExperimentDraft}
               onChange={(e) => setNewExperimentDraft(e.target.value)}
-              placeholder="What assumption do you want to validate?"
+              placeholder={t("vBoard.newHypothesisPlaceholder")}
               autoFocus
               ref={newExperimentInputRef}
               data-new-experiment-input
@@ -2047,7 +2122,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                 }
               }}
               onBlur={() => commitNewExperimentTag()}
-              placeholder="Add tags (press Enter to add, e.g. acquisition)"
+              placeholder={t("vBoard.tagPlaceholder")}
               list="existing-tags-datalist"
               className="h-8 flex-1 rounded-md border border-input bg-card px-3 text-xs text-foreground outline-none focus:border-accent focus:ring-1 focus:ring-accent"
             />
@@ -2063,7 +2138,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
               }}
               className="rounded-md px-3 py-1.5 text-xs font-medium text-muted transition hover:text-foreground"
             >
-              Cancel
+              {t("vBoard.cancel")}
             </button>
             <button
               type="button"
@@ -2071,7 +2146,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
               disabled={isInvalidNewExperimentDraft()}
               className="rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-primary-text transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Add hypothesis
+              {t("vBoard.addHypothesis")}
             </button>
           </div>
         </div>
@@ -2079,9 +2154,9 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
       <div className="divide-y divide-[#edf0ea]">
         {filteredExperiments.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-sm font-semibold text-foreground">No validation experiments yet</p>
+            <p className="text-sm font-semibold text-foreground">{t("vBoard.emptyTitle")}</p>
             <p className="mt-0.5 text-xs leading-5 text-muted sm:mt-1 sm:text-sm sm:leading-6">
-              Generate a workspace to seed starter assumptions, or add new hypotheses once your brief is in place.
+              {t("vBoard.emptyBody")}
             </p>
           </div>
         ) : null}
@@ -2124,7 +2199,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
               tabIndex={focusedExperimentId === null ? (index === 0 ? 0 : -1) : focusedExperimentId === experiment.id ? 0 : -1}
               onFocus={() => setFocusedExperimentId(experiment.id)}
               onKeyDown={(e) => handleExperimentKeyDown(e, experiment.id)}
-              aria-label={`Hypothesis ${index + 1}: ${experiment.assumption}. Status: ${EXPERIMENT_STATUS_LABELS[experiment.status]}. ${experiment.evidence.length} evidence items.}`}
+              aria-label={t("vBoard.hypothesisAria", { index: index + 1, assumption: experiment.assumption, status: statusLabel(experiment.status), count: experiment.evidence.length })}
               className={
                 "relative flex flex-col rounded-md border bg-card p-5 outline-none transition focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset " +
                 (draggedExperimentId === experiment.id ? "opacity-40 " : "") +
@@ -2149,7 +2224,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                     )}
                     <button
                       type="button"
-                      data-experiment-grip={experiment.id} aria-label="Drag to reorder hypothesis (Alt+Up/Down to move)" title="Drag to reorder (Alt+Up/Down when focused)"
+                      data-experiment-grip={experiment.id} aria-label={t("vBoard.gripAria")} title={t("vBoard.gripTitle")}
                       className="-ml-1 flex h-5 w-4 shrink-0 cursor-grab items-center justify-center rounded-sm text-muted/40 transition hover:bg-muted hover:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent active:cursor-grabbing"
                       tabIndex={0}
                       onKeyDown={(event) => {
@@ -2196,15 +2271,15 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                     </span>
                     <span
                       role="status"
-                      aria-label={`Validation status: ${EXPERIMENT_STATUS_LABELS[experiment.status]}. ${STATUS_DESCRIPTIONS[experiment.status] || ""}`}
-                      title={STATUS_DESCRIPTIONS[experiment.status] || ""}
+                      aria-label={t("vBoard.statusAria", { status: statusLabel(experiment.status), desc: statusDesc(experiment.status) })}
+                      title={statusDesc(experiment.status)}
                       className={`rounded-md px-2 py-1 text-xs font-semibold ${statusClass(experiment.status)}`}
                     >
                       {EXPERIMENT_STATUS_LABELS[experiment.status]}
                     </span>
                     <span
-                      aria-label={`Confidence: ${experiment.confidence}. ${CONFIDENCE_DESCRIPTIONS[experiment.confidence]}` + (experiment.confidenceManual ? ", manually set" : experiment.evidence.length > 0 ? ", auto-computed from evidence" : "")}
-                      title={CONFIDENCE_DESCRIPTIONS[experiment.confidence] + (experiment.confidenceManual ? " (manually set)" : experiment.evidence.length > 0 ? " (auto from evidence)" : "")}
+                      aria-label={t("vBoard.confidenceAria", { confidence: confidenceLabel(experiment.confidence), desc: confidenceDesc(experiment.confidence), mode: experiment.confidenceManual ? t("vBoard.confidenceManualSuffix") : (experiment.evidence.length > 0 ? t("vBoard.confidenceAutoEvidenceSuffix") : "") })}
+                      title={confidenceDesc(experiment.confidence) + (experiment.confidenceManual ? " (" + t("vBoard.confidenceManualSuffix") + ")" : experiment.evidence.length > 0 ? " (" + t("vBoard.confidenceAutoEvidenceSuffix") + ")" : "")}
                       className={
                         "inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold " +
                         (experiment.confidence === "low"
@@ -2319,8 +2394,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                        }
                        aria-expanded={exportMenuId === experiment.id}
                        aria-haspopup="true"
-                       aria-label="Export hypothesis"
-                       title="Export hypothesis"
+                       aria-label={t("vBoard.exportAria")}
+                       title={t("vBoard.exportTitle")}
                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-input bg-card text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:h-10 sm:w-10"
                      >
                        <Download className="size-4" aria-hidden="true" />
@@ -2380,7 +2455,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                         deleteExperiment(experiment.id);
                       }
                     }}
-                    aria-label="Remove hypothesis"
+                    aria-label={t("vBoard.removeHypothesisAria")}
                     className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-input bg-card text-muted transition hover:border-signal-challenges hover:text-signal-challenges focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1 sm:h-10 sm:w-10"
                   >
                     <Trash2 className="size-4" aria-hidden="true" />
@@ -2437,9 +2512,9 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           }));
                         }}
                         className="inline-flex items-center gap-1 rounded-full border border-dashed border-muted px-2 py-0.5 text-[10px] font-semibold uppercase text-muted transition hover:border-accent hover:text-accent"
-                        aria-label="Reset confidence to auto-calculated"
+                        aria-label={t("vBoard.confidenceTitleAuto")}
                       >
-                        Manual
+                        {t("vBoard.confidenceManualLabel")}
                       </button>
                     )}
                   </span>
@@ -2469,20 +2544,20 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       }
                       className="h-12 w-full appearance-none rounded-md border border-input bg-input pl-10 pr-8 text-sm font-semibold capitalize text-foreground outline-none transition-all duration-500 focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)] sm:h-10 data-[flash=true]:scale-[1.02] data-[conf=low]:text-signal-challenges data-[conf=medium]:text-signal-supports data-[conf=high]:text-signal-supports"
                     >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
+                    <option value="low">{t("vBoard.confidence.low")}</option>
+                    <option value="medium">{t("vBoard.confidence.medium")}</option>
+                    <option value="high">{t("vBoard.confidence.high")}</option>
                   </select>
                   </div>
                   <span className="mt-1 block text-xs leading-5 text-muted">
-                    Product judgment, not statistical certainty.
+                    {t("vBoard.confidenceHint")}
                   </span>
                 </label>
 
                 <label className="block">
                   <span className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase text-muted">
                     <Link2 className="size-3.5" aria-hidden="true" />
-                    Linked execution task
+                    {t("vBoard.linkedTaskLabel")}
                   </span>
                   <select
                     value={experiment.linkedTaskId}
@@ -2494,7 +2569,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                     }
                     className="h-10 w-full rounded-md border border-input bg-input px-3 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   >
-                    <option value="">No linked task</option>
+                    <option value="">{t("vBoard.noLinkedTask")}</option>
                     {tasks.map((task, taskIndex) => (
                       <option
                         key={taskIdentity(task, taskIndex)}
@@ -2513,13 +2588,13 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                 const challengesCount = experiment.evidence.filter((e) => e.signal === "challenges").length;
                 const neutralCount = experiment.evidence.filter((e) => e.signal === "neutral").length;
                 const setSig = (s: "all" | EvidenceSignal) => setEvidenceFilters((prev) => patchEvidenceFilter(prev, experiment.id, { signal: s }, { signal: "all" as const, weight: "all" as const }));
-                const chipTitleForSignal = (sig: "all" | EvidenceSignal) => sig === "all" ? "Show all evidence" : SIGNAL_DESCRIPTIONS[sig];
+                const chipTitleForSignal = (sig: "all" | EvidenceSignal) => sig === "all" ? t("vBoard.chipShowAllSignal") : signalDesc(sig);
                 return (<>
                   <div className="mt-3 flex flex-wrap items-center gap-1">
-                    <FilterChip label="All" count={experiment.evidence.length} active={ef.signal === "all"} onClick={() => setSig("all")} title={chipTitleForSignal("all")} ariaLabelPrefix="Filter evidence by signal" ariaValue="all" />
-                    <FilterChip label="Supports" count={supportsCount} active={ef.signal === "supports"} onClick={() => setSig("supports")} title={chipTitleForSignal("supports")} ariaLabelPrefix="Filter evidence by signal" ariaValue="supports" />
-                    <FilterChip label="Challenges" count={challengesCount} active={ef.signal === "challenges"} onClick={() => setSig("challenges")} title={chipTitleForSignal("challenges")} ariaLabelPrefix="Filter evidence by signal" ariaValue="challenges" />
-                    <FilterChip label="Neutral" count={neutralCount} active={ef.signal === "neutral"} onClick={() => setSig("neutral")} title={chipTitleForSignal("neutral")} ariaLabelPrefix="Filter evidence by signal" ariaValue="neutral" />
+                    <FilterChip label={t("vBoard.all")} count={experiment.evidence.length} active={ef.signal === "all"} onClick={() => setSig("all")} title={chipTitleForSignal("all")} ariaLabelPrefix={t("vBoard.signalLabel")} ariaValue="all" />
+                    <FilterChip label={t("vBoard.signal.supports")} count={supportsCount} active={ef.signal === "supports"} onClick={() => setSig("supports")} title={chipTitleForSignal("supports")} ariaLabelPrefix={t("vBoard.signalLabel")} ariaValue="supports" />
+                    <FilterChip label={t("vBoard.signal.challenges")} count={challengesCount} active={ef.signal === "challenges"} onClick={() => setSig("challenges")} title={chipTitleForSignal("challenges")} ariaLabelPrefix={t("vBoard.signalLabel")} ariaValue="challenges" />
+                    <FilterChip label={t("vBoard.signal.neutral")} count={neutralCount} active={ef.signal === "neutral"} onClick={() => setSig("neutral")} title={chipTitleForSignal("neutral")} ariaLabelPrefix={t("vBoard.signalLabel")} ariaValue="neutral" />
                   </div>
                   <div className="mt-0.5 flex flex-wrap items-center gap-1">
                     {(() => {
@@ -2527,31 +2602,31 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       const moderateCount = experiment.evidence.filter((e) => e.weight === "moderate").length;
                       const anecdotalCount = experiment.evidence.filter((e) => e.weight === "anecdotal").length;
                       const setWt = (w: "all" | EvidenceWeight) => setEvidenceFilters((prev) => patchEvidenceFilter(prev, experiment.id, { weight: w }, { signal: "all" as const, weight: "all" as const }));
-                      const chipTitleForWeight = (w: "all" | EvidenceWeight) => w === "all" ? "Show all weights" : WEIGHT_DESCRIPTIONS[w];
+                      const chipTitleForWeight = (w: "all" | EvidenceWeight) => w === "all" ? t("vBoard.chipShowAllWeight") : WEIGHT_DESCRIPTIONS[w];
                       return (<>
-                        <FilterChip variant="ringed" label="All wts" count={experiment.evidence.length} active={ef.weight === "all"} onClick={() => setWt("all")} title={chipTitleForWeight("all")} ariaLabelPrefix="Filter evidence by weight" ariaValue="all" />
-                        <FilterChip variant="ringed" label="Strong" count={strongCount} active={ef.weight === "strong"} onClick={() => setWt("strong")} title={chipTitleForWeight("strong")} ariaLabelPrefix="Filter evidence by weight" ariaValue="strong" />
-                        <FilterChip variant="ringed" label="Moderate" count={moderateCount} active={ef.weight === "moderate"} onClick={() => setWt("moderate")} title={chipTitleForWeight("moderate")} ariaLabelPrefix="Filter evidence by weight" ariaValue="moderate" />
-                        <FilterChip variant="ringed" label="Anecdotal" count={anecdotalCount} active={ef.weight === "anecdotal"} onClick={() => setWt("anecdotal")} title={chipTitleForWeight("anecdotal")} ariaLabelPrefix="Filter evidence by weight" ariaValue="anecdotal" />
+                        <FilterChip variant="ringed" label={t("vBoard.weightsLabel")} count={experiment.evidence.length} active={ef.weight === "all"} onClick={() => setWt("all")} title={chipTitleForWeight("all")} ariaLabelPrefix={t("vBoard.weightLabel")} ariaValue="all" />
+                        <FilterChip variant="ringed" label={t("vBoard.weight.strong")} count={strongCount} active={ef.weight === "strong"} onClick={() => setWt("strong")} title={chipTitleForWeight("strong")} ariaLabelPrefix={t("vBoard.weightLabel")} ariaValue="strong" />
+                        <FilterChip variant="ringed" label={t("vBoard.weight.moderate")} count={moderateCount} active={ef.weight === "moderate"} onClick={() => setWt("moderate")} title={chipTitleForWeight("moderate")} ariaLabelPrefix={t("vBoard.weightLabel")} ariaValue="moderate" />
+                        <FilterChip variant="ringed" label={t("vBoard.weight.anecdotal")} count={anecdotalCount} active={ef.weight === "anecdotal"} onClick={() => setWt("anecdotal")} title={chipTitleForWeight("anecdotal")} ariaLabelPrefix={t("vBoard.weightLabel")} ariaValue="anecdotal" />
                       </>);
                     })()}
                   <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                    {(ef.signal !== "all" || ef.weight !== "all") && (<button type="button" onClick={() => setEvidenceFilters((prev) => patchEvidenceFilter(prev, experiment.id, { signal: "all", weight: "all" }, { signal: "all" as const, weight: "all" as const }))} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-muted underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Reset filters</button>)}
-                    {experiment.evidence.length > 1 && (<button type="button" onClick={(e) => { e.stopPropagation(); const on = !evidenceSelectMode[experiment.id]; setEvidenceSelectMode((prev) => ({ ...prev, [experiment.id]: on })); if (on) setSelectedEvidenceIds((prev) => ({ ...prev, [experiment.id]: new Set() })); else setSelectedEvidenceIds((prev) => ({ ...prev, [experiment.id]: new Set() })); }} className={"rounded-full px-2 py-0.5 text-[10px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + (evidenceSelectMode[experiment.id] ? "bg-accent text-primary-text" : "text-muted hover:text-foreground hover:underline")} title={evidenceSelectMode[experiment.id] ? "Exit evidence select mode" : "Select multiple evidence items"} aria-pressed={Boolean(evidenceSelectMode[experiment.id])} data-evidence-select-pill data-experiment-id={experiment.id}>{evidenceSelectMode[experiment.id] ? "Exit select" : "Select"}</button>)}
+                    {(ef.signal !== "all" || ef.weight !== "all") && (<button type="button" onClick={() => setEvidenceFilters((prev) => patchEvidenceFilter(prev, experiment.id, { signal: "all", weight: "all" }, { signal: "all" as const, weight: "all" as const }))} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-muted underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">{t("vBoard.resetFilters")}</button>)}
+                    {experiment.evidence.length > 1 && (<button type="button" onClick={(e) => { e.stopPropagation(); const on = !evidenceSelectMode[experiment.id]; setEvidenceSelectMode((prev) => ({ ...prev, [experiment.id]: on })); if (on) setSelectedEvidenceIds((prev) => ({ ...prev, [experiment.id]: new Set() })); else setSelectedEvidenceIds((prev) => ({ ...prev, [experiment.id]: new Set() })); }} className={"rounded-full px-2 py-0.5 text-[10px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + (evidenceSelectMode[experiment.id] ? "bg-accent text-primary-text" : "text-muted hover:text-foreground hover:underline")} title={evidenceSelectMode[experiment.id] ? t("vBoard.exitSelect") : t("vBoard.bulkHint")} aria-pressed={Boolean(evidenceSelectMode[experiment.id])} data-evidence-select-pill data-experiment-id={experiment.id}>{evidenceSelectMode[experiment.id] ? t("vBoard.exitSelect") : t("vBoard.select")}</button>)}
                     {evidenceSelectMode[experiment.id] && (() => {
                       const sel = selectedEvidenceIds[experiment.id] || new Set();
                       const visible = experiment.evidence.filter((it) => (ef.signal === "all" || it.signal === ef.signal) && (ef.weight === "all" || it.weight === ef.weight));
                       const allSel = visible.length > 0 && visible.every((v) => sel.has(v.id));
                       const tidx = execution.experiments.findIndex((x) => x.id === experiment.id);
-                      return (<div role="toolbar" aria-label={"Bulk evidence actions for H" + (tidx + 1)} data-evidence-toolbar={experiment.id} className="contents">
-                        <button type="button" onClick={(e) => { e.stopPropagation(); toggleSelectAllEvidence(experiment.id); }} className="flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label={allSel ? "Clear selection" : "Select all visible evidence"} title={allSel ? "Clear selection" : "Select all visible evidence"}>{allSel ? <CheckSquare className="size-3" aria-hidden="true"/> : <Square className="size-3" aria-hidden="true"/>}{sel.size > 0 ? sel.size : "All"}</button>
+                      return (<div role="toolbar" aria-label={t("vBoard.bulkEvidenceAria", { index: tidx + 1 })} data-evidence-toolbar={experiment.id} className="contents">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); toggleSelectAllEvidence(experiment.id); }} className="flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label={allSel ? t("vBoard.clearSelAria") : t("vBoard.selectAllAria")} title={allSel ? t("vBoard.clearSelAria") : t("vBoard.selectAllAria")}>{allSel ? <CheckSquare className="size-3" aria-hidden="true"/> : <Square className="size-3" aria-hidden="true"/>}{sel.size > 0 ? sel.size : t("vBoard.all")}</button>
                         {sel.size > 0 && (<>
-                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceSignal(experiment.id, "supports"); }} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-signal-supports hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Pro supports</button>
-                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceSignal(experiment.id, "challenges"); }} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-signal-challenges hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Pro challenges</button>
-                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceSignal(experiment.id, "neutral"); }} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-muted hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Pro neutral</button>
-                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceWeight(experiment.id, "strong"); }} className="hidden md:inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Strong</button>
-                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceWeight(experiment.id, "moderate"); }} className="hidden md:inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-300 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Moderate</button>
-                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceWeight(experiment.id, "anecdotal"); }} className="hidden md:inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium text-muted hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Anecdotal</button>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceSignal(experiment.id, "supports"); }} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-signal-supports hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">{t("vBoard.proSupports")}</button>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceSignal(experiment.id, "challenges"); }} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-signal-challenges hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">{t("vBoard.proChallenges")}</button>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceSignal(experiment.id, "neutral"); }} className="rounded-full px-2 py-0.5 text-[10px] font-medium text-muted hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">{t("vBoard.proNeutral")}</button>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceWeight(experiment.id, "strong"); }} className="hidden md:inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">{t("vBoard.weight.strong")}</button>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceWeight(experiment.id, "moderate"); }} className="hidden md:inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-300 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">{t("vBoard.weight.moderate")}</button>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); bulkSetEvidenceWeight(experiment.id, "anecdotal"); }} className="hidden md:inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium text-muted hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">{t("vBoard.weight.anecdotal")}</button>
                           <button type="button" onClick={(e) => {
                             e.stopPropagation();
                             // Cycle all selected to next weight: strong -> moderate -> anecdotal -> strong
@@ -2563,10 +2638,10 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                             const cur = (first?.weight as "strong"|"moderate"|"anecdotal") ?? "anecdotal";
                             const nextW = order[(Math.max(0, order.indexOf(cur as "strong"|"moderate"|"anecdotal")) + 1) % order.length];
                             bulkSetEvidenceWeight(experiment.id, nextW);
-                            showToast("Set " + sel.size + " items to " + nextW + " weight.", "info", 2500);
-                          }} className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium text-muted hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent md:hidden" title="Tap to cycle weight: strong -> moderate -> anecdotal">Wgt</button>
+                            showToast(t("vBoard.toast.evidenceWeightCycle", { count: sel.size, weight: nextW }), "info", 2500);
+                          }} className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium text-muted hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent md:hidden" title={t("vBoard.weightCycleTitle")}>{t("vBoard.weightCycleShort")}</button>
                           <span className="mx-0.5 hidden md:inline-block h-3 w-px bg-border" aria-hidden="true"/>
-                          <button ref={(el) => { if (el && evidenceSelectMode[experiment.id]) window.requestAnimationFrame(() => el.focus()); }} type="button" onClick={(e) => { e.stopPropagation(); bulkDeleteEvidence(experiment.id); }} className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium text-signal-challenges hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"><Trash2 className="size-3" aria-hidden="true"/>Delete</button>
+                          <button ref={(el) => { if (el && evidenceSelectMode[experiment.id]) window.requestAnimationFrame(() => el.focus()); }} type="button" onClick={(e) => { e.stopPropagation(); bulkDeleteEvidence(experiment.id); }} className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium text-signal-challenges hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"><Trash2 className="size-3" aria-hidden="true"/>{t("vBoard.overflowDelete")}</button>
                         </>)}
                       </div>);
                     })()}
@@ -2575,7 +2650,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                   </>);
               })()}
               {experiment.evidence.length > 0 ? (
-                <ul ref={evidenceListRef} data-experiment-id={experiment.id} tabIndex={-1} aria-label="Evidence items" aria-live="polite" onKeyDown={handleEvidenceKeyDown} className="mt-4 divide-y divide-card rounded-md bg-muted px-4 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1">
+                <ul ref={evidenceListRef} data-experiment-id={experiment.id} tabIndex={-1} aria-label={t("vBoard.evidenceListAria")} aria-live="polite" onKeyDown={handleEvidenceKeyDown} className="mt-4 divide-y divide-card rounded-md bg-muted px-4 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1">
                   {experiment.evidence.filter((it) => { const f = getEvidenceFilter(experiment.id); return (f.signal === "all" || it.signal === f.signal) && (f.weight === "all" || it.weight === f.weight); }).map((item, itemIdx) => (
                     <li
                       data-evidence-id={item.id}
@@ -2629,7 +2704,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       ) : (
                         <button
                           type="button"
-                          aria-label="Drag to reorder"
+                          aria-label={t("vBoard.dragReorder")}
                           className="mt-0.5 flex h-5 w-4 shrink-0 cursor-grab items-center justify-center rounded-sm text-muted/40 transition hover:bg-muted hover:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent active:cursor-grabbing"
                           tabIndex={-1}
                         >
@@ -2701,7 +2776,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           type="button"
                           onClick={() => moveEvidence(experiment.id, item.id, "up")}
                           disabled={(() => { const sorted=[...experiment.evidence].sort((a,b)=>Number(!!b.pinned)-Number(!!a.pinned)); return sorted.findIndex((e) => e.id === item.id) === 0 || (itemIdx > 0 && !!(experiment.evidence.find((e)=>e.id===item.id)?.pinned) !== !!sorted[itemIdx-1].pinned); })()}
-                          title="Move evidence up"
+                          title={t("vBoard.moveEvidenceUpTitle")}
                           aria-label={`Move evidence from ${item.source} up`}
                           className="flex size-12 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent sm:size-9"
                         >
@@ -2711,7 +2786,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                           type="button"
                           onClick={() => moveEvidence(experiment.id, item.id, "down")}
                           disabled={(() => { const sorted=[...experiment.evidence].sort((a,b)=>Number(!!b.pinned)-Number(!!a.pinned)); const i = sorted.findIndex((e) => e.id === item.id); return i === sorted.length - 1 || (i < sorted.length - 1 && !!sorted[i].pinned !== !!sorted[i+1].pinned); })()}
-                          title="Move evidence down"
+                          title={t("vBoard.moveEvidenceDownTitle")}
                           aria-label={`Move evidence from ${item.source} down`}
                           className="flex size-12 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent sm:size-9"
                         >
@@ -2730,7 +2805,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); duplicateEvidence(experiment.id, item.id); }}
-                          title="Duplicate evidence"
+                          title={t("vBoard.duplicateEvidenceTitle")}
                           aria-label={`Duplicate evidence from ${item.source}`}
                           className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 "
                         >
@@ -2739,7 +2814,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                         <button
                           type="button"
                           onClick={() => startEditingEvidence(experiment.id, item.id)}
-                          title="Edit evidence"
+                          title={t("vBoard.editEvidenceTitle")}
                           aria-label={`Edit evidence from ${item.source}`}
                           className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-md text-foreground/80 transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 "
                         >
@@ -2751,7 +2826,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                             type="button"
                             onClick={() => deleteEvidence(experiment.id, item.id)}
                             data-delete-confirm
-                            title="Confirm delete"
+                            title={t("vBoard.confirmDeleteTitle")}
                             aria-label={`Confirm delete evidence from ${item.source}`}
                             className="flex size-11 shrink-0 items-center justify-center rounded-md border border-signal-challenges/30 bg-signal-challenges/15 text-signal-challenges transition hover:bg-signal-challenges/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1 sm:size-8"
                           >
@@ -2763,8 +2838,8 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                               e.stopPropagation();
                               setPendingDeleteId(null);
                             }}
-                            title="Cancel delete"
-                            aria-label="Cancel delete evidence"
+                            title={t("vBoard.cancelDeleteTitle")}
+                            aria-label={t("vBoard.cancelDeleteAria")}
                             className="flex size-11 shrink-0 items-center justify-center rounded-md text-muted transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1 sm:size-8"
                           >
                             <X className="size-4" aria-hidden="true" />
@@ -2777,7 +2852,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                             e.stopPropagation();
                             setPendingDeleteId(item.id);
                           }}
-                          title="Remove evidence"
+                          title={t("vBoard.removeEvidenceTitle")}
                           aria-label={`Remove evidence from ${item.source}`}
                           className="hidden sm:flex size-8 shrink-0 items-center justify-center rounded-md text-signal-challenges transition hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal-challenges focus-visible:ring-offset-1"
                         >
@@ -2798,7 +2873,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
 
               <div
                 id={`evidence-source-${experiment.id}`}
-                  aria-label="Evidence source"
+                  aria-label={t("vBoard.evidenceSourceAria")}
                 className="grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none"
                 style={{ gridTemplateRows: formOpen ? "1fr" : "0fr" }}
                 aria-hidden={!formOpen}
@@ -2845,8 +2920,10 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
 
                   {!isBatchMode && !editingEvidenceId && (
                     <div className="flex flex-wrap items-center gap-1 md:col-span-3">
-                      <span className="pr-1 text-[10px] font-semibold uppercase text-muted">Snippets:</span>
-                      {EVIDENCE_SNIPPETS.map((s) => (
+                      <span className="pr-1 text-[10px] font-semibold uppercase text-muted">{t("vBoard.snippetsLabel")}</span>
+                      {EVIDENCE_SNIPPETS.map((s) => {
+                        const snippetLabelKey = SNIPPET_LABEL_KEYS[s.label] ?? s.label;
+                        return (
                         <button
                           key={s.label}
                           type="button"
@@ -2859,11 +2936,12 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                             setDraftTouched({ source: true, note: true });
                           }}
                           className="rounded-full border border-input bg-card px-2 py-0.5 text-[10px] font-medium text-muted transition hover:border-accent hover:text-accent"
-                          title={"Insert template: " + s.source + " - " + s.note}
+                          title={t("vBoard.snippetTitle", { source: s.source, note: s.note })}
                         >
-                          {s.label}
+                          {t(snippetLabelKey)}
                         </button>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
 
@@ -3050,7 +3128,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                   <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
                     <label className="block">
                       <span className="mb-2 flex items-center justify-between text-xs font-semibold uppercase text-muted">
-                        <span>Source</span>
+                        <span>{t("vBoard.sourceLabel")}</span>
                         <span className={"font-mono tabular-nums " + (sourceLen > SOURCE_MAX ? "text-signal-challenges" : sourceNear ? "text-signal-supports" : "text-muted/60")}>{sourceLen}/{SOURCE_MAX}</span>
                       </span>
                       <input
@@ -3066,7 +3144,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                         aria-invalid={!!sourceError}
                         aria-describedby={sourceError ? "evidence-source-error" : undefined}
                         id={`evidence-source-${experiment.id}`}
-                        placeholder="Interview #5, Mixpanel, App Store review..."
+                        placeholder={t("vBoard.sourcePlaceholder")}
                         maxLength={SOURCE_MAX + 20}
                         className={`h-10 w-full rounded-md border bg-card px-3 text-sm outline-none ${
                           sourceError
@@ -3080,7 +3158,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                     </label>
                     <label className="block">
                       <span className="mb-2 flex items-center justify-between text-xs font-semibold uppercase text-muted">
-                        <span>Observation</span>
+                        <span>{t("vBoard.observationLabel")}</span>
                         <span className={"font-mono tabular-nums " + (noteLen > NOTE_MAX ? "text-signal-challenges" : noteNear ? "text-signal-supports" : "text-muted/60")}>{noteLen}/{NOTE_MAX}</span>
                       </span>
                       <textarea
@@ -3107,7 +3185,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                         }}
                         aria-invalid={!!noteError}
                         aria-describedby={noteError ? "evidence-note-error" : undefined}
-                        placeholder="What did you learn? (Markdown supported: **bold**, *italic*, `code`, [link](url))"
+                        placeholder={t("vBoard.observationPlaceholder")}
                         className={"min-h-[48px] w-full resize-y rounded-md border bg-card px-3 py-2 text-sm leading-6 outline-none field-sizing-content " + (
                           noteError
                             ? "border-signal-challenges focus:border-signal-challenges focus:ring-2 focus:ring-[var(--signal-challenges-border)]"
@@ -3156,7 +3234,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       }))
                     }
                     aria-describedby={`decision-count-${experiment.id}`}
-                    placeholder="What will change because of this evidence?"
+                    placeholder={t("vBoard.decisionPlaceholder")}
                     className="w-full resize-y rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
                   <p id={`decision-count-${experiment.id}`} className="mt-1 text-right text-[11px] leading-4 text-muted">
@@ -3178,7 +3256,7 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
                       }))
                     }
                     aria-describedby={`next-action-count-${experiment.id}`}
-                    placeholder="What evidence should be collected next?"
+                    placeholder={t("vBoard.nextActionPlaceholder")}
                     className="w-full resize-y rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
                   <p id={`next-action-count-${experiment.id}`} className="mt-1 text-right text-[11px] leading-4 text-muted">
@@ -3247,26 +3325,26 @@ function deleteEvidence(experimentId: string, evidenceId: string) {
 
       <ConfirmDialog
         open={pendingBatch?.kind === "delete"}
-        title="Delete selected hypotheses?"
-        body={pendingBatch?.kind === "delete" ? `${pendingBatch.count} hypothesis and all their evidence will be permanently removed from this workspace. This can be undone right away via toast.` : ""}
-        confirmLabel="Delete"
+        title={t("vBoard.confirm.bulkDeleteHypTitle")}
+        body={pendingBatch?.kind === "delete" ? t("vBoard.confirm.bulkDeleteHypBody", { count: pendingBatch.count }) : ""}
+        confirmLabel={t("vBoard.confirm.delete")}
         danger
         onCancel={() => setPendingBatch(null)}
         onConfirm={() => { performBatchDelete(); }}
       />
       <ConfirmDialog
         open={pendingBatch?.kind === "archive"}
-        title="Archive selected hypotheses?"
-        body={pendingBatch?.kind === "archive" ? `${pendingBatch.count} hypotheses will be hidden from the main list. You can restore them from the archive at any time.` : ""}
-        confirmLabel="Archive"
+        title={t("vBoard.confirm.bulkArchiveHypTitle")}
+        body={pendingBatch?.kind === "archive" ? t("vBoard.confirm.bulkArchiveHypBody", { count: pendingBatch.count }) : ""}
+        confirmLabel={t("vBoard.confirm.archive")}
         onCancel={() => setPendingBatch(null)}
         onConfirm={() => { performBatchArchive(true); }}
       />
       <ConfirmDialog
         open={Boolean(pendingBulkDelete)}
-        title="Delete selected evidence?"
-        body={pendingBulkDelete ? `${pendingBulkDelete.count} evidence item(s) will be removed from this hypothesis. Confidence will be recomputed automatically.` : ""}
-        confirmLabel="Delete"
+        title={t("vBoard.confirm.bulkDeleteEvidenceTitle")}
+        body={pendingBulkDelete ? t("vBoard.confirm.bulkDeleteEvidenceBody", { count: pendingBulkDelete.count }) : ""}
+        confirmLabel={t("vBoard.confirm.delete")}
         danger
         onCancel={() => setPendingBulkDelete(null)}
         onConfirm={() => {

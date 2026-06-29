@@ -502,6 +502,12 @@ export type DictionaryKey =
   | "copilot.fieldDecision"
   | "copilot.fieldNextAction"
   | "copilot.emptyPlaceholder"
+  | "vBoard.confirm.bulkDeleteHypTitle"
+  | "vBoard.confirm.bulkDeleteHypBody"
+  | "vBoard.confirm.bulkArchiveHypTitle"
+  | "vBoard.confirm.bulkArchiveHypBody"
+  | "vBoard.confirm.bulkDeleteEvidenceTitle"
+  | "vBoard.confirm.bulkDeleteEvidenceBody"
   // Account recovery
   | "recovery.title"
   | "recovery.body"
@@ -729,7 +735,270 @@ export type DictionaryKey =
   | "vFooter.tipInSearch"
   | "vFooter.shortcutsPrefix"
   | "vFooter.shortcutsPalette"
-  | "vFooter.shortcutsHelp";
+  | "vFooter.shortcutsHelp"
+  // Validation board — board body (validation-board.tsx)
+  | "vBoard.sectionAria"
+  | "vBoard.title"
+  | "vBoard.subtitle"
+  | "vBoard.progress"
+  | "vBoard.evidenced"
+  | "vBoard.decided"
+  | "vBoard.weightsLabel"
+  | "vBoard.weight.balanced"
+  | "vBoard.weight.evidence"
+  | "vBoard.weight.decision"
+  | "vBoard.weight.balancedDesc"
+  | "vBoard.weight.evidenceDesc"
+  | "vBoard.weight.decisionDesc"
+  | "vBoard.weightAria"
+  | "vBoard.selectTitle"
+  | "vBoard.selectLabel"
+  | "vBoard.newHypothesis"
+  | "vBoard.newShort"
+  | "vBoard.newHypothesisLabel"
+  | "vBoard.newHypothesisHint"
+  | "vBoard.newHypothesisPlaceholder"
+  | "vBoard.newHypothesisDup"
+  | "vBoard.newHypothesisTooShort"
+  | "vBoard.tagPlaceholder"
+  | "vBoard.removeTagAria"
+  | "vBoard.cancel"
+  | "vBoard.addHypothesis"
+  | "vBoard.emptyTitle"
+  | "vBoard.emptyBody"
+  | "vBoard.hypothesisAria"
+  | "vBoard.gripAria"
+  | "vBoard.gripTitle"
+  | "vBoard.pinUnarchiveTitle"
+  | "vBoard.pinUnpinTitle"
+  | "vBoard.pinTitle"
+  | "vBoard.pinUnpinAria"
+  | "vBoard.pinAria"
+  | "vBoard.statusAria"
+  | "vBoard.statusTitle"
+  | "vBoard.confidenceAria"
+  | "vBoard.confidenceTitleManual"
+  | "vBoard.confidenceTitleAuto"
+  | "vBoard.confidenceManualLabel"
+  | "vBoard.confidenceManualAria"
+  | "vBoard.confidenceAuto"
+  | "vBoard.confidenceAutoSuffix"
+  | "vBoard.confidenceManualSuffix"
+  | "vBoard.confidenceAutoEvidenceSuffix"
+  | "vBoard.evidenceCountAria"
+  | "vBoard.evidenceItem"
+  | "vBoard.evidenceItems"
+  | "vBoard.archiveTitle"
+  | "vBoard.unarchiveTitle"
+  | "vBoard.archiveAria"
+  | "vBoard.unarchiveAria"
+  | "vBoard.archiveSr"
+  | "vBoard.unarchiveSr"
+  | "vBoard.collapse"
+  | "vBoard.review"
+  | "vBoard.cancelEvidence"
+  | "vBoard.addEvidence"
+  | "vBoard.exportAria"
+  | "vBoard.exportTitle"
+  | "vBoard.removeHypothesisAria"
+  | "vBoard.removeConfirm"
+  | "vBoard.validationStatusLabel"
+  | "vBoard.confidenceLabel"
+  | "vBoard.confidenceHint"
+  | "vBoard.linkedTaskLabel"
+  | "vBoard.noLinkedTask"
+  | "vBoard.chipShowAllSignal"
+  | "vBoard.chipShowAllWeight"
+  | "vBoard.resetFilters"
+  | "vBoard.exitSelect"
+  | "vBoard.select"
+  | "vBoard.selectModeTitleExit"
+  | "vBoard.selectModeTitle"
+  | "vBoard.bulkEvidenceAria"
+  | "vBoard.selectAllAria"
+  | "vBoard.selectAllTitle"
+  | "vBoard.clearSelAria"
+  | "vBoard.clearSelTitle"
+  | "vBoard.all"
+  | "vBoard.proSupports"
+  | "vBoard.proChallenges"
+  | "vBoard.proNeutral"
+  | "vBoard.weightCycleTitle"
+  | "vBoard.weightCycleShort"
+  | "vBoard.evidenceListAria"
+  | "vBoard.noEvidence"
+  | "vBoard.evidenceSourceAria"
+  | "vBoard.evidenceLabel"
+  | "vBoard.single"
+  | "vBoard.bulkPaste"
+  | "vBoard.snippetsLabel"
+  | "vBoard.snippetTitle"
+  | "vBoard.bulkPasteLabel"
+  | "vBoard.bulkPlaceholder"
+  | "vBoard.bulkHint"
+  | "vBoard.bulkHintItems"
+  | "vBoard.bulkHintAs"
+  | "vBoard.bulkHintWeight"
+  | "vBoard.bulkHintWeightExample"
+  | "vBoard.addAll"
+  | "vBoard.preview"
+  | "vBoard.previewUntitled"
+  | "vBoard.previewObservation"
+  | "vBoard.signalLabel"
+  | "vBoard.signalHint"
+  | "vBoard.weightLabel"
+  | "vBoard.weightHint"
+  | "vBoard.sourceLabel"
+  | "vBoard.observationLabel"
+  | "vBoard.sourcePlaceholder"
+  | "vBoard.observationPlaceholder"
+  | "vBoard.save"
+  | "vBoard.record"
+  | "vBoard.decisionLabel"
+  | "vBoard.decisionPlaceholder"
+  | "vBoard.charactersSuffix"
+  | "vBoard.nextActionLabel"
+  | "vBoard.nextActionPlaceholder"
+  // Enum display labels (status / signal / weight / confidence)
+  | "vBoard.status.untested"
+  | "vBoard.status.testing"
+  | "vBoard.status.supported"
+  | "vBoard.status.refuted"
+  | "vBoard.signal.supports"
+  | "vBoard.signal.challenges"
+  | "vBoard.signal.neutral"
+  | "vBoard.weight.strong"
+  | "vBoard.weight.moderate"
+  | "vBoard.weight.anecdotal"
+  | "vBoard.confidence.low"
+  | "vBoard.confidence.medium"
+  | "vBoard.confidence.high"
+  // Enum descriptions (tooltips)
+  | "vBoard.statusDesc.untested"
+  | "vBoard.statusDesc.testing"
+  | "vBoard.statusDesc.supported"
+  | "vBoard.statusDesc.refuted"
+  | "vBoard.signalDesc.supports"
+  | "vBoard.signalDesc.challenges"
+  | "vBoard.signalDesc.neutral"
+  | "vBoard.weightDesc.anecdotal"
+  | "vBoard.weightDesc.moderate"
+  | "vBoard.weightDesc.strong"
+  | "vBoard.confidenceDesc.low"
+  | "vBoard.confidenceDesc.medium"
+  | "vBoard.confidenceDesc.high"
+  | "vBoard.signalCycleTitle"
+  | "vBoard.weightCycleHint"
+  | "vBoard.archived"
+  | "vBoard.openSourceAria"
+  | "vBoard.moveEvidenceUpTitle"
+  | "vBoard.moveEvidenceDownTitle"
+  | "vBoard.moveEvidenceUpAria"
+  | "vBoard.moveEvidenceDownAria"
+  | "vBoard.unpinEvidenceTitle"
+  | "vBoard.pinEvidenceTitle"
+  | "vBoard.unpinEvidenceAria"
+  | "vBoard.pinEvidenceAria"
+  | "vBoard.duplicateEvidenceTitle"
+  | "vBoard.duplicateEvidenceAria"
+  | "vBoard.editEvidenceTitle"
+  | "vBoard.editEvidenceAria"
+  | "vBoard.confirmDeleteTitle"
+  | "vBoard.confirmDeleteAria"
+  | "vBoard.cancelDeleteTitle"
+  | "vBoard.cancelDeleteAria"
+  | "vBoard.removeEvidenceTitle"
+  | "vBoard.removeEvidenceAria"
+  | "vBoard.overflowAria"
+  | "vBoard.overflowDuplicate"
+  | "vBoard.overflowEdit"
+  | "vBoard.overflowDelete"
+  | "vBoard.dragReorder"
+  // Evidence snippets (prefill templates)
+  | "vBoard.snippet.interview"
+  | "vBoard.snippet.survey"
+  | "vBoard.snippet.review"
+  | "vBoard.snippet.support"
+  | "vBoard.snippet.analytics"
+  | "vBoard.snippet.usability"
+  | "vBoard.snippet.salesCall"
+  | "vBoard.snippet.churn"
+  // Validation-error / submit messages
+  | "vBoard.err.sourceShort"
+  | "vBoard.err.sourceLong"
+  | "vBoard.err.noteShort"
+  | "vBoard.err.noteLong"
+  | "vBoard.err.pasteOneLine"
+  | "vBoard.err.maxEvidence"
+  | "vBoard.err.noValidLines"
+  | "vBoard.err.fillSourceNote"
+  | "vBoard.err.lengthLimits"
+  | "vBoard.err.maxPerHypothesis"
+  // SR announcements
+  | "vBoard.sr.openEvidenceForm"
+  | "vBoard.sr.openNewHypothesis"
+  | "vBoard.sr.newHypothesis"
+  | "vBoard.sr.signalChanged"
+  | "vBoard.sr.weightChanged"
+  | "vBoard.sr.evidenceMoved"
+  | "vBoard.sr.evidenceReordered"
+  | "vBoard.sr.hypothesisMovedUp"
+  | "vBoard.sr.hypothesisMovedDown"
+  | "vBoard.sr.evidenceRemoved"
+  | "vBoard.sr.evidenceRestored"
+  | "vBoard.sr.evidenceUpdated"
+  | "vBoard.sr.evidenceRecorded"
+  | "vBoard.sr.addedItems"
+  | "vBoard.sr.hypothesisRemoved"
+  | "vBoard.sr.hypothesisRestored"
+  | "vBoard.sr.archived"
+  | "vBoard.sr.unarchived"
+  // Toast messages
+  | "vBoard.toast.hypMdCopied"
+  | "vBoard.toast.hypMdCopiedSr"
+  | "vBoard.toast.clipboardFail"
+  | "vBoard.toast.mdDownloaded"
+  | "vBoard.toast.hypMdDownloadedSr"
+  | "vBoard.toast.mdDownloadFail"
+  | "vBoard.toast.jsonDownloaded"
+  | "vBoard.toast.hypJsonDownloadedSr"
+  | "vBoard.toast.jsonDownloadFail"
+  | "vBoard.toast.boardMdCopied"
+  | "vBoard.toast.boardMdCopiedSr"
+  | "vBoard.toast.boardMdDownloadedSr"
+  | "vBoard.toast.boardJsonDownloadedSr"
+  | "vBoard.toast.bulkStatus"
+  | "vBoard.toast.bulkArchived"
+  | "vBoard.toast.bulkUnarchived"
+  | "vBoard.toast.bulkTagAdded"
+  | "vBoard.toast.bulkTagRemoved"
+  | "vBoard.toast.bulkNoBriefs"
+  | "vBoard.toast.bulkBriefSummary"
+  | "vBoard.toast.bulkDeleted"
+  | "vBoard.toast.evidenceDeleted"
+  | "vBoard.toast.evidenceWeightSet"
+  | "vBoard.toast.evidenceWeightCycle"
+  | "vBoard.toast.evidenceSignalSet"
+  | "vBoard.toast.evidenceRemoved"
+  | "vBoard.toast.hypothesisRemoved"
+  | "vBoard.toast.undo"
+  | "vBoard.toast.undoLabel"
+  | "vBoard.toast.redo"
+  | "vBoard.toast.confidenceUpdated"
+  | "vBoard.toast.confidenceChanged"
+  | "vBoard.toast.addedItems"
+  | "vBoard.sr.evidenceNotRecorded"
+  | "vBoard.direction.up"
+  | "vBoard.direction.down"
+  // Confirm dialogs
+  | "vBoard.confirm.deleteHypTitle"
+  | "vBoard.confirm.deleteHypBody"
+  | "vBoard.confirm.delete"
+  | "vBoard.confirm.archiveHypTitle"
+  | "vBoard.confirm.archiveHypBody"
+  | "vBoard.confirm.archive"
+  | "vBoard.confirm.deleteEvidenceTitle"
+  | "vBoard.confirm.deleteEvidenceBody";
 
 type Dict = Record<DictionaryKey, string>;
 
@@ -1181,6 +1450,261 @@ const en: Dict = {
   "vFooter.shortcutsPrefix": "Shortcuts: ",
   "vFooter.shortcutsPalette": " command palette ",
   "vFooter.shortcutsHelp": " help",
+  "vBoard.sectionAria": "Validation loop",
+  "vBoard.title": "Validation loop",
+  "vBoard.subtitle": "Turn generated assumptions into evidence-backed product decisions.",
+  "vBoard.progress": "progress",
+  "vBoard.evidenced": "evidenced",
+  "vBoard.decided": "decided",
+  "vBoard.weightsLabel": "Weights: {preset}",
+  "vBoard.weight.balanced": "Balanced",
+  "vBoard.weight.evidence": "Evidence-heavy",
+  "vBoard.weight.decision": "Decision-heavy",
+  "vBoard.weight.balancedDesc": "All checkpoints equal",
+  "vBoard.weight.evidenceDesc": "Evidence gathering counts more",
+  "vBoard.weight.decisionDesc": "Reaching conclusions counts more",
+  "vBoard.weightAria": "Progress weight preset",
+  "vBoard.selectTitle": "Select multiple hypotheses",
+  "vBoard.selectLabel": "Select",
+  "vBoard.newHypothesis": "New hypothesis",
+  "vBoard.newShort": "New",
+  "vBoard.newHypothesisLabel": "New hypothesis",
+  "vBoard.newHypothesisHint": "At least 5 characters. Press Enter to add.",
+  "vBoard.newHypothesisPlaceholder": "What assumption do you want to validate?",
+  "vBoard.newHypothesisDup": "An identical hypothesis already exists.",
+  "vBoard.newHypothesisTooShort": "Use at least 5 characters.",
+  "vBoard.tagPlaceholder": "Add tags (press Enter to add, e.g. acquisition)",
+  "vBoard.removeTagAria": "Remove tag {tag}",
+  "vBoard.cancel": "Cancel",
+  "vBoard.addHypothesis": "Add hypothesis",
+  "vBoard.emptyTitle": "No validation experiments yet",
+  "vBoard.emptyBody": "Generate a workspace to seed starter assumptions, or add new hypotheses once your brief is in place.",
+  "vBoard.hypothesisAria": "Hypothesis {index}: {assumption}. Status: {status}. {count} evidence items.",
+  "vBoard.gripAria": "Drag to reorder hypothesis (Alt+Up/Down to move)",
+  "vBoard.gripTitle": "Drag to reorder (Alt+Up/Down when focused)",
+  "vBoard.pinUnarchiveTitle": "Unarchive to pin",
+  "vBoard.pinUnpinTitle": "Unpin hypothesis",
+  "vBoard.pinTitle": "Pin hypothesis to top of default order",
+  "vBoard.pinUnpinAria": "Unpin hypothesis: {assumption}",
+  "vBoard.pinAria": "Pin hypothesis to top: {assumption}",
+  "vBoard.statusAria": "Validation status: {status}. {desc}",
+  "vBoard.statusTitle": "{desc}",
+  "vBoard.confidenceAria": "Confidence: {confidence}. {desc}{mode}",
+  "vBoard.confidenceTitleManual": "{desc} (manually set)",
+  "vBoard.confidenceTitleAuto": "{desc} (auto from evidence)",
+  "vBoard.confidenceManualLabel": "Manual",
+  "vBoard.confidenceManualAria": "Reset confidence to auto-calculated",
+  "vBoard.confidenceAuto": "Auto",
+  "vBoard.confidenceAutoSuffix": "-auto",
+  "vBoard.confidenceManualSuffix": "manually set",
+  "vBoard.confidenceAutoEvidenceSuffix": "auto-computed from evidence",
+  "vBoard.evidenceCountAria": "{count} evidence item{plural}",
+  "vBoard.evidenceItem": "{count} evidence item",
+  "vBoard.evidenceItems": "{count} evidence items",
+  "vBoard.archiveTitle": "Archive hypothesis",
+  "vBoard.unarchiveTitle": "Unarchive",
+  "vBoard.archiveAria": "Archive hypothesis",
+  "vBoard.unarchiveAria": "Unarchive",
+  "vBoard.archiveSr": "Hypothesis archived.",
+  "vBoard.unarchiveSr": "Hypothesis unarchived.",
+  "vBoard.collapse": "Collapse",
+  "vBoard.review": "Review",
+  "vBoard.cancelEvidence": "Cancel",
+  "vBoard.addEvidence": "Add evidence",
+  "vBoard.exportAria": "Export hypothesis",
+  "vBoard.exportTitle": "Export hypothesis",
+  "vBoard.removeHypothesisAria": "Remove hypothesis",
+  "vBoard.removeConfirm": "Remove this hypothesis? All evidence will be lost.",
+  "vBoard.validationStatusLabel": "Validation status",
+  "vBoard.confidenceLabel": "Confidence",
+  "vBoard.confidenceHint": "Product judgment, not statistical certainty.",
+  "vBoard.linkedTaskLabel": "Linked execution task",
+  "vBoard.noLinkedTask": "No linked task",
+  "vBoard.chipShowAllSignal": "Show all evidence",
+  "vBoard.chipShowAllWeight": "Show all weights",
+  "vBoard.resetFilters": "Reset filters",
+  "vBoard.exitSelect": "Exit select",
+  "vBoard.select": "Select",
+  "vBoard.selectModeTitleExit": "Exit evidence select mode",
+  "vBoard.selectModeTitle": "Select multiple evidence items",
+  "vBoard.bulkEvidenceAria": "Bulk evidence actions for H{index}",
+  "vBoard.selectAllAria": "Select all visible evidence",
+  "vBoard.selectAllTitle": "Select all visible evidence",
+  "vBoard.clearSelAria": "Clear selection",
+  "vBoard.clearSelTitle": "Clear selection",
+  "vBoard.all": "All",
+  "vBoard.proSupports": "Pro supports",
+  "vBoard.proChallenges": "Pro challenges",
+  "vBoard.proNeutral": "Pro neutral",
+  "vBoard.weightCycleTitle": "Tap to cycle weight: strong -> moderate -> anecdotal",
+  "vBoard.weightCycleShort": "Wgt",
+  "vBoard.evidenceListAria": "Evidence items",
+  "vBoard.noEvidence": "No evidence recorded yet. Add an interview signal, metric, or market observation.",
+  "vBoard.evidenceSourceAria": "Evidence source",
+  "vBoard.evidenceLabel": "Evidence",
+  "vBoard.single": "Single",
+  "vBoard.bulkPaste": "Bulk paste",
+  "vBoard.snippetsLabel": "Snippets:",
+  "vBoard.snippetTitle": "Insert template: {source} - {note}",
+  "vBoard.bulkPasteLabel": "Paste evidence (one per line)",
+  "vBoard.bulkPlaceholder": "Format: [prefix] Source - Observation\nPrefix: + supports | - challenges | ~ neutral\nAppend s/m/a for weight: +s strong, +m moderate, +a anecdotal\nExamples:\n+s Interview #12 - Would pay  immediately\n- App review #45 - Crashes on launch\n+ Survey Q3 - 70% said feature is useful",
+  "vBoard.bulkHint": "Will add ",
+  "vBoard.bulkHintItems": " evidence items",
+  "vBoard.bulkHintAs": " as {signal} ({weight} weight). Prefix per line: ",
+  "vBoard.bulkHintWeight": " for signal, append ",
+  "vBoard.bulkHintWeightExample": " for weight (e.g. ",
+  "vBoard.addAll": "Add all",
+  "vBoard.preview": "Preview",
+  "vBoard.previewUntitled": "Untitled source",
+  "vBoard.previewObservation": "Your observation will appear here...",
+  "vBoard.signalLabel": "Signal",
+  "vBoard.signalHint": "Choose the evidence signal strength for this validation finding.",
+  "vBoard.weightLabel": "Weight",
+  "vBoard.weightHint": "Choose the evidence weight / strength for this validation finding.",
+  "vBoard.sourceLabel": "Source",
+  "vBoard.observationLabel": "Observation",
+  "vBoard.sourcePlaceholder": "Interview #5, Mixpanel, App Store review...",
+  "vBoard.observationPlaceholder": "What did you learn? (Markdown supported: **bold**, *italic*, `code`, [link](url))",
+  "vBoard.save": "Save",
+  "vBoard.record": "Record",
+  "vBoard.decisionLabel": "Decision",
+  "vBoard.decisionPlaceholder": "What will change because of this evidence?",
+  "vBoard.charactersSuffix": "{count}/800 characters",
+  "vBoard.nextActionLabel": "Next validation action",
+  "vBoard.nextActionPlaceholder": "What evidence should be collected next?",
+  "vBoard.status.untested": "Untested",
+  "vBoard.status.testing": "Testing",
+  "vBoard.status.supported": "Supported",
+  "vBoard.status.refuted": "Refuted",
+  "vBoard.signal.supports": "Supports",
+  "vBoard.signal.challenges": "Challenges",
+  "vBoard.signal.neutral": "Neutral",
+  "vBoard.weight.strong": "Strong",
+  "vBoard.weight.moderate": "Moderate",
+  "vBoard.weight.anecdotal": "Anecdotal",
+  "vBoard.confidence.low": "Low",
+  "vBoard.confidence.medium": "Medium",
+  "vBoard.confidence.high": "High",
+  "vBoard.statusDesc.untested": "Untested: no evidence has been collected yet.",
+  "vBoard.statusDesc.testing": "Testing: evidence is actively being gathered.",
+  "vBoard.statusDesc.supported": "Supported: the hypothesis is holding up against the evidence.",
+  "vBoard.statusDesc.refuted": "Refuted: the evidence contradicts the hypothesis.",
+  "vBoard.signalDesc.supports": "Supports: this evidence reinforces the hypothesis.",
+  "vBoard.signalDesc.challenges": "Challenges: this evidence contradicts or weakens the hypothesis.",
+  "vBoard.signalDesc.neutral": "Neutral: this evidence is informational, neither supporting nor contradicting.",
+  "vBoard.weightDesc.anecdotal": "Anecdotal: a single story or hunch, not yet a pattern.",
+  "vBoard.weightDesc.moderate": "Moderate: a pattern seen a few times but not yet conclusive.",
+  "vBoard.weightDesc.strong": "Strong: repeated, high-quality signal across multiple sources.",
+  "vBoard.confidenceDesc.low": "Low confidence: this is still a guess; more evidence is needed.",
+  "vBoard.confidenceDesc.medium": "Medium confidence: some supporting evidence, but still uncertain.",
+  "vBoard.confidenceDesc.high": "High confidence: strongly supported by the evidence collected so far.",
+  "vBoard.signalCycleTitle": "{desc} (click to cycle: supports, challenges, neutral)",
+  "vBoard.weightCycleHint": "{desc} (click to cycle)",
+  "vBoard.archived": "Archived",
+  "vBoard.openSourceAria": "Open source: {source}",
+  "vBoard.moveEvidenceUpTitle": "Move evidence up",
+  "vBoard.moveEvidenceDownTitle": "Move evidence down",
+  "vBoard.moveEvidenceUpAria": "Move evidence from {source} up",
+  "vBoard.moveEvidenceDownAria": "Move evidence from {source} down",
+  "vBoard.unpinEvidenceTitle": "Unpin evidence",
+  "vBoard.pinEvidenceTitle": "Pin to top",
+  "vBoard.unpinEvidenceAria": "Unpin evidence from {source}",
+  "vBoard.pinEvidenceAria": "Pin evidence from {source}",
+  "vBoard.duplicateEvidenceTitle": "Duplicate evidence",
+  "vBoard.duplicateEvidenceAria": "Duplicate evidence from {source}",
+  "vBoard.editEvidenceTitle": "Edit evidence",
+  "vBoard.editEvidenceAria": "Edit evidence from {source}",
+  "vBoard.confirmDeleteTitle": "Confirm delete",
+  "vBoard.confirmDeleteAria": "Confirm delete evidence from {source}",
+  "vBoard.cancelDeleteTitle": "Cancel delete",
+  "vBoard.cancelDeleteAria": "Cancel delete evidence",
+  "vBoard.removeEvidenceTitle": "Remove evidence",
+  "vBoard.removeEvidenceAria": "Remove evidence from {source}",
+  "vBoard.overflowAria": "More actions for evidence from {source}",
+  "vBoard.overflowDuplicate": "Duplicate",
+  "vBoard.overflowEdit": "Edit",
+  "vBoard.overflowDelete": "Delete",
+  "vBoard.dragReorder": "Drag to reorder",
+  "vBoard.snippet.interview": "Interview",
+  "vBoard.snippet.survey": "Survey",
+  "vBoard.snippet.review": "Review",
+  "vBoard.snippet.support": "Support",
+  "vBoard.snippet.analytics": "Analytics",
+  "vBoard.snippet.usability": "Usability",
+  "vBoard.snippet.salesCall": "Sales call",
+  "vBoard.snippet.churn": "Churn",
+  "vBoard.err.sourceShort": "Source needs at least 2 characters.",
+  "vBoard.err.sourceLong": "Source is too long (max {max} characters).",
+  "vBoard.err.noteShort": "Observation needs at least 8 characters.",
+  "vBoard.err.noteLong": "Observation is too long (max {max} characters).",
+  "vBoard.err.pasteOneLine": "Paste at least one evidence line.",
+  "vBoard.err.maxEvidence": "Maximum 8 evidence items per hypothesis.",
+  "vBoard.err.noValidLines": "No valid evidence lines found.",
+  "vBoard.err.fillSourceNote": "Please fill in the source and observation before recording evidence.",
+  "vBoard.err.lengthLimits": "Source and observation must be within length limits.",
+  "vBoard.err.maxPerHypothesis": "Maximum 8 evidence items per hypothesis.",
+  "vBoard.sr.openEvidenceForm": "Opening evidence form for first hypothesis.",
+  "vBoard.sr.openNewHypothesis": "Opening new hypothesis form.",
+  "vBoard.sr.newHypothesis": "New hypothesis added: {assumption}",
+  "vBoard.sr.signalChanged": "Evidence signal changed to {signal}.",
+  "vBoard.sr.weightChanged": "Evidence weight changed to {weight}.",
+  "vBoard.sr.evidenceMoved": "Evidence moved {direction}: {source}.",
+  "vBoard.sr.evidenceReordered": "Evidence reordered.",
+  "vBoard.sr.hypothesisMovedUp": "Hypothesis moved up.",
+  "vBoard.sr.hypothesisMovedDown": "Hypothesis moved down.",
+  "vBoard.sr.evidenceRemoved": "Evidence from {source} removed. Press Ctrl+Z to undo.",
+  "vBoard.sr.evidenceRestored": "Evidence from {source} restored.",
+  "vBoard.sr.evidenceUpdated": "Evidence from {source} updated.",
+  "vBoard.sr.evidenceRecorded": "Evidence recorded: {source}. {count} items total.",
+  "vBoard.sr.addedItems": "Added {count} evidence items.",
+  "vBoard.sr.hypothesisRemoved": "Hypothesis {assumption} removed.",
+  "vBoard.sr.hypothesisRestored": "Hypothesis {assumption} restored.",
+  "vBoard.sr.archived": "Hypothesis archived.",
+  "vBoard.sr.unarchived": "Hypothesis unarchived.",
+  "vBoard.toast.hypMdCopied": "Hypothesis markdown copied",
+  "vBoard.toast.hypMdCopiedSr": "Hypothesis markdown copied to clipboard.",
+  "vBoard.toast.clipboardFail": "Could not copy to clipboard",
+  "vBoard.toast.mdDownloaded": "Markdown downloaded",
+  "vBoard.toast.hypMdDownloadedSr": "Hypothesis markdown downloaded.",
+  "vBoard.toast.mdDownloadFail": "Could not start markdown download",
+  "vBoard.toast.jsonDownloaded": "JSON downloaded",
+  "vBoard.toast.hypJsonDownloadedSr": "Hypothesis JSON downloaded.",
+  "vBoard.toast.jsonDownloadFail": "Could not start JSON download",
+  "vBoard.toast.boardMdCopied": "Validation board copied as markdown",
+  "vBoard.toast.boardMdCopiedSr": "Validation board markdown copied to clipboard.",
+  "vBoard.toast.boardMdDownloadedSr": "Validation board markdown downloaded.",
+  "vBoard.toast.boardJsonDownloadedSr": "Validation board JSON downloaded.",
+  "vBoard.toast.bulkStatus": "Set {count} hypotheses to {status}.",
+  "vBoard.toast.bulkArchived": "Archived {count} hypotheses.",
+  "vBoard.toast.bulkUnarchived": "Unarchived {count} hypotheses.",
+  "vBoard.toast.bulkTagAdded": "Added tag \"{tag}\" to {count} hypotheses.",
+  "vBoard.toast.bulkTagRemoved": "Removed tag \"{tag}\" from {count} hypotheses.",
+  "vBoard.toast.bulkNoBriefs": "All selected hypotheses already have briefs or have no evidence.",
+  "vBoard.toast.bulkBriefSummary": "Generated {success} brief{plural}{failed}.",
+  "vBoard.toast.bulkDeleted": "Deleted {count} hypotheses.",
+  "vBoard.toast.evidenceDeleted": "{count} evidence items deleted.",
+  "vBoard.toast.evidenceWeightSet": "Set weight to {weight} on {count} items.",
+  "vBoard.toast.evidenceWeightCycle": "Set {count} items to {weight} weight.",
+  "vBoard.toast.evidenceSignalSet": "Set {count} items to {signal}.",
+  "vBoard.toast.evidenceRemoved": "Evidence removed",
+  "vBoard.toast.hypothesisRemoved": "Hypothesis removed",
+  "vBoard.toast.undo": "Undo",
+  "vBoard.toast.undoLabel": "Undo",
+  "vBoard.toast.redo": "Redo",
+  "vBoard.toast.confidenceUpdated": "Confidence updated: {old} -> {new}",
+  "vBoard.toast.confidenceChanged": "Confidence changed from {old} to {new}",
+  "vBoard.toast.addedItems": "Added {count} evidence items.",
+  "vBoard.sr.evidenceNotRecorded": "Evidence not recorded. Please fill in the source and observation.",
+  "vBoard.direction.up": "up",
+  "vBoard.direction.down": "down",
+  "vBoard.confirm.deleteHypTitle": "Delete selected hypotheses?",
+  "vBoard.confirm.deleteHypBody": "{count} hypothesis and all their evidence will be permanently removed from this workspace. This can be undone right away via toast.",
+  "vBoard.confirm.delete": "Delete",
+  "vBoard.confirm.archiveHypTitle": "Archive selected hypotheses?",
+  "vBoard.confirm.archiveHypBody": "{count} hypotheses will be hidden from the main list. You can restore them from the archive at any time.",
+  "vBoard.confirm.archive": "Archive",
+  "vBoard.confirm.deleteEvidenceTitle": "Delete selected evidence?",
+  "vBoard.confirm.deleteEvidenceBody": "{count} evidence item(s) will be removed from this hypothesis. Confidence will be recomputed automatically.",
   "share.enableTitle": "Enable public share link?",
   "share.enableBody": "Validation decisions and evidence counts will be visible to anyone with the link. Evidence notes, sources, and the founder brief stay private.",
   "share.enableConfirm": "Enable and copy link",
@@ -1371,6 +1895,12 @@ const en: Dict = {
   "copilot.fieldDecision": "Decision",
   "copilot.fieldNextAction": "Next action",
   "copilot.emptyPlaceholder": "(empty)",
+  "vBoard.confirm.bulkDeleteHypTitle": "Delete selected hypotheses?",
+  "vBoard.confirm.bulkDeleteHypBody": "{count} hypothesis and all their evidence will be permanently removed from this workspace. This can be undone right away via toast.",
+  "vBoard.confirm.bulkArchiveHypTitle": "Archive selected hypotheses?",
+  "vBoard.confirm.bulkArchiveHypBody": "{count} hypotheses will be hidden from the main list. You can restore them from the archive at any time.",
+  "vBoard.confirm.bulkDeleteEvidenceTitle": "Delete selected evidence?",
+  "vBoard.confirm.bulkDeleteEvidenceBody": "{count} evidence item(s) will be removed from this hypothesis. Confidence will be recomputed automatically.",
   "recovery.title": "Account recovery",
   "recovery.body": "Save this key privately. Possession grants access to cloud history. Use {link} on the device that created the account and {recover} on a new device.",
   "recovery.handle": "Handle",
@@ -1851,6 +2381,261 @@ const zhCN: Dict = {
   "vFooter.shortcutsPrefix": "快捷键：",
   "vFooter.shortcutsPalette": " 命令面板 ",
   "vFooter.shortcutsHelp": " 帮助",
+  "vBoard.sectionAria": "验证循环",
+  "vBoard.title": "验证循环",
+  "vBoard.subtitle": "将生成的假设转化为有证据支撑的产品决策。",
+  "vBoard.progress": "进度",
+  "vBoard.evidenced": "已取证",
+  "vBoard.decided": "已决策",
+  "vBoard.weightsLabel": "权重：{preset}",
+  "vBoard.weight.balanced": "均衡",
+  "vBoard.weight.evidence": "侧重证据",
+  "vBoard.weight.decision": "侧重决策",
+  "vBoard.weight.balancedDesc": "所有检查点同等重要",
+  "vBoard.weight.evidenceDesc": "证据收集占比更高",
+  "vBoard.weight.decisionDesc": "得出结论占比更高",
+  "vBoard.weightAria": "进度权重预设",
+  "vBoard.selectTitle": "多选假设",
+  "vBoard.selectLabel": "选择",
+  "vBoard.newHypothesis": "新建假设",
+  "vBoard.newShort": "新建",
+  "vBoard.newHypothesisLabel": "新建假设",
+  "vBoard.newHypothesisHint": "至少 5 个字符，按 Enter 添加。",
+  "vBoard.newHypothesisPlaceholder": "你想验证什么假设？",
+  "vBoard.newHypothesisDup": "已存在相同的假设。",
+  "vBoard.newHypothesisTooShort": "请至少使用 5 个字符。",
+  "vBoard.tagPlaceholder": "添加标签（按 Enter 添加，例如 acquisition）",
+  "vBoard.removeTagAria": "移除标签 {tag}",
+  "vBoard.cancel": "取消",
+  "vBoard.addHypothesis": "添加假设",
+  "vBoard.emptyTitle": "暂无验证实验",
+  "vBoard.emptyBody": "生成一个工作台以填充初始假设，或在简报就绪后手动添加新假设。",
+  "vBoard.hypothesisAria": "假设 {index}：{assumption}。状态：{status}。{count} 条证据。",
+  "vBoard.gripAria": "拖拽以重排假设（Alt+上/下移动）",
+  "vBoard.gripTitle": "拖拽以重排（聚焦时按 Alt+上/下）",
+  "vBoard.pinUnarchiveTitle": "取消归档后才能置顶",
+  "vBoard.pinUnpinTitle": "取消置顶假设",
+  "vBoard.pinTitle": "将假设置顶到默认顺序顶部",
+  "vBoard.pinUnpinAria": "取消置顶假设：{assumption}",
+  "vBoard.pinAria": "将假设置顶：{assumption}",
+  "vBoard.statusAria": "验证状态：{status}。{desc}",
+  "vBoard.statusTitle": "{desc}",
+  "vBoard.confidenceAria": "置信度：{confidence}。{desc}{mode}",
+  "vBoard.confidenceTitleManual": "{desc}（手动设置）",
+  "vBoard.confidenceTitleAuto": "{desc}（根据证据自动）",
+  "vBoard.confidenceManualLabel": "手动",
+  "vBoard.confidenceManualAria": "将置信度重置为自动计算",
+  "vBoard.confidenceAuto": "自动",
+  "vBoard.confidenceAutoSuffix": "-自动",
+  "vBoard.confidenceManualSuffix": "手动设置",
+  "vBoard.confidenceAutoEvidenceSuffix": "由证据自动计算",
+  "vBoard.evidenceCountAria": "{count} 条证据",
+  "vBoard.evidenceItem": "{count} 条证据",
+  "vBoard.evidenceItems": "{count} 条证据",
+  "vBoard.archiveTitle": "归档假设",
+  "vBoard.unarchiveTitle": "取消归档",
+  "vBoard.archiveAria": "归档假设",
+  "vBoard.unarchiveAria": "取消归档",
+  "vBoard.archiveSr": "假设已归档。",
+  "vBoard.unarchiveSr": "假设已取消归档。",
+  "vBoard.collapse": "收起",
+  "vBoard.review": "查看",
+  "vBoard.cancelEvidence": "取消",
+  "vBoard.addEvidence": "添加证据",
+  "vBoard.exportAria": "导出假设",
+  "vBoard.exportTitle": "导出假设",
+  "vBoard.removeHypothesisAria": "移除假设",
+  "vBoard.removeConfirm": "移除此假设？所有证据都将丢失。",
+  "vBoard.validationStatusLabel": "验证状态",
+  "vBoard.confidenceLabel": "置信度",
+  "vBoard.confidenceHint": "产品判断，非统计意义上的确定性。",
+  "vBoard.linkedTaskLabel": "关联执行任务",
+  "vBoard.noLinkedTask": "未关联任务",
+  "vBoard.chipShowAllSignal": "显示全部证据",
+  "vBoard.chipShowAllWeight": "显示全部权重",
+  "vBoard.resetFilters": "重置筛选",
+  "vBoard.exitSelect": "退出选择",
+  "vBoard.select": "选择",
+  "vBoard.selectModeTitleExit": "退出证据多选模式",
+  "vBoard.selectModeTitle": "多选证据",
+  "vBoard.bulkEvidenceAria": "假设 H{index} 的批量证据操作",
+  "vBoard.selectAllAria": "全选可见证据",
+  "vBoard.selectAllTitle": "全选可见证据",
+  "vBoard.clearSelAria": "清除选择",
+  "vBoard.clearSelTitle": "清除选择",
+  "vBoard.all": "全部",
+  "vBoard.proSupports": "设为支持",
+  "vBoard.proChallenges": "设为反对",
+  "vBoard.proNeutral": "设为中性",
+  "vBoard.weightCycleTitle": "点击循环权重：强 -> 中等 -> 轶事",
+  "vBoard.weightCycleShort": "权重",
+  "vBoard.evidenceListAria": "证据列表",
+  "vBoard.noEvidence": "尚未记录证据。添加访谈信号、指标或市场观察。",
+  "vBoard.evidenceSourceAria": "证据来源",
+  "vBoard.evidenceLabel": "证据",
+  "vBoard.single": "单条",
+  "vBoard.bulkPaste": "批量粘贴",
+  "vBoard.snippetsLabel": "模板：",
+  "vBoard.snippetTitle": "插入模板：{source} - {note}",
+  "vBoard.bulkPasteLabel": "粘贴证据（每行一条）",
+  "vBoard.bulkPlaceholder": "格式：[前缀] 来源 - 观察\n前缀：+ 支持 | - 反对 | ~ 中性\n附加 s/m/a 表示权重：+s 强，+m 中等，+a 轶事\n示例：\n+s 访谈 #12 - 愿意付费\n- 应用评论 #45 - 启动即崩溃\n+ 调查 Q3 - 70% 认为功能有用",
+  "vBoard.bulkHint": "将添加 ",
+  "vBoard.bulkHintItems": " 条证据",
+  "vBoard.bulkHintAs": "，作为 {signal}（{weight} 权重）。每行前缀：",
+  "vBoard.bulkHintWeight": " 表示信号，附加 ",
+  "vBoard.bulkHintWeightExample": " 表示权重（例如 ",
+  "vBoard.addAll": "全部添加",
+  "vBoard.preview": "预览",
+  "vBoard.previewUntitled": "未命名来源",
+  "vBoard.previewObservation": "你的观察将显示在这里……",
+  "vBoard.signalLabel": "信号",
+  "vBoard.signalHint": "为这条验证发现选择证据信号强度。",
+  "vBoard.weightLabel": "权重",
+  "vBoard.weightHint": "为这条验证发现选择证据权重 / 强度。",
+  "vBoard.sourceLabel": "来源",
+  "vBoard.observationLabel": "观察",
+  "vBoard.sourcePlaceholder": "访谈 #5、Mixpanel、应用商店评论……",
+  "vBoard.observationPlaceholder": "你了解到了什么？（支持 Markdown：**粗体**、*斜体*、`代码`、[链接](url)）",
+  "vBoard.save": "保存",
+  "vBoard.record": "记录",
+  "vBoard.decisionLabel": "决策",
+  "vBoard.decisionPlaceholder": "因为这些证据，接下来会改变什么？",
+  "vBoard.charactersSuffix": "{count}/800 字符",
+  "vBoard.nextActionLabel": "下一步验证行动",
+  "vBoard.nextActionPlaceholder": "接下来应收集什么证据？",
+  "vBoard.status.untested": "未测试",
+  "vBoard.status.testing": "测试中",
+  "vBoard.status.supported": "已验证",
+  "vBoard.status.refuted": "已证伪",
+  "vBoard.signal.supports": "支持",
+  "vBoard.signal.challenges": "反对",
+  "vBoard.signal.neutral": "中性",
+  "vBoard.weight.strong": "强",
+  "vBoard.weight.moderate": "中等",
+  "vBoard.weight.anecdotal": "轶事",
+  "vBoard.confidence.low": "低",
+  "vBoard.confidence.medium": "中",
+  "vBoard.confidence.high": "高",
+  "vBoard.statusDesc.untested": "未测试：尚未收集任何证据。",
+  "vBoard.statusDesc.testing": "测试中：正在积极收集证据。",
+  "vBoard.statusDesc.supported": "已验证：假设经受住了证据的检验。",
+  "vBoard.statusDesc.refuted": "已证伪：证据与假设相矛盾。",
+  "vBoard.signalDesc.supports": "支持：此证据强化了假设。",
+  "vBoard.signalDesc.challenges": "反对：此证据反驳或削弱了假设。",
+  "vBoard.signalDesc.neutral": "中性：此证据仅供参考，既不支持也不反对。",
+  "vBoard.weightDesc.anecdotal": "轶事：单个故事或直觉，尚未形成规律。",
+  "vBoard.weightDesc.moderate": "中等：已多次出现的规律，但尚无定论。",
+  "vBoard.weightDesc.strong": "强：来自多个来源、重复且高质量的信号。",
+  "vBoard.confidenceDesc.low": "低置信度：目前仍是猜测，需要更多证据。",
+  "vBoard.confidenceDesc.medium": "中置信度：有一些支持性证据，但仍不确定。",
+  "vBoard.confidenceDesc.high": "高置信度：目前已收集的证据有力地支撑了假设。",
+  "vBoard.signalCycleTitle": "{desc}（点击循环：支持、反对、中性）",
+  "vBoard.weightCycleHint": "{desc}（点击循环）",
+  "vBoard.archived": "已归档",
+  "vBoard.openSourceAria": "打开来源：{source}",
+  "vBoard.moveEvidenceUpTitle": "上移证据",
+  "vBoard.moveEvidenceDownTitle": "下移证据",
+  "vBoard.moveEvidenceUpAria": "上移来自 {source} 的证据",
+  "vBoard.moveEvidenceDownAria": "下移来自 {source} 的证据",
+  "vBoard.unpinEvidenceTitle": "取消置顶证据",
+  "vBoard.pinEvidenceTitle": "置顶",
+  "vBoard.unpinEvidenceAria": "取消置顶来自 {source} 的证据",
+  "vBoard.pinEvidenceAria": "置顶来自 {source} 的证据",
+  "vBoard.duplicateEvidenceTitle": "复制证据",
+  "vBoard.duplicateEvidenceAria": "复制来自 {source} 的证据",
+  "vBoard.editEvidenceTitle": "编辑证据",
+  "vBoard.editEvidenceAria": "编辑来自 {source} 的证据",
+  "vBoard.confirmDeleteTitle": "确认删除",
+  "vBoard.confirmDeleteAria": "确认删除来自 {source} 的证据",
+  "vBoard.cancelDeleteTitle": "取消删除",
+  "vBoard.cancelDeleteAria": "取消删除证据",
+  "vBoard.removeEvidenceTitle": "移除证据",
+  "vBoard.removeEvidenceAria": "移除来自 {source} 的证据",
+  "vBoard.overflowAria": "来自 {source} 证据的更多操作",
+  "vBoard.overflowDuplicate": "复制",
+  "vBoard.overflowEdit": "编辑",
+  "vBoard.overflowDelete": "删除",
+  "vBoard.dragReorder": "拖拽以重排",
+  "vBoard.snippet.interview": "访谈",
+  "vBoard.snippet.survey": "调查",
+  "vBoard.snippet.review": "评论",
+  "vBoard.snippet.support": "客服",
+  "vBoard.snippet.analytics": "分析",
+  "vBoard.snippet.usability": "可用性",
+  "vBoard.snippet.salesCall": "销售通话",
+  "vBoard.snippet.churn": "流失",
+  "vBoard.err.sourceShort": "来源至少需要 2 个字符。",
+  "vBoard.err.sourceLong": "来源过长（最多 {max} 个字符）。",
+  "vBoard.err.noteShort": "观察至少需要 8 个字符。",
+  "vBoard.err.noteLong": "观察过长（最多 {max} 个字符）。",
+  "vBoard.err.pasteOneLine": "请至少粘贴一行证据。",
+  "vBoard.err.maxEvidence": "每个假设最多 8 条证据。",
+  "vBoard.err.noValidLines": "未找到有效的证据行。",
+  "vBoard.err.fillSourceNote": "请在记录证据前填写来源与观察。",
+  "vBoard.err.lengthLimits": "来源与观察须在长度限制内。",
+  "vBoard.err.maxPerHypothesis": "每个假设最多 8 条证据。",
+  "vBoard.sr.openEvidenceForm": "正在打开首个假设的证据表单。",
+  "vBoard.sr.openNewHypothesis": "正在打开新建假设表单。",
+  "vBoard.sr.newHypothesis": "已添加新假设：{assumption}",
+  "vBoard.sr.signalChanged": "证据信号已改为 {signal}。",
+  "vBoard.sr.weightChanged": "证据权重已改为 {weight}。",
+  "vBoard.sr.evidenceMoved": "证据已{direction}移：{source}。",
+  "vBoard.sr.evidenceReordered": "证据已重新排序。",
+  "vBoard.sr.hypothesisMovedUp": "假设已上移。",
+  "vBoard.sr.hypothesisMovedDown": "假设已下移。",
+  "vBoard.sr.evidenceRemoved": "来自 {source} 的证据已移除。按 Ctrl+Z 可撤销。",
+  "vBoard.sr.evidenceRestored": "来自 {source} 的证据已恢复。",
+  "vBoard.sr.evidenceUpdated": "来自 {source} 的证据已更新。",
+  "vBoard.sr.evidenceRecorded": "已记录证据：{source}。共 {count} 条。",
+  "vBoard.sr.addedItems": "已添加 {count} 条证据。",
+  "vBoard.sr.hypothesisRemoved": "假设「{assumption}」已移除。",
+  "vBoard.sr.hypothesisRestored": "假设「{assumption}」已恢复。",
+  "vBoard.sr.archived": "假设已归档。",
+  "vBoard.sr.unarchived": "假设已取消归档。",
+  "vBoard.toast.hypMdCopied": "假设 Markdown 已复制",
+  "vBoard.toast.hypMdCopiedSr": "假设 Markdown 已复制到剪贴板。",
+  "vBoard.toast.clipboardFail": "无法复制到剪贴板",
+  "vBoard.toast.mdDownloaded": "Markdown 已下载",
+  "vBoard.toast.hypMdDownloadedSr": "假设 Markdown 已下载。",
+  "vBoard.toast.mdDownloadFail": "无法开始 Markdown 下载",
+  "vBoard.toast.jsonDownloaded": "JSON 已下载",
+  "vBoard.toast.hypJsonDownloadedSr": "假设 JSON 已下载。",
+  "vBoard.toast.jsonDownloadFail": "无法开始 JSON 下载",
+  "vBoard.toast.boardMdCopied": "验证板已复制为 Markdown",
+  "vBoard.toast.boardMdCopiedSr": "验证板 Markdown 已复制到剪贴板。",
+  "vBoard.toast.boardMdDownloadedSr": "验证板 Markdown 已下载。",
+  "vBoard.toast.boardJsonDownloadedSr": "验证板 JSON 已下载。",
+  "vBoard.toast.bulkStatus": "已将 {count} 条假设设为 {status}。",
+  "vBoard.toast.bulkArchived": "已归档 {count} 条假设。",
+  "vBoard.toast.bulkUnarchived": "已取消归档 {count} 条假设。",
+  "vBoard.toast.bulkTagAdded": "已为 {count} 条假设添加标签「{tag}」。",
+  "vBoard.toast.bulkTagRemoved": "已从 {count} 条假设移除标签「{tag}」。",
+  "vBoard.toast.bulkNoBriefs": "所有选中的假设都已有简报或无证据。",
+  "vBoard.toast.bulkBriefSummary": "已生成 {success} 份简报{plural}{failed}。",
+  "vBoard.toast.bulkDeleted": "已删除 {count} 条假设。",
+  "vBoard.toast.evidenceDeleted": "已删除 {count} 条证据。",
+  "vBoard.toast.evidenceWeightSet": "已将 {count} 条的权重设为 {weight}。",
+  "vBoard.toast.evidenceWeightCycle": "已将 {count} 条的权重设为 {weight}。",
+  "vBoard.toast.evidenceSignalSet": "已将 {count} 条设为 {signal}。",
+  "vBoard.toast.evidenceRemoved": "证据已移除",
+  "vBoard.toast.hypothesisRemoved": "假设已移除",
+  "vBoard.toast.undo": "撤销",
+  "vBoard.toast.undoLabel": "撤销",
+  "vBoard.toast.redo": "重做",
+  "vBoard.toast.confidenceUpdated": "置信度已更新：{old} -> {new}",
+  "vBoard.toast.confidenceChanged": "置信度已从 {old} 变为 {new}",
+  "vBoard.toast.addedItems": "已添加 {count} 条证据。",
+  "vBoard.sr.evidenceNotRecorded": "证据未记录。请填写来源和观察。",
+  "vBoard.direction.up": "上",
+  "vBoard.direction.down": "下",
+  "vBoard.confirm.deleteHypTitle": "删除选中的假设？",
+  "vBoard.confirm.deleteHypBody": "{count} 条假设及其所有证据将从此工作台永久移除。可立即通过通知撤销。",
+  "vBoard.confirm.delete": "删除",
+  "vBoard.confirm.archiveHypTitle": "归档选中的假设？",
+  "vBoard.confirm.archiveHypBody": "{count} 条假设将从主列表中隐藏。你可随时从归档中恢复它们。",
+  "vBoard.confirm.archive": "归档",
+  "vBoard.confirm.deleteEvidenceTitle": "删除选中的证据？",
+  "vBoard.confirm.deleteEvidenceBody": "{count} 条证据将从此假设中移除。置信度将自动重新计算。",
   "share.enableTitle": "启用公开分享链接？",
   "share.enableBody": "拥有链接的任何人都可查看验证决策与证据计数。证据笔记、来源与创始人简报保持私密。",
   "share.enableConfirm": "启用并复制链接",
@@ -2041,6 +2826,12 @@ const zhCN: Dict = {
   "copilot.fieldDecision": "决策",
   "copilot.fieldNextAction": "下一步行动",
   "copilot.emptyPlaceholder": "（空）",
+  "vBoard.confirm.bulkDeleteHypTitle": "删除选中的假设？",
+  "vBoard.confirm.bulkDeleteHypBody": "{count} 个假设及其全部证据将从该工作台永久移除。可通过提示立即撤销。",
+  "vBoard.confirm.bulkArchiveHypTitle": "归档选中的假设？",
+  "vBoard.confirm.bulkArchiveHypBody": "{count} 个假设将从主列表隐藏。你可随时从归档中恢复。",
+  "vBoard.confirm.bulkDeleteEvidenceTitle": "删除选中的证据？",
+  "vBoard.confirm.bulkDeleteEvidenceBody": "{count} 条证据将从该假设移除。置信度将自动重新计算。",
   "recovery.title": "账户恢复",
   "recovery.body": "请私下保存此密钥。持有即可访问云端历史。在创建账户的设备上使用{link}，在新设备上使用{recover}。",
   "recovery.handle": "账号标识",
