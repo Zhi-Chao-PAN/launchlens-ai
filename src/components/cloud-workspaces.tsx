@@ -312,7 +312,8 @@ export function CloudWorkspaces({
         };
         const copied = await copyTextToClipboard(shareUrl);
         const suffix = shareExpirySuffix(justShared.expiresAt);
-        const suffixText = t(suffix.key, suffix.params);
+        const label = suffix.labelKey ? t(suffix.labelKey, suffix.labelParams) : "";
+        const suffixText = t(suffix.key, suffix.labelKey ? { label } : undefined);
         if (copied) {
           showToast(t("share.linkCopied") + suffixText, "success");
         } else {
@@ -366,7 +367,8 @@ export function CloudWorkspaces({
   async function copyShareLink(item: CloudWorkspaceSummary) {
     const shareUrl = `${window.location.origin}/share/${item.id}`;
     const suffix = shareExpirySuffix(item.expiresAt);
-    const suffixText = t(suffix.key, suffix.params);
+    const label = suffix.labelKey ? t(suffix.labelKey, suffix.labelParams) : "";
+    const suffixText = t(suffix.key, suffix.labelKey ? { label } : undefined);
 
     const copied = await copyTextToClipboard(shareUrl);
     if (copied) {

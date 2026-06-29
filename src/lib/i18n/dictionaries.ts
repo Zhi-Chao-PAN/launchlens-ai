@@ -329,9 +329,72 @@ export type DictionaryKey =
   // Share expiry suffix + row badge (lib-driven, translated in component)
   | "shareExpiry.permanent"
   | "shareExpiry.expired"
-  | "shareExpiry.expiresIn"
+  | "shareExpiry.expiresSentence"
   | "rowExpiry.expired"
   | "rowExpiry.expiresIn"
+  // Shared-snapshot expiry badge descriptor (formatExpiryBadge → ExpiryBadge)
+  | "expiry.permanent"
+  | "expiry.permanentTitle"
+  | "expiry.tomorrow"
+  | "expiry.tomorrowTitle"
+  | "expiry.expiresYearsOne"
+  | "expiry.expiresYearsMany"
+  | "expiry.expiresMonthsOne"
+  | "expiry.expiresMonthsMany"
+  | "expiry.expiresWeeksOne"
+  | "expiry.expiresWeeksMany"
+  | "expiry.expiresDaysOne"
+  | "expiry.expiresDaysMany"
+  | "expiry.titlePrefix"
+  // Public shared-workspace view (/share/[id] read-only page)
+  | "shareView.skipToDecisions"
+  | "shareView.brand"
+  | "shareView.defaultHeadline"
+  | "shareView.readonlySnapshot"
+  | "shareView.readonlyPill"
+  | "shareView.readonlyPillAria"
+  | "shareView.readonlyPillTitle"
+  | "shareView.readonlySr"
+  | "shareView.openDemo"
+  | "shareView.openDemoAria"
+  | "shareView.generatedAt"
+  | "shareView.sharedAt"
+  | "shareView.generatedAtTitle"
+  | "shareView.sharedAtTitle"
+  | "shareView.targetUsers"
+  | "shareView.painMap"
+  | "shareView.mvpScope"
+  | "shareView.landingCopy"
+  | "shareView.featureBacklog"
+  | "shareView.pricingHypothesis"
+  | "shareView.launchPlan"
+  | "shareView.executionTasks"
+  | "shareView.validationDecisions"
+  | "shareView.validationIntro"
+  | "shareView.showingCount"
+  | "shareView.archivedSuffix"
+  | "shareView.hideArchived"
+  | "shareView.showArchived"
+  | "shareView.showArchivedCount"
+  | "shareView.hideArchivedAria"
+  | "shareView.showArchivedAria"
+  | "shareView.hypothesisAria"
+  | "shareView.archivedTag"
+  | "shareView.archivedTagTitle"
+  | "shareView.evidenceItems"
+  | "shareView.evidenceItemSingular"
+  | "shareView.confidenceLabel"
+  | "shareView.decision"
+  | "shareView.nextAction"
+  | "shareView.linkedTask"
+  | "shareView.pending"
+  | "shareView.none"
+  | "shareView.emptyActive"
+  | "shareView.taskOwns"
+  | "shareView.taskDue"
+  | "provider.minimax"
+  | "provider.openai"
+  | "provider.mock"
   // Account recovery
   | "recovery.title"
   | "recovery.body"
@@ -1033,9 +1096,70 @@ const en: Dict = {
   "share.confirm": "Confirm",
   "shareExpiry.permanent": " Permanent.",
   "shareExpiry.expired": " It has expired.",
-  "shareExpiry.expiresIn": " Expires in {label}.",
+  "shareExpiry.expiresSentence": " {label}.",
   "rowExpiry.expired": "Expired",
   "rowExpiry.expiresIn": "Expires in {days}d",
+  "expiry.permanent": "Permanent",
+  "expiry.permanentTitle": "This shared link never expires",
+  "expiry.tomorrow": "Expires tomorrow",
+  "expiry.tomorrowTitle": "Expires within a day",
+  "expiry.expiresYearsOne": "Expires in 1 year",
+  "expiry.expiresYearsMany": "Expires in {n} years",
+  "expiry.expiresMonthsOne": "Expires in 1 month",
+  "expiry.expiresMonthsMany": "Expires in {n} months",
+  "expiry.expiresWeeksOne": "Expires in 1 week",
+  "expiry.expiresWeeksMany": "Expires in {n} weeks",
+  "expiry.expiresDaysOne": "Expires in 1 day",
+  "expiry.expiresDaysMany": "Expires in {n} days",
+  "expiry.titlePrefix": "Expires ",
+  "shareView.skipToDecisions": "Skip to validation decisions",
+  "shareView.brand": "LaunchLens AI",
+  "shareView.defaultHeadline": "Shared GTM workspace",
+  "shareView.readonlySnapshot": "Read-only shared snapshot",
+  "shareView.readonlyPill": "Read-only snapshot",
+  "shareView.readonlyPillAria": "Read-only: view and export only",
+  "shareView.readonlyPillTitle": "This shared snapshot is read-only. You can view, copy, or export the workspace, but edits are disabled.",
+  "shareView.readonlySr": "This shared snapshot is read-only. View, copy, and export are enabled; edits are disabled.",
+  "shareView.openDemo": "Open the demo",
+  "shareView.openDemoAria": "Open the LaunchLens AI demo (leaves this read-only snapshot and opens the editor at the home page)",
+  "shareView.generatedAt": "Generated {time}",
+  "shareView.sharedAt": "Shared {time}",
+  "shareView.generatedAtTitle": "Generated at {time}",
+  "shareView.sharedAtTitle": "Shared at {time}",
+  "shareView.targetUsers": "Target users",
+  "shareView.painMap": "Pain map",
+  "shareView.mvpScope": "MVP scope",
+  "shareView.landingCopy": "Landing page copy",
+  "shareView.featureBacklog": "Feature backlog",
+  "shareView.pricingHypothesis": "Pricing hypothesis",
+  "shareView.launchPlan": "Launch plan",
+  "shareView.executionTasks": "Execution tasks",
+  "shareView.validationDecisions": "Validation decisions",
+  "shareView.validationIntro": "Evidence notes and sources remain private. This shared view shows decision state and evidence counts only.",
+  "shareView.showingCount": "Showing {visible} of {total} hypotheses",
+  "shareView.archivedSuffix": " ({count} archived)",
+  "shareView.hideArchived": "Hide archived",
+  "shareView.showArchived": "Show archived",
+  "shareView.showArchivedCount": "Show archived ({count})",
+  "shareView.hideArchivedAria": "Hide archived hypotheses",
+  "shareView.showArchivedAria": "Show archived hypotheses",
+  "shareView.hypothesisAria": "Hypothesis {index} of {total}: {assumption}{archived}",
+  "shareView.archivedTag": "Archived",
+  "shareView.archivedTagTitle": "This hypothesis has been archived by the owner.",
+  "shareView.evidenceItems": "{count} evidence items",
+  "shareView.evidenceItemSingular": "{count} evidence item",
+  "shareView.confidenceLabel": "{confidence} confidence",
+  "shareView.decision": "Decision",
+  "shareView.nextAction": "Next action",
+  "shareView.linkedTask": "Linked task",
+  "shareView.pending": "Pending",
+  "shareView.none": "None",
+  "shareView.emptyActive": "No active hypotheses. Toggle “Show archived” above to view archived ones.",
+  "shareView.taskOwns": "{owner} owns {outcome}.",
+  "shareView.taskDue": "Due {due}.",
+  "provider.minimax": "MiniMax provider",
+  "provider.openai": "OpenAI-compatible provider",
+  "provider.mock": "Demo mock provider",
   "recovery.title": "Account recovery",
   "recovery.body": "Save this key privately. Possession grants access to cloud history. Use {link} on the device that created the account and {recover} on a new device.",
   "recovery.handle": "Handle",
@@ -1538,9 +1662,70 @@ const zhCN: Dict = {
   "share.confirm": "确认",
   "shareExpiry.permanent": " 永久有效。",
   "shareExpiry.expired": " 已过期。",
-  "shareExpiry.expiresIn": " {label}后过期。",
+  "shareExpiry.expiresSentence": " {label}。",
   "rowExpiry.expired": "已过期",
   "rowExpiry.expiresIn": "{days}天后过期",
+  "expiry.permanent": "永久有效",
+  "expiry.permanentTitle": "此分享链接永不过期",
+  "expiry.tomorrow": "明天过期",
+  "expiry.tomorrowTitle": "一天内过期",
+  "expiry.expiresYearsOne": "1 年后过期",
+  "expiry.expiresYearsMany": "{n} 年后过期",
+  "expiry.expiresMonthsOne": "1 个月后过期",
+  "expiry.expiresMonthsMany": "{n} 个月后过期",
+  "expiry.expiresWeeksOne": "1 周后过期",
+  "expiry.expiresWeeksMany": "{n} 周后过期",
+  "expiry.expiresDaysOne": "1 天后过期",
+  "expiry.expiresDaysMany": "{n} 天后过期",
+  "expiry.titlePrefix": "过期时间 ",
+  "shareView.skipToDecisions": "跳转到验证决策",
+  "shareView.brand": "LaunchLens AI",
+  "shareView.defaultHeadline": "共享 GTM 工作台",
+  "shareView.readonlySnapshot": "只读共享快照",
+  "shareView.readonlyPill": "只读快照",
+  "shareView.readonlyPillAria": "只读：仅可查看与导出",
+  "shareView.readonlyPillTitle": "此共享快照为只读。你可以查看、复制或导出工作台，但不能编辑。",
+  "shareView.readonlySr": "此共享快照为只读。可查看、复制与导出；编辑功能已关闭。",
+  "shareView.openDemo": "打开 Demo",
+  "shareView.openDemoAria": "打开 LaunchLens AI 演示（离开此只读快照并打开首页编辑器）",
+  "shareView.generatedAt": "生成于 {time}",
+  "shareView.sharedAt": "分享于 {time}",
+  "shareView.generatedAtTitle": "生成于 {time}",
+  "shareView.sharedAtTitle": "分享于 {time}",
+  "shareView.targetUsers": "目标用户",
+  "shareView.painMap": "痛点地图",
+  "shareView.mvpScope": "MVP 范围",
+  "shareView.landingCopy": "落地页文案",
+  "shareView.featureBacklog": "功能待办",
+  "shareView.pricingHypothesis": "定价假设",
+  "shareView.launchPlan": "发布计划",
+  "shareView.executionTasks": "执行任务",
+  "shareView.validationDecisions": "验证决策",
+  "shareView.validationIntro": "证据笔记与来源保持私密。此共享视图仅显示决策状态与证据计数。",
+  "shareView.showingCount": "显示 {visible} / {total} 条假设",
+  "shareView.archivedSuffix": "（{count} 条已归档）",
+  "shareView.hideArchived": "隐藏已归档",
+  "shareView.showArchived": "显示已归档",
+  "shareView.showArchivedCount": "显示已归档（{count}）",
+  "shareView.hideArchivedAria": "隐藏已归档假设",
+  "shareView.showArchivedAria": "显示已归档假设",
+  "shareView.hypothesisAria": "假设 {index} / {total}：{assumption}{archived}",
+  "shareView.archivedTag": "已归档",
+  "shareView.archivedTagTitle": "此假设已被所有者归档。",
+  "shareView.evidenceItems": "{count} 条证据",
+  "shareView.evidenceItemSingular": "{count} 条证据",
+  "shareView.confidenceLabel": "{confidence} 置信度",
+  "shareView.decision": "决策",
+  "shareView.nextAction": "下一步行动",
+  "shareView.linkedTask": "关联任务",
+  "shareView.pending": "待定",
+  "shareView.none": "无",
+  "shareView.emptyActive": "暂无活跃假设。点击上方「显示已归档」可查看已归档内容。",
+  "shareView.taskOwns": "{owner} 负责 {outcome}。",
+  "shareView.taskDue": "截止 {due}。",
+  "provider.minimax": "MiniMax 模型供应商",
+  "provider.openai": "OpenAI 兼容模型供应商",
+  "provider.mock": "演示 Mock 模型供应商",
   "recovery.title": "账户恢复",
   "recovery.body": "请私下保存此密钥。持有即可访问云端历史。在创建账户的设备上使用{link}，在新设备上使用{recover}。",
   "recovery.handle": "账号标识",

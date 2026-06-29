@@ -741,6 +741,7 @@ export function LaunchWorkspace({
     () => formatProviderLabel(workspace.provider),
     [workspace.provider],
   );
+  const providerLabelText = t(providerLabel.key);
 
   const [saveFlash, setSaveFlash] = useState(false);
   const { announce: srSave } = useSrAnnounce();
@@ -1605,7 +1606,7 @@ export function LaunchWorkspace({
           <WorkspaceMetric
             label={t("metrics.aiMode")}
             value={generationModeLabel}
-            detail={providerLabel}
+            detail={providerLabelText}
             icon={LayoutDashboard}
             tone={generationMeta.usedFallback ? "risk" : "primary"}
           />
@@ -1948,7 +1949,7 @@ export function LaunchWorkspace({
                         {generationModeLabel}
                       </span>
                       <span className="rounded-md border border-input bg-input px-2.5 py-1">
-                        {providerLabel}
+                        {providerLabelText}
                       </span>
                       {generationMeta.usedFallback && generationMeta.fallbackReason && (
                         <span className="rounded-md bg-signal-challenges px-2.5 py-1 text-signal-challenges">

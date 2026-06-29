@@ -31,6 +31,7 @@ import { formatExpiryBadge } from "@/lib/launchlens/expiry-format";
 import { formatProviderLabel } from "@/lib/launchlens/provider-label";
 import { Bullets } from "@/components/bullets";
 import { taskIdentity } from "@/lib/launchlens/execution";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type ReadOnlySectionProps = {
   title: string;
@@ -130,15 +131,18 @@ export function ExpiryBadge({
   // `nowTick` is read here so this component re-renders on every tick
   // (otherwise the badge label would freeze on first mount).
   void nowTick;
+  const { t } = useLocale();
   const badge = formatExpiryBadge(expiresAt, now);
   if (!badge) return null;
   const className =
     badge.variant === "neutral"
       ? "w-fit rounded-md bg-emerald-100 px-3 py-2 text-sm font-medium text-emerald-800"
       : "w-fit rounded-md bg-amber-100 px-3 py-2 text-sm font-medium text-amber-800";
+  const label = t(badge.key, badge.params);
+  const title = t(badge.titleKey, badge.titleParams);
   return (
-    <span className={className} title={badge.title}>
-      {badge.label}
+    <span className={className} title={title}>
+      {label}
     </span>
   );
 }
@@ -149,6 +153,7 @@ export function SharedWorkspaceView({
   record: SharedCloudWorkspaceRecord;
 }) {
   const { workspace } = record;
+  const { t } = useLocale();
   const experiments = record.execution.experiments;
   const [focusedExperimentId, setFocusedExperimentId] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
@@ -218,7 +223,7 @@ export function SharedWorkspaceView({
         }}
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
       >
-        Skip to validation decisions
+        {t("shareView.skipToDecisions")}
       </a>
       <div className="mx-auto w-full max-w-6xl">
         <header className="mb-4 flex flex-col gap-3 border-b border-card pb-4 sm:mb-6 sm:gap-4 sm:pb-5 sm:flex-row sm:items-center sm:justify-between">
@@ -228,10 +233,10 @@ export function SharedWorkspaceView({
             </span>
             <div>
               <p className="text-sm font-medium text-signal-challenges">
-                LaunchLens AI
+                {t("shareView.brand")}
               </p>
               <h1 className="text-xl font-semibold">
-                {workspace.landingPage?.headline || "Shared GTM workspace"}
+                {workspace.landingPage?.headline || t("shareView.defaultHeadline")}
               </h1>
               {workspace.landingPage?.subheadline && (
                 <p className="mt-1 max-w-2xl text-sm leading-5 text-foreground/80">
@@ -239,16 +244,16 @@ export function SharedWorkspaceView({
                 </p>
               )}
               <p className="mt-1 text-xs text-muted">
-                Read-only shared snapshot
+                {t("shareView.readonlySnapshot")}
               </p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="w-fit rounded-md border border-card bg-card px-3 py-2 text-sm text-foreground/80" title="This shared snapshot is read-only. You can view, copy, or export the workspace, but edits are disabled." aria-label="Read-only: view and export only">Read-only snapshot</span>
+            <span className="w-fit rounded-md border border-card bg-card px-3 py-2 text-sm text-foreground/80" title={t("shareView.readonlyPillTitle")} aria-label={t("shareView.readonlyPillAria")}>{t("shareView.readonlyPill")}</span>
             {/* Polite live region so screen-reader users learn the snapshot
                 is read-only without re-tabbing to the pill. */}
             <span role="status" aria-live="polite" className="sr-only">
-              This shared snapshot is read-only. View, copy, and export are enabled; edits are disabled.
+              {t("shareView.readonlySr")}
             </span>
             <ExpiryBadge
               expiresAt={record.expiresAt}
@@ -262,10 +267,10 @@ export function SharedWorkspaceView({
             <CopyLinkButton />
             <Link
               href="/"
-              aria-label="Open the LaunchLens AI demo (leaves this read-only snapshot and opens the editor at the home page)"
+              aria-label={t("shareView.openDemoAria")}
               className="inline-flex h-10 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-semibold text-primary-text transition hover:bg-primary-hover active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2"
             >
-              Open the demo
+              {t("shareView.openDemo")}
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
           </div>
@@ -274,13 +279,13 @@ export function SharedWorkspaceView({
         <section className="mb-6 rounded-md border border-card bg-card p-6 shadow-[0_24px_80px_-72px_rgba(17,19,18,0.45)]">
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
             <span className="rounded-md bg-signal-supports px-2 py-1 font-medium text-signal-supports">
-              {formatProviderLabel(workspace.provider)}
+              {t(formatProviderLabel(workspace.provider).key)}
             </span>
-            <span title={`Generated at ${workspace.generatedAt}`}>
-              Generated {formatGeneratedTime(workspace.generatedAt)}
+            <span title={t("shareView.generatedAtTitle", { time: workspace.generatedAt })}>
+              {t("shareView.generatedAt", { time: formatGeneratedTime(workspace.generatedAt) })}
             </span>
-            <span title={`Shared at ${record.updatedAt}`}>
-              Shared {sharedAtLabel}
+            <span title={t("shareView.sharedAtTitle", { time: record.updatedAt })}>
+              {t("shareView.sharedAt", { time: sharedAtLabel })}
             </span>
           </div>
           <h2 className="mt-4 text-2xl font-semibold leading-8">
@@ -292,16 +297,16 @@ export function SharedWorkspaceView({
         </section>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <ReadOnlySection title="Target users" icon={UsersRound} collapsible sectionId="target-users">
+          <ReadOnlySection title={t("shareView.targetUsers")} icon={UsersRound} collapsible sectionId="target-users">
             <Bullets items={workspace.targetUsers} />
           </ReadOnlySection>
-          <ReadOnlySection title="Pain map" icon={Target} collapsible sectionId="pain-map">
+          <ReadOnlySection title={t("shareView.painMap")} icon={Target} collapsible sectionId="pain-map">
             <Bullets items={workspace.pains} />
           </ReadOnlySection>
-          <ReadOnlySection title="MVP scope" icon={ClipboardList} collapsible sectionId="mvp-scope">
+          <ReadOnlySection title={t("shareView.mvpScope")} icon={ClipboardList} collapsible sectionId="mvp-scope">
             <Bullets items={workspace.mvpScope} />
           </ReadOnlySection>
-          <ReadOnlySection title="Landing page copy" icon={Megaphone} collapsible sectionId="landing-page-copy">
+          <ReadOnlySection title={t("shareView.landingCopy")} icon={Megaphone} collapsible sectionId="landing-page-copy">
             <p className="mb-4 text-sm font-semibold leading-6">
               {workspace.landingPage.subheadline}
             </p>
@@ -314,7 +319,7 @@ export function SharedWorkspaceView({
         </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
-          <ReadOnlySection title="Feature backlog" icon={ClipboardCheck} collapsible sectionId="feature-backlog">
+          <ReadOnlySection title={t("shareView.featureBacklog")} icon={ClipboardCheck} collapsible sectionId="feature-backlog">
             <div className="space-y-3">
               {workspace.backlog.map((item, index) => (
                 <article
@@ -337,16 +342,16 @@ export function SharedWorkspaceView({
               ))}
             </div>
           </ReadOnlySection>
-          <ReadOnlySection title="Pricing hypothesis" icon={CircleDollarSign} collapsible sectionId="pricing-hypothesis">
+          <ReadOnlySection title={t("shareView.pricingHypothesis")} icon={CircleDollarSign} collapsible sectionId="pricing-hypothesis">
             <p className="mb-4 text-sm leading-6 text-foreground/80">
               {workspace.pricing.hypothesis}
             </p>
             <Bullets items={workspace.pricing.tiers} />
           </ReadOnlySection>
-          <ReadOnlySection title="Launch plan" icon={CalendarDays} collapsible sectionId="launch-plan">
+          <ReadOnlySection title={t("shareView.launchPlan")} icon={CalendarDays} collapsible sectionId="launch-plan">
             <Bullets items={workspace.launchPlan} />
           </ReadOnlySection>
-          <ReadOnlySection title="Execution tasks" icon={CheckCircle2} collapsible sectionId="execution-tasks">
+          <ReadOnlySection title={t("shareView.executionTasks")} icon={CheckCircle2} collapsible sectionId="execution-tasks">
             <div className="space-y-3">
               {workspace.tasks.map((task, index) => (
                 <article
@@ -358,7 +363,7 @@ export function SharedWorkspaceView({
                 >
                   <h3 className="text-sm font-semibold">{task.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-foreground/80">
-                    {task.owner} owns {task.outcome}. Due {task.due}.
+                    {t("shareView.taskOwns", { owner: task.owner, outcome: task.outcome })} {t("shareView.taskDue", { due: task.due })}
                   </p>
                 </article>
               ))}
@@ -367,28 +372,27 @@ export function SharedWorkspaceView({
         </div>
 
         <div className="mt-6">
-          <ReadOnlySection title="Validation decisions" icon={FlaskConical} collapsible sectionId="validation-decisions">
+          <ReadOnlySection title={t("shareView.validationDecisions")} icon={FlaskConical} collapsible sectionId="validation-decisions">
             <p className="mb-4 text-sm leading-6 text-muted">
-              Evidence notes and sources remain private. This shared view shows
-              decision state and evidence counts only.
+              {t("shareView.validationIntro")}
             </p>
             {archivedExperiments.length > 0 && (
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
                 <span>
-                  Showing {visibleExperiments.length} of {experiments.length} hypotheses
+                  {t("shareView.showingCount", { visible: visibleExperiments.length, total: experiments.length })}
                   {archivedExperiments.length > 0
-                    ? ` (${archivedExperiments.length} archived)`
+                    ? t("shareView.archivedSuffix", { count: archivedExperiments.length })
                     : ""}
                 </span>
                 <button
                   type="button"
                   onClick={() => setShowArchived((v) => !v)}
                   aria-pressed={showArchived}
-                  aria-label={showArchived ? "Hide archived hypotheses" : "Show archived hypotheses"}
+                  aria-label={showArchived ? t("shareView.hideArchivedAria") : t("shareView.showArchivedAria")}
                   className="inline-flex items-center gap-1 rounded-md border border-input bg-card px-2 py-1 text-xs font-medium text-foreground/80 transition hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
                 >
                   <Archive className="size-3" aria-hidden="true" />
-                  {showArchived ? "Hide archived" : `Show archived (${archivedExperiments.length})`}
+                  {showArchived ? t("shareView.hideArchived") : t("shareView.showArchivedCount", { count: archivedExperiments.length })}
                 </button>
               </div>
             )}
@@ -403,7 +407,12 @@ export function SharedWorkspaceView({
                   <article
                     key={experiment.id}
                     data-shared-experiment
-                    aria-label={`Hypothesis ${index + 1} of ${visibleExperiments.length}: ${experiment.assumption.slice(0, 80)}${experiment.archived ? " (archived)" : ""}`}
+                    aria-label={t("shareView.hypothesisAria", {
+                      index: index + 1,
+                      total: visibleExperiments.length,
+                      assumption: experiment.assumption.slice(0, 80),
+                      archived: experiment.archived ? ` (${t("shareView.archivedTag")})` : "",
+                    })}
                     tabIndex={focusedExperimentId === null ? (index === 0 ? 0 : -1) : focusedExperimentId === experiment.id ? 0 : -1}
                     onFocus={() => setFocusedExperimentId(experiment.id)}
                     onKeyDown={(event) => {
@@ -426,18 +435,19 @@ export function SharedWorkspaceView({
                       {experiment.archived && (
                         <span
                           className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2 py-1 font-semibold text-amber-800"
-                          title="This hypothesis has been archived by the owner."
+                          title={t("shareView.archivedTagTitle")}
                         >
                           <Archive className="size-3" aria-hidden="true" />
-                          Archived
+                          {t("shareView.archivedTag")}
                         </span>
                       )}
                       <span className="text-muted">
-                        {experiment.evidenceCount} evidence item
-                        {experiment.evidenceCount === 1 ? "" : "s"}
+                        {experiment.evidenceCount === 1
+                          ? t("shareView.evidenceItemSingular", { count: experiment.evidenceCount })
+                          : t("shareView.evidenceItems", { count: experiment.evidenceCount })}
                       </span>
                       <span className="text-muted">
-                        {experiment.confidence} confidence
+                        {t("shareView.confidenceLabel", { confidence: experiment.confidence })}
                       </span>
                     </div>
                     <h3 className="mt-2 text-sm font-semibold leading-6">
@@ -445,25 +455,25 @@ export function SharedWorkspaceView({
                     </h3>
                     <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
                       <div>
-                        <dt className="font-semibold text-foreground">Decision</dt>
+                        <dt className="font-semibold text-foreground">{t("shareView.decision")}</dt>
                         <dd className="mt-1 leading-6 text-foreground/80">
-                          {experiment.decision || "Pending"}
+                          {experiment.decision || t("shareView.pending")}
                         </dd>
                       </div>
                       <div>
                         <dt className="font-semibold text-foreground">
-                          Next action
+                          {t("shareView.nextAction")}
                         </dt>
                         <dd className="mt-1 leading-6 text-foreground/80">
-                          {experiment.nextAction || "Pending"}
+                          {experiment.nextAction || t("shareView.pending")}
                         </dd>
                       </div>
                       <div>
                         <dt className="font-semibold text-foreground">
-                          Linked task
+                          {t("shareView.linkedTask")}
                         </dt>
                         <dd className="mt-1 leading-6 text-foreground/80">
-                          {linkedTask?.title ?? "None"}
+                          {linkedTask?.title ?? t("shareView.none")}
                         </dd>
                       </div>
                     </dl>
@@ -472,7 +482,7 @@ export function SharedWorkspaceView({
               })}
               {visibleExperiments.length === 0 && (
                 <p className="py-6 text-center text-sm text-muted">
-                  No active hypotheses. Toggle &quot;Show archived&quot; above to view archived ones.
+                  {t("shareView.emptyActive")}
                 </p>
               )}
             </div>

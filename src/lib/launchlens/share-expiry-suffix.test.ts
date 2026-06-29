@@ -13,13 +13,23 @@ describe("shareExpirySuffix", () => {
     expect(shareExpirySuffix(past)).toEqual({ key: "shareExpiry.expired" });
   });
 
-  it("returns the expiresIn descriptor with a label for a future expiry", () => {
+  it("returns the expiresSentence descriptor with a bucket labelKey for a future expiry", () => {
     const future = new Date(Date.now() + 60 * 60 * 1000).toISOString();
     const suffix = shareExpirySuffix(future);
-    expect(suffix.key).toBe("shareExpiry.expiresIn");
-    expect(suffix.params).toBeDefined();
-    expect(typeof suffix.params?.label).toBe("string");
-    expect(suffix.params?.label.length).toBeGreaterThan(0);
+    expect(suffix.key).toBe("shareExpiry.expiresSentence");
+    expect(suffix.labelKey).toBeDefined();
+    expect(typeof suffix.labelKey).toBe("string");
+    // 1 hour rounds up to 1 day → the "tomorrow" bucket.
+    expect(suffix.labelKey).toBe("expiry.tomorrow");
+    expect(suffix.labelParams).toBeUndefined();
+  });
+
+  it("passes bucket labelParams through for multi-unit expiries", () => {
+    const future = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString();
+    const suffix = shareExpirySuffix(future);
+    expect(suffix.key).toBe("shareExpiry.expiresSentence");
+    expect(suffix.labelKey).toBe("expiry.expiresDaysMany");
+    expect(suffix.labelParams).toEqual({ n: 5 });
   });
 
   it("returns the expired descriptor for malformed expiry strings", () => {
@@ -27,12 +37,12 @@ describe("shareExpirySuffix", () => {
     expect(shareExpirySuffix("20")).toEqual({ key: "shareExpiry.expired" });
   });
 
-  it("emits a label with no time-of-day component for near-future expiries", () => {
+  it("never exposes a time-of-day component in the label bucket for near-future expiries", () => {
+    // The bucket label is now an i18n key (no rendered text here at all),
+    // so there is no chance of a time-of-day leak. We assert the key is one
+    // of the day/tomorrow buckets rather than a formatted timestamp.
     const fiveMin = new Date(Date.now() + 5 * 60 * 1000).toISOString();
     const suffix = shareExpirySuffix(fiveMin);
-    // 5 minutes lands in the "Expires tomorrow" / "Expires in 1 day" bucket;
-    // we just want no time-of-day leak in the bucket label.
-    expect(suffix.params?.label).not.toMatch(/\d:\d/);
-    expect(suffix.params?.label).toMatch(/^(Expires in \d+ days?|Expires tomorrow)$/);
+    expect(suffix.labelKey).toBe("expiry.tomorrow");
   });
 });
