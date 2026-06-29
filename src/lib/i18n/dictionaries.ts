@@ -395,6 +395,113 @@ export type DictionaryKey =
   | "provider.minimax"
   | "provider.openai"
   | "provider.mock"
+  // Decision recommendation labels (decisionLabel descriptor)
+  | "decisionRec.proceed"
+  | "decisionRec.iterate"
+  | "decisionRec.pivot"
+  | "decisionRec.pause"
+  // Claim status labels (claimStatusLabel descriptor)
+  | "claimStatus.untested"
+  | "claimStatus.testing"
+  | "claimStatus.supported"
+  | "claimStatus.refuted"
+  // Decision copilot (decision-copilot.tsx)
+  | "copilot.evidenceInsufficient"
+  | "copilot.evidenceMixed"
+  | "copilot.evidenceDirectional"
+  | "copilot.evidenceStrong"
+  | "copilot.groundedClaims"
+  | "copilot.claimsAria"
+  | "copilot.citationOne"
+  | "copilot.citationMany"
+  | "copilot.claimAria"
+  | "copilot.citationCountInline"
+  | "copilot.sourceLabel"
+  | "copilot.noneCited"
+  | "copilot.noMatchingEvidence"
+  | "copilot.title"
+  | "copilot.subtitle"
+  | "copilot.briefCount"
+  | "copilot.evidenceBound"
+  | "copilot.preparing"
+  | "copilot.generateAllBriefs"
+  | "copilot.cancelBatch"
+  | "copilot.batchSrReady"
+  | "copilot.batchGenerating"
+  | "copilot.batchProgressAria"
+  | "copilot.hypothesis"
+  | "copilot.hypothesisOption"
+  | "copilot.noHypothesis"
+  | "copilot.evidence"
+  | "copilot.confidence"
+  | "copilot.lastGenerated"
+  | "copilot.staleBadge"
+  | "copilot.previousRecs"
+  | "copilot.restoreAriaGroup"
+  | "copilot.restoreNotice"
+  | "copilot.restoreTitle"
+  | "copilot.restoreAria"
+  | "copilot.clearHistory"
+  | "copilot.historyClearedNotice"
+  | "copilot.generateTitle"
+  | "copilot.synthesizing"
+  | "copilot.regenerate"
+  | "copilot.generate"
+  | "copilot.cancelGeneration"
+  | "copilot.changesToApply"
+  | "copilot.applyRecommendation"
+  | "copilot.recordEvidenceHint"
+  | "copilot.evidenceChangedWarn"
+  | "copilot.synthesizingAria"
+  | "copilot.weighingSignals"
+  | "copilot.fallbackTag"
+  | "copilot.fallbackTagTitle"
+  | "copilot.aiTag"
+  | "copilot.aiTagTitle"
+  | "copilot.demoTag"
+  | "copilot.demoTagTitle"
+  | "copilot.cited"
+  | "copilot.evidenceStrength"
+  | "copilot.evidenceStrengthAria"
+  | "copilot.unresolvedRisks"
+  | "copilot.noRisk"
+  | "copilot.nextActions"
+  | "copilot.noNextAction"
+  | "copilot.emptyTitle"
+  | "copilot.emptyBody"
+  | "copilot.applyNotice"
+  | "copilot.applySr"
+  | "copilot.batchNoopNotice"
+  | "copilot.batchStartSr"
+  | "copilot.batchCancelledNotice"
+  | "copilot.batchCancelledPending"
+  | "copilot.batchSummaryNotice"
+  | "copilot.batchFailedSr"
+  | "copilot.batchMore"
+  | "copilot.needEvidenceError"
+  | "copilot.generatingSr"
+  | "copilot.rateLimitError"
+  | "copilot.parseError"
+  | "copilot.genFailedError"
+  | "copilot.genFailedSr"
+  | "copilot.cancelledNotice"
+  | "copilot.cancelledSr"
+  | "copilot.realProviderLabel"
+  | "copilot.demoLabel"
+  | "copilot.fallbackNotice"
+  | "copilot.realSavedNotice"
+  | "copilot.fallbackSavedSr"
+  | "copilot.realSavedSr"
+  | "copilot.batchInProgressReason"
+  | "copilot.waitSingleReason"
+  | "copilot.noReadyReason"
+  | "copilot.synthesizingReason"
+  | "copilot.selectHypothesisReason"
+  | "copilot.needEvidenceReason"
+  | "copilot.fieldStatus"
+  | "copilot.fieldDecision"
+  | "copilot.fieldNextAction"
+  | "copilot.emptyPlaceholder"
   // Account recovery
   | "recovery.title"
   | "recovery.body"
@@ -1160,6 +1267,110 @@ const en: Dict = {
   "provider.minimax": "MiniMax provider",
   "provider.openai": "OpenAI-compatible provider",
   "provider.mock": "Demo mock provider",
+  "decisionRec.proceed": "Proceed",
+  "decisionRec.iterate": "Iterate",
+  "decisionRec.pivot": "Pivot",
+  "decisionRec.pause": "Pause",
+  "claimStatus.untested": "Untested",
+  "claimStatus.testing": "Testing",
+  "claimStatus.supported": "Validated",
+  "claimStatus.refuted": "Invalidated",
+  "copilot.evidenceInsufficient": "Insufficient evidence",
+  "copilot.evidenceMixed": "Mixed signals",
+  "copilot.evidenceDirectional": "Directional evidence",
+  "copilot.evidenceStrong": "Strong evidence",
+  "copilot.groundedClaims": "Grounded claims",
+  "copilot.claimsAria": "Evidence-grounded claims",
+  "copilot.citationOne": "{count} citation",
+  "copilot.citationMany": "{count} citations",
+  "copilot.claimAria": "{stance} claim: {text}. {citation} from {sources}.",
+  "copilot.citationCountInline": "{count} citation{plural}",
+  "copilot.sourceLabel": "Source: {sources}",
+  "copilot.noneCited": "none cited",
+  "copilot.noMatchingEvidence": "No matching evidence records found.",
+  "copilot.title": "AI decision copilot",
+  "copilot.subtitle": "Synthesize only recorded evidence into a cautious recommendation, counter-signals, risks, and next actions.",
+  "copilot.briefCount": "{count}/{total} current briefs",
+  "copilot.evidenceBound": "Evidence-bound",
+  "copilot.preparing": "Preparing...",
+  "copilot.generateAllBriefs": "Generate all briefs",
+  "copilot.cancelBatch": "Cancel batch generation",
+  "copilot.batchSrReady": "Brief {done} of {total} ready: {name}",
+  "copilot.batchGenerating": "Generating {done} of {total}",
+  "copilot.batchProgressAria": "Batch generation progress",
+  "copilot.hypothesis": "Hypothesis",
+  "copilot.hypothesisOption": "H{index} | {count} evidence | {status}",
+  "copilot.noHypothesis": "No hypothesis available",
+  "copilot.evidence": "Evidence",
+  "copilot.confidence": "Confidence",
+  "copilot.lastGenerated": "Last generated {time}",
+  "copilot.staleBadge": "Stale - evidence changed",
+  "copilot.previousRecs": "Previous recommendations",
+  "copilot.restoreAriaGroup": "Restore an earlier recommendation",
+  "copilot.restoreNotice": "Restored recommendation v{version} from {time}.",
+  "copilot.restoreTitle": "Restore: {rec} generated {time}",
+  "copilot.restoreAria": "Restore {rec} recommendation generated {time}",
+  "copilot.clearHistory": "Clear history",
+  "copilot.historyClearedNotice": "Recommendation history cleared.",
+  "copilot.generateTitle": "Generate decision brief",
+  "copilot.synthesizing": "Synthesizing evidence",
+  "copilot.regenerate": "Regenerate brief",
+  "copilot.generate": "Generate decision brief",
+  "copilot.cancelGeneration": "Cancel generation",
+  "copilot.changesToApply": "Changes to apply",
+  "copilot.applyRecommendation": "Apply recommendation",
+  "copilot.recordEvidenceHint": "Record evidence in the validation loop before asking AI for a recommendation.",
+  "copilot.evidenceChangedWarn": "Evidence changed after the last brief. Regenerate before using it.",
+  "copilot.synthesizingAria": "Synthesizing evidence",
+  "copilot.weighingSignals": "Weighing signals against counter-signals...",
+  "copilot.fallbackTag": "Fallback",
+  "copilot.fallbackTagTitle": "Real AI provider failed; this is a deterministic fallback brief.",
+  "copilot.aiTag": "AI",
+  "copilot.aiTagTitle": "Generated by real AI provider.",
+  "copilot.demoTag": "Demo",
+  "copilot.demoTagTitle": "Demo mode - deterministic brief, no AI used.",
+  "copilot.cited": "{provider} | {count} cited",
+  "copilot.evidenceStrength": "Evidence strength",
+  "copilot.evidenceStrengthAria": "Evidence strength",
+  "copilot.unresolvedRisks": "Unresolved risks",
+  "copilot.noRisk": "No unresolved risk returned.",
+  "copilot.nextActions": "Recommended next actions",
+  "copilot.noNextAction": "No next action returned.",
+  "copilot.emptyTitle": "Evidence first, AI second",
+  "copilot.emptyBody": "The copilot cannot create evidence. It summarizes the selected experiment and cites only evidence IDs already present in the workspace.",
+  "copilot.applyNotice": "Recommendation applied to hypothesis status and decision.",
+  "copilot.applySr": "Recommendation applied.",
+  "copilot.batchNoopNotice": "All hypotheses with evidence already have decision briefs.",
+  "copilot.batchStartSr": "Generating {count} decision briefs. This will take a moment.",
+  "copilot.batchCancelledNotice": "Batch generation cancelled. {success} of {total} briefs saved, {fail} failed{pending}.",
+  "copilot.batchCancelledPending": ", {count} still pending",
+  "copilot.batchSummaryNotice": "{success} of {total} briefs generated successfully.",
+  "copilot.batchFailedSr": "{summary} {fail} failed: {listed}{extra}.",
+  "copilot.batchMore": ", plus {count} more",
+  "copilot.needEvidenceError": "Add at least one evidence item before generating a brief.",
+  "copilot.generatingSr": "Generating decision brief. Please wait.",
+  "copilot.rateLimitError": "Too many decision requests - wait a moment and retry.",
+  "copilot.parseError": "The decision brief returned by the provider could not be parsed. Please retry.",
+  "copilot.genFailedError": "Decision brief generation failed.",
+  "copilot.genFailedSr": "Decision brief generation failed: {msg}",
+  "copilot.cancelledNotice": "Generation cancelled.",
+  "copilot.cancelledSr": "Generation cancelled.",
+  "copilot.realProviderLabel": "Real-provider",
+  "copilot.demoLabel": "Demo",
+  "copilot.fallbackNotice": "The real provider failed, so a deterministic demo brief was saved.",
+  "copilot.realSavedNotice": "{mode} decision brief saved.",
+  "copilot.fallbackSavedSr": "Decision brief saved using demo fallback.",
+  "copilot.realSavedSr": "{mode} decision brief generated and saved.",
+  "copilot.batchInProgressReason": "Batch generation in progress.",
+  "copilot.waitSingleReason": "Wait for the current single brief to finish.",
+  "copilot.noReadyReason": "No hypotheses are ready (need evidence and no existing brief).",
+  "copilot.synthesizingReason": "Brief is being synthesized.",
+  "copilot.selectHypothesisReason": "Select a hypothesis to generate a brief.",
+  "copilot.needEvidenceReason": "Record at least one piece of evidence before generating.",
+  "copilot.fieldStatus": "Status",
+  "copilot.fieldDecision": "Decision",
+  "copilot.fieldNextAction": "Next action",
+  "copilot.emptyPlaceholder": "(empty)",
   "recovery.title": "Account recovery",
   "recovery.body": "Save this key privately. Possession grants access to cloud history. Use {link} on the device that created the account and {recover} on a new device.",
   "recovery.handle": "Handle",
@@ -1726,6 +1937,110 @@ const zhCN: Dict = {
   "provider.minimax": "MiniMax 模型供应商",
   "provider.openai": "OpenAI 兼容模型供应商",
   "provider.mock": "演示 Mock 模型供应商",
+  "decisionRec.proceed": "推进",
+  "decisionRec.iterate": "迭代",
+  "decisionRec.pivot": "转向",
+  "decisionRec.pause": "暂停",
+  "claimStatus.untested": "未测试",
+  "claimStatus.testing": "测试中",
+  "claimStatus.supported": "已验证",
+  "claimStatus.refuted": "已证伪",
+  "copilot.evidenceInsufficient": "证据不足",
+  "copilot.evidenceMixed": "信号混合",
+  "copilot.evidenceDirectional": "方向性证据",
+  "copilot.evidenceStrong": "强证据",
+  "copilot.groundedClaims": "证据支撑的主张",
+  "copilot.claimsAria": "证据支撑的主张",
+  "copilot.citationOne": "{count} 条引用",
+  "copilot.citationMany": "{count} 条引用",
+  "copilot.claimAria": "{stance} 主张：{text}。{citation}，来源：{sources}。",
+  "copilot.citationCountInline": "{count} 条引用",
+  "copilot.sourceLabel": "来源：{sources}",
+  "copilot.noneCited": "未引用来源",
+  "copilot.noMatchingEvidence": "未找到匹配的证据记录。",
+  "copilot.title": "AI 决策助手",
+  "copilot.subtitle": "仅基于已记录的证据，合成审慎的建议、反信号、风险与下一步行动。",
+  "copilot.briefCount": "{count}/{total} 份当前简报",
+  "copilot.evidenceBound": "受证据约束",
+  "copilot.preparing": "准备中…",
+  "copilot.generateAllBriefs": "生成全部简报",
+  "copilot.cancelBatch": "取消批量生成",
+  "copilot.batchSrReady": "简报 {done}/{total} 已就绪：{name}",
+  "copilot.batchGenerating": "正在生成 {done}/{total}",
+  "copilot.batchProgressAria": "批量生成进度",
+  "copilot.hypothesis": "假设",
+  "copilot.hypothesisOption": "H{index} | {count} 条证据 | {status}",
+  "copilot.noHypothesis": "暂无假设",
+  "copilot.evidence": "证据",
+  "copilot.confidence": "置信度",
+  "copilot.lastGenerated": "上次生成于 {time}",
+  "copilot.staleBadge": "已过期 - 证据已变更",
+  "copilot.previousRecs": "历史建议",
+  "copilot.restoreAriaGroup": "恢复较早的建议",
+  "copilot.restoreNotice": "已从 {time} 恢复建议 v{version}。",
+  "copilot.restoreTitle": "恢复：{rec}，生成于 {time}",
+  "copilot.restoreAria": "恢复 {rec} 建议，生成于 {time}",
+  "copilot.clearHistory": "清除历史",
+  "copilot.historyClearedNotice": "建议历史已清除。",
+  "copilot.generateTitle": "生成决策简报",
+  "copilot.synthesizing": "正在合成证据",
+  "copilot.regenerate": "重新生成简报",
+  "copilot.generate": "生成决策简报",
+  "copilot.cancelGeneration": "取消生成",
+  "copilot.changesToApply": "将应用的变更",
+  "copilot.applyRecommendation": "应用建议",
+  "copilot.recordEvidenceHint": "在验证循环中先记录证据，再让 AI 给出建议。",
+  "copilot.evidenceChangedWarn": "上次简报后证据已变更，请先重新生成再使用。",
+  "copilot.synthesizingAria": "正在合成证据",
+  "copilot.weighingSignals": "正在权衡信号与反信号…",
+  "copilot.fallbackTag": "兜底",
+  "copilot.fallbackTagTitle": "真实 AI 供应商失败；此为确定性兜底简报。",
+  "copilot.aiTag": "AI",
+  "copilot.aiTagTitle": "由真实 AI 供应商生成。",
+  "copilot.demoTag": "演示",
+  "copilot.demoTagTitle": "演示模式 - 确定性简报，未使用 AI。",
+  "copilot.cited": "{provider} | {count} 条引用",
+  "copilot.evidenceStrength": "证据强度",
+  "copilot.evidenceStrengthAria": "证据强度",
+  "copilot.unresolvedRisks": "未解决的风险",
+  "copilot.noRisk": "无未解决的风险。",
+  "copilot.nextActions": "建议的下一步行动",
+  "copilot.noNextAction": "无下一步行动。",
+  "copilot.emptyTitle": "先证据，后 AI",
+  "copilot.emptyBody": "助手无法创造证据。它仅总结所选实验，并只引用工作台中已存在的证据 ID。",
+  "copilot.applyNotice": "建议已应用到假设状态与决策。",
+  "copilot.applySr": "建议已应用。",
+  "copilot.batchNoopNotice": "所有含证据的假设都已有决策简报。",
+  "copilot.batchStartSr": "正在生成 {count} 份决策简报，请稍候。",
+  "copilot.batchCancelledNotice": "批量生成已取消。{success}/{total} 份简报已保存，{fail} 份失败{pending}。",
+  "copilot.batchCancelledPending": "，{count} 份仍在等待",
+  "copilot.batchSummaryNotice": "{success}/{total} 份简报生成成功。",
+  "copilot.batchFailedSr": "{summary} {fail} 份失败：{listed}{extra}。",
+  "copilot.batchMore": "，另有 {count} 份",
+  "copilot.needEvidenceError": "生成简报前请至少添加一条证据。",
+  "copilot.generatingSr": "正在生成决策简报，请稍候。",
+  "copilot.rateLimitError": "决策请求过多 - 请稍候再试。",
+  "copilot.parseError": "供应商返回的决策简报无法解析，请重试。",
+  "copilot.genFailedError": "决策简报生成失败。",
+  "copilot.genFailedSr": "决策简报生成失败：{msg}",
+  "copilot.cancelledNotice": "生成已取消。",
+  "copilot.cancelledSr": "生成已取消。",
+  "copilot.realProviderLabel": "真实供应商",
+  "copilot.demoLabel": "演示",
+  "copilot.fallbackNotice": "真实供应商失败，已保存确定性演示简报。",
+  "copilot.realSavedNotice": "{mode} 决策简报已保存。",
+  "copilot.fallbackSavedSr": "已使用演示兜底保存决策简报。",
+  "copilot.realSavedSr": "{mode} 决策简报已生成并保存。",
+  "copilot.batchInProgressReason": "批量生成进行中。",
+  "copilot.waitSingleReason": "请等待当前单份简报完成。",
+  "copilot.noReadyReason": "暂无就绪假设（需要证据且无现有简报）。",
+  "copilot.synthesizingReason": "简报正在合成中。",
+  "copilot.selectHypothesisReason": "请选择一个假设以生成简报。",
+  "copilot.needEvidenceReason": "生成前请至少记录一条证据。",
+  "copilot.fieldStatus": "状态",
+  "copilot.fieldDecision": "决策",
+  "copilot.fieldNextAction": "下一步行动",
+  "copilot.emptyPlaceholder": "（空）",
   "recovery.title": "账户恢复",
   "recovery.body": "请私下保存此密钥。持有即可访问云端历史。在创建账户的设备上使用{link}，在新设备上使用{recover}。",
   "recovery.handle": "账号标识",

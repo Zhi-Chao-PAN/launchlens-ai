@@ -30,18 +30,29 @@ import { toneClass } from "@/lib/launchlens/tone-class";
 import { decisionLabel } from "@/lib/launchlens/decision-label";
 import { claimStatusLabel } from "@/lib/launchlens/claim-status-label";
 import { formatValidationTimelineTime } from "@/lib/launchlens/validation-date-format";
+import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 type DecisionCopilotProps = {
   execution: WorkspaceExecutionState;
   onChange: (execution: WorkspaceExecutionState) => void;
 };
 
-const evidenceStrengthMeta: Record<EvidenceStrength, { label: string; pct: number; color: string; bg: string }> = {
-  insufficient: { label: "Insufficient evidence", pct: 25, color: "text-signal-challenges", bg: "bg-signal-challenges" },
-  mixed: { label: "Mixed signals", pct: 50, color: "text-signal-neutral", bg: "bg-signal-neutral" },
-  directional: { label: "Directional evidence", pct: 75, color: "text-signal-supports", bg: "bg-signal-supports" },
-  strong: { label: "Strong evidence", pct: 100, color: "text-signal-supports", bg: "bg-signal-supports" },
+const evidenceStrengthMeta: Record<EvidenceStrength, { key: string; pct: number; color: string; bg: string }> = {
+  insufficient: { key: "copilot.evidenceInsufficient", pct: 25, color: "text-signal-challenges", bg: "bg-signal-challenges" },
+  mixed: { key: "copilot.evidenceMixed", pct: 50, color: "text-signal-neutral", bg: "bg-signal-neutral" },
+  directional: { key: "copilot.evidenceDirectional", pct: 75, color: "text-signal-supports", bg: "bg-signal-supports" },
+  strong: { key: "copilot.evidenceStrong", pct: 100, color: "text-signal-supports", bg: "bg-signal-supports" },
 };
+
+/** Resolve a decisionLabel/claimStatusLabel descriptor into a string. */
+function resolveLabel(
+  t: (key: string, params?: Record<string, string | number>) => string,
+  descriptor: ReturnType<typeof decisionLabel> | ReturnType<typeof claimStatusLabel>,
+): string {
+  if (!descriptor) return "";
+  if ("key" in descriptor) return t(descriptor.key);
+  return descriptor.fallback;
+}
 
 
 
@@ -90,6 +101,7 @@ function ClaimList({
   claims: GroundedClaim[];
   experiment: ValidationExperiment;
 }) {
+  const { t } = useLocale();
   const [expandedClaim, setExpandedClaim] = useState<number | null>(null);
 
   const stanceClass = (stance: string) => toneClass(stance);
@@ -97,10 +109,10 @@ function ClaimList({
   return (
     <div>
       <h3 className="text-xs font-semibold uppercase text-muted">
-        Grounded claims
+        {t("copilot.groundedClaims")}
       </h3>
       <ul
-        aria-label="Evidence-grounded claims"
+        aria-label={t("copilot.claimsAria")}
         className="relative mt-2 space-y-3 pl-4 before:absolute before:left-1.5 before:top-1 before:bottom-1 before:w-px before:bg-input"
       >
         {claims.map((claim, index) => {
@@ -109,12 +121,20 @@ function ClaimList({
             .filter(Boolean);
           const sources = citedEvidence.map((item) => item!.source);
           const expanded = expandedClaim === index;
+          const citation = claim.evidenceIds.length === 1
+            ? t("copilot.citationOne", { count: claim.evidenceIds.length })
+            : t("copilot.citationMany", { count: claim.evidenceIds.length });
 
           return (
             <li
               key={`${claim.text}-${index}`}
               tabIndex={0}
-              aria-label={`${claim.stance} claim: ${claim.text}. ${claim.evidenceIds.length} citation${claim.evidenceIds.length === 1 ? "" : "s"} from ${sources.join(", ")}.`}
+              aria-label={t("copilot.claimAria", {
+                stance: claim.stance,
+                text: claim.text,
+                citation,
+                sources: sources.join(", "),
+              })}
               onClick={() => setExpandedClaim(expanded ? null : index)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -131,15 +151,14 @@ function ClaimList({
                   {claim.stance}
                 </span>
                 <span className="text-xs text-muted">
-                  {claim.evidenceIds.length} citation
-                  {claim.evidenceIds.length === 1 ? "" : "s"}
+                  {t("copilot.citationCountInline", { count: claim.evidenceIds.length, plural: claim.evidenceIds.length === 1 ? "" : "s" })}
                 </span>
               </div>
               <p className="mt-2 text-sm leading-6 text-foreground/80">
                 {claim.text}
               </p>
               <p className="mt-1 text-xs leading-5 text-muted">
-                Source: {sources.join(", ") || "none cited"}
+                {t("copilot.sourceLabel", { sources: sources.join(", ") || t("copilot.noneCited") })}
               </p>
 
               <div
@@ -152,7 +171,7 @@ function ClaimList({
                   <div className="mt-3 space-y-2 border-t border-input pt-3">
                     {citedEvidence.length === 0 ? (
                       <p className="text-xs text-muted">
-                        No matching evidence records found.
+                        {t("copilot.noMatchingEvidence")}
                       </p>
                     ) : (
                       citedEvidence.map((item) => (
@@ -197,6 +216,7 @@ export function DecisionCopilot({
   execution,
   onChange,
 }: DecisionCopilotProps) {
+  const { t } = useLocale();
   const firstReadyExperiment = execution.experiments.find(
     (experiment) => experiment.evidence.length > 0,
   );
@@ -239,19 +259,19 @@ export function DecisionCopilot({
   );
   const batchDisabledReason =
     isBatchGenerating
-      ? "Batch generation in progress."
+      ? t("copilot.batchInProgressReason")
       : isGenerating
-        ? "Wait for the current single brief to finish."
+        ? t("copilot.waitSingleReason")
         : pendingBatch.length === 0
-          ? "No hypotheses are ready (need evidence and no existing brief)."
+          ? t("copilot.noReadyReason")
           : "";
   const generateDisabledReason =
     isGenerating
-      ? "Brief is being synthesized."
+      ? t("copilot.synthesizingReason")
       : !experiment
-        ? "Select a hypothesis to generate a brief."
+        ? t("copilot.selectHypothesisReason")
         : experiment.evidence.length === 0
-          ? "Record at least one piece of evidence before generating."
+          ? t("copilot.needEvidenceReason")
           : "";
   const historyForExperiment = experiment ? ((briefHistory[experiment.id] && briefHistory[experiment.id].length > 0) ? briefHistory[experiment.id] : (experiment.decisionBriefHistory ?? [])).filter((b) => !currentBrief || b.generatedAt !== currentBrief.generatedAt).slice(0, HISTORY_CAP) : [];
 
@@ -279,7 +299,7 @@ export function DecisionCopilot({
       newStatus = "testing";
     }
 
-    const recommendationText = decisionLabel(rec);
+    const recommendationText = resolveLabel(t, decisionLabel(rec));
     const newDecision = `${recommendationText} - ${headline}`;
     const nextAction = currentBrief.nextActions?.[0] || experiment.nextAction;
 
@@ -293,8 +313,8 @@ export function DecisionCopilot({
       updatedAt: new Date().toISOString(),
     });
 
-    setNotice("Recommendation applied to hypothesis status and decision.");
-    setSrGenerationAnnouncement("Recommendation applied.");
+    setNotice(t("copilot.applyNotice"));
+    setSrGenerationAnnouncement(t("copilot.applySr"));
   }
 
 
@@ -311,7 +331,7 @@ export function DecisionCopilot({
       (item) => item.evidence.length > 0 && !item.decisionBrief,
     );
     if (pending.length === 0) {
-      setNotice("All hypotheses with evidence already have decision briefs.");
+      setNotice(t("copilot.batchNoopNotice"));
       return;
     }
 
@@ -320,7 +340,7 @@ export function DecisionCopilot({
     setError("");
     setNotice("");
     setSrGenerationAnnouncement(
-      `Generating ${pending.length} decision briefs. This will take a moment.`,
+      t("copilot.batchStartSr", { count: pending.length }),
     );
 
     let successCount = 0;
@@ -370,7 +390,12 @@ export function DecisionCopilot({
     setIsBatchGenerating(false);
     if (cancelled) {
       const remaining = pending.length - successCount - failCount;
-      const msg = `Batch generation cancelled. ${successCount} of ${pending.length} briefs saved, ${failCount} failed${remaining > 0 ? `, ${remaining} still pending` : ""}.`;
+      const msg = t("copilot.batchCancelledNotice", {
+        success: successCount,
+        total: pending.length,
+        fail: failCount,
+        pending: remaining > 0 ? t("copilot.batchCancelledPending", { count: remaining }) : "",
+      });
       setNotice(msg);
       setSrGenerationAnnouncement(msg);
       if (successCount > 0) {
@@ -383,12 +408,12 @@ export function DecisionCopilot({
       experiments: updatedExperiments,
       updatedAt: new Date().toISOString(),
     });
-    const summary = `${successCount} of ${pending.length} briefs generated successfully.`;
+    const summary = t("copilot.batchSummaryNotice", { success: successCount, total: pending.length });
     let srSummary = summary;
     if (failCount > 0) {
       const listed = failedNames.slice(0, 3);
-      const extra = failedNames.length > listed.length ? `, plus ${failedNames.length - listed.length} more` : "";
-      srSummary = `${summary} ${failCount} failed: ${listed.join("; ")}${extra}.`;
+      const extra = failedNames.length > listed.length ? t("copilot.batchMore", { count: failedNames.length - listed.length }) : "";
+      srSummary = t("copilot.batchFailedSr", { summary, fail: failCount, listed: listed.join("; "), extra });
     }
     if (failCount > 0) {
       setError(srSummary);
@@ -400,7 +425,7 @@ export function DecisionCopilot({
 
   const generateBrief = useCallback(async () => {
     if (!experiment || experiment.evidence.length === 0) {
-      setError("Add at least one evidence item before generating a brief.");
+      setError(t("copilot.needEvidenceError"));
       return;
     }
 
@@ -411,7 +436,7 @@ export function DecisionCopilot({
     setIsGenerating(true);
     setError("");
     setNotice("");
-    setSrGenerationAnnouncement("Generating decision brief. Please wait.");
+    setSrGenerationAnnouncement(t("copilot.generatingSr"));
 
     try {
       const response = await fetch("/api/decision", {
@@ -430,10 +455,10 @@ export function DecisionCopilot({
       if (!response.ok || data.error || !brief) {
         const fallback =
           response.status === 429
-            ? "Too many decision requests - wait a moment and retry."
+            ? t("copilot.rateLimitError")
             : briefInvalid
-              ? "The decision brief returned by the provider could not be parsed. Please retry."
-              : "Decision brief generation failed.";
+              ? t("copilot.parseError")
+              : t("copilot.genFailedError");
         const errorCode = briefInvalid ? "decision_invalid_response" : data.code;
         throw new Error(friendlyApiMessage(errorCode, data.error ?? fallback));
       }
@@ -463,35 +488,35 @@ export function DecisionCopilot({
           experiments: execution.experiments.map((it) => it.id === experiment.id ? { ...it, decisionBrief: brief, decisionBriefHistory: finalList } : it),
           updatedAt: new Date().toISOString(),
         });
-      const modeLabel = data.mode === "real" ? "Real-provider" : "Demo";
+      const modeLabel = data.mode === "real" ? t("copilot.realProviderLabel") : t("copilot.demoLabel");
       setNotice(
         data.usedFallback
-          ? "The real provider failed, so a deterministic demo brief was saved."
-          : `${modeLabel} decision brief saved.`,
+          ? t("copilot.fallbackNotice")
+          : t("copilot.realSavedNotice", { mode: modeLabel }),
       );
       setSrGenerationAnnouncement(
         data.usedFallback
-          ? "Decision brief saved using demo fallback."
-          : `${modeLabel} decision brief generated and saved.`,
+          ? t("copilot.fallbackSavedSr")
+          : t("copilot.realSavedSr", { mode: modeLabel }),
       );
     } catch (caught) {
       if (caught instanceof DOMException && caught.name === "AbortError") {
-        setNotice("Generation cancelled.");
-        setSrGenerationAnnouncement("Generation cancelled.");
+        setNotice(t("copilot.cancelledNotice"));
+        setSrGenerationAnnouncement(t("copilot.cancelledSr"));
       } else {
         const msg =
           caught instanceof Error
             ? caught.message
-            : "Decision brief generation failed.";
+            : t("copilot.genFailedError");
         setError(msg);
-        setSrGenerationAnnouncement(`Decision brief generation failed: ${msg}`);
+        setSrGenerationAnnouncement(t("copilot.genFailedSr", { msg }));
       }
     } finally {
       setIsGenerating(false);
       if (singleAbortRef.current === abort) singleAbortRef.current = null;
     }
   // Including execution and onChange in the dependency array keeps the linter happy without changing semantics (they both change on every parent render, which re-creates this callback already).
-  }, [experiment, setSrGenerationAnnouncement, execution, onChange]);
+  }, [experiment, setSrGenerationAnnouncement, execution, onChange, t]);
 
 
   // Staggered reveal animation when a new brief finishes generating
@@ -549,21 +574,20 @@ export function DecisionCopilot({
           </span>
           <div>
             <h2 className="text-base font-semibold text-foreground">
-              AI decision copilot
+              {t("copilot.title")}
             </h2>
             <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">
-              Synthesize only recorded evidence into a cautious recommendation,
-              counter-signals, risks, and next actions.
+              {t("copilot.subtitle")}
             </p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="rounded-md border border-input bg-card px-3 py-2 text-foreground/80">
-            {briefCount}/{execution.experiments.length} current briefs
+            {t("copilot.briefCount", { count: briefCount, total: execution.experiments.length })}
           </span>
           <span className="flex items-center gap-1 rounded-md border border-input bg-card px-3 py-2 font-semibold text-signal-supports">
             <ShieldCheck className="size-3.5" aria-hidden="true" />
-            Evidence-bound
+            {t("copilot.evidenceBound")}
           </span>
           <button
             type="button"
@@ -588,11 +612,11 @@ export function DecisionCopilot({
                     {batchProgress.done}/{batchProgress.total}
                   </span>
                   <span className="block max-w-20 truncate text-[10px] font-medium text-muted">
-                    {batchProgress.currentName || "Preparing..."}
+                    {batchProgress.currentName || t("copilot.preparing")}
                   </span>
                 </span>
               ) : (
-                "Generate all briefs"
+                t("copilot.generateAllBriefs")
               )}
           </button>
 
@@ -601,16 +625,16 @@ export function DecisionCopilot({
           )}
           {isBatchGenerating && (
             <button type="button" onClick={cancelBatch} className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-muted underline-offset-2 transition hover:text-challenges hover:underline">
-              Cancel batch generation
+              {t("copilot.cancelBatch")}
             </button>
           )}
         </div>
         {isBatchGenerating && batchProgress.total > 0 && (
           <div className="border-t border-card bg-input/40 px-5 py-2">
-            <span role="status" aria-live="polite" className="sr-only">Brief {batchProgress.done} of {batchProgress.total} ready: {batchProgress.currentName}</span>
+            <span role="status" aria-live="polite" className="sr-only">{t("copilot.batchSrReady", { done: batchProgress.done, total: batchProgress.total, name: batchProgress.currentName })}</span>
             <div className="mb-1 flex items-center justify-between text-[11px] text-muted">
               <span>
-                Generating {batchProgress.done} of {batchProgress.total}
+                {t("copilot.batchGenerating", { done: batchProgress.done, total: batchProgress.total })}
               </span>
               <span className="font-mono font-semibold">
                 {Math.round((batchProgress.done / batchProgress.total) * 100)}%
@@ -621,7 +645,7 @@ export function DecisionCopilot({
               aria-valuenow={batchProgress.done}
               aria-valuemin={0}
               aria-valuemax={batchProgress.total}
-              aria-label="Batch generation progress"
+              aria-label={t("copilot.batchProgressAria")}
               className="h-1 w-full overflow-hidden rounded-full bg-muted"
             >
               <div
@@ -639,7 +663,7 @@ export function DecisionCopilot({
         <div>
           <label className="block">
             <span className="mb-2 block text-xs font-semibold uppercase text-muted">
-              Hypothesis
+              {t("copilot.hypothesis")}
             </span>
             <select
               value={selectedExperimentId}
@@ -652,7 +676,7 @@ export function DecisionCopilot({
             >
               {execution.experiments.map((item, index) => (
                 <option key={item.id} value={item.id}>
-                  H{index + 1} | {item.evidence.length} evidence | {item.status}
+                  {t("copilot.hypothesisOption", { index: index + 1, count: item.evidence.length, status: item.status })}
                 </option>
               ))}
             </select>
@@ -660,17 +684,17 @@ export function DecisionCopilot({
 
           <div className="mt-4 rounded-md border border-input bg-input p-4">
             <p className="text-sm font-semibold leading-6 text-foreground">
-              {experiment?.assumption ?? "No hypothesis available"}
+              {experiment?.assumption ?? t("copilot.noHypothesis")}
             </p>
             <dl className="mt-3 grid grid-cols-2 gap-3 text-xs text-muted">
               <div>
-                <dt>Evidence</dt>
+                <dt>{t("copilot.evidence")}</dt>
                 <dd className="mt-1 font-semibold text-foreground">
                   {experiment?.evidence.length ?? 0}
                 </dd>
               </div>
               <div>
-                <dt>Confidence</dt>
+                <dt>{t("copilot.confidence")}</dt>
                 <dd className="mt-1 font-semibold capitalize text-foreground">
                   {experiment?.confidence ?? "low"}
                 </dd>
@@ -680,34 +704,35 @@ export function DecisionCopilot({
 
           {currentBrief && (
             <div className="mt-3 flex items-center justify-between text-[11px] text-muted">
-              <span>Last generated {formatValidationTimelineTime(currentBrief.generatedAt)}</span>
+              <span>{t("copilot.lastGenerated", { time: formatValidationTimelineTime(currentBrief.generatedAt) })}</span>
               {experiment && !decisionBriefIsCurrent(experiment) && (
-                <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-amber-700 dark:text-amber-300">Stale - evidence changed</span>
+                <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-amber-700 dark:text-amber-300">{t("copilot.staleBadge")}</span>
               )}
             </div>
           )}
           {currentBrief && historyForExperiment.length > 0 && (
             <div className="mt-2">
-              <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted">Previous recommendations</p>
-              <div className="flex flex-wrap gap-1.5" role="group" aria-label="Restore an earlier recommendation">
+              <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted">{t("copilot.previousRecs")}</p>
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label={t("copilot.restoreAriaGroup")}>
                 {historyForExperiment.map((brief, idx) => {
                   const rec = brief.recommendation;
+                  const recLabel = resolveLabel(t, decisionLabel(rec));
                   const time = formatValidationTimelineTime(brief.generatedAt);
                   return (
                     <button
                       key={brief.generatedAt}
                       type="button"
-                      onClick={() => { if (!experiment) return; const remaining = historyForExperiment.filter((b) => b.generatedAt !== brief.generatedAt); onChange({ ...execution, experiments: execution.experiments.map((it) => it.id === experiment.id ? { ...it, decisionBrief: brief, decisionBriefHistory: (remaining.length ? remaining.slice(0, HISTORY_CAP) : undefined) } : it), updatedAt: new Date().toISOString() }); setBriefHistory((prev) => ({ ...prev, [experiment.id]: remaining.slice(0, HISTORY_CAP) })); setNotice("Restored recommendation v" + (historyForExperiment.length - idx) + " from " + time + "."); }}
-                      title={"Restore: " + rec.toUpperCase() + " generated " + time}
-                      aria-label={"Restore " + rec + " recommendation generated " + time}
+                      onClick={() => { if (!experiment) return; const remaining = historyForExperiment.filter((b) => b.generatedAt !== brief.generatedAt); onChange({ ...execution, experiments: execution.experiments.map((it) => it.id === experiment.id ? { ...it, decisionBrief: brief, decisionBriefHistory: (remaining.length ? remaining.slice(0, HISTORY_CAP) : undefined) } : it), updatedAt: new Date().toISOString() }); setBriefHistory((prev) => ({ ...prev, [experiment.id]: remaining.slice(0, HISTORY_CAP) })); setNotice(t("copilot.restoreNotice", { version: historyForExperiment.length - idx, time })); }}
+                      title={t("copilot.restoreTitle", { rec: rec.toUpperCase(), time })}
+                      aria-label={t("copilot.restoreAria", { rec: recLabel, time })}
                       className={"rounded-full border px-2 py-0.5 text-[11px] font-medium transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " + recommendationClass(rec)}
                     >
-                      v{historyForExperiment.length - idx} {decisionLabel(rec)}
+                      v{historyForExperiment.length - idx} {recLabel}
                     </button>
                   );
                 })}
               </div>
-              <button type="button" onClick={() => { if (!experiment) return; setBriefHistory((prev) => ({ ...prev, [experiment.id]: [] })); onChange({ ...execution, experiments: execution.experiments.map((it) => it.id === experiment.id ? { ...it, decisionBriefHistory: undefined } : it), updatedAt: new Date().toISOString() }); setNotice("Recommendation history cleared."); }} className="text-[10px] uppercase tracking-wide text-muted underline-offset-2 hover:text-foreground hover:underline">Clear history</button>
+              <button type="button" onClick={() => { if (!experiment) return; setBriefHistory((prev) => ({ ...prev, [experiment.id]: [] })); onChange({ ...execution, experiments: execution.experiments.map((it) => it.id === experiment.id ? { ...it, decisionBriefHistory: undefined } : it), updatedAt: new Date().toISOString() }); setNotice(t("copilot.historyClearedNotice")); }} className="text-[10px] uppercase tracking-wide text-muted underline-offset-2 hover:text-foreground hover:underline">{t("copilot.clearHistory")}</button>
             </div>
           )},
           <button
@@ -717,7 +742,7 @@ export function DecisionCopilot({
             disabled={!!generateDisabledReason}
             aria-busy={isGenerating}
             aria-describedby={"decision-generation-status" + (generateDisabledReason ? " decision-generate-reason" : "")}
-            title="Generate decision brief"
+            title={t("copilot.generateTitle")}
             className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-text transition hover:bg-primary-hover active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isGenerating ? (
@@ -732,10 +757,10 @@ export function DecisionCopilot({
               <Sparkles className="size-4" aria-hidden="true" />
             )}
             {isGenerating
-              ? "Synthesizing evidence"
+              ? t("copilot.synthesizing")
               : currentBrief
-                ? "Regenerate brief"
-                : "Generate decision brief"}
+                ? t("copilot.regenerate")
+                : t("copilot.generate")}
           </button>
 
           {generateDisabledReason && !isGenerating && (
@@ -743,7 +768,7 @@ export function DecisionCopilot({
           )}
           {isGenerating && (
             <button type="button" onClick={cancelSingle} className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-muted underline-offset-2 transition hover:text-challenges hover:underline">
-              Cancel generation
+              {t("copilot.cancelGeneration")}
             </button>
           )}
 
@@ -754,17 +779,18 @@ export function DecisionCopilot({
             else if (rec === "pivot" || rec === "pause") newStatus = "refuted";
             else if (rec === "iterate") newStatus = "testing";
             const nextAction = currentBrief.nextActions?.[0] || experiment.nextAction || "";
-            const newDecision = decisionLabel(rec) + " - " + (currentBrief.headline || "");
+            const newDecision = resolveLabel(t, decisionLabel(rec)) + " - " + (currentBrief.headline || "");
             const changed = (a: string, b: string) => (a || "").trim() !== (b || "").trim();
+            const emptyLabel = t("copilot.emptyPlaceholder");
             const fields: Array<{k: string; from: string; to: string}> = [];
-            if (changed(experiment.status, newStatus)) fields.push({ k: "Status", from: claimStatusLabel(experiment.status), to: claimStatusLabel(newStatus) });
-            if (changed(experiment.decision || "", newDecision)) fields.push({ k: "Decision", from: experiment.decision || "(empty)", to: newDecision });
-            if (changed(experiment.nextAction || "", nextAction)) fields.push({ k: "Next action", from: experiment.nextAction || "(empty)", to: nextAction });
+            if (changed(experiment.status, newStatus)) fields.push({ k: t("copilot.fieldStatus"), from: resolveLabel(t, claimStatusLabel(experiment.status)), to: resolveLabel(t, claimStatusLabel(newStatus)) });
+            if (changed(experiment.decision || "", newDecision)) fields.push({ k: t("copilot.fieldDecision"), from: experiment.decision || emptyLabel, to: newDecision });
+            if (changed(experiment.nextAction || "", nextAction)) fields.push({ k: t("copilot.fieldNextAction"), from: experiment.nextAction || emptyLabel, to: nextAction });
             return (
               <div className="mt-2">
                 {fields.length > 0 && (
                   <div className="mb-2 rounded-md border border-input bg-input/40 p-2 text-[11px]">
-                    <p className="mb-1 font-semibold uppercase tracking-wide text-muted">Changes to apply</p>
+                    <p className="mb-1 font-semibold uppercase tracking-wide text-muted">{t("copilot.changesToApply")}</p>
                     <ul className="space-y-1">
                       {fields.map((f) => (
                         <li key={f.k} className="flex gap-2 leading-4">
@@ -785,7 +811,7 @@ export function DecisionCopilot({
                   className="flex h-10 w-full items-center justify-center gap-2 rounded-md border border-accent bg-transparent px-4 text-sm font-semibold text-accent transition hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring-color)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <CheckCircle2 className="size-4" aria-hidden="true" />
-                  Apply recommendation
+                  {t("copilot.applyRecommendation")}
                 </button>
               </div>
             );
@@ -797,8 +823,7 @@ export function DecisionCopilot({
 
           {!experiment?.evidence.length && (
             <p className="mt-3 text-xs leading-5 text-muted">
-              Record evidence in the validation loop before asking AI for a
-              recommendation.
+              {t("copilot.recordEvidenceHint")}
             </p>
           )}
           {experiment?.decisionBrief && !currentBrief && (
@@ -807,7 +832,7 @@ export function DecisionCopilot({
                 className="mt-0.5 size-3.5 shrink-0"
                 aria-hidden="true"
               />
-              Evidence changed after the last brief. Regenerate before using it.
+              {t("copilot.evidenceChangedWarn")}
             </p>
           )}
           {(notice || error) && (
@@ -825,7 +850,7 @@ export function DecisionCopilot({
         </div>
 
         {isGenerating ? (
-          <div className="min-h-64 rounded-md border border-dashed border-input bg-input p-6" role="status" aria-live="polite" aria-busy="true" aria-label="Synthesizing evidence">
+          <div className="min-h-64 rounded-md border border-dashed border-input bg-input p-6" role="status" aria-live="polite" aria-busy="true" aria-label={t("copilot.synthesizingAria")}>
             <div className="mb-4 flex items-center gap-2">
               <Skeleton shimmer rounded="md" className="h-5 w-24" />
               <Skeleton shimmer rounded="md" className="h-5 w-20" />
@@ -841,7 +866,7 @@ export function DecisionCopilot({
             </div>
             <p className="mt-5 flex items-center gap-2 text-xs text-muted">
               <BrainCircuit className="size-4 animate-pulse text-ai-muted" aria-hidden="true" />
-              Weighing signals against counter-signals...
+              {t("copilot.weighingSignals")}
             </p>
           </div>
         ) : currentBrief && experiment ? (
@@ -855,46 +880,46 @@ export function DecisionCopilot({
                 <span
                   className={`rounded-md px-2 py-1 text-xs font-semibold ${recommendationClass(currentBrief.recommendation)}`}
                 >
-                  {decisionLabel(currentBrief.recommendation)}
+                  {resolveLabel(t, decisionLabel(currentBrief.recommendation))}
                 </span>
                 {currentBrief.usedFallback ? (
                   <span
                     className="inline-flex items-center gap-1 rounded-md border border-dashed border-signal-challenges/40 px-2 py-1 text-[10px] font-semibold uppercase text-signal-challenges"
-                    title="Real AI provider failed; this is a deterministic fallback brief."
+                    title={t("copilot.fallbackTagTitle")}
                   >
                     <span className="size-1.5 rounded-full bg-signal-challenges" />
-                    Fallback
+                    {t("copilot.fallbackTag")}
                   </span>
                 ) : currentBrief.mode === "real" ? (
                   <span
                     className="inline-flex items-center gap-1 rounded-md bg-signal-supports/15 px-2 py-1 text-[10px] font-semibold uppercase text-signal-supports"
-                    title="Generated by real AI provider."
+                    title={t("copilot.aiTagTitle")}
                   >
                     <span className="size-1.5 rounded-full bg-signal-supports" />
-                    AI
+                    {t("copilot.aiTag")}
                   </span>
                 ) : (
                   <span
                     className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-[10px] font-semibold uppercase text-muted"
-                    title="Demo mode - deterministic brief, no AI used."
+                    title={t("copilot.demoTagTitle")}
                   >
                     <span className="size-1.5 rounded-full bg-muted-foreground/40" />
-                    Demo
+                    {t("copilot.demoTag")}
                   </span>
                 )}
                 <span className="text-xs capitalize text-muted">
-                  {currentBrief.provider} | {citationCount} cited
+                  {t("copilot.cited", { provider: currentBrief.provider, count: citationCount })}
                 </span>
               </div>
               <div className="rounded-md border border-input bg-input p-3">
                 <div className="mb-2 flex items-center justify-between gap-3 text-xs">
                   <span className="font-medium text-foreground">
-                    Evidence strength
+                    {t("copilot.evidenceStrength")}
                   </span>
                   <span
                     className={`font-semibold ${evidenceStrengthMeta[currentBrief.evidenceStrength].color}`}
                   >
-                    {evidenceStrengthMeta[currentBrief.evidenceStrength].label}
+                    {t(evidenceStrengthMeta[currentBrief.evidenceStrength].key)}
                   </span>
                 </div>
                 <div
@@ -904,7 +929,7 @@ export function DecisionCopilot({
                   }
                   aria-valuemin={0}
                   aria-valuemax={100}
-                  aria-label="Evidence strength"
+                  aria-label={t("copilot.evidenceStrengthAria")}
                   className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
                 >
                   <div
@@ -930,14 +955,14 @@ export function DecisionCopilot({
             >
               <ClaimList claims={currentBrief.claims} experiment={experiment} />
               <TextList
-                title="Unresolved risks"
+                title={t("copilot.unresolvedRisks")}
                 items={currentBrief.unresolvedRisks}
-                empty="No unresolved risk returned."
+                empty={t("copilot.noRisk")}
               />
               <TextList
-                title="Recommended next actions"
+                title={t("copilot.nextActions")}
                 items={currentBrief.nextActions}
-                empty="No next action returned."
+                empty={t("copilot.noNextAction")}
               />
             </div>
           </article>
@@ -949,12 +974,10 @@ export function DecisionCopilot({
                 aria-hidden="true"
               />
               <h3 className="mt-3 text-base font-semibold text-foreground">
-                Evidence first, AI second
+                {t("copilot.emptyTitle")}
               </h3>
               <p className="mt-2 text-sm leading-6 text-muted">
-                The copilot cannot create evidence. It summarizes the selected
-                experiment and cites only evidence IDs already present in the
-                workspace.
+                {t("copilot.emptyBody")}
               </p>
             </div>
           </div>

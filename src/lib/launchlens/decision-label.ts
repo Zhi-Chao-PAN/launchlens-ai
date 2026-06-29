@@ -1,29 +1,35 @@
 import type { DecisionRecommendation } from "./decision";
 
-const DECISION_RECOMMENDATION_LABELS: Record<DecisionRecommendation, string> = {
-  proceed: "Proceed",
-  iterate: "Iterate",
-  pivot: "Pivot",
-  pause: "Pause",
+const DECISION_RECOMMENDATION_KEYS: Record<DecisionRecommendation, "decisionRec.proceed" | "decisionRec.iterate" | "decisionRec.pivot" | "decisionRec.pause"> = {
+  proceed: "decisionRec.proceed",
+  iterate: "decisionRec.iterate",
+  pivot: "decisionRec.pivot",
+  pause: "decisionRec.pause",
 };
 
 /**
- * Display label for a DecisionRecommendation value.
+ * i18n descriptor for the display label of a DecisionRecommendation value.
  *
- * The canonical capitalized form is what the experiment header shows
- * ("Proceed", not "proceed"). Keeping the table here means the four
- * supported values can never drift between the badge, the brief
- * preview, and the apply-changes confirmation.
+ * Returns `{ key }` for the four known values so the caller translates it
+ * with its active locale. For unknown input (defensive against future enum
+ * additions or JSON-decoded values that haven't been validated yet) the
+ * helper returns `{ fallback }` with a manual title-case rather than
+ * throwing, so the UI degrades to readable text instead of crashing the
+ * render; the caller renders `fallback` verbatim.
  *
- * For unknown input (defensive against future enum additions or
- * JSON-decoded values that haven't been validated yet) the helper
- * falls back to a manual title-case rather than throwing, so the UI
- * degrades to readable text instead of crashing the render.
+ * Returns `null` for empty/null/undefined input so the caller renders
+ * nothing (matching the previous "" return).
  */
-export function decisionLabel(rec: string | null | undefined): string {
-  if (!rec) return "";
-  if (rec in DECISION_RECOMMENDATION_LABELS) {
-    return DECISION_RECOMMENDATION_LABELS[rec as DecisionRecommendation];
+export type DecisionLabelDescriptor = {
+  key: "decisionRec.proceed" | "decisionRec.iterate" | "decisionRec.pivot" | "decisionRec.pause";
+} | {
+  fallback: string;
+};
+
+export function decisionLabel(rec: string | null | undefined): DecisionLabelDescriptor | null {
+  if (!rec) return null;
+  if (rec in DECISION_RECOMMENDATION_KEYS) {
+    return { key: DECISION_RECOMMENDATION_KEYS[rec as DecisionRecommendation] };
   }
-  return rec.charAt(0).toUpperCase() + rec.slice(1);
+  return { fallback: rec.charAt(0).toUpperCase() + rec.slice(1) };
 }

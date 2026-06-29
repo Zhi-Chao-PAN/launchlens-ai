@@ -1,28 +1,39 @@
 import type { ExperimentStatus } from "./execution";
 
-const CLAIM_STATUS_LABELS: Record<ExperimentStatus, string> = {
-  untested: "Untested",
-  testing: "Testing",
-  supported: "Validated",
-  refuted: "Invalidated",
+const CLAIM_STATUS_KEYS: Record<ExperimentStatus, "claimStatus.untested" | "claimStatus.testing" | "claimStatus.supported" | "claimStatus.refuted"> = {
+  untested: "claimStatus.untested",
+  testing: "claimStatus.testing",
+  supported: "claimStatus.supported",
+  refuted: "claimStatus.refuted",
 };
 
 /**
- * Display label for an experiment claim status.
+ * i18n descriptor for the display label of an experiment claim status.
  *
- * "Validated" and "Invalidated" are the user-facing translations of
- * the storage codes ("supported" / "refuted"). The latter pair match
- * what is written to disk and exchanged over the API, but the
- * decision-copilot UI uses friendlier wording so the user reads
- * "Validated" instead of "Supported" in the badge / apply-preview.
+ * "Validated" and "Invalidated" are the user-facing translations of the
+ * storage codes ("supported" / "refuted"). The latter pair match what is
+ * written to disk and exchanged over the API, but the decision-copilot UI
+ * uses friendlier wording so the user reads "Validated" instead of
+ * "Supported" in the badge / apply-preview.
  *
- * Falls back to the raw input (title-cased first letter) for unknown
- * statuses so the UI degrades to readable text instead of crashing.
+ * Returns `{ key }` for the four known statuses so the caller translates it
+ * with its active locale. For unknown statuses it returns `{ fallback }`
+ * with the title-cased input so the UI degrades to readable text instead of
+ * crashing; the caller renders `fallback` verbatim.
+ *
+ * Returns `null` for empty/null/undefined input so the caller renders
+ * nothing (matching the previous "" return).
  */
-export function claimStatusLabel(status: string | null | undefined): string {
-  if (!status) return "";
-  if (status in CLAIM_STATUS_LABELS) {
-    return CLAIM_STATUS_LABELS[status as ExperimentStatus];
+export type ClaimStatusLabelDescriptor = {
+  key: "claimStatus.untested" | "claimStatus.testing" | "claimStatus.supported" | "claimStatus.refuted";
+} | {
+  fallback: string;
+};
+
+export function claimStatusLabel(status: string | null | undefined): ClaimStatusLabelDescriptor | null {
+  if (!status) return null;
+  if (status in CLAIM_STATUS_KEYS) {
+    return { key: CLAIM_STATUS_KEYS[status as ExperimentStatus] };
   }
-  return status.charAt(0).toUpperCase() + status.slice(1);
+  return { fallback: status.charAt(0).toUpperCase() + status.slice(1) };
 }
