@@ -35,6 +35,11 @@ export type ProductFunnelSummary = {
   handoffRate: number | null;
 };
 
+export type ProductStage2FunnelSummary = ProductFunnelSummary & {
+  stage2ParticipantTracked: boolean;
+  stage2BatchTracked: boolean;
+};
+
 type FunnelRow = {
   started: number | string | null;
   completed: number | string | null;
@@ -142,26 +147,60 @@ function rate(numerator: number, denominator: number) {
     : null;
 }
 
-export async function summarizeProductFunnel(
-  requestedWindowDays = 30,
-): Promise<ProductFunnelSummary> {
-  const windowDays = Math.min(
+function emptyProductFunnelSummary(
+  configured: boolean,
+  windowDays: number,
+): ProductFunnelSummary {
+  return {
+    configured,
+    windowDays,
+    started: 0,
+    completed: 0,
+    handoff: 0,
+    saved: 0,
+    shared: 0,
+    completionRate: null,
+    handoffRate: null,
+  };
+}
+
+function productFunnelSummaryFromRow(
+  row: FunnelRow | undefined,
+  windowDays: number,
+): ProductFunnelSummary {
+  const started = count(row?.started);
+  const completed = count(row?.completed);
+  const handoff = count(row?.handoff);
+  const saved = count(row?.saved);
+  const shared = count(row?.shared);
+
+  return {
+    configured: true,
+    windowDays,
+    started,
+    completed,
+    handoff,
+    saved,
+    shared,
+    completionRate: rate(completed, started),
+    handoffRate: rate(handoff, completed),
+  };
+}
+
+function normalizeWindowDays(requestedWindowDays: number) {
+  return Math.min(
     90,
     Math.max(1, Math.trunc(requestedWindowDays) || 30),
   );
+}
+
+export async function summarizeProductFunnel(
+  requestedWindowDays = 30,
+): Promise<ProductFunnelSummary> {
+  const windowDays = normalizeWindowDays(requestedWindowDays);
   const sql = getSql();
   if (!sql) {
-    return {
-      configured: false,
-      windowDays,
-      started: 0,
-      completed: 0,
-      handoff: 0,
-      saved: 0,
-      shared: 0,
-      completionRate: null,
-      handoffRate: null,
-    };
+    return emptyProductFunnelSummary(false, windowDays);
   }
 
   const rows = (await sql`
@@ -188,23 +227,116 @@ export async function summarizeProductFunnel(
     FROM launchlens_product_events
     WHERE occurred_at >= NOW() - (${windowDays} * INTERVAL '1 day')
   `) as unknown as FunnelRow[];
-  const row = rows[0];
-  const started = count(row?.started);
-  const completed = count(row?.completed);
-  const handoff = count(row?.handoff);
-  const saved = count(row?.saved);
-  const shared = count(row?.shared);
+  return productFunnelSummaryFromRow(rows[0], windowDays);
+}
+
+export async function summarizeProductStage2Funnel(
+  context: Stage2TrackingContext,
+  requestedWindowDays = 30,
+): Promise<ProductStage2FunnelSummary> {
+  const windowDays = normalizeWindowDays(requestedWindowDays);
+  const sql = getSql();
+  const participantHash = stage2Hash(context.stage2Participant);
+  const batchHash = stage2Hash(context.stage2Batch);
+  const stage2ParticipantTracked = Boolean(participantHash);
+  const stage2BatchTracked = Boolean(batchHash);
+  if (!sql || (!participantHash && !batchHash)) {
+    return {
+      ...emptyProductFunnelSummary(false, windowDays),
+      stage2ParticipantTracked,
+      stage2BatchTracked,
+    };
+  }
+
+  const aggregate = async (where: ReturnType<typeof sql>) =>
+    (await where) as unknown as FunnelRow[];
+
+  let rows: FunnelRow[];
+  if (participantHash && batchHash) {
+    rows = await aggregate(sql`
+      SELECT
+        COUNT(DISTINCT journey_hash) FILTER (
+          WHERE event_name = 'workspace_generation_started'
+        )::int AS started,
+        COUNT(DISTINCT journey_hash) FILTER (
+          WHERE event_name = 'workspace_generation_completed'
+        )::int AS completed,
+        COUNT(DISTINCT journey_hash) FILTER (
+          WHERE event_name IN (
+            'cloud_snapshot_saved',
+            'public_share_enabled',
+            'workspace_exported'
+          )
+        )::int AS handoff,
+        COUNT(DISTINCT journey_hash) FILTER (
+          WHERE event_name = 'cloud_snapshot_saved'
+        )::int AS saved,
+        COUNT(DISTINCT journey_hash) FILTER (
+          WHERE event_name = 'public_share_enabled'
+        )::int AS shared
+      FROM launchlens_product_events
+      WHERE occurred_at >= NOW() - (${windowDays} * INTERVAL '1 day')
+        AND stage2_participant_hash = ${participantHash}
+        AND stage2_batch_hash = ${batchHash}
+    `);
+  } else if (participantHash) {
+    rows = await aggregate(sql`
+      SELECT
+        COUNT(DISTINCT journey_hash) FILTER (
+          WHERE event_name = 'workspace_generation_started'
+        )::int AS started,
+        COUNT(DISTINCT journey_hash) FILTER (
+          WHERE event_name = 'workspace_generation_completed'
+        )::int AS completed,
+        COUNT(DISTINCT journey_hash) FILTER (
+          WHERE event_name IN (
+            'cloud_snapshot_saved',
+            'public_share_enabled',
+            'workspace_exported'
+          )
+        )::int AS handoff,
+        COUNT(DISTINCT journey_hash) FILTER (
+          WHERE event_name = 'cloud_snapshot_saved'
+        )::int AS saved,
+        COUNT(DISTINCT journey_hash) FILTER (
+          WHERE event_name = 'public_share_enabled'
+        )::int AS shared
+      FROM launchlens_product_events
+      WHERE occurred_at >= NOW() - (${windowDays} * INTERVAL '1 day')
+        AND stage2_participant_hash = ${participantHash}
+    `);
+  } else {
+    rows = await aggregate(sql`
+      SELECT
+        COUNT(DISTINCT journey_hash) FILTER (
+          WHERE event_name = 'workspace_generation_started'
+        )::int AS started,
+        COUNT(DISTINCT journey_hash) FILTER (
+          WHERE event_name = 'workspace_generation_completed'
+        )::int AS completed,
+        COUNT(DISTINCT journey_hash) FILTER (
+          WHERE event_name IN (
+            'cloud_snapshot_saved',
+            'public_share_enabled',
+            'workspace_exported'
+          )
+        )::int AS handoff,
+        COUNT(DISTINCT journey_hash) FILTER (
+          WHERE event_name = 'cloud_snapshot_saved'
+        )::int AS saved,
+        COUNT(DISTINCT journey_hash) FILTER (
+          WHERE event_name = 'public_share_enabled'
+        )::int AS shared
+      FROM launchlens_product_events
+      WHERE occurred_at >= NOW() - (${windowDays} * INTERVAL '1 day')
+        AND stage2_batch_hash = ${batchHash}
+    `);
+  }
 
   return {
-    configured: true,
-    windowDays,
-    started,
-    completed,
-    handoff,
-    saved,
-    shared,
-    completionRate: rate(completed, started),
-    handoffRate: rate(handoff, completed),
+    ...productFunnelSummaryFromRow(rows[0], windowDays),
+    stage2ParticipantTracked,
+    stage2BatchTracked,
   };
 }
 

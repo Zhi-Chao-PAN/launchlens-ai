@@ -12,6 +12,7 @@ import {
   recordProductEvent,
   resetProductEventsForTests,
   summarizeProductFunnel,
+  summarizeProductStage2Funnel,
 } from "./product-events";
 
 const ownerToken = "j".repeat(43);
@@ -132,5 +133,47 @@ describe("privacy-safe product events", () => {
       completionRate: 0.8,
       handoffRate: 0.5,
     });
+  });
+
+  it("summarizes Stage 2 product journeys with hashed labels", async () => {
+    const sql = vi.fn(async () => [
+      {
+        started: 4,
+        completed: 3,
+        handoff: 2,
+        saved: 2,
+        shared: 1,
+      },
+    ]);
+    eventMocks.neon.mockReturnValue(sql);
+
+    await expect(
+      summarizeProductStage2Funnel(
+        { stage2Participant: "P01", stage2Batch: "pilot-1" },
+        14,
+      ),
+    ).resolves.toEqual({
+      configured: true,
+      windowDays: 14,
+      started: 4,
+      completed: 3,
+      handoff: 2,
+      saved: 2,
+      shared: 1,
+      completionRate: 0.75,
+      handoffRate: 0.6667,
+      stage2ParticipantTracked: true,
+      stage2BatchTracked: true,
+    });
+
+    const values = sql.mock.calls[0].slice(1);
+    expect(values).not.toContain("P01");
+    expect(values).not.toContain("pilot-1");
+    expect(
+      values.filter(
+        (value) =>
+          typeof value === "string" && /^[a-f0-9]{64}$/.test(value),
+      ),
+    ).toHaveLength(2);
   });
 });
