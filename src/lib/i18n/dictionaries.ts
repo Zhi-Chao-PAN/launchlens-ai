@@ -43,6 +43,25 @@ export type DictionaryKey =
   | "metrics.backlog"
   | "metrics.backlogDetail"
   | "metrics.aiMode"
+  // Output profile selector
+  | "profile.sectionAria"
+  | "profile.eyebrow"
+  | "profile.title"
+  | "profile.body"
+  | "profile.idea.label"
+  | "profile.idea.title"
+  | "profile.idea.description"
+  | "profile.founder.label"
+  | "profile.founder.title"
+  | "profile.founder.description"
+  | "profile.analyst.label"
+  | "profile.analyst.title"
+  | "profile.analyst.description"
+  | "profile.notice.idea"
+  | "profile.notice.founder"
+  | "profile.notice.analyst"
+  | "profile.hiddenItems"
+  | "profile.switchAnalyst"
   // Founder brief aside
   | "brief.asideAria"
   | "brief.inputLabel"
@@ -1025,6 +1044,24 @@ const en: Dict = {
   "metrics.backlog": "Backlog",
   "metrics.backlogDetail": "{count} assumptions linked",
   "metrics.aiMode": "AI mode",
+  "profile.sectionAria": "Output profile selector",
+  "profile.eyebrow": "Output profile",
+  "profile.title": "Choose the workspace density for this reader",
+  "profile.body": "The underlying GTM workspace stays intact. The profile only changes how much operational detail, evidence workflow, and analyst tooling is shown.",
+  "profile.idea.label": "Idea",
+  "profile.idea.title": "Plain-language path",
+  "profile.idea.description": "For individual builders who need the next usable steps without heavy metrics.",
+  "profile.founder.label": "Founder",
+  "profile.founder.title": "Execution workspace",
+  "profile.founder.description": "For early teams that need validation, backlog, launch plan, and operating rhythm.",
+  "profile.analyst.label": "Analyst",
+  "profile.analyst.title": "Full evidence view",
+  "profile.analyst.description": "For expert readers who expect risk, evidence, decision, and execution depth.",
+  "profile.notice.idea": "Showing a simplified reader view. Editing still exposes the complete workspace.",
+  "profile.notice.founder": "Balanced mode: enough evidence and execution depth for a real team trial.",
+  "profile.notice.analyst": "Full-density mode: validation tools, decision copilot, risks, and operating artifacts are visible.",
+  "profile.hiddenItems": "{count} advanced item(s) hidden in this reader view.",
+  "profile.switchAnalyst": "Show full analyst view",
   "brief.asideAria": "Founder brief",
   "brief.inputLabel": "Input",
   "brief.builderTitle": "Brief builder",
@@ -1956,6 +1993,24 @@ const zhCN: Dict = {
   "metrics.backlog": "待办",
   "metrics.backlogDetail": "{count} 项关联假设",
   "metrics.aiMode": "AI 模式",
+  "profile.sectionAria": "输出档位选择",
+  "profile.eyebrow": "输出档位",
+  "profile.title": "为当前读者选择合适的信息密度",
+  "profile.body": "底层 GTM 工作台数据会完整保留。档位只改变展示的信息密度、证据工作流和分析工具露出。",
+  "profile.idea.label": "想法个人",
+  "profile.idea.title": "白话行动版",
+  "profile.idea.description": "适合只有产品想法的个人，先看懂下一步，不被高级指标淹没。",
+  "profile.founder.label": "创始团队",
+  "profile.founder.title": "执行工作台",
+  "profile.founder.description": "适合早期团队，保留验证、待办、启动计划和运营节奏。",
+  "profile.analyst.label": "分析师",
+  "profile.analyst.title": "完整证据视图",
+  "profile.analyst.description": "适合专业读者，展开风险、证据、决策和执行深度。",
+  "profile.notice.idea": "当前为简化阅读视图；进入编辑时仍会展示完整工作台。",
+  "profile.notice.founder": "当前为均衡模式：适合真实团队试跑，兼顾证据和执行。",
+  "profile.notice.analyst": "当前为高密度模式：验证工具、决策助手、风险和运营资产全部可见。",
+  "profile.hiddenItems": "此阅读视图已隐藏 {count} 个进阶条目。",
+  "profile.switchAnalyst": "切到完整分析视图",
   "brief.asideAria": "创始人简报",
   "brief.inputLabel": "输入",
   "brief.builderTitle": "简报构建器",

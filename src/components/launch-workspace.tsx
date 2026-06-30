@@ -122,6 +122,15 @@ type WorkspaceListKey =
   | "launchPlan"
   | "assumptions";
 
+type OutputProfile = "idea" | "founder" | "analyst";
+
+type OutputProfileConfig = {
+  id: OutputProfile;
+  labelKey: string;
+  titleKey: string;
+  descriptionKey: string;
+};
+
 type GenerationMeta = {
   mode: "demo" | "real";
   provider: LaunchLensWorkspace["provider"];
@@ -144,6 +153,31 @@ const tones = [
 
 const LOCAL_WORKSPACE_KEY = "launchlens.currentWorkspace.v1";
 const COLLAPSED_SECTIONS_KEY = "launchlens:collapsed-sections";
+const OUTPUT_PROFILE_KEY = "launchlens:output-profile";
+
+const OUTPUT_PROFILES: readonly OutputProfileConfig[] = [
+  {
+    id: "idea",
+    labelKey: "profile.idea.label",
+    titleKey: "profile.idea.title",
+    descriptionKey: "profile.idea.description",
+  },
+  {
+    id: "founder",
+    labelKey: "profile.founder.label",
+    titleKey: "profile.founder.title",
+    descriptionKey: "profile.founder.description",
+  },
+  {
+    id: "analyst",
+    labelKey: "profile.analyst.label",
+    titleKey: "profile.analyst.title",
+    descriptionKey: "profile.analyst.description",
+  },
+] as const;
+
+const isOutputProfile = (value: unknown): value is OutputProfile =>
+  value === "idea" || value === "founder" || value === "analyst";
 
 function formatSourceScore(label: string, value: number | null) {
   return `${label} ${typeof value === "number" ? Math.round(value) : "n/a"}`;
@@ -309,6 +343,34 @@ function WorkspaceMetric({
       </p>
       <p className="mt-1 text-xs leading-5 text-muted">{detail}</p>
     </article>
+  );
+}
+
+function ProfileLimitNote({
+  hiddenCount,
+  onShowAll,
+}: {
+  hiddenCount: number;
+  onShowAll: () => void;
+}) {
+  const { t } = useLocale();
+
+  if (hiddenCount <= 0) return null;
+
+  return (
+    <div className="mt-3 flex flex-col gap-2 rounded-md border border-dashed border-input bg-muted/45 px-3 py-2 text-xs leading-5 text-muted sm:flex-row sm:items-center sm:justify-between">
+      <span>
+        {t("profile.hiddenItems", { count: hiddenCount })}
+      </span>
+      <button
+        type="button"
+        onClick={onShowAll}
+        className="inline-flex items-center gap-1 self-start font-semibold text-accent transition hover:text-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 sm:self-auto"
+      >
+        {t("profile.switchAnalyst")}
+        <ArrowRight className="size-3.5" aria-hidden="true" />
+      </button>
+    </div>
   );
 }
 
@@ -505,6 +567,8 @@ export function LaunchWorkspace({
   // mounted gate for client-only UI (language switcher) to avoid SSR/CSR
   // hydration mismatch — the server renders the default-locale placeholder.
   const [mounted, setMounted] = useState(false);
+  const [outputProfile, setOutputProfile] =
+    useState<OutputProfile>("founder");
   const { t } = useLocale();
 
   // R255: live provider (MiniMax) requires a per-browser owner token via the
@@ -547,6 +611,26 @@ export function LaunchWorkspace({
       // ignore parse errors
     }
   }, []);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(OUTPUT_PROFILE_KEY);
+      if (isOutputProfile(stored)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setOutputProfile(stored);
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(OUTPUT_PROFILE_KEY, outputProfile);
+    } catch {
+      // ignore storage errors
+    }
+  }, [outputProfile]);
   const [error, setError] = useState("");
   const [fallbackNotice, setFallbackNotice] = useState("");
   const [exportText, setExportText] = useState("");
@@ -816,7 +900,7 @@ export function LaunchWorkspace({
       const cloudSection = document.getElementById("cloud-workspaces-section");
       cloudSection?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 100);
-  }, [showToast]);
+  }, [showToast, t]);
 
   useKeyboardShortcuts({
     generate: () => { if (!isGenerating) generate(); },
@@ -905,7 +989,7 @@ export function LaunchWorkspace({
     return () => {
       cancelled = true;
     };
-  }, [showToast]);
+  }, [showToast, t]);
 
   useEffect(() => {
     if (!isStorageReady) {
@@ -945,7 +1029,7 @@ export function LaunchWorkspace({
         showToast(t("toast.storageUnavailable"), "error");
       }, 0);
     }
-  }, [execution, input, isStorageReady, setSaveFlash, showToast, srSave, workspace]);
+  }, [execution, input, isStorageReady, setSaveFlash, showToast, srSave, t, workspace]);
 
   function updateList(key: WorkspaceListKey, items: string[]) {
     setWorkspace((current) => ({
@@ -1496,6 +1580,76 @@ export function LaunchWorkspace({
     qualityResult.score >= 90 ? "support" : qualityResult.score >= 70 ? "neutral" : "risk";
   const validationTone: WorkspaceMetricTone =
     executionProgress.score >= 70 ? "support" : executionProgress.score >= 30 ? "neutral" : "risk";
+  const compactProfile = outputProfile === "idea" && !isEditing;
+  const showEvidenceLoop = !compactProfile;
+  const showDecisionLayer = outputProfile === "analyst" || isEditing;
+  const showAdvancedSections = !compactProfile;
+  const profileNoticeKey =
+    outputProfile === "idea"
+      ? "profile.notice.idea"
+      : outputProfile === "founder"
+        ? "profile.notice.founder"
+        : "profile.notice.analyst";
+
+  const visibleTargetUsers = compactProfile ? workspace.targetUsers.slice(0, 2) : workspace.targetUsers;
+  const visiblePains = compactProfile ? workspace.pains.slice(0, 2) : workspace.pains;
+  const visibleMvpScope = compactProfile ? workspace.mvpScope.slice(0, 3) : workspace.mvpScope;
+  const visibleLaunchPlan = compactProfile ? workspace.launchPlan.slice(0, 3) : workspace.launchPlan;
+  const visibleTasks = compactProfile ? workspace.tasks.slice(0, 3) : workspace.tasks;
+
+  const workspaceMetricItems = [
+    {
+      id: "quality",
+      label: t("metrics.quality"),
+      value: `${qualityResult.score}%`,
+      detail: t("metrics.qualityDetail", { passed: qualityPassed, total: qualityResult.checks.length }),
+      icon: Gauge,
+      tone: qualityTone,
+    },
+    {
+      id: "validation",
+      label: t("metrics.validation"),
+      value: `${executionProgress.score}%`,
+      detail: t("metrics.validationDetail", { with: executionProgress.withEvidence, total: executionProgress.total }),
+      icon: BarChart3,
+      tone: validationTone,
+    },
+    {
+      id: "execution",
+      label: t("metrics.execution"),
+      value: `${completedTasks}/${workspace.tasks.length}`,
+      detail: t("metrics.executionDetail"),
+      icon: ListChecks,
+      tone: completedTasks === workspace.tasks.length ? "support" : "plain",
+    },
+    {
+      id: "backlog",
+      label: t("metrics.backlog"),
+      value: `${workspace.backlog.length}`,
+      detail: t("metrics.backlogDetail", { count: workspace.assumptions.length }),
+      icon: ClipboardCheck,
+      tone: "plain",
+    },
+    {
+      id: "ai-mode",
+      label: t("metrics.aiMode"),
+      value: generationModeLabel,
+      detail: providerLabelText,
+      icon: LayoutDashboard,
+      tone: generationMeta.usedFallback ? "risk" : "primary",
+    },
+  ] satisfies Array<{
+    id: string;
+    label: string;
+    value: string;
+    detail: string;
+    icon: LucideIcon;
+    tone: WorkspaceMetricTone;
+  }>;
+
+  const visibleMetricItems = compactProfile
+    ? workspaceMetricItems.filter((metric) => metric.id === "quality" || metric.id === "execution")
+    : workspaceMetricItems;
 
   return (
     <>
@@ -1543,8 +1697,12 @@ export function LaunchWorkspace({
             >
               <WorkspaceNavLink href="#founder-brief" label={t("nav.brief")} icon={Sparkles} />
               <WorkspaceNavLink href="#cloud-workspaces-section" label={t("nav.history")} icon={History} />
-              <WorkspaceNavLink href="#workspace-main" label={t("nav.evidence")} icon={BarChart3} />
-              <WorkspaceNavLink href="#decision-copilot-section" label={t("nav.decisions")} icon={Workflow} />
+              {showEvidenceLoop && (
+                <WorkspaceNavLink href="#workspace-main" label={t("nav.evidence")} icon={BarChart3} />
+              )}
+              {showDecisionLayer && (
+                <WorkspaceNavLink href="#decision-copilot-section" label={t("nav.decisions")} icon={Workflow} />
+              )}
               <WorkspaceNavLink href="/billing" label={t("nav.account")} icon={CircleDollarSign} />
               <WorkspaceNavLink href="/readiness" label={t("nav.readiness")} icon={ShieldCheck} />
             </nav>
@@ -1573,43 +1731,79 @@ export function LaunchWorkspace({
 
         <section
           aria-label={t("metrics.sectionAria")}
-          className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5"
+          className={[
+            "grid gap-3",
+            compactProfile ? "sm:grid-cols-2 xl:grid-cols-2" : "sm:grid-cols-2 xl:grid-cols-5",
+          ].join(" ")}
         >
-          <WorkspaceMetric
-            label={t("metrics.quality")}
-            value={`${qualityResult.score}%`}
-            detail={t("metrics.qualityDetail", { passed: qualityPassed, total: qualityResult.checks.length })}
-            icon={Gauge}
-            tone={qualityTone}
-          />
-          <WorkspaceMetric
-            label={t("metrics.validation")}
-            value={`${executionProgress.score}%`}
-            detail={t("metrics.validationDetail", { with: executionProgress.withEvidence, total: executionProgress.total })}
-            icon={BarChart3}
-            tone={validationTone}
-          />
-          <WorkspaceMetric
-            label={t("metrics.execution")}
-            value={`${completedTasks}/${workspace.tasks.length}`}
-            detail={t("metrics.executionDetail")}
-            icon={ListChecks}
-            tone={completedTasks === workspace.tasks.length ? "support" : "plain"}
-          />
-          <WorkspaceMetric
-            label={t("metrics.backlog")}
-            value={`${workspace.backlog.length}`}
-            detail={t("metrics.backlogDetail", { count: workspace.assumptions.length })}
-            icon={ClipboardCheck}
-            tone="plain"
-          />
-          <WorkspaceMetric
-            label={t("metrics.aiMode")}
-            value={generationModeLabel}
-            detail={providerLabelText}
-            icon={LayoutDashboard}
-            tone={generationMeta.usedFallback ? "risk" : "primary"}
-          />
+          {visibleMetricItems.map((metric) => (
+            <WorkspaceMetric
+              key={metric.id}
+              label={metric.label}
+              value={metric.value}
+              detail={metric.detail}
+              icon={metric.icon}
+              tone={metric.tone}
+            />
+          ))}
+        </section>
+
+        <section
+          aria-label={t("profile.sectionAria")}
+          className="overflow-hidden rounded-md border border-card bg-[radial-gradient(circle_at_top_left,rgba(83,180,143,0.18),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0))] bg-card p-4 shadow-[0_30px_96px_-72px_rgba(17,19,18,0.72)]"
+        >
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-stretch xl:justify-between">
+            <div className="max-w-2xl">
+              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-accent">
+                {t("profile.eyebrow")}
+              </p>
+              <h2 className="mt-1 text-xl font-semibold tracking-[-0.02em] text-foreground">
+                {t("profile.title")}
+              </h2>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-foreground/72">
+                {t("profile.body")}
+              </p>
+              <p className="mt-3 inline-flex rounded-md border border-input bg-input/65 px-3 py-1.5 text-xs font-medium leading-5 text-muted">
+                {t(profileNoticeKey)}
+              </p>
+            </div>
+
+            <div className="grid min-w-0 gap-2 md:grid-cols-3 xl:min-w-[660px]">
+              {OUTPUT_PROFILES.map((profile) => {
+                const selected = outputProfile === profile.id;
+                return (
+                  <button
+                    key={profile.id}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => setOutputProfile(profile.id)}
+                    className={[
+                      "group rounded-md border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1",
+                      selected
+                        ? "border-accent bg-accent text-primary-text shadow-[0_20px_70px_-48px_rgba(45,126,98,0.8)]"
+                        : "border-input bg-input/55 text-foreground hover:border-accent hover:bg-input",
+                    ].join(" ")}
+                  >
+                    <span className={[
+                      "font-mono text-[10px] font-semibold uppercase tracking-[0.12em]",
+                      selected ? "text-primary-text/70" : "text-muted",
+                    ].join(" ")}>
+                      {t(profile.labelKey)}
+                    </span>
+                    <span className="mt-1 block text-sm font-semibold">
+                      {t(profile.titleKey)}
+                    </span>
+                    <span className={[
+                      "mt-1 block text-xs leading-5",
+                      selected ? "text-primary-text/78" : "text-foreground/65",
+                    ].join(" ")}>
+                      {t(profile.descriptionKey)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </section>
 
         <div className="grid gap-5 lg:grid-cols-[372px_minmax(0,1fr)]">
@@ -2256,55 +2450,59 @@ export function LaunchWorkspace({
               )}
             </section>
 
-            <ErrorBoundary label={t("validation.boardLabel")}>
-              <section
-                id="workspace-main"
-                tabIndex={-1}
-                aria-label={t("validation.sectionAria")}
-                className="scroll-mt-28 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-accent"
-              >
+            {showEvidenceLoop && (
+              <ErrorBoundary label={t("validation.boardLabel")}>
+                <section
+                  id="workspace-main"
+                  tabIndex={-1}
+                  aria-label={t("validation.sectionAria")}
+                  className="scroll-mt-28 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                >
+                  <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-accent">
+                        {t("validation.label")}
+                      </p>
+                      <h2 className="text-base font-semibold text-foreground">
+                        {t("validation.title")}
+                      </h2>
+                    </div>
+                    <p className="font-mono text-xs font-semibold tabular-nums text-muted">
+                      {t("validation.counter", { evidence: executionProgress.evidenceCount, decided: executionProgress.decided })}
+                    </p>
+                  </div>
+                  <ValidationBoard
+                    execution={execution}
+                    tasks={workspace.tasks}
+                    onChange={setExecution}
+                  />
+                </section>
+              </ErrorBoundary>
+            )}
+
+            {showDecisionLayer && (
+              <div id="decision-copilot-section" className="scroll-mt-28">
                 <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase text-accent">
-                      {t("validation.label")}
+                      {t("decision.label")}
                     </p>
                     <h2 className="text-base font-semibold text-foreground">
-                      {t("validation.title")}
+                      {t("decision.title")}
                     </h2>
                   </div>
-                  <p className="font-mono text-xs font-semibold tabular-nums text-muted">
-                    {t("validation.counter", { evidence: executionProgress.evidenceCount, decided: executionProgress.decided })}
+                  <p className="text-xs font-semibold text-muted">
+                    {t("decision.hint")}
                   </p>
                 </div>
-                <ValidationBoard
-                  execution={execution}
-                  tasks={workspace.tasks}
-                  onChange={setExecution}
-                />
-              </section>
-            </ErrorBoundary>
-
-            <div id="decision-copilot-section" className="scroll-mt-28">
-              <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase text-accent">
-                    {t("decision.label")}
-                  </p>
-                  <h2 className="text-base font-semibold text-foreground">
-                    {t("decision.title")}
-                  </h2>
-                </div>
-                <p className="text-xs font-semibold text-muted">
-                  {t("decision.hint")}
-                </p>
+                <ErrorBoundary label={t("decision.copilotLabel")}>
+                  <DecisionCopilot
+                    execution={execution}
+                    onChange={setExecution}
+                  />
+                </ErrorBoundary>
               </div>
-              <ErrorBoundary label={t("decision.copilotLabel")}>
-                <DecisionCopilot
-                  execution={execution}
-                  onChange={setExecution}
-                />
-              </ErrorBoundary>
-            </div>
+            )}
 
             <div className="grid gap-6 xl:grid-cols-2">
               <Section title={t("section.targetUsers")} icon={UsersRound} collapsible sectionId="target-users" collapsed={collapsedSections.has("target-users")} onToggle={() => toggleSection("target-users")}>
@@ -2315,7 +2513,13 @@ export function LaunchWorkspace({
                     onCommit={(items) => updateList("targetUsers", items)}
                   />
                 ) : (
-                  <BulletList items={workspace.targetUsers} />
+                  <>
+                    <BulletList items={visibleTargetUsers} />
+                    <ProfileLimitNote
+                      hiddenCount={workspace.targetUsers.length - visibleTargetUsers.length}
+                      onShowAll={() => setOutputProfile("analyst")}
+                    />
+                  </>
                 )}
               </Section>
 
@@ -2327,7 +2531,13 @@ export function LaunchWorkspace({
                     onCommit={(items) => updateList("pains", items)}
                   />
                 ) : (
-                  <BulletList items={workspace.pains} />
+                  <>
+                    <BulletList items={visiblePains} />
+                    <ProfileLimitNote
+                      hiddenCount={workspace.pains.length - visiblePains.length}
+                      onShowAll={() => setOutputProfile("analyst")}
+                    />
+                  </>
                 )}
               </Section>
 
@@ -2339,7 +2549,13 @@ export function LaunchWorkspace({
                     onCommit={(items) => updateList("mvpScope", items)}
                   />
                 ) : (
-                  <BulletList items={workspace.mvpScope} />
+                  <>
+                    <BulletList items={visibleMvpScope} />
+                    <ProfileLimitNote
+                      hiddenCount={workspace.mvpScope.length - visibleMvpScope.length}
+                      onShowAll={() => setOutputProfile("analyst")}
+                    />
+                  </>
                 )}
               </Section>
 
@@ -2389,6 +2605,7 @@ export function LaunchWorkspace({
               </Section>
             </div>
 
+            {showAdvancedSections && (
             <Section title={t("section.featureBacklog")} icon={ClipboardCheck} collapsible sectionId="feature-backlog" collapsed={collapsedSections.has("feature-backlog")} onToggle={() => toggleSection("feature-backlog")}>
               {isEditing ? (
                 <div className="grid gap-3 lg:grid-cols-2">
@@ -2500,6 +2717,7 @@ export function LaunchWorkspace({
                 </button>
               )}
             </Section>
+            )}
 
             <div className="grid gap-6 xl:grid-cols-2">
               <Section title={t("section.pricingHypothesis")} icon={CircleDollarSign} collapsible sectionId="pricing-hypothesis" collapsed={collapsedSections.has("pricing-hypothesis")} onToggle={() => toggleSection("pricing-hypothesis")}>
@@ -2554,11 +2772,18 @@ export function LaunchWorkspace({
                     onCommit={(items) => updateList("launchPlan", items)}
                   />
                 ) : (
-                  <BulletList items={workspace.launchPlan} />
+                  <>
+                    <BulletList items={visibleLaunchPlan} />
+                    <ProfileLimitNote
+                      hiddenCount={workspace.launchPlan.length - visibleLaunchPlan.length}
+                      onShowAll={() => setOutputProfile("analyst")}
+                    />
+                  </>
                 )}
               </Section>
             </div>
 
+            {showAdvancedSections && (
             <div className="grid gap-6 xl:grid-cols-2">
               <Section title={t("section.assumptions")} icon={AlertTriangle} collapsible sectionId="assumptions-to-validate" collapsed={collapsedSections.has("assumptions-to-validate")} onToggle={() => toggleSection("assumptions-to-validate")}>
                 {isEditing ? (
@@ -2607,8 +2832,10 @@ export function LaunchWorkspace({
                 )}
               </Section>
             </div>
+            )}
 
             <div className="grid gap-6 xl:grid-cols-2">
+              {showAdvancedSections && (
               <Section title={t("section.contentCalendar")} icon={CalendarDays} collapsible sectionId="content-calendar" collapsed={collapsedSections.has("content-calendar")} onToggle={() => toggleSection("content-calendar")}>
                 {isEditing ? (
                   <div className="space-y-3">
@@ -2716,6 +2943,7 @@ export function LaunchWorkspace({
                   </div>
                 )}
               </Section>
+              )}
 
               <Section
                 title={
@@ -2849,7 +3077,7 @@ export function LaunchWorkspace({
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {workspace.tasks.map((task, index) => (
+                    {visibleTasks.map((task, index) => (
                       <article
                         key={`${task.title}-${task.due}-${index}`}
                         className={`rounded-md border border-card bg-input p-4 transition ${
@@ -2894,6 +3122,10 @@ export function LaunchWorkspace({
                         </div>
                       </article>
                     ))}
+                    <ProfileLimitNote
+                      hiddenCount={workspace.tasks.length - visibleTasks.length}
+                      onShowAll={() => setOutputProfile("analyst")}
+                    />
                   </div>
                 )}
               </Section>
