@@ -499,6 +499,8 @@ export type DictionaryKey =
   | "provider.minimax"
   | "provider.openai"
   | "provider.mock"
+  | "generationMode.real"
+  | "generationMode.demo"
   // Decision recommendation labels (decisionLabel descriptor)
   | "decisionRec.proceed"
   | "decisionRec.iterate"
@@ -1997,6 +1999,8 @@ const en: Dict = {
   "provider.minimax": "MiniMax provider",
   "provider.openai": "OpenAI-compatible provider",
   "provider.mock": "Demo mock provider",
+  "generationMode.real": "Real provider",
+  "generationMode.demo": "Demo mode",
   "decisionRec.proceed": "Proceed",
   "decisionRec.iterate": "Iterate",
   "decisionRec.pivot": "Pivot",
@@ -3030,6 +3034,8 @@ const zhCN: Dict = {
   "provider.minimax": "MiniMax 模型供应商",
   "provider.openai": "OpenAI 兼容模型供应商",
   "provider.mock": "演示 Mock 模型供应商",
+  "generationMode.real": "真实供应商",
+  "generationMode.demo": "演示模式",
   "decisionRec.proceed": "推进",
   "decisionRec.iterate": "迭代",
   "decisionRec.pivot": "转向",

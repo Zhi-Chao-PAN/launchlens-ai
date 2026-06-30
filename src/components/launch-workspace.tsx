@@ -1170,6 +1170,9 @@ export function LaunchWorkspace({
     mode: generationMeta.mode,
     usedFallback: generationMeta.usedFallback,
   });
+  const generationModeLabelText = t(
+    generationModeLabel === "Real provider" ? "generationMode.real" : "generationMode.demo",
+  );
   const qualityResult = useMemo(
     () => evaluateWorkspaceQuality(workspace),
     [workspace],
@@ -1958,7 +1961,7 @@ export function LaunchWorkspace({
       id: "ai-mode",
       insight: "aiMode",
       label: t("metrics.aiMode"),
-      value: generationModeLabel,
+      value: generationModeLabelText,
       detail: providerLabelText,
       icon: LayoutDashboard,
       tone: generationMeta.usedFallback ? "risk" : "primary",
@@ -2557,7 +2560,7 @@ export function LaunchWorkspace({
                         {t("snapshot.generatedPrefix")}{formatGeneratedTime(generationMeta.generatedAt)}
                       </span>
                       <span className="rounded-md border border-input bg-input px-2.5 py-1">
-                        {generationModeLabel}
+                        {generationModeLabelText}
                       </span>
                       <span className="rounded-md border border-input bg-input px-2.5 py-1">
                         {providerLabelText}
