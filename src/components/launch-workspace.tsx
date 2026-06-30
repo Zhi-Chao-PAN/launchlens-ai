@@ -112,6 +112,8 @@ type SectionProps = {
   sectionId?: string;
   collapsed?: boolean;
   onToggle?: () => void;
+  analysisActive?: boolean;
+  onInspect?: () => void;
 };
 
 
@@ -129,6 +131,35 @@ type OutputProfileConfig = {
   labelKey: string;
   titleKey: string;
   descriptionKey: string;
+};
+
+type AnalysisInsightKey =
+  | "overview"
+  | "profile"
+  | "quality"
+  | "validation"
+  | "execution"
+  | "backlog"
+  | "aiMode"
+  | "evidenceLoop"
+  | "decisionLayer"
+  | "targetUsers"
+  | "painMap"
+  | "mvpScope"
+  | "landingCopy"
+  | "featureBacklog"
+  | "pricing"
+  | "launchPlan"
+  | "assumptions"
+  | "pricingRisks"
+  | "contentCalendar"
+  | "executionTasks";
+
+type AnalysisInsightConfig = {
+  id: AnalysisInsightKey;
+  labelKey: string;
+  titleKey: string;
+  bodyKey: string;
 };
 
 type GenerationMeta = {
@@ -154,6 +185,7 @@ const tones = [
 const LOCAL_WORKSPACE_KEY = "launchlens.currentWorkspace.v1";
 const COLLAPSED_SECTIONS_KEY = "launchlens:collapsed-sections";
 const OUTPUT_PROFILE_KEY = "launchlens:output-profile";
+const ANALYSIS_COMPANION_KEY = "launchlens:analysis-companion";
 
 const OUTPUT_PROFILES: readonly OutputProfileConfig[] = [
   {
@@ -178,6 +210,137 @@ const OUTPUT_PROFILES: readonly OutputProfileConfig[] = [
 
 const isOutputProfile = (value: unknown): value is OutputProfile =>
   value === "idea" || value === "founder" || value === "analyst";
+
+const ANALYSIS_INSIGHTS: readonly AnalysisInsightConfig[] = [
+  {
+    id: "overview",
+    labelKey: "analysis.insight.overview.label",
+    titleKey: "analysis.insight.overview.title",
+    bodyKey: "analysis.insight.overview.body",
+  },
+  {
+    id: "profile",
+    labelKey: "analysis.insight.profile.label",
+    titleKey: "analysis.insight.profile.title",
+    bodyKey: "analysis.insight.profile.body",
+  },
+  {
+    id: "quality",
+    labelKey: "analysis.insight.quality.label",
+    titleKey: "analysis.insight.quality.title",
+    bodyKey: "analysis.insight.quality.body",
+  },
+  {
+    id: "validation",
+    labelKey: "analysis.insight.validation.label",
+    titleKey: "analysis.insight.validation.title",
+    bodyKey: "analysis.insight.validation.body",
+  },
+  {
+    id: "execution",
+    labelKey: "analysis.insight.execution.label",
+    titleKey: "analysis.insight.execution.title",
+    bodyKey: "analysis.insight.execution.body",
+  },
+  {
+    id: "backlog",
+    labelKey: "analysis.insight.backlog.label",
+    titleKey: "analysis.insight.backlog.title",
+    bodyKey: "analysis.insight.backlog.body",
+  },
+  {
+    id: "aiMode",
+    labelKey: "analysis.insight.aiMode.label",
+    titleKey: "analysis.insight.aiMode.title",
+    bodyKey: "analysis.insight.aiMode.body",
+  },
+  {
+    id: "evidenceLoop",
+    labelKey: "analysis.insight.evidenceLoop.label",
+    titleKey: "analysis.insight.evidenceLoop.title",
+    bodyKey: "analysis.insight.evidenceLoop.body",
+  },
+  {
+    id: "decisionLayer",
+    labelKey: "analysis.insight.decisionLayer.label",
+    titleKey: "analysis.insight.decisionLayer.title",
+    bodyKey: "analysis.insight.decisionLayer.body",
+  },
+  {
+    id: "targetUsers",
+    labelKey: "analysis.insight.targetUsers.label",
+    titleKey: "analysis.insight.targetUsers.title",
+    bodyKey: "analysis.insight.targetUsers.body",
+  },
+  {
+    id: "painMap",
+    labelKey: "analysis.insight.painMap.label",
+    titleKey: "analysis.insight.painMap.title",
+    bodyKey: "analysis.insight.painMap.body",
+  },
+  {
+    id: "mvpScope",
+    labelKey: "analysis.insight.mvpScope.label",
+    titleKey: "analysis.insight.mvpScope.title",
+    bodyKey: "analysis.insight.mvpScope.body",
+  },
+  {
+    id: "landingCopy",
+    labelKey: "analysis.insight.landingCopy.label",
+    titleKey: "analysis.insight.landingCopy.title",
+    bodyKey: "analysis.insight.landingCopy.body",
+  },
+  {
+    id: "featureBacklog",
+    labelKey: "analysis.insight.featureBacklog.label",
+    titleKey: "analysis.insight.featureBacklog.title",
+    bodyKey: "analysis.insight.featureBacklog.body",
+  },
+  {
+    id: "pricing",
+    labelKey: "analysis.insight.pricing.label",
+    titleKey: "analysis.insight.pricing.title",
+    bodyKey: "analysis.insight.pricing.body",
+  },
+  {
+    id: "launchPlan",
+    labelKey: "analysis.insight.launchPlan.label",
+    titleKey: "analysis.insight.launchPlan.title",
+    bodyKey: "analysis.insight.launchPlan.body",
+  },
+  {
+    id: "assumptions",
+    labelKey: "analysis.insight.assumptions.label",
+    titleKey: "analysis.insight.assumptions.title",
+    bodyKey: "analysis.insight.assumptions.body",
+  },
+  {
+    id: "pricingRisks",
+    labelKey: "analysis.insight.pricingRisks.label",
+    titleKey: "analysis.insight.pricingRisks.title",
+    bodyKey: "analysis.insight.pricingRisks.body",
+  },
+  {
+    id: "contentCalendar",
+    labelKey: "analysis.insight.contentCalendar.label",
+    titleKey: "analysis.insight.contentCalendar.title",
+    bodyKey: "analysis.insight.contentCalendar.body",
+  },
+  {
+    id: "executionTasks",
+    labelKey: "analysis.insight.executionTasks.label",
+    titleKey: "analysis.insight.executionTasks.title",
+    bodyKey: "analysis.insight.executionTasks.body",
+  },
+] as const;
+
+const analysisInsightById = ANALYSIS_INSIGHTS.reduce<Record<AnalysisInsightKey, AnalysisInsightConfig>>(
+  (acc, insight) => {
+    acc[insight.id] = insight;
+    return acc;
+  },
+  {} as Record<AnalysisInsightKey, AnalysisInsightConfig>,
+);
 
 function formatSourceScore(label: string, value: number | null) {
   return `${label} ${typeof value === "number" ? Math.round(value) : "n/a"}`;
@@ -228,7 +391,17 @@ function parseLocalWorkspaceSnapshot(
     : null;
 }
 
-function Section({ title, icon: Icon, children, collapsible = false, sectionId, collapsed: controlledCollapsed, onToggle }: SectionProps) {
+function Section({
+  title,
+  icon: Icon,
+  children,
+  collapsible = false,
+  sectionId,
+  collapsed: controlledCollapsed,
+  onToggle,
+  analysisActive = false,
+  onInspect,
+}: SectionProps) {
   const [internalOpen, setInternalOpen] = useState(true);
   const isOpen = collapsible && controlledCollapsed !== undefined
     ? !controlledCollapsed
@@ -254,7 +427,14 @@ function Section({ title, icon: Icon, children, collapsible = false, sectionId, 
   };
 
   return (
-    <section className="overflow-hidden rounded-md border border-card bg-card shadow-[0_18px_70px_-62px_rgba(17,19,18,0.45)]">
+    <section
+      onMouseEnter={analysisActive ? onInspect : undefined}
+      onFocusCapture={analysisActive ? onInspect : undefined}
+      className={[
+        "overflow-hidden rounded-md border border-card bg-card shadow-[0_18px_70px_-62px_rgba(17,19,18,0.45)]",
+        analysisActive ? "transition hover:border-accent/60 hover:shadow-[0_24px_86px_-66px_rgba(45,126,98,0.72)]" : "",
+      ].join(" ")}
+    >
       {collapsible ? (
         <button
           type="button"
@@ -316,17 +496,25 @@ function WorkspaceMetric({
   detail,
   icon: Icon,
   tone = "plain",
+  analysisActive = false,
+  onInspect,
 }: {
   label: string;
   value: string;
   detail: string;
   icon: LucideIcon;
   tone?: WorkspaceMetricTone;
+  analysisActive?: boolean;
+  onInspect?: () => void;
 }) {
   return (
     <article
+      tabIndex={analysisActive ? 0 : undefined}
+      onMouseEnter={analysisActive ? onInspect : undefined}
+      onFocus={analysisActive ? onInspect : undefined}
       className={[
         "relative min-h-[118px] overflow-hidden rounded-md border p-4 shadow-[0_24px_80px_-64px_rgba(17,19,18,0.5)] before:absolute before:inset-x-0 before:top-0 before:h-0.5",
+        analysisActive ? "cursor-help transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 motion-reduce:hover:translate-y-0" : "",
         metricToneClass[tone],
       ].join(" ")}
     >
@@ -371,6 +559,73 @@ function ProfileLimitNote({
         <ArrowRight className="size-3.5" aria-hidden="true" />
       </button>
     </div>
+  );
+}
+
+function AnalysisCompanionPanel({
+  enabled,
+  activeInsight,
+  outputProfile,
+  onToggle,
+}: {
+  enabled: boolean;
+  activeInsight: AnalysisInsightConfig;
+  outputProfile: OutputProfile;
+  onToggle: () => void;
+}) {
+  const { t } = useLocale();
+
+  return (
+    <aside
+      id="analysis-companion"
+      aria-label={t("analysis.sectionAria")}
+      className="rounded-md border border-card bg-card p-4 shadow-[0_30px_96px_-72px_rgba(17,19,18,0.72)] xl:sticky xl:top-24 xl:self-start"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-accent">
+            {t("analysis.eyebrow")}
+          </p>
+          <h2 className="mt-1 text-base font-semibold tracking-[-0.01em] text-foreground">
+            {t("analysis.title")}
+          </h2>
+        </div>
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-pressed={enabled}
+          className={[
+            "shrink-0 rounded-md border px-3 py-1.5 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1",
+            enabled
+              ? "border-accent bg-accent text-primary-text"
+              : "border-input bg-input text-foreground hover:border-accent",
+          ].join(" ")}
+        >
+          {enabled ? t("analysis.toggleOff") : t("analysis.toggleOn")}
+        </button>
+      </div>
+
+      <p className="mt-3 text-sm leading-6 text-foreground/72">
+        {enabled ? t("analysis.enabledHelp") : t("analysis.disabledHelp")}
+      </p>
+
+      <div className="mt-4 rounded-md border border-input bg-input/55 p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded-md bg-card px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">
+            {t(activeInsight.labelKey)}
+          </span>
+          <span className="rounded-md bg-card px-2 py-1 text-[11px] font-medium text-muted">
+            {t("analysis.profile", { profile: t(`profile.${outputProfile}.label`) })}
+          </span>
+        </div>
+        <h3 className="mt-3 text-sm font-semibold text-foreground">
+          {t(activeInsight.titleKey)}
+        </h3>
+        <p className="mt-2 text-sm leading-6 text-foreground/75">
+          {t(activeInsight.bodyKey)}
+        </p>
+      </div>
+    </aside>
   );
 }
 
@@ -569,6 +824,10 @@ export function LaunchWorkspace({
   const [mounted, setMounted] = useState(false);
   const [outputProfile, setOutputProfile] =
     useState<OutputProfile>("founder");
+  const [analysisCompanionEnabled, setAnalysisCompanionEnabled] =
+    useState(false);
+  const [activeAnalysisInsight, setActiveAnalysisInsight] =
+    useState<AnalysisInsightKey>("overview");
   const { t } = useLocale();
 
   // R255: live provider (MiniMax) requires a per-browser owner token via the
@@ -631,6 +890,30 @@ export function LaunchWorkspace({
       // ignore storage errors
     }
   }, [outputProfile]);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(ANALYSIS_COMPANION_KEY);
+      if (stored === "1" || stored === "true") {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setAnalysisCompanionEnabled(true);
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        ANALYSIS_COMPANION_KEY,
+        analysisCompanionEnabled ? "1" : "0",
+      );
+    } catch {
+      // ignore storage errors
+    }
+  }, [analysisCompanionEnabled]);
+
   const [error, setError] = useState("");
   const [fallbackNotice, setFallbackNotice] = useState("");
   const [exportText, setExportText] = useState("");
@@ -1600,6 +1883,7 @@ export function LaunchWorkspace({
   const workspaceMetricItems = [
     {
       id: "quality",
+      insight: "quality",
       label: t("metrics.quality"),
       value: `${qualityResult.score}%`,
       detail: t("metrics.qualityDetail", { passed: qualityPassed, total: qualityResult.checks.length }),
@@ -1608,6 +1892,7 @@ export function LaunchWorkspace({
     },
     {
       id: "validation",
+      insight: "validation",
       label: t("metrics.validation"),
       value: `${executionProgress.score}%`,
       detail: t("metrics.validationDetail", { with: executionProgress.withEvidence, total: executionProgress.total }),
@@ -1616,6 +1901,7 @@ export function LaunchWorkspace({
     },
     {
       id: "execution",
+      insight: "execution",
       label: t("metrics.execution"),
       value: `${completedTasks}/${workspace.tasks.length}`,
       detail: t("metrics.executionDetail"),
@@ -1624,6 +1910,7 @@ export function LaunchWorkspace({
     },
     {
       id: "backlog",
+      insight: "backlog",
       label: t("metrics.backlog"),
       value: `${workspace.backlog.length}`,
       detail: t("metrics.backlogDetail", { count: workspace.assumptions.length }),
@@ -1632,6 +1919,7 @@ export function LaunchWorkspace({
     },
     {
       id: "ai-mode",
+      insight: "aiMode",
       label: t("metrics.aiMode"),
       value: generationModeLabel,
       detail: providerLabelText,
@@ -1640,6 +1928,7 @@ export function LaunchWorkspace({
     },
   ] satisfies Array<{
     id: string;
+    insight: AnalysisInsightKey;
     label: string;
     value: string;
     detail: string;
@@ -1650,6 +1939,15 @@ export function LaunchWorkspace({
   const visibleMetricItems = compactProfile
     ? workspaceMetricItems.filter((metric) => metric.id === "quality" || metric.id === "execution")
     : workspaceMetricItems;
+  const activeAnalysisConfig = analysisInsightById[activeAnalysisInsight];
+  const inspect = useCallback(
+    (insight: AnalysisInsightKey) => {
+      if (analysisCompanionEnabled) {
+        setActiveAnalysisInsight(insight);
+      }
+    },
+    [analysisCompanionEnabled],
+  );
 
   return (
     <>
@@ -1744,12 +2042,17 @@ export function LaunchWorkspace({
               detail={metric.detail}
               icon={metric.icon}
               tone={metric.tone}
+              analysisActive={analysisCompanionEnabled}
+              onInspect={() => inspect(metric.insight)}
             />
           ))}
         </section>
 
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <section
           aria-label={t("profile.sectionAria")}
+          onMouseEnter={() => inspect("profile")}
+          onFocusCapture={() => inspect("profile")}
           className="overflow-hidden rounded-md border border-card bg-[radial-gradient(circle_at_top_left,rgba(83,180,143,0.18),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0))] bg-card p-4 shadow-[0_30px_96px_-72px_rgba(17,19,18,0.72)]"
         >
           <div className="flex flex-col gap-4 xl:flex-row xl:items-stretch xl:justify-between">
@@ -1805,6 +2108,16 @@ export function LaunchWorkspace({
             </div>
           </div>
         </section>
+        <AnalysisCompanionPanel
+          enabled={analysisCompanionEnabled}
+          activeInsight={activeAnalysisConfig}
+          outputProfile={outputProfile}
+          onToggle={() => {
+            setAnalysisCompanionEnabled((current) => !current);
+            setActiveAnalysisInsight("overview");
+          }}
+        />
+        </div>
 
         <div className="grid gap-5 lg:grid-cols-[372px_minmax(0,1fr)]">
           <aside id="founder-brief" aria-label={t("brief.asideAria")} className="min-w-0 rounded-md border border-card bg-card p-4 shadow-[0_30px_90px_-72px_rgba(17,19,18,0.62)] lg:sticky lg:top-24 lg:self-start">
@@ -2456,6 +2769,8 @@ export function LaunchWorkspace({
                   id="workspace-main"
                   tabIndex={-1}
                   aria-label={t("validation.sectionAria")}
+                  onMouseEnter={() => inspect("evidenceLoop")}
+                  onFocusCapture={() => inspect("evidenceLoop")}
                   className="scroll-mt-28 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
                   <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -2481,7 +2796,12 @@ export function LaunchWorkspace({
             )}
 
             {showDecisionLayer && (
-              <div id="decision-copilot-section" className="scroll-mt-28">
+              <div
+                id="decision-copilot-section"
+                onMouseEnter={() => inspect("decisionLayer")}
+                onFocusCapture={() => inspect("decisionLayer")}
+                className="scroll-mt-28"
+              >
                 <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase text-accent">
@@ -2505,7 +2825,7 @@ export function LaunchWorkspace({
             )}
 
             <div className="grid gap-6 xl:grid-cols-2">
-              <Section title={t("section.targetUsers")} icon={UsersRound} collapsible sectionId="target-users" collapsed={collapsedSections.has("target-users")} onToggle={() => toggleSection("target-users")}>
+              <Section title={t("section.targetUsers")} icon={UsersRound} collapsible sectionId="target-users" collapsed={collapsedSections.has("target-users")} onToggle={() => toggleSection("target-users")} analysisActive={analysisCompanionEnabled} onInspect={() => inspect("targetUsers")}>
                 {isEditing ? (
                   <EditableLines
                     label={t("section.targetUsers")}
@@ -2523,7 +2843,7 @@ export function LaunchWorkspace({
                 )}
               </Section>
 
-              <Section title={t("section.painMap")} icon={Target} collapsible sectionId="pain-map" collapsed={collapsedSections.has("pain-map")} onToggle={() => toggleSection("pain-map")}>
+              <Section title={t("section.painMap")} icon={Target} collapsible sectionId="pain-map" collapsed={collapsedSections.has("pain-map")} onToggle={() => toggleSection("pain-map")} analysisActive={analysisCompanionEnabled} onInspect={() => inspect("painMap")}>
                 {isEditing ? (
                   <EditableLines
                     label={t("section.painMap")}
@@ -2541,7 +2861,7 @@ export function LaunchWorkspace({
                 )}
               </Section>
 
-              <Section title={t("section.mvpScope")} icon={ClipboardList} collapsible sectionId="mvp-scope" collapsed={collapsedSections.has("mvp-scope")} onToggle={() => toggleSection("mvp-scope")}>
+              <Section title={t("section.mvpScope")} icon={ClipboardList} collapsible sectionId="mvp-scope" collapsed={collapsedSections.has("mvp-scope")} onToggle={() => toggleSection("mvp-scope")} analysisActive={analysisCompanionEnabled} onInspect={() => inspect("mvpScope")}>
                 {isEditing ? (
                   <EditableLines
                     label={t("section.mvpScope")}
@@ -2559,7 +2879,7 @@ export function LaunchWorkspace({
                 )}
               </Section>
 
-              <Section title={t("section.landingCopy")} icon={Megaphone} collapsible sectionId="landing-page-copy" collapsed={collapsedSections.has("landing-page-copy")} onToggle={() => toggleSection("landing-page-copy")}>
+              <Section title={t("section.landingCopy")} icon={Megaphone} collapsible sectionId="landing-page-copy" collapsed={collapsedSections.has("landing-page-copy")} onToggle={() => toggleSection("landing-page-copy")} analysisActive={analysisCompanionEnabled} onInspect={() => inspect("landingCopy")}>
                 {isEditing ? (
                   <div className="space-y-3">
                     <EditableText
@@ -2606,7 +2926,7 @@ export function LaunchWorkspace({
             </div>
 
             {showAdvancedSections && (
-            <Section title={t("section.featureBacklog")} icon={ClipboardCheck} collapsible sectionId="feature-backlog" collapsed={collapsedSections.has("feature-backlog")} onToggle={() => toggleSection("feature-backlog")}>
+            <Section title={t("section.featureBacklog")} icon={ClipboardCheck} collapsible sectionId="feature-backlog" collapsed={collapsedSections.has("feature-backlog")} onToggle={() => toggleSection("feature-backlog")} analysisActive={analysisCompanionEnabled} onInspect={() => inspect("featureBacklog")}>
               {isEditing ? (
                 <div className="grid gap-3 lg:grid-cols-2">
                   {workspace.backlog.map((item, index) => (
@@ -2720,7 +3040,7 @@ export function LaunchWorkspace({
             )}
 
             <div className="grid gap-6 xl:grid-cols-2">
-              <Section title={t("section.pricingHypothesis")} icon={CircleDollarSign} collapsible sectionId="pricing-hypothesis" collapsed={collapsedSections.has("pricing-hypothesis")} onToggle={() => toggleSection("pricing-hypothesis")}>
+              <Section title={t("section.pricingHypothesis")} icon={CircleDollarSign} collapsible sectionId="pricing-hypothesis" collapsed={collapsedSections.has("pricing-hypothesis")} onToggle={() => toggleSection("pricing-hypothesis")} analysisActive={analysisCompanionEnabled} onInspect={() => inspect("pricing")}>
                 {isEditing ? (
                   <div className="space-y-3">
                     <EditableText
@@ -2764,7 +3084,7 @@ export function LaunchWorkspace({
                 )}
               </Section>
 
-              <Section title={t("section.launchPlan")} icon={Rocket} collapsible sectionId="launch-plan" collapsed={collapsedSections.has("launch-plan")} onToggle={() => toggleSection("launch-plan")}>
+              <Section title={t("section.launchPlan")} icon={Rocket} collapsible sectionId="launch-plan" collapsed={collapsedSections.has("launch-plan")} onToggle={() => toggleSection("launch-plan")} analysisActive={analysisCompanionEnabled} onInspect={() => inspect("launchPlan")}>
                 {isEditing ? (
                   <EditableLines
                     label={t("section.launchPlan")}
@@ -2785,7 +3105,7 @@ export function LaunchWorkspace({
 
             {showAdvancedSections && (
             <div className="grid gap-6 xl:grid-cols-2">
-              <Section title={t("section.assumptions")} icon={AlertTriangle} collapsible sectionId="assumptions-to-validate" collapsed={collapsedSections.has("assumptions-to-validate")} onToggle={() => toggleSection("assumptions-to-validate")}>
+              <Section title={t("section.assumptions")} icon={AlertTriangle} collapsible sectionId="assumptions-to-validate" collapsed={collapsedSections.has("assumptions-to-validate")} onToggle={() => toggleSection("assumptions-to-validate")} analysisActive={analysisCompanionEnabled} onInspect={() => inspect("assumptions")}>
                 {isEditing ? (
                   <div className="space-y-3">
                     <EditableLines
@@ -2811,7 +3131,7 @@ export function LaunchWorkspace({
                 )}
               </Section>
 
-              <Section title={t("section.pricingRisks")} icon={AlertTriangle} collapsible sectionId="pricing-risks" collapsed={collapsedSections.has("pricing-risks")} onToggle={() => toggleSection("pricing-risks")}>
+              <Section title={t("section.pricingRisks")} icon={AlertTriangle} collapsible sectionId="pricing-risks" collapsed={collapsedSections.has("pricing-risks")} onToggle={() => toggleSection("pricing-risks")} analysisActive={analysisCompanionEnabled} onInspect={() => inspect("pricingRisks")}>
                 {isEditing ? (
                   <EditableLines
                     label={t("section.pricingRisks")}
@@ -2836,7 +3156,7 @@ export function LaunchWorkspace({
 
             <div className="grid gap-6 xl:grid-cols-2">
               {showAdvancedSections && (
-              <Section title={t("section.contentCalendar")} icon={CalendarDays} collapsible sectionId="content-calendar" collapsed={collapsedSections.has("content-calendar")} onToggle={() => toggleSection("content-calendar")}>
+              <Section title={t("section.contentCalendar")} icon={CalendarDays} collapsible sectionId="content-calendar" collapsed={collapsedSections.has("content-calendar")} onToggle={() => toggleSection("content-calendar")} analysisActive={analysisCompanionEnabled} onInspect={() => inspect("contentCalendar")}>
                 {isEditing ? (
                   <div className="space-y-3">
                     {workspace.contentCalendar.map((item, index) => (
@@ -2956,6 +3276,8 @@ export function LaunchWorkspace({
                 }
                 icon={CheckCircle2}
                 collapsible sectionId="execution-tasks" collapsed={collapsedSections.has("execution-tasks")} onToggle={() => toggleSection("execution-tasks")}
+                analysisActive={analysisCompanionEnabled}
+                onInspect={() => inspect("executionTasks")}
               >
                 {isEditing ? (
                   <div className="space-y-3">

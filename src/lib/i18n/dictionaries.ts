@@ -62,6 +62,75 @@ export type DictionaryKey =
   | "profile.notice.analyst"
   | "profile.hiddenItems"
   | "profile.switchAnalyst"
+  // Analysis companion
+  | "analysis.sectionAria"
+  | "analysis.eyebrow"
+  | "analysis.title"
+  | "analysis.toggleOn"
+  | "analysis.toggleOff"
+  | "analysis.enabledHelp"
+  | "analysis.disabledHelp"
+  | "analysis.profile"
+  | "analysis.insight.overview.label"
+  | "analysis.insight.overview.title"
+  | "analysis.insight.overview.body"
+  | "analysis.insight.profile.label"
+  | "analysis.insight.profile.title"
+  | "analysis.insight.profile.body"
+  | "analysis.insight.quality.label"
+  | "analysis.insight.quality.title"
+  | "analysis.insight.quality.body"
+  | "analysis.insight.validation.label"
+  | "analysis.insight.validation.title"
+  | "analysis.insight.validation.body"
+  | "analysis.insight.execution.label"
+  | "analysis.insight.execution.title"
+  | "analysis.insight.execution.body"
+  | "analysis.insight.backlog.label"
+  | "analysis.insight.backlog.title"
+  | "analysis.insight.backlog.body"
+  | "analysis.insight.aiMode.label"
+  | "analysis.insight.aiMode.title"
+  | "analysis.insight.aiMode.body"
+  | "analysis.insight.evidenceLoop.label"
+  | "analysis.insight.evidenceLoop.title"
+  | "analysis.insight.evidenceLoop.body"
+  | "analysis.insight.decisionLayer.label"
+  | "analysis.insight.decisionLayer.title"
+  | "analysis.insight.decisionLayer.body"
+  | "analysis.insight.targetUsers.label"
+  | "analysis.insight.targetUsers.title"
+  | "analysis.insight.targetUsers.body"
+  | "analysis.insight.painMap.label"
+  | "analysis.insight.painMap.title"
+  | "analysis.insight.painMap.body"
+  | "analysis.insight.mvpScope.label"
+  | "analysis.insight.mvpScope.title"
+  | "analysis.insight.mvpScope.body"
+  | "analysis.insight.landingCopy.label"
+  | "analysis.insight.landingCopy.title"
+  | "analysis.insight.landingCopy.body"
+  | "analysis.insight.featureBacklog.label"
+  | "analysis.insight.featureBacklog.title"
+  | "analysis.insight.featureBacklog.body"
+  | "analysis.insight.pricing.label"
+  | "analysis.insight.pricing.title"
+  | "analysis.insight.pricing.body"
+  | "analysis.insight.launchPlan.label"
+  | "analysis.insight.launchPlan.title"
+  | "analysis.insight.launchPlan.body"
+  | "analysis.insight.assumptions.label"
+  | "analysis.insight.assumptions.title"
+  | "analysis.insight.assumptions.body"
+  | "analysis.insight.pricingRisks.label"
+  | "analysis.insight.pricingRisks.title"
+  | "analysis.insight.pricingRisks.body"
+  | "analysis.insight.contentCalendar.label"
+  | "analysis.insight.contentCalendar.title"
+  | "analysis.insight.contentCalendar.body"
+  | "analysis.insight.executionTasks.label"
+  | "analysis.insight.executionTasks.title"
+  | "analysis.insight.executionTasks.body"
   // Founder brief aside
   | "brief.asideAria"
   | "brief.inputLabel"
@@ -1062,6 +1131,74 @@ const en: Dict = {
   "profile.notice.analyst": "Full-density mode: validation tools, decision copilot, risks, and operating artifacts are visible.",
   "profile.hiddenItems": "{count} advanced item(s) hidden in this reader view.",
   "profile.switchAnalyst": "Show full analyst view",
+  "analysis.sectionAria": "Analysis companion",
+  "analysis.eyebrow": "Companion",
+  "analysis.title": "Explain what I am looking at",
+  "analysis.toggleOn": "Enable",
+  "analysis.toggleOff": "Disable",
+  "analysis.enabledHelp": "Hover or focus a metric or workspace section to see how to interpret it.",
+  "analysis.disabledHelp": "Turn this on when you want plain-language help reading the workspace without changing the data.",
+  "analysis.profile": "Profile: {profile}",
+  "analysis.insight.overview.label": "Guide",
+  "analysis.insight.overview.title": "Turn on guided interpretation",
+  "analysis.insight.overview.body": "This panel explains the current metric or section in context. It is intentionally deterministic: no extra AI call, no cost, and no risk of inventing facts.",
+  "analysis.insight.profile.label": "Reader mode",
+  "analysis.insight.profile.title": "Output profiles change density, not data",
+  "analysis.insight.profile.body": "Use Idea for a plain-language path, Founder for operating work, and Analyst for full evidence depth. The saved workspace remains the same underneath.",
+  "analysis.insight.quality.label": "Quality",
+  "analysis.insight.quality.title": "Generated-structure health",
+  "analysis.insight.quality.body": "This checks whether the generated workspace contains the expected strategic parts. A high score means the artifact is structurally complete, not that the market idea is proven.",
+  "analysis.insight.validation.label": "Validation",
+  "analysis.insight.validation.title": "How much of the plan has evidence",
+  "analysis.insight.validation.body": "This measures whether assumptions have recorded evidence. Treat it as a reality-check meter: low validation means you should collect signal before committing resources.",
+  "analysis.insight.execution.label": "Execution",
+  "analysis.insight.execution.title": "Progress from plan to owned work",
+  "analysis.insight.execution.body": "Execution counts completed launch tasks. It helps separate a useful plan from a static AI report that never becomes action.",
+  "analysis.insight.backlog.label": "Backlog",
+  "analysis.insight.backlog.title": "Feature work waiting for priority",
+  "analysis.insight.backlog.body": "Backlog items are potential product work. They should stay tied to a pain, assumption, or launch goal; otherwise they become generic feature clutter.",
+  "analysis.insight.aiMode.label": "AI mode",
+  "analysis.insight.aiMode.title": "Provider and fallback transparency",
+  "analysis.insight.aiMode.body": "This tells you whether the workspace came from a real provider or demo/mock mode. It is useful for trust and debugging, not for judging market quality.",
+  "analysis.insight.evidenceLoop.label": "Evidence",
+  "analysis.insight.evidenceLoop.title": "Where assumptions become decisions",
+  "analysis.insight.evidenceLoop.body": "The validation loop is the audit trail: hypothesis, evidence, confidence, decision, and next action. It prevents the workspace from becoming unverifiable AI prose.",
+  "analysis.insight.decisionLayer.label": "Decision",
+  "analysis.insight.decisionLayer.title": "Evidence-grounded AI advice",
+  "analysis.insight.decisionLayer.body": "The decision copilot summarizes only recorded evidence. Use it for synthesis, but keep responsibility for the final product judgment.",
+  "analysis.insight.targetUsers.label": "Audience",
+  "analysis.insight.targetUsers.title": "Who feels the pain strongly enough",
+  "analysis.insight.targetUsers.body": "Target users should describe reachable people with a specific job, context, and reason to care. Vague audiences usually produce vague GTM advice.",
+  "analysis.insight.painMap.label": "Pain",
+  "analysis.insight.painMap.title": "The problem pressure behind adoption",
+  "analysis.insight.painMap.body": "Pain map explains why the user would change behavior. Strong pains are frequent, expensive, urgent, or politically visible.",
+  "analysis.insight.mvpScope.label": "MVP",
+  "analysis.insight.mvpScope.title": "The smallest credible proof",
+  "analysis.insight.mvpScope.body": "MVP scope should prove the core promise with minimal surface area. If it contains too many nice-to-have pieces, the first test becomes slow and noisy.",
+  "analysis.insight.landingCopy.label": "Message",
+  "analysis.insight.landingCopy.title": "How the promise is communicated",
+  "analysis.insight.landingCopy.body": "Landing copy translates the strategy into user-facing language. Watch for claims that are specific, believable, and easy to test in interviews or ads.",
+  "analysis.insight.featureBacklog.label": "Backlog",
+  "analysis.insight.featureBacklog.title": "Future product bets",
+  "analysis.insight.featureBacklog.body": "Feature backlog captures what could be built next. Prioritize P0/P1 only when the item advances validation, activation, revenue, or retention.",
+  "analysis.insight.pricing.label": "Pricing",
+  "analysis.insight.pricing.title": "A hypothesis about willingness to pay",
+  "analysis.insight.pricing.body": "Pricing is not a final truth. Treat tiers as a testable story about buyer value, budget owner, and usage frequency.",
+  "analysis.insight.launchPlan.label": "Launch",
+  "analysis.insight.launchPlan.title": "The sequence for learning in public",
+  "analysis.insight.launchPlan.body": "Launch plan should create evidence quickly: ship a small artifact, show it to the right people, and feed the learnings back into product scope.",
+  "analysis.insight.assumptions.label": "Assumptions",
+  "analysis.insight.assumptions.title": "The riskiest beliefs to test",
+  "analysis.insight.assumptions.body": "Assumptions are the beliefs that could invalidate the plan. Good assumptions are falsifiable and tied to customer behavior, not internal opinions.",
+  "analysis.insight.pricingRisks.label": "Risk",
+  "analysis.insight.pricingRisks.title": "Where the business model can break",
+  "analysis.insight.pricingRisks.body": "Pricing risks highlight why someone might not pay, renew, or expand. They are useful prompts for interviews and early conversion tests.",
+  "analysis.insight.contentCalendar.label": "Content",
+  "analysis.insight.contentCalendar.title": "Distribution experiments",
+  "analysis.insight.contentCalendar.body": "Content calendar is a learning system, not just marketing output. Each angle should test language, channel fit, or audience urgency.",
+  "analysis.insight.executionTasks.label": "Tasks",
+  "analysis.insight.executionTasks.title": "Who owns the next proof step",
+  "analysis.insight.executionTasks.body": "Execution tasks make the plan accountable. A good task has an owner, deadline, and outcome that creates evidence or moves the launch forward.",
   "brief.asideAria": "Founder brief",
   "brief.inputLabel": "Input",
   "brief.builderTitle": "Brief builder",
@@ -2011,6 +2148,74 @@ const zhCN: Dict = {
   "profile.notice.analyst": "当前为高密度模式：验证工具、决策助手、风险和运营资产全部可见。",
   "profile.hiddenItems": "此阅读视图已隐藏 {count} 个进阶条目。",
   "profile.switchAnalyst": "切到完整分析视图",
+  "analysis.sectionAria": "辅助分析面板",
+  "analysis.eyebrow": "辅助分析",
+  "analysis.title": "解释我正在看的内容",
+  "analysis.toggleOn": "开启",
+  "analysis.toggleOff": "关闭",
+  "analysis.enabledHelp": "将鼠标移到指标或工作台模块上，或用键盘聚焦，即可查看如何解读。",
+  "analysis.disabledHelp": "当你想用白话理解工作台时开启它；它不会改变任何数据。",
+  "analysis.profile": "档位：{profile}",
+  "analysis.insight.overview.label": "引导",
+  "analysis.insight.overview.title": "开启辅助解读",
+  "analysis.insight.overview.body": "这个面板会解释当前指标或模块该怎么看。它是确定性的内置解释：不额外调用 AI、不增加成本，也不会编造事实。",
+  "analysis.insight.profile.label": "读者模式",
+  "analysis.insight.profile.title": "输出档位改变密度，不改变数据",
+  "analysis.insight.profile.body": "想法个人适合白话行动路径，创始团队适合运营执行，分析师适合完整证据深度。底层保存的工作台数据保持一致。",
+  "analysis.insight.quality.label": "质量",
+  "analysis.insight.quality.title": "生成结构是否完整",
+  "analysis.insight.quality.body": "它检查生成结果是否包含应有的战略组件。高分代表结构完整，不代表市场方向已经被证明。",
+  "analysis.insight.validation.label": "验证",
+  "analysis.insight.validation.title": "计划有多少已经被证据支撑",
+  "analysis.insight.validation.body": "它衡量假设是否已经记录证据。可以把它当成现实校验表：验证低时，应先收集信号，再投入更多资源。",
+  "analysis.insight.execution.label": "执行",
+  "analysis.insight.execution.title": "从方案到有人负责的行动",
+  "analysis.insight.execution.body": "执行指标统计已完成的启动任务。它帮助区分“有用的计划”和“只停在文案里的 AI 报告”。",
+  "analysis.insight.backlog.label": "待办",
+  "analysis.insight.backlog.title": "等待优先级判断的产品工作",
+  "analysis.insight.backlog.body": "待办项是潜在产品工作。它们最好能对应痛点、假设或启动目标，否则容易变成功能堆砌。",
+  "analysis.insight.aiMode.label": "AI 模式",
+  "analysis.insight.aiMode.title": "供应商与降级透明度",
+  "analysis.insight.aiMode.body": "它告诉你工作台来自真实模型还是演示/Mock 模式。它用于信任和调试，不用于判断市场质量。",
+  "analysis.insight.evidenceLoop.label": "证据",
+  "analysis.insight.evidenceLoop.title": "假设变成决策的地方",
+  "analysis.insight.evidenceLoop.body": "证据循环是审计链：假设、证据、置信度、决策和下一步。它避免工作台变成不可验证的 AI 文案。",
+  "analysis.insight.decisionLayer.label": "决策",
+  "analysis.insight.decisionLayer.title": "基于证据的 AI 建议",
+  "analysis.insight.decisionLayer.body": "决策助手只总结已记录证据。它适合做综合判断，但最终产品判断仍应由人负责。",
+  "analysis.insight.targetUsers.label": "受众",
+  "analysis.insight.targetUsers.title": "谁的痛感强到愿意行动",
+  "analysis.insight.targetUsers.body": "目标用户应该是可触达的人群，并带有具体工作场景和在意原因。受众越泛，GTM 建议越容易泛。",
+  "analysis.insight.painMap.label": "痛点",
+  "analysis.insight.painMap.title": "推动采用的真实压力",
+  "analysis.insight.painMap.body": "痛点地图解释用户为什么会改变行为。强痛点通常是高频、高成本、紧急或在组织里足够可见。",
+  "analysis.insight.mvpScope.label": "MVP",
+  "analysis.insight.mvpScope.title": "最小但可信的验证范围",
+  "analysis.insight.mvpScope.body": "MVP 范围应以最小表面积证明核心承诺。如果包含太多锦上添花的功能，第一次测试会变慢且噪声很大。",
+  "analysis.insight.landingCopy.label": "表达",
+  "analysis.insight.landingCopy.title": "如何把承诺讲给用户听",
+  "analysis.insight.landingCopy.body": "落地页文案把策略翻译成用户语言。重点看它是否具体、可信，并能在访谈或广告中快速测试。",
+  "analysis.insight.featureBacklog.label": "待办",
+  "analysis.insight.featureBacklog.title": "未来产品赌注",
+  "analysis.insight.featureBacklog.body": "功能待办记录接下来可能建设的东西。只有当它推进验证、激活、收入或留存时，才值得进入 P0/P1。",
+  "analysis.insight.pricing.label": "定价",
+  "analysis.insight.pricing.title": "关于付费意愿的假设",
+  "analysis.insight.pricing.body": "定价不是最终真理。把价格档位看成关于买方价值、预算归属和使用频率的可测试故事。",
+  "analysis.insight.launchPlan.label": "启动",
+  "analysis.insight.launchPlan.title": "公开学习的执行顺序",
+  "analysis.insight.launchPlan.body": "启动计划应尽快制造证据：先交付小东西，给正确的人看，再把学习结果反馈到产品范围。",
+  "analysis.insight.assumptions.label": "假设",
+  "analysis.insight.assumptions.title": "最需要验证的关键信念",
+  "analysis.insight.assumptions.body": "假设是可能推翻计划的信念。好的假设应可证伪，并且和客户行为相关，而不是内部观点。",
+  "analysis.insight.pricingRisks.label": "风险",
+  "analysis.insight.pricingRisks.title": "商业模式可能断裂的位置",
+  "analysis.insight.pricingRisks.body": "定价风险提示用户为什么不付费、不续费或不扩张。它适合转化成访谈问题和早期转化测试。",
+  "analysis.insight.contentCalendar.label": "内容",
+  "analysis.insight.contentCalendar.title": "分发实验",
+  "analysis.insight.contentCalendar.body": "内容日历不是单纯发帖计划，而是学习系统。每个角度都应测试语言、渠道匹配或受众紧迫感。",
+  "analysis.insight.executionTasks.label": "任务",
+  "analysis.insight.executionTasks.title": "谁负责下一步证明",
+  "analysis.insight.executionTasks.body": "执行任务让计划变得可追责。好任务应该有负责人、截止时间，以及能制造证据或推进发布的产出。",
   "brief.asideAria": "创始人简报",
   "brief.inputLabel": "输入",
   "brief.builderTitle": "简报构建器",
