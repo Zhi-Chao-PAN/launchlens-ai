@@ -600,7 +600,7 @@ function AnalysisCompanionPanel({
     <aside
       id="analysis-companion"
       aria-label={t("analysis.sectionAria")}
-      className="overflow-hidden rounded-md border border-card bg-[radial-gradient(circle_at_top_right,rgba(8,122,112,0.16),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0))] bg-card shadow-[0_30px_96px_-72px_rgba(17,19,18,0.72)] xl:sticky xl:top-24 xl:self-start"
+      className="overflow-hidden rounded-md border border-card bg-[radial-gradient(circle_at_top_right,rgba(8,122,112,0.16),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0))] bg-card shadow-[0_30px_96px_-72px_rgba(17,19,18,0.72)] xl:sticky xl:top-24 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:max-h-[calc(100vh-7rem)] xl:self-start xl:overflow-y-auto"
     >
       <div className="border-b border-input/70 p-4">
         <div className="flex items-start justify-between gap-3">
@@ -1989,7 +1989,7 @@ export function LaunchWorkspace({
         setActiveAnalysisInsight(insight);
       }
     },
-    [analysisCompanionEnabled],
+    [analysisCompanionEnabled, setActiveAnalysisInsight],
   );
 
   return (
@@ -2091,12 +2091,12 @@ export function LaunchWorkspace({
           ))}
         </section>
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
         <section
           aria-label={t("profile.sectionAria")}
           onMouseEnter={() => inspect("profile")}
           onFocusCapture={() => inspect("profile")}
-          className="overflow-hidden rounded-md border border-card bg-[radial-gradient(circle_at_top_left,rgba(83,180,143,0.18),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0))] bg-card shadow-[0_30px_96px_-72px_rgba(17,19,18,0.72)]"
+          className="overflow-hidden rounded-md border border-card bg-[radial-gradient(circle_at_top_left,rgba(83,180,143,0.18),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0))] bg-card shadow-[0_30px_96px_-72px_rgba(17,19,18,0.72)] xl:col-start-1"
         >
           <div className="border-b border-input/70 px-4 py-4">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -2215,6 +2215,7 @@ export function LaunchWorkspace({
             </p>
           </div>
         </section>
+
         <AnalysisCompanionPanel
           enabled={analysisCompanionEnabled}
           activeInsight={activeAnalysisConfig}
@@ -2224,9 +2225,8 @@ export function LaunchWorkspace({
             setActiveAnalysisInsight("overview");
           }}
         />
-        </div>
 
-        <div className="grid gap-5 lg:grid-cols-[372px_minmax(0,1fr)]">
+        <div className="grid min-w-0 gap-5 lg:grid-cols-[372px_minmax(0,1fr)] xl:col-start-1">
           <aside id="founder-brief" aria-label={t("brief.asideAria")} className="min-w-0 rounded-md border border-card bg-card p-4 shadow-[0_30px_90px_-72px_rgba(17,19,18,0.62)] lg:sticky lg:top-24 lg:self-start">
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
@@ -3600,6 +3600,7 @@ export function LaunchWorkspace({
               </Section>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </main>
