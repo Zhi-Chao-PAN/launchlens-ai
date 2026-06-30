@@ -79,6 +79,7 @@ import type { ExampleWorkspace } from "@/lib/launchlens/example-workspaces";
 import { formatGeneratedTime } from "@/lib/launchlens/generated-time";
 import { formatGenerationModeLabel } from "@/lib/launchlens/generation-mode-label";
 import { formatProviderLabel } from "@/lib/launchlens/provider-label";
+import { normalizeExternalHttpUrl } from "@/lib/launchlens/source-url";
 import { formatSaveLabel } from "@/lib/launchlens/save-label";
 import { stage2HeadersFromCurrentUrl } from "@/lib/launchlens/stage2-context";
 import { Bullets } from "@/components/bullets";
@@ -131,6 +132,10 @@ type OutputProfileConfig = {
   labelKey: string;
   titleKey: string;
   descriptionKey: string;
+  audienceKey: string;
+  densityKey: string;
+  densityLevel: 1 | 2 | 3;
+  icon: LucideIcon;
 };
 
 type AnalysisInsightKey =
@@ -193,18 +198,30 @@ const OUTPUT_PROFILES: readonly OutputProfileConfig[] = [
     labelKey: "profile.idea.label",
     titleKey: "profile.idea.title",
     descriptionKey: "profile.idea.description",
+    audienceKey: "profile.idea.audience",
+    densityKey: "profile.idea.density",
+    densityLevel: 1,
+    icon: Sparkles,
   },
   {
     id: "founder",
     labelKey: "profile.founder.label",
     titleKey: "profile.founder.title",
     descriptionKey: "profile.founder.description",
+    audienceKey: "profile.founder.audience",
+    densityKey: "profile.founder.density",
+    densityLevel: 2,
+    icon: Rocket,
   },
   {
     id: "analyst",
     labelKey: "profile.analyst.label",
     titleKey: "profile.analyst.title",
     descriptionKey: "profile.analyst.description",
+    audienceKey: "profile.analyst.audience",
+    densityKey: "profile.analyst.density",
+    densityLevel: 3,
+    icon: BarChart3,
   },
 ] as const;
 
@@ -574,56 +591,76 @@ function AnalysisCompanionPanel({
   onToggle: () => void;
 }) {
   const { t } = useLocale();
+  const companionGuardrails = [
+    { icon: Eye, label: t("analysis.guardrail.hover") },
+    { icon: ShieldCheck, label: t("analysis.guardrail.noAi") },
+  ] as const;
 
   return (
     <aside
       id="analysis-companion"
       aria-label={t("analysis.sectionAria")}
-      className="rounded-md border border-card bg-card p-4 shadow-[0_30px_96px_-72px_rgba(17,19,18,0.72)] xl:sticky xl:top-24 xl:self-start"
+      className="overflow-hidden rounded-md border border-card bg-[radial-gradient(circle_at_top_right,rgba(8,122,112,0.16),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0))] bg-card shadow-[0_30px_96px_-72px_rgba(17,19,18,0.72)] xl:sticky xl:top-24 xl:self-start"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-accent">
-            {t("analysis.eyebrow")}
-          </p>
-          <h2 className="mt-1 text-base font-semibold tracking-[-0.01em] text-foreground">
-            {t("analysis.title")}
-          </h2>
+      <div className="border-b border-input/70 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-accent">
+              {t("analysis.eyebrow")}
+            </p>
+            <h2 className="mt-1 text-base font-semibold tracking-[-0.01em] text-foreground">
+              {t("analysis.title")}
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-pressed={enabled}
+            className={[
+              "shrink-0 rounded-md border px-3 py-1.5 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1",
+              enabled
+                ? "border-accent bg-accent text-primary-text"
+                : "border-input bg-input text-foreground hover:border-accent",
+            ].join(" ")}
+          >
+            {enabled ? t("analysis.toggleOff") : t("analysis.toggleOn")}
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-pressed={enabled}
-          className={[
-            "shrink-0 rounded-md border px-3 py-1.5 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1",
-            enabled
-              ? "border-accent bg-accent text-primary-text"
-              : "border-input bg-input text-foreground hover:border-accent",
-          ].join(" ")}
-        >
-          {enabled ? t("analysis.toggleOff") : t("analysis.toggleOn")}
-        </button>
+
+        <p className="mt-3 text-sm leading-6 text-foreground/72">
+          {enabled ? t("analysis.enabledHelp") : t("analysis.disabledHelp")}
+        </p>
+
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+          {companionGuardrails.map(({ icon: Icon, label }) => (
+            <div
+              key={label}
+              className="flex items-center gap-2 rounded-md border border-input/75 bg-card/70 px-3 py-2 text-xs font-medium text-muted"
+            >
+              <Icon className="size-3.5 shrink-0 text-accent" aria-hidden="true" />
+              {label}
+            </div>
+          ))}
+        </div>
       </div>
 
-      <p className="mt-3 text-sm leading-6 text-foreground/72">
-        {enabled ? t("analysis.enabledHelp") : t("analysis.disabledHelp")}
-      </p>
-
-      <div className="mt-4 rounded-md border border-input bg-input/55 p-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-md bg-card px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">
-            {t(activeInsight.labelKey)}
-          </span>
-          <span className="rounded-md bg-card px-2 py-1 text-[11px] font-medium text-muted">
-            {t("analysis.profile", { profile: t(`profile.${outputProfile}.label`) })}
-          </span>
+      <div className="p-4">
+        <div className="rounded-md border border-input bg-input/55 p-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-md bg-card px-2 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">
+              {t(activeInsight.labelKey)}
+            </span>
+            <span className="rounded-md bg-card px-2 py-1 text-[11px] font-medium text-muted">
+              {t("analysis.profile", { profile: t(`profile.${outputProfile}.label`) })}
+            </span>
+          </div>
+          <h3 className="mt-3 text-sm font-semibold text-foreground">
+            {t(activeInsight.titleKey)}
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-foreground/75">
+            {t(activeInsight.bodyKey)}
+          </p>
         </div>
-        <h3 className="mt-3 text-sm font-semibold text-foreground">
-          {t(activeInsight.titleKey)}
-        </h3>
-        <p className="mt-2 text-sm leading-6 text-foreground/75">
-          {t(activeInsight.bodyKey)}
-        </p>
       </div>
     </aside>
   );
@@ -1940,6 +1977,9 @@ export function LaunchWorkspace({
     ? workspaceMetricItems.filter((metric) => metric.id === "quality" || metric.id === "execution")
     : workspaceMetricItems;
   const activeAnalysisConfig = analysisInsightById[activeAnalysisInsight];
+  const sourceReportUrl = workspace.sourceBrief?.reportUrl
+    ? normalizeExternalHttpUrl(workspace.sourceBrief.reportUrl)
+    : null;
   const inspect = useCallback(
     (insight: AnalysisInsightKey) => {
       if (analysisCompanionEnabled) {
@@ -2053,27 +2093,43 @@ export function LaunchWorkspace({
           aria-label={t("profile.sectionAria")}
           onMouseEnter={() => inspect("profile")}
           onFocusCapture={() => inspect("profile")}
-          className="overflow-hidden rounded-md border border-card bg-[radial-gradient(circle_at_top_left,rgba(83,180,143,0.18),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0))] bg-card p-4 shadow-[0_30px_96px_-72px_rgba(17,19,18,0.72)]"
+          className="overflow-hidden rounded-md border border-card bg-[radial-gradient(circle_at_top_left,rgba(83,180,143,0.18),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0))] bg-card shadow-[0_30px_96px_-72px_rgba(17,19,18,0.72)]"
         >
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-stretch xl:justify-between">
-            <div className="max-w-2xl">
-              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-accent">
-                {t("profile.eyebrow")}
-              </p>
-              <h2 className="mt-1 text-xl font-semibold tracking-[-0.02em] text-foreground">
-                {t("profile.title")}
-              </h2>
-              <p className="mt-2 max-w-xl text-sm leading-6 text-foreground/72">
-                {t("profile.body")}
-              </p>
-              <p className="mt-3 inline-flex rounded-md border border-input bg-input/65 px-3 py-1.5 text-xs font-medium leading-5 text-muted">
-                {t(profileNoticeKey)}
-              </p>
-            </div>
+          <div className="border-b border-input/70 px-4 py-4">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+              <div className="max-w-2xl">
+                <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-accent">
+                  {t("profile.eyebrow")}
+                </p>
+                <h2 className="mt-1 text-xl font-semibold tracking-[-0.02em] text-foreground">
+                  {t("profile.title")}
+                </h2>
+                <p className="mt-2 max-w-xl text-sm leading-6 text-foreground/72">
+                  {t("profile.body")}
+                </p>
+              </div>
 
-            <div className="grid min-w-0 gap-2 md:grid-cols-3 xl:min-w-[660px]">
+              <div className="rounded-md border border-accent/25 bg-accent/10 px-3 py-2 text-sm leading-6 text-foreground/78 xl:max-w-sm">
+                <div className="flex items-start gap-2">
+                  <ShieldCheck className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" />
+                  <div>
+                    <p className="font-semibold text-foreground">
+                      {t("profile.integrityLabel")}
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-muted">
+                      {t("profile.integrityBody")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4">
+            <div className="grid min-w-0 gap-3 md:grid-cols-3">
               {OUTPUT_PROFILES.map((profile) => {
                 const selected = outputProfile === profile.id;
+                const ProfileIcon = profile.icon;
                 return (
                   <button
                     key={profile.id}
@@ -2083,18 +2139,30 @@ export function LaunchWorkspace({
                     className={[
                       "group rounded-md border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1",
                       selected
-                        ? "border-accent bg-accent text-primary-text shadow-[0_20px_70px_-48px_rgba(45,126,98,0.8)]"
+                        ? "border-accent bg-accent text-primary-text shadow-[0_22px_80px_-46px_rgba(45,126,98,0.86)]"
                         : "border-input bg-input/55 text-foreground hover:border-accent hover:bg-input",
                     ].join(" ")}
                   >
-                    <span className={[
-                      "font-mono text-[10px] font-semibold uppercase tracking-[0.12em]",
-                      selected ? "text-primary-text/70" : "text-muted",
-                    ].join(" ")}>
-                      {t(profile.labelKey)}
-                    </span>
-                    <span className="mt-1 block text-sm font-semibold">
-                      {t(profile.titleKey)}
+                    <span className="flex items-start justify-between gap-3">
+                      <span>
+                        <span className={[
+                          "font-mono text-[10px] font-semibold uppercase tracking-[0.12em]",
+                          selected ? "text-primary-text/70" : "text-muted",
+                        ].join(" ")}>
+                          {t(profile.labelKey)}
+                        </span>
+                        <span className="mt-1 block text-sm font-semibold">
+                          {t(profile.titleKey)}
+                        </span>
+                      </span>
+                      <span className={[
+                        "flex size-8 shrink-0 items-center justify-center rounded-md border",
+                        selected
+                          ? "border-primary-text/18 bg-primary-text/12"
+                          : "border-input bg-card/70 text-accent",
+                      ].join(" ")}>
+                        <ProfileIcon className="size-4" aria-hidden="true" />
+                      </span>
                     </span>
                     <span className={[
                       "mt-1 block text-xs leading-5",
@@ -2102,10 +2170,46 @@ export function LaunchWorkspace({
                     ].join(" ")}>
                       {t(profile.descriptionKey)}
                     </span>
+                    <span className="mt-3 grid gap-2 text-[11px] leading-4">
+                      <span className={[
+                        "rounded-md border px-2 py-1.5",
+                        selected
+                          ? "border-primary-text/14 bg-primary-text/10 text-primary-text/78"
+                          : "border-input bg-card/55 text-muted",
+                      ].join(" ")}>
+                        <span className="font-semibold">{t("profile.audienceLabel")}</span>{" "}
+                        {t(profile.audienceKey)}
+                      </span>
+                      <span className="flex items-center justify-between gap-2">
+                        <span className={selected ? "text-primary-text/72" : "text-muted"}>
+                          {t("profile.densityLabel")} · {t(profile.densityKey)}
+                        </span>
+                        <span className="flex gap-1" aria-hidden="true">
+                          {[1, 2, 3].map((level) => (
+                            <span
+                              key={level}
+                              className={[
+                                "h-1.5 w-5 rounded-full",
+                                level <= profile.densityLevel
+                                  ? selected
+                                    ? "bg-primary-text/78"
+                                    : "bg-accent"
+                                  : selected
+                                    ? "bg-primary-text/20"
+                                    : "bg-input",
+                              ].join(" ")}
+                            />
+                          ))}
+                        </span>
+                      </span>
+                    </span>
                   </button>
                 );
               })}
             </div>
+            <p className="mt-3 inline-flex rounded-md border border-input bg-input/65 px-3 py-1.5 text-xs font-medium leading-5 text-muted">
+              {t(profileNoticeKey)}
+            </p>
           </div>
         </section>
         <AnalysisCompanionPanel
@@ -2465,41 +2569,81 @@ export function LaunchWorkspace({
                       )}
                     </div>
                     {workspace.sourceBrief && (
-                      <div className="mt-3 flex flex-col gap-3 rounded-md border border-accent/30 bg-accent/10 px-3 py-3 text-sm text-foreground/85 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex min-w-0 items-start gap-2">
-                          <FlaskConical
-                            className="mt-0.5 size-4 shrink-0 text-accent"
-                            aria-hidden="true"
-                          />
-                          <div className="min-w-0">
-                            <p className="font-semibold text-foreground">
-                              {t("sourceBrief.heading")}
-                            </p>
-                            <p className="mt-1 text-xs leading-5 text-muted">
-                              {t("sourceBrief.session")}{" "}
-                              <span className="break-all font-mono">
-                                {workspace.sourceBrief.sessionId}
-                              </span>{" "}
-                              / {formatSourceScore(t("sourceBrief.opportunity"), workspace.sourceBrief.opportunityScore)} /{" "}
-                              {formatSourceScore(t("sourceBrief.risk"), workspace.sourceBrief.riskScore)}
-                            </p>
+                      <div
+                        onMouseEnter={() => inspect("evidenceLoop")}
+                        onFocusCapture={() => inspect("evidenceLoop")}
+                        className="mt-3 overflow-hidden rounded-md border border-accent/30 bg-[radial-gradient(circle_at_top_left,rgba(8,122,112,0.18),transparent_38%),linear-gradient(135deg,rgba(8,122,112,0.10),rgba(8,122,112,0.03))]"
+                      >
+                        <div className="flex flex-col gap-3 px-3 py-3 text-sm text-foreground/85 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="flex min-w-0 items-start gap-3">
+                            <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-md border border-accent/25 bg-card/75 text-accent">
+                              <FlaskConical className="size-4" aria-hidden="true" />
+                            </span>
+                            <div className="min-w-0">
+                              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-accent">
+                                {t("sourceBrief.eyebrow")}
+                              </p>
+                              <p className="mt-1 font-semibold text-foreground">
+                                {t("sourceBrief.heading")}
+                              </p>
+                              <p className="mt-1 max-w-2xl text-xs leading-5 text-muted">
+                                {t("sourceBrief.body")}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                        {workspace.sourceBrief.reportUrl ? (
-                          <a
-                            href={workspace.sourceBrief.reportUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-md border border-accent/40 bg-card px-2.5 text-xs font-semibold text-accent transition hover:bg-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
-                          >
-                            {t("sourceBrief.viewReport")}
-                            <ExternalLink className="size-3.5" aria-hidden="true" />
-                          </a>
-                        ) : (
-                          <span className="inline-flex h-8 shrink-0 items-center rounded-md border border-input bg-input px-2.5 text-xs font-semibold text-muted">
-                            {t("sourceBrief.linkPending")}
+                          <span className={[
+                            "inline-flex h-7 shrink-0 items-center rounded-md border px-2.5 text-xs font-semibold",
+                            sourceReportUrl
+                              ? "border-accent/30 bg-card/80 text-accent"
+                              : "border-input bg-input/80 text-muted",
+                          ].join(" ")}>
+                            {sourceReportUrl ? t("sourceBrief.reportReady") : t("sourceBrief.reportUnavailable")}
                           </span>
-                        )}
+                        </div>
+
+                        <div className="grid gap-2 border-t border-accent/20 bg-card/45 px-3 py-3 text-xs text-muted sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                          <div className="grid gap-2 sm:grid-cols-3">
+                            <div className="rounded-md border border-input/75 bg-card/70 px-2.5 py-2">
+                              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">
+                                {t("sourceBrief.session")}
+                              </p>
+                              <p className="mt-1 break-all font-mono text-foreground/80">
+                                {workspace.sourceBrief.sessionId}
+                              </p>
+                            </div>
+                            <div className="rounded-md border border-input/75 bg-card/70 px-2.5 py-2">
+                              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">
+                                {t("sourceBrief.opportunity")}
+                              </p>
+                              <p className="mt-1 font-semibold text-foreground/80">
+                                {formatSourceScore("", workspace.sourceBrief.opportunityScore).trim()}
+                              </p>
+                            </div>
+                            <div className="rounded-md border border-input/75 bg-card/70 px-2.5 py-2">
+                              <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-muted">
+                                {t("sourceBrief.risk")}
+                              </p>
+                              <p className="mt-1 font-semibold text-foreground/80">
+                                {formatSourceScore("", workspace.sourceBrief.riskScore).trim()}
+                              </p>
+                            </div>
+                          </div>
+                          {sourceReportUrl ? (
+                            <a
+                              href={sourceReportUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-semibold text-background transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+                            >
+                              {t("sourceBrief.viewReport")}
+                              <ExternalLink className="size-3.5" aria-hidden="true" />
+                            </a>
+                          ) : (
+                            <span className="inline-flex min-h-9 shrink-0 items-center rounded-md border border-input bg-input px-3 text-xs font-semibold text-muted">
+                              {t("sourceBrief.linkPending")}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>

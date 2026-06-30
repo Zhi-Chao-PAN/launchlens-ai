@@ -93,7 +93,7 @@ export function SystemStatus() {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, [fetchStatus, setSrAnnouncement]);
+  }, [fetchStatus, setSrAnnouncement, t]);
 
   async function manualRetry() {
     setRetrying(true);

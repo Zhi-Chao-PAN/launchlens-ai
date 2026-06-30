@@ -62,6 +62,19 @@ describe("briefFromJson — Research Studio envelope", () => {
     );
   });
 
+  it("keeps provenance but drops unsafe report URLs", () => {
+    const result = briefFromJson(
+      researchStudioEnvelope({}, { reportUrl: "javascript:alert(1)" }),
+    );
+
+    expect(result.source).toBe("research-studio");
+    expect(result.sourceBrief).toMatchObject({
+      source: "launchlens-research-studio",
+      sessionId: "sess-abc123",
+    });
+    expect(result.sourceBrief?.reportUrl).toBeUndefined();
+  });
+
   it("loads the brief even when provenance is incomplete", () => {
     const result = briefFromJson(
       JSON.stringify({

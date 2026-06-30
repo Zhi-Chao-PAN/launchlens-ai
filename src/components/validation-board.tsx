@@ -35,9 +35,7 @@ import { titleCase } from "@/lib/launchlens/title-case";
 import { patchEvidenceFilter } from "@/lib/launchlens/evidence-filter-patch";
 import { SIGNAL_LABELS, WEIGHT_LABELS } from "@/lib/launchlens/evidence-labels";
 import {
-  CONFIDENCE_DESCRIPTIONS,
   SIGNAL_DESCRIPTIONS,
-  STATUS_DESCRIPTIONS,
   WEIGHT_DESCRIPTIONS,
 } from "@/lib/launchlens/evidence-descriptions";
 import { useToast } from "@/components/toast";
@@ -97,6 +95,50 @@ import {
 } from "@/lib/launchlens/execution";
 import type { LaunchTask } from "@/lib/launchlens/types";
 import { rangeSelectAdd, toggleSingle, rangeSelectEvidence } from "@/lib/launchlens/range-select";
+
+const STATUS_LABEL_KEYS = {
+  untested: "vBoard.status.untested",
+  testing: "vBoard.status.testing",
+  supported: "vBoard.status.supported",
+  refuted: "vBoard.status.refuted",
+} as const satisfies Record<ExperimentStatus, string>;
+
+const STATUS_DESC_KEYS = {
+  untested: "vBoard.statusDesc.untested",
+  testing: "vBoard.statusDesc.testing",
+  supported: "vBoard.statusDesc.supported",
+  refuted: "vBoard.statusDesc.refuted",
+} as const satisfies Record<ExperimentStatus, string>;
+
+const SIGNAL_LABEL_KEYS = {
+  supports: "vBoard.signal.supports",
+  challenges: "vBoard.signal.challenges",
+  neutral: "vBoard.signal.neutral",
+} as const satisfies Record<EvidenceSignal, string>;
+
+const SIGNAL_DESC_KEYS = {
+  supports: "vBoard.signalDesc.supports",
+  challenges: "vBoard.signalDesc.challenges",
+  neutral: "vBoard.signalDesc.neutral",
+} as const satisfies Record<EvidenceSignal, string>;
+
+const WEIGHT_LABEL_KEYS = {
+  anecdotal: "vBoard.weight.anecdotal",
+  moderate: "vBoard.weight.moderate",
+  strong: "vBoard.weight.strong",
+} as const satisfies Record<EvidenceWeight, string>;
+
+const CONFIDENCE_LABEL_KEYS = {
+  low: "vBoard.confidence.low",
+  medium: "vBoard.confidence.medium",
+  high: "vBoard.confidence.high",
+} as const satisfies Record<ConfidenceLevel, string>;
+
+const CONFIDENCE_DESC_KEYS = {
+  low: "vBoard.confidenceDesc.low",
+  medium: "vBoard.confidenceDesc.medium",
+  high: "vBoard.confidenceDesc.high",
+} as const satisfies Record<ConfidenceLevel, string>;
 
 type ValidationBoardProps = {
   execution: WorkspaceExecutionState;
@@ -228,58 +270,16 @@ export function ValidationBoard({
   // constants (EXPERIMENT_STATUS_LABELS, SIGNAL_LABELS, …) stay English so the
   // Markdown / JSON exporters keep stable output; the board translates at the
   // call site via these locale-aware maps.
-  const STATUS_LABEL = {
-    untested: "vBoard.status.untested",
-    testing: "vBoard.status.testing",
-    supported: "vBoard.status.supported",
-    refuted: "vBoard.status.refuted",
-  } as const;
-  const STATUS_DESC = {
-    untested: "vBoard.statusDesc.untested",
-    testing: "vBoard.statusDesc.testing",
-    supported: "vBoard.statusDesc.supported",
-    refuted: "vBoard.statusDesc.refuted",
-  } as const;
-  const SIGNAL_LABEL = {
-    supports: "vBoard.signal.supports",
-    challenges: "vBoard.signal.challenges",
-    neutral: "vBoard.signal.neutral",
-  } as const;
-  const SIGNAL_DESC = {
-    supports: "vBoard.signalDesc.supports",
-    challenges: "vBoard.signalDesc.challenges",
-    neutral: "vBoard.signalDesc.neutral",
-  } as const;
-  const WEIGHT_LABEL = {
-    anecdotal: "vBoard.weight.anecdotal",
-    moderate: "vBoard.weight.moderate",
-    strong: "vBoard.weight.strong",
-  } as const;
-  const WEIGHT_DESC = {
-    anecdotal: "vBoard.weightDesc.anecdotal",
-    moderate: "vBoard.weightDesc.moderate",
-    strong: "vBoard.weightDesc.strong",
-  } as const;
-  const CONFIDENCE_LABEL = {
-    low: "vBoard.confidence.low",
-    medium: "vBoard.confidence.medium",
-    high: "vBoard.confidence.high",
-  } as const;
-  const CONFIDENCE_DESC = {
-    low: "vBoard.confidenceDesc.low",
-    medium: "vBoard.confidenceDesc.medium",
-    high: "vBoard.confidenceDesc.high",
-  } as const;
-  const statusLabel = (status: ExperimentStatus) => t(STATUS_LABEL[status]);
-  const statusDesc = (status: ExperimentStatus) => t(STATUS_DESC[status]);
-  const signalLabel = (signal: EvidenceSignal) => t(SIGNAL_LABEL[signal]);
-  const signalDesc = (signal: EvidenceSignal) => t(SIGNAL_DESC[signal]);
-  const weightLabel = (weight: EvidenceWeight) => t(WEIGHT_LABEL[weight]);
-  const weightDesc = (weight: EvidenceWeight) => t(WEIGHT_DESC[weight]);
-  const confidenceLabel = (c: ConfidenceLevel) => t(CONFIDENCE_LABEL[c]);
-  const confidenceDesc = (c: ConfidenceLevel) => t(CONFIDENCE_DESC[c]);
-  const DIRECTION_LABEL = { up: "vBoard.direction.up", down: "vBoard.direction.down" } as const;
-  const directionLabel = (d: "up" | "down") => t(DIRECTION_LABEL[d]);
+  const statusLabel = useCallback(
+    (status: ExperimentStatus) => t(STATUS_LABEL_KEYS[status]),
+    [t],
+  );
+  const statusDesc = (status: ExperimentStatus) => t(STATUS_DESC_KEYS[status]);
+  const signalLabel = (signal: EvidenceSignal) => t(SIGNAL_LABEL_KEYS[signal]);
+  const signalDesc = (signal: EvidenceSignal) => t(SIGNAL_DESC_KEYS[signal]);
+  const weightLabel = (weight: EvidenceWeight) => t(WEIGHT_LABEL_KEYS[weight]);
+  const confidenceLabel = (c: ConfidenceLevel) => t(CONFIDENCE_LABEL_KEYS[c]);
+  const confidenceDesc = (c: ConfidenceLevel) => t(CONFIDENCE_DESC_KEYS[c]);
 
   const evidenceListRef = useRef<HTMLUListElement | null>(null);
   const noteTextareaRef = useRef<HTMLTextAreaElement | null>(null);

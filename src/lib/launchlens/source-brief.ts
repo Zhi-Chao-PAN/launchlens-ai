@@ -1,4 +1,5 @@
 import type { LaunchLensWorkspaceSourceBrief } from "./types";
+import { normalizeExternalHttpUrl } from "./source-url";
 
 export const RESEARCH_STUDIO_SOURCE = "launchlens-research-studio";
 
@@ -73,11 +74,14 @@ export function normalizeWorkspaceSourceBrief(
   };
 
   if (value.reportUrl !== undefined && value.reportUrl !== null) {
-    const reportUrl = trimmedString(value.reportUrl, MAX_REPORT_URL_CHARS);
-    if (!reportUrl) {
+    const candidateReportUrl = trimmedString(value.reportUrl, MAX_REPORT_URL_CHARS);
+    if (!candidateReportUrl) {
       return null;
     }
-    sourceBrief.reportUrl = reportUrl;
+    const reportUrl = normalizeExternalHttpUrl(candidateReportUrl);
+    if (reportUrl) {
+      sourceBrief.reportUrl = reportUrl;
+    }
   }
 
   return sourceBrief;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractSourceUrl } from "./source-url";
+import { extractSourceUrl, normalizeExternalHttpUrl } from "./source-url";
 
 describe("extractSourceUrl", () => {
   it("returns null for null", () => {
@@ -44,5 +44,28 @@ describe("extractSourceUrl", () => {
     // safe link anyway, and silently extracting the wrong scheme would
     // mislead the UI.
     expect(extractSourceUrl("ftp://example.com")).toBeNull();
+  });
+});
+
+describe("normalizeExternalHttpUrl", () => {
+  it("returns null for empty or missing values", () => {
+    expect(normalizeExternalHttpUrl(null)).toBeNull();
+    expect(normalizeExternalHttpUrl(undefined)).toBeNull();
+    expect(normalizeExternalHttpUrl("  ")).toBeNull();
+  });
+
+  it("normalizes safe http and https URLs", () => {
+    expect(normalizeExternalHttpUrl(" https://research.example/research/sess-1 ")).toBe(
+      "https://research.example/research/sess-1",
+    );
+    expect(normalizeExternalHttpUrl("http://research.example/research/sess-1")).toBe(
+      "http://research.example/research/sess-1",
+    );
+  });
+
+  it("rejects script, non-http, and malformed URLs", () => {
+    expect(normalizeExternalHttpUrl("javascript:alert(1)")).toBeNull();
+    expect(normalizeExternalHttpUrl("ftp://research.example/file")).toBeNull();
+    expect(normalizeExternalHttpUrl("not a url")).toBeNull();
   });
 });

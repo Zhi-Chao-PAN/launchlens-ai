@@ -123,6 +123,7 @@ export function ExpiryBadge({
    */
   now: number;
 }) {
+  const { t } = useLocale();
   // Defer rendering until after mount so Date.now() doesn't cause a
   // server/client hydration mismatch. Before mount, render nothing
   // (the surrounding toolbar already shows a 'Read-only snapshot' pill
@@ -131,7 +132,6 @@ export function ExpiryBadge({
   // `nowTick` is read here so this component re-renders on every tick
   // (otherwise the badge label would freeze on first mount).
   void nowTick;
-  const { t } = useLocale();
   const badge = formatExpiryBadge(expiresAt, now);
   if (!badge) return null;
   const className =

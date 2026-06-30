@@ -62,6 +62,16 @@ export type DictionaryKey =
   | "profile.notice.analyst"
   | "profile.hiddenItems"
   | "profile.switchAnalyst"
+  | "profile.integrityLabel"
+  | "profile.integrityBody"
+  | "profile.audienceLabel"
+  | "profile.densityLabel"
+  | "profile.idea.audience"
+  | "profile.idea.density"
+  | "profile.founder.audience"
+  | "profile.founder.density"
+  | "profile.analyst.audience"
+  | "profile.analyst.density"
   // Analysis companion
   | "analysis.sectionAria"
   | "analysis.eyebrow"
@@ -70,6 +80,8 @@ export type DictionaryKey =
   | "analysis.toggleOff"
   | "analysis.enabledHelp"
   | "analysis.disabledHelp"
+  | "analysis.guardrail.hover"
+  | "analysis.guardrail.noAi"
   | "analysis.profile"
   | "analysis.insight.overview.label"
   | "analysis.insight.overview.title"
@@ -182,10 +194,14 @@ export type DictionaryKey =
   | "snapshot.title"
   | "snapshot.generatedPrefix"
   | "snapshot.fallbackPrefix"
+  | "sourceBrief.eyebrow"
   | "sourceBrief.heading"
+  | "sourceBrief.body"
   | "sourceBrief.session"
   | "sourceBrief.opportunity"
   | "sourceBrief.risk"
+  | "sourceBrief.reportReady"
+  | "sourceBrief.reportUnavailable"
   | "sourceBrief.viewReport"
   | "sourceBrief.linkPending"
   // Toolbar buttons
@@ -1120,17 +1136,27 @@ const en: Dict = {
   "profile.idea.label": "Idea",
   "profile.idea.title": "Plain-language path",
   "profile.idea.description": "For individual builders who need the next usable steps without heavy metrics.",
+  "profile.idea.audience": "Individual builders and first-time idea owners",
+  "profile.idea.density": "Light",
   "profile.founder.label": "Founder",
   "profile.founder.title": "Execution workspace",
   "profile.founder.description": "For early teams that need validation, backlog, launch plan, and operating rhythm.",
+  "profile.founder.audience": "Early teams preparing a real trial",
+  "profile.founder.density": "Balanced",
   "profile.analyst.label": "Analyst",
   "profile.analyst.title": "Full evidence view",
   "profile.analyst.description": "For expert readers who expect risk, evidence, decision, and execution depth.",
+  "profile.analyst.audience": "Analysts, investors, and expert reviewers",
+  "profile.analyst.density": "Full",
   "profile.notice.idea": "Showing a simplified reader view. Editing still exposes the complete workspace.",
   "profile.notice.founder": "Balanced mode: enough evidence and execution depth for a real team trial.",
   "profile.notice.analyst": "Full-density mode: validation tools, decision copilot, risks, and operating artifacts are visible.",
   "profile.hiddenItems": "{count} advanced item(s) hidden in this reader view.",
   "profile.switchAnalyst": "Show full analyst view",
+  "profile.integrityLabel": "Data-preserving renderer",
+  "profile.integrityBody": "Switching profiles changes visible density only. Editing, export, and saved workspaces keep the complete GTM artifact.",
+  "profile.audienceLabel": "Best for",
+  "profile.densityLabel": "Density",
   "analysis.sectionAria": "Analysis companion",
   "analysis.eyebrow": "Companion",
   "analysis.title": "Explain what I am looking at",
@@ -1138,6 +1164,8 @@ const en: Dict = {
   "analysis.toggleOff": "Disable",
   "analysis.enabledHelp": "Hover or focus a metric or workspace section to see how to interpret it.",
   "analysis.disabledHelp": "Turn this on when you want plain-language help reading the workspace without changing the data.",
+  "analysis.guardrail.hover": "Hover/focus any highlighted section",
+  "analysis.guardrail.noAi": "No extra AI call or data mutation",
   "analysis.profile": "Profile: {profile}",
   "analysis.insight.overview.label": "Guide",
   "analysis.insight.overview.title": "Turn on guided interpretation",
@@ -1245,10 +1273,14 @@ const en: Dict = {
   "snapshot.title": "Workspace summary",
   "snapshot.generatedPrefix": "Generated ",
   "snapshot.fallbackPrefix": "Fallback: ",
+  "sourceBrief.eyebrow": "Research provenance",
   "sourceBrief.heading": "Generated from Research Studio intelligence report",
+  "sourceBrief.body": "This GTM workspace was seeded from an auditable research report. Use the source report to inspect assumptions, citations, opportunity score, and risk context.",
   "sourceBrief.session": "Session",
   "sourceBrief.opportunity": "Opportunity",
   "sourceBrief.risk": "Risk",
+  "sourceBrief.reportReady": "Linked report",
+  "sourceBrief.reportUnavailable": "Local brief only",
   "sourceBrief.viewReport": "View full report",
   "sourceBrief.linkPending": "Report link pending",
   "toolbar.preview": "Preview",
@@ -2137,17 +2169,27 @@ const zhCN: Dict = {
   "profile.idea.label": "想法个人",
   "profile.idea.title": "白话行动版",
   "profile.idea.description": "适合只有产品想法的个人，先看懂下一步，不被高级指标淹没。",
+  "profile.idea.audience": "有想法的个人 / 第一次做产品的人",
+  "profile.idea.density": "轻量",
   "profile.founder.label": "创始团队",
   "profile.founder.title": "执行工作台",
   "profile.founder.description": "适合早期团队，保留验证、待办、启动计划和运营节奏。",
+  "profile.founder.audience": "准备真实试跑的早期团队",
+  "profile.founder.density": "均衡",
   "profile.analyst.label": "分析师",
   "profile.analyst.title": "完整证据视图",
   "profile.analyst.description": "适合专业读者，展开风险、证据、决策和执行深度。",
+  "profile.analyst.audience": "分析师、投资人和专业审阅者",
+  "profile.analyst.density": "完整",
   "profile.notice.idea": "当前为简化阅读视图；进入编辑时仍会展示完整工作台。",
   "profile.notice.founder": "当前为均衡模式：适合真实团队试跑，兼顾证据和执行。",
   "profile.notice.analyst": "当前为高密度模式：验证工具、决策助手、风险和运营资产全部可见。",
   "profile.hiddenItems": "此阅读视图已隐藏 {count} 个进阶条目。",
   "profile.switchAnalyst": "切到完整分析视图",
+  "profile.integrityLabel": "数据保真渲染",
+  "profile.integrityBody": "切换档位只改变可见密度；编辑、导出和保存仍保留完整 GTM 工作台。",
+  "profile.audienceLabel": "适合",
+  "profile.densityLabel": "信息密度",
   "analysis.sectionAria": "辅助分析面板",
   "analysis.eyebrow": "辅助分析",
   "analysis.title": "解释我正在看的内容",
@@ -2155,6 +2197,8 @@ const zhCN: Dict = {
   "analysis.toggleOff": "关闭",
   "analysis.enabledHelp": "将鼠标移到指标或工作台模块上，或用键盘聚焦，即可查看如何解读。",
   "analysis.disabledHelp": "当你想用白话理解工作台时开启它；它不会改变任何数据。",
+  "analysis.guardrail.hover": "悬停/聚焦高亮模块即可解读",
+  "analysis.guardrail.noAi": "不额外调用 AI，不改写数据",
   "analysis.profile": "档位：{profile}",
   "analysis.insight.overview.label": "引导",
   "analysis.insight.overview.title": "开启辅助解读",
@@ -2262,10 +2306,14 @@ const zhCN: Dict = {
   "snapshot.title": "工作台摘要",
   "snapshot.generatedPrefix": "生成于 ",
   "snapshot.fallbackPrefix": "回退：",
+  "sourceBrief.eyebrow": "研究来源",
   "sourceBrief.heading": "基于 Research Studio 情报报告生成",
+  "sourceBrief.body": "这个 GTM 工作台由可审计的研究报告启动。可回到来源报告查看假设、引用、机会分和风险背景。",
   "sourceBrief.session": "会话",
   "sourceBrief.opportunity": "机会",
   "sourceBrief.risk": "风险",
+  "sourceBrief.reportReady": "已链接报告",
+  "sourceBrief.reportUnavailable": "仅本地简报",
   "sourceBrief.viewReport": "查看完整报告",
   "sourceBrief.linkPending": "报告链接待生成",
   "toolbar.preview": "预览",
