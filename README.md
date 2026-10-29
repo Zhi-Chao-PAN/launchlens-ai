@@ -16,7 +16,7 @@ The portfolio goal is to show full-stack AI product judgment: product strategy, 
 
 ## First user trial
 
-Open `/trial` on the version you are testing for an English/Chinese 15-minute task guide, data-handling notes and a feedback form. Feedback is previewed and downloaded locally; it is not submitted automatically. See [the trial protocol](docs/USER_TRIAL.md) before inviting participants. The guide also works when browser storage is disabled.
+Start with the [public trial guide](https://launchlens-ai-two.vercel.app/trial) for an English/Chinese 15-minute task, data-handling notes and a feedback form. Feedback is previewed and downloaded locally; it is not submitted automatically. See [the trial protocol](docs/USER_TRIAL.md) before inviting participants. The guide also works when browser storage is disabled. For a local or preview build, open `/trial` on that deployment.
 
 ## Case Study Snapshot
 

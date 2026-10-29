@@ -4,6 +4,8 @@ Audience hypothesis: an independent builder with a prototype, deciding what to i
 
 ## Participant entry
 
+Public entry: [launchlens-ai-two.vercel.app/trial](https://launchlens-ai-two.vercel.app/trial). The production guide is accessible without a Vercel account; preview deployments may have separate access restrictions.
+
 Share `/trial` on the exact preview or production deployment that contains this change. The guide is bilingual and opens the workspace in another tab so feedback notes remain visible. Start with a sample. When a real provider is enabled, submitted brief text can reach that provider. Keep confidential plans, customer data and credentials out of the trial.
 
 A first session should take roughly 15 minutes:
@@ -33,6 +35,8 @@ After several trials, review the same task and recurring friction before expandi
 ## Technical gate
 
 `npm run quality` checks lint, unit tests, types, eval fixtures, build and dependency audit. The Browser trial workflow builds the current commit and runs the browser suite locally on every PR with real-provider execution disabled and database URLs empty. It no longer depends on an optional live URL being configured.
+
+First-visit checks vary the browser's Mac, Windows and Linux platform signal independently of the server and reject React hydration errors. This covers the platform-dependent shortcut label; it is not native browser testing on all three operating systems.
 
 For local reproduction after `npm run build`:
 

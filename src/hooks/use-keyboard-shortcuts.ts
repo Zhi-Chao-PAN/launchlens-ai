@@ -266,8 +266,8 @@ export function matchesConfig(event: KeyboardEvent, config: ShortcutConfig) {
 export const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
 
 export function formatShortcut(config: ShortcutConfig) {
-  // Detect platform at call time (not module load) to avoid SSR hydration
-  // mismatches and ensure the correct modifier appears after hydration.
+  // Detect the current platform at call time. SSR consumers must wait until
+  // after hydration: the server and browser may use different platforms.
   const isMac =
     typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
   const parts: string[] = [];

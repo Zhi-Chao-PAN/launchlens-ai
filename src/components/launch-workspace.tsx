@@ -866,6 +866,11 @@ export function LaunchWorkspace({
   const [activeAnalysisInsight, setActiveAnalysisInsight] =
     useState<AnalysisInsightKey>("overview");
   const { t } = useLocale();
+  // The server and visitor can use different operating systems. Keep the
+  // first render identical, then refine the shortcut after hydration.
+  const generateShortcutLabel = mounted
+    ? formatShortcut({ key: "Enter", meta: true, ctrl: true, description: "", category: "" })
+    : "Ctrl / Cmd + Enter";
 
   // R255: live provider (MiniMax) requires a per-browser owner token via the
   // x-launchlens-owner header — the /api/generate route hashes it before
@@ -2323,7 +2328,7 @@ export function LaunchWorkspace({
                     className="w-full field-sizing-content resize-y min-h-[96px] max-h-[400px] rounded-md border border-input bg-input px-3 py-3 text-sm leading-6 outline-none transition placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-[var(--ring-color)]"
                   />
                   <p id="founder-brief-idea-count" className="mt-1 flex items-center justify-between text-xs text-muted">
-                    <span id="founder-brief-idea-hint" className="sr-only">{t("field.idea.hint", { shortcut: formatShortcut({ key: "Enter", meta: true, ctrl: true, description: "", category: "" }) })}</span>
+                    <span id="founder-brief-idea-hint" className="sr-only">{t("field.idea.hint", { shortcut: generateShortcutLabel })}</span>
                     <span className={input.idea.length < 20 || input.idea.length > 500 ? "text-signal-challenges" : input.idea.length > 400 ? "text-amber-500" : "text-muted/70"} title={t("field.idea.recommended") + (input.idea.length > 500 ? t("field.pleaseShorten") : "")}>{input.idea.length} {t("field.charsSuffix")}{input.idea.length > 500 ? <span className="ml-1 font-semibold">{t("field.idea.tooLong")}</span> : null}</span>
                   </p>
                 </label>
