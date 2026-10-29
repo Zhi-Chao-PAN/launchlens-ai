@@ -1739,7 +1739,7 @@ export function LaunchWorkspace({
       showToast(
         exportEncrypted
           ? t("toast.encryptedFileDownloaded")
-          : t("toast.jsonDownloaded"),
+          : t("toast.exportedExt", { ext: "json" }),
         "success",
       );
     }
