@@ -7,6 +7,8 @@ import { pushOverlay } from "@/lib/launchlens/overlays";
 import { useFocusTrap } from "@/hooks/use-focus-trap";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
+import { readPreference, writePreference } from "@/lib/launchlens/browser-preferences";
+
 const STORAGE_KEY = "launchlens-onboarding-dismissed";
 
 const stepIcons = [Target, Sparkles, UsersRound, Rocket];
@@ -32,7 +34,7 @@ export function OnboardingWizard() {
   ];
 
   useEffect(() => {
-    const dismissed = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
+    const dismissed = readPreference(STORAGE_KEY);
     if (!dismissed) {
       const timer = window.setTimeout(() => {
         previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
@@ -46,7 +48,7 @@ export function OnboardingWizard() {
   // Keyboard shortcut: Ctrl/Cmd+H re-shows the tour from anywhere.
   useEffect(() => {
     const unregister = registerShortcut("showTour", () => {
-      localStorage.removeItem(STORAGE_KEY);
+      writePreference(STORAGE_KEY, null);
       previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
       setVisible(true);
       window.requestAnimationFrame(() => setMounted(true));
@@ -107,7 +109,7 @@ export function OnboardingWizard() {
   }, [visible]);
 
   function dismiss() {
-    localStorage.setItem(STORAGE_KEY, "true");
+    writePreference(STORAGE_KEY, "true");
     setMounted(false);
     const previously = previouslyFocusedRef.current;
     window.setTimeout(() => {
@@ -138,7 +140,7 @@ export function OnboardingWizard() {
       <div
         onClick={(e) => e.stopPropagation()}
         className={[
-          "relative flex w-full max-w-lg flex-col gap-6 rounded-md border border-card bg-card p-6 shadow-2xl",
+          "relative flex w-full max-w-lg max-h-[90dvh] overflow-y-auto flex-col gap-6 rounded-md border border-card bg-card p-6 shadow-2xl",
           mounted ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-2",
           "motion-safe:transition-all motion-safe:duration-200 motion-safe:ease-out",
         ].join(" ")}
@@ -201,13 +203,13 @@ export function OnboardingWizard() {
 
 export function resetOnboarding() {
   if (typeof window !== "undefined") {
-    localStorage.removeItem(STORAGE_KEY);
+    writePreference(STORAGE_KEY, null);
   }
 }
 
 export function showOnboarding() {
   if (typeof window !== "undefined") {
-    localStorage.removeItem(STORAGE_KEY);
+    writePreference(STORAGE_KEY, null);
     emitShow();
   }
 }

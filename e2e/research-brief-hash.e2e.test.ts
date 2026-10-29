@@ -103,9 +103,12 @@ test.describe("Research Studio hash handoff", () => {
     await expect(
       page.getByText(/Generated from Research Studio intelligence report/i),
     ).toBeVisible();
-    await expect(page.getByText(/rs-hash-e2e/i)).toBeVisible();
-    await expect(page.getByText(/Opportunity 82/i)).toBeVisible();
-    await expect(page.getByText(/Risk 31/i)).toBeVisible();
+    const provenance = page.getByRole("region", {name: "Research provenance", exact: true});
+    await provenance.scrollIntoViewIfNeeded();
+    await expect(provenance.getByText("rs-hash-e2e", {exact: true})).toBeVisible();
+    await expect(provenance.getByText("82", {exact: true})).toBeVisible();
+    await expect(provenance.getByText("31", {exact: true})).toBeVisible();
+    expect(await provenance.evaluate(node => node.clientWidth >= 300)).toBe(true);
   });
 
   test("discard restores the input that preceded the handoff", async ({

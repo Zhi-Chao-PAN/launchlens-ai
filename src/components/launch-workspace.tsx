@@ -600,7 +600,7 @@ function AnalysisCompanionPanel({
     <aside
       id="analysis-companion"
       aria-label={t("analysis.sectionAria")}
-      className="overflow-hidden rounded-md border border-card bg-[radial-gradient(circle_at_top_right,rgba(8,122,112,0.16),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0))] bg-card shadow-[0_30px_96px_-72px_rgba(17,19,18,0.72)] xl:sticky xl:top-24 xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:max-h-[calc(100vh-7rem)] xl:self-start xl:overflow-y-auto"
+      className="overflow-hidden rounded-md border border-card bg-[radial-gradient(circle_at_top_right,rgba(8,122,112,0.16),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0))] bg-card shadow-[0_30px_96px_-72px_rgba(17,19,18,0.72)] 2xl:sticky 2xl:top-24 2xl:col-start-2 2xl:row-span-2 2xl:row-start-1 2xl:max-h-[calc(100vh-7rem)] 2xl:self-start 2xl:overflow-y-auto"
     >
       <div className="border-b border-input/70 p-4">
         <div className="flex items-start justify-between gap-3">
@@ -876,12 +876,13 @@ export function LaunchWorkspace({
   const [ownerToken, setOwnerToken] = useState<string>("");
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setOwnerToken(
-        getOrCreateOwnerToken(
-          window.localStorage,
-          OWNER_TOKEN_STORAGE_KEY,
-        ),
-      );
+      try {
+        setOwnerToken(getOrCreateOwnerToken(window.localStorage, OWNER_TOKEN_STORAGE_KEY));
+      } catch {
+        // Some browsers deny access to the storage object itself. Keep the
+        // current tab usable; cloud history remains unavailable without storage.
+        setOwnerToken(getOrCreateOwnerToken(null, OWNER_TOKEN_STORAGE_KEY));
+      }
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
@@ -2014,7 +2015,7 @@ export function LaunchWorkspace({
     >
       <div className="mx-auto flex w-full max-w-[1480px] flex-col gap-5 px-4 py-4 pb-20 sm:px-6 sm:py-5 sm:pb-8 lg:px-8">
         <header className="sticky top-0 z-30 -mx-4 border-b border-white/10 bg-[#111312] px-4 py-3 text-white shadow-[0_18px_70px_-44px_rgba(17,19,18,0.88)] backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-          <div className="mx-auto flex max-w-[1480px] flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="mx-auto flex max-w-[1480px] flex-col gap-3 2xl:flex-row 2xl:flex-wrap 2xl:items-center 2xl:justify-between">
             <div className="flex min-w-0 items-center gap-3">
               <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-white text-[#111312]">
                 <Compass className="size-5" aria-hidden="true" />
@@ -2045,6 +2046,7 @@ export function LaunchWorkspace({
                 <WorkspaceNavLink href="#decision-copilot-section" label={t("nav.decisions")} icon={Workflow} />
               )}
               <WorkspaceNavLink href="/billing" label={t("nav.account")} icon={CircleDollarSign} />
+              <WorkspaceNavLink href="/trial" label={t("nav.trial", "Trial guide")} icon={UsersRound} />
               <WorkspaceNavLink href="/readiness" label={t("nav.readiness")} icon={ShieldCheck} />
             </nav>
 
@@ -2091,12 +2093,12 @@ export function LaunchWorkspace({
           ))}
         </section>
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
+        <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_360px] 2xl:items-start">
         <section
           aria-label={t("profile.sectionAria")}
           onMouseEnter={() => inspect("profile")}
           onFocusCapture={() => inspect("profile")}
-          className="overflow-hidden rounded-md border border-card bg-[radial-gradient(circle_at_top_left,rgba(83,180,143,0.18),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0))] bg-card shadow-[0_30px_96px_-72px_rgba(17,19,18,0.72)] xl:col-start-1"
+          className="overflow-hidden rounded-md border border-card bg-[radial-gradient(circle_at_top_left,rgba(83,180,143,0.18),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0))] bg-card shadow-[0_30px_96px_-72px_rgba(17,19,18,0.72)] 2xl:col-start-1"
         >
           <div className="border-b border-input/70 px-4 py-4">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -2226,7 +2228,7 @@ export function LaunchWorkspace({
           }}
         />
 
-        <div className="grid min-w-0 gap-5 lg:grid-cols-[372px_minmax(0,1fr)] xl:col-start-1">
+        <div className="grid min-w-0 gap-5 lg:grid-cols-[372px_minmax(0,1fr)] 2xl:col-start-1">
           <aside id="founder-brief" aria-label={t("brief.asideAria")} className="min-w-0 rounded-md border border-card bg-card p-4 shadow-[0_30px_90px_-72px_rgba(17,19,18,0.62)] lg:sticky lg:top-24 lg:self-start">
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
@@ -2547,7 +2549,7 @@ export function LaunchWorkspace({
 
             <section className="overflow-hidden rounded-md border border-card bg-card shadow-[0_30px_90px_-72px_rgba(17,19,18,0.62)]">
               <div className="border-b border-card bg-card p-4">
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                <div className="flex min-w-0 flex-col gap-4">
                   <div>
                     <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.1em] text-accent">
                       {t("snapshot.label")}
@@ -2573,6 +2575,8 @@ export function LaunchWorkspace({
                     </div>
                     {workspace.sourceBrief && (
                       <div
+                        role="region"
+                        aria-label={t("sourceBrief.eyebrow")}
                         onMouseEnter={() => inspect("evidenceLoop")}
                         onFocusCapture={() => inspect("evidenceLoop")}
                         className="mt-3 overflow-hidden rounded-md border border-accent/30 bg-[radial-gradient(circle_at_top_left,rgba(8,122,112,0.18),transparent_38%),linear-gradient(135deg,rgba(8,122,112,0.10),rgba(8,122,112,0.03))]"

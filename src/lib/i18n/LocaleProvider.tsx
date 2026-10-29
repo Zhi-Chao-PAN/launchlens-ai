@@ -11,6 +11,8 @@ import {
   type Locale,
 } from "./dictionaries";
 
+import { readPreference, writePreference } from "@/lib/launchlens/browser-preferences";
+
 interface LocaleContextValue {
   locale: Locale;
   setLocale: (l: Locale) => void;
@@ -22,7 +24,7 @@ const STORAGE_KEY = "launchlens.locale";
 
 function detectInitialLocale(): Locale {
   if (typeof window === "undefined") return DEFAULT_LOCALE;
-  const stored = window.localStorage.getItem(STORAGE_KEY);
+  const stored = readPreference(STORAGE_KEY);
   if (stored && (SUPPORTED_LOCALES as readonly string[]).includes(stored)) {
     return stored as Locale;
   }
@@ -52,7 +54,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   const setLocale = useCallback((next: Locale) => {
     setLocaleState(next);
     if (typeof window !== "undefined") {
-      window.localStorage.setItem(STORAGE_KEY, next);
+      writePreference(STORAGE_KEY, next);
     }
   }, []);
 

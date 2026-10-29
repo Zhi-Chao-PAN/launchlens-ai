@@ -31,6 +31,7 @@ export type DictionaryKey =
   | "nav.decisions"
   | "nav.account"
   | "nav.readiness"
+  | "nav.trial"
   | "header.resetTitle"
   // Operating-status metrics
   | "metrics.sectionAria"
@@ -1120,6 +1121,7 @@ const en: Dict = {
   "nav.decisions": "Decisions",
   "nav.account": "Account",
   "nav.readiness": "Readiness",
+  "nav.trial": "Trial guide",
   "header.resetTitle": "Reset local draft",
   "metrics.sectionAria": "Workspace operating status",
   "metrics.quality": "Quality",
@@ -2155,6 +2157,7 @@ const zhCN: Dict = {
   "nav.decisions": "决策",
   "nav.account": "账户",
   "nav.readiness": "就绪度",
+  "nav.trial": "试用指南",
   "header.resetTitle": "重置本地草稿",
   "metrics.sectionAria": "工作台运行状态",
   "metrics.quality": "质量",
