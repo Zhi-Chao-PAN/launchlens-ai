@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 async function dismissQuickStart(page: Page) {
   const quickStart = page.getByRole("dialog", { name: /quick start guide/i });
 
-  if (await quickStart.isVisible({ timeout: 3_000 }).catch(() => false)) {
+  if (await quickStart.waitFor({ state: "visible", timeout: 3_000 }).then(() => true).catch(() => false)) {
     await page.getByRole("button", { name: /get started/i }).click();
     await expect(quickStart).toBeHidden();
   }
@@ -12,12 +12,9 @@ async function dismissQuickStart(page: Page) {
 /**
  * End-to-end happy path for the LaunchLens AI portfolio.
  *
- * The test runs against a real `next dev` server on port 3099. Because
- * the dev server auto-loads .env files, a real database connection
- * exists in the e2e environment, so the privacy boundary is asserted
- * via the authorization layer (401 for a malformed owner token) rather
- * than via the storage-availability layer (503). The e2e test does not
- * need any secret.
+ * The managed server disables live generation and cloud database URLs.
+ * The authorization boundary must reject malformed owner tokens even when
+ * cloud storage is unavailable. No real account or model is required.
  */
 
 test.describe("LaunchLens AI end-to-end", () => {

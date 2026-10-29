@@ -1,0 +1,43 @@
+name: Trial feedback
+description: Describe a task, a blocker or a reproducible trial problem.
+title: "[trial] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This issue is public. Do not paste private briefs, customer data, provider keys, recovery tokens or private share links. Send private trial notes to the person who invited you. Use sample data for reproduction.
+  - type: input
+    id: version
+    attributes:
+      label: Version or public preview tested
+      description: Give a commit or public deployment URL; remove query strings and fragments containing private information.
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode observed
+      options:
+        - Demo or sample
+        - Real provider
+        - Mixed or fallback
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: task
+    attributes:
+      label: Task and expected outcome
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened and how to reproduce it
+      description: Include the step that blocked you and a non-sensitive example. Mark untested steps as not tested.
+    validations:
+      required: true
+  - type: textarea
+    id: return
+    attributes:
+      label: Would you use it for another decision? What would need to change?

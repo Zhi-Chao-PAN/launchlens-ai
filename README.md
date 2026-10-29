@@ -14,6 +14,10 @@ If you only have five minutes, open the hosted case study at `https://launchlens
 
 The portfolio goal is to show full-stack AI product judgment: product strategy, UX workflow, provider abstraction, secure environment handling, tests, and a path from mock demo to real LLM-backed SaaS. It is not a pure algorithm or notebook project.
 
+## First user trial
+
+Open `/trial` on the version you are testing for an English/Chinese 15-minute task guide, data-handling notes and a feedback form. Feedback is previewed and downloaded locally; it is not submitted automatically. See [the trial protocol](docs/USER_TRIAL.md) before inviting participants. The guide also works when browser storage is disabled.
+
 ## Case Study Snapshot
 
 The reviewer-facing case study lives in two forms:

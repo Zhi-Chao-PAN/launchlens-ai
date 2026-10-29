@@ -1,4 +1,4 @@
-﻿import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test";
 
 const PORT = Number(process.env.PLAYWRIGHT_PORT ?? 3099);
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${PORT}`;
@@ -27,9 +27,13 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_NO_WEBSERVER
     ? undefined
     : {
-        command: `npx next dev -p ${PORT}`,
+        command: `npx next ${process.env.PLAYWRIGHT_PRODUCTION ? "start" : "dev"} --hostname 127.0.0.1 -p ${PORT}`,
+        env: {
+          LAUNCHLENS_PROVIDER_LIVE_ENABLED: "false",
+          DATABASE_URL: "", POSTGRES_URL: "", NEON_DATABASE_URL: "",
+        },
         url: BASE_URL,
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: false,
         timeout: 120_000,
         stdout: "ignore",
         stderr: "pipe",
